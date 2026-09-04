@@ -1,0 +1,1 @@
+function a(t){var n;return((n=t.tags)==null?void 0:n.some(e=>/15\s*[–-]\s*30/.test(e)))?"15–30 דקות":typeof t.duration_min=="number"?`${t.duration_min} דקות`:""}function o(t){return a(t).replace(" דקות"," ד'")}export{o as a,a as g};
