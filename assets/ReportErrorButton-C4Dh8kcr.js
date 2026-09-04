@@ -1,0 +1,14 @@
+import{c as g,e as x,q as b,r as n,j as e}from"./index-BNc5_3Gg.js";import{B as f}from"./button-BZzb7juy.js";import{D as j,d as w,a as y,b as $,c as v,e as L}from"./dialog-51YPIQ07.js";import{L as D}from"./label-Dsjqy69L.js";import{T as R}from"./textarea-rZkXN4a_.js";import"./proxy-GBIM5Qm9.js";import"./x-BkYJkaOQ.js";/**
+ * @license lucide-react v0.468.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */const i=g("MailWarning",[["path",{d:"M22 10.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h12.5",key:"e61zoh"}],["path",{d:"m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7",key:"1ocrg3"}],["path",{d:"M20 14v4",key:"1hm744"}],["path",{d:"M20 22v.01",key:"12bgn6"}]]),N="sigalsplay@gmail.com";function B(){const{pathname:l,search:d}=x(),[c]=b(),[m,a]=n.useState(!1),[r,s]=n.useState(""),t=c==="he",h=()=>{const o=`${window.location.origin}${l}${d}`,p=t?`היי סיגל, מצאתי טעות באתר „בואו נשחק”.
+
+פירוט: ${r.trim()||"לא הוזן פירוט"}
+עמוד: ${document.title}
+קישור: ${o}`:`Hi Sigal, I found an error on the Let's Play website.
+
+Details: ${r.trim()||"No details provided"}
+Page: ${document.title}
+Link: ${o}`,u=t?"דיווח על טעות באתר בואו נשחק":"Error report — Let's Play";window.location.href=`mailto:${N}?subject=${encodeURIComponent(u)}&body=${encodeURIComponent(p)}`,a(!1),s("")};return e.jsxs(j,{open:m,onOpenChange:a,children:[e.jsx(w,{asChild:!0,children:e.jsxs("button",{type:"button",className:"fixed bottom-24 left-3 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-coral/30 bg-white p-0 text-sm font-bold text-foreground shadow-lg transition hover:-translate-y-0.5 hover:border-coral/60 hover:shadow-xl sm:left-4 sm:w-auto sm:gap-2 sm:px-4 md:bottom-6 print:hidden","aria-label":t?"דווח על טעות":"Report an error",children:[e.jsx(i,{className:"h-4 w-4 text-coral"}),e.jsx("span",{className:"hidden sm:inline",children:t?"דווח על טעות":"Report an error"})]})}),e.jsxs(y,{dir:t?"rtl":"ltr",children:[e.jsxs($,{children:[e.jsx(v,{children:t?"מצאת טעות?":"Found an error?"}),e.jsx("p",{className:"mt-2 text-sm leading-6 text-muted-foreground",children:t?"כתבו לי בקצרה מה לא תקין. שם העמוד והקישור יצורפו לדיווח באופן אוטומטי.":"Briefly describe what is wrong. The page name and link will be added automatically."})]}),e.jsxs("div",{className:"space-y-2",children:[e.jsx(D,{htmlFor:"error-report-details",children:t?"מה הטעות?":"What is the error?"}),e.jsx(R,{id:"error-report-details",value:r,onChange:o=>s(o.target.value),placeholder:t?"לדוגמה: האיור בשלב 3 אינו מתאים להסבר...":"For example: the illustration in step 3 does not match...",rows:5,autoFocus:!0})]}),e.jsx(L,{children:e.jsxs(f,{type:"button",onClick:h,className:"w-full rounded-full",children:[e.jsx(i,{className:"h-4 w-4"}),t?"שליחת הדיווח באימייל":"Send report by email"]})})]})]})}export{B as ReportErrorButton};
