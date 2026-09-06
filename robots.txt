@@ -6,5 +6,11 @@ Disallow: /auth
 Disallow: /favorites
 Disallow: /child/
 Disallow: /shared/
+Disallow: /en/therapist/
+Disallow: /en/profile
+Disallow: /en/auth
+Disallow: /en/favorites
+Disallow: /en/child/
+Disallow: /en/shared/
 
-Sitemap: https://letsplayot.com/sitemap.xml
+Sitemap: https://www.letsplayot.com/sitemap.xml
