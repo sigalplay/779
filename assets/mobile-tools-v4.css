@@ -1,0 +1,38 @@
+/* Small, scoped additions for the current mobile home and the two new tools. */
+.daily-routine-shortcut,
+.school-holidays-shortcut {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-height: 2.5rem;
+  padding: .55rem 1rem;
+  border: 1px solid #ded4ca;
+  border-radius: 999px;
+  background: #fff;
+  color: #40362f;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.daily-routine-shortcut { margin: 0 auto 1.1rem; }
+.school-holidays-shortcut { background: #e7f3ec; border-color: #b9dac7; }
+
+@media screen and (max-width: 1024px) {
+  body.home-return-top main { scroll-margin-top: 5rem; }
+  .landing-home-logo { margin-top: .75rem !important; }
+}
+
+@media print {
+  .daily-routine-shortcut,
+  .school-holidays-shortcut { display: none !important; }
+
+  body.calendar-mobile-print,
+  body.calendar-mobile-print #root,
+  body.calendar-mobile-print .calendar-print-root,
+  body.calendar-mobile-print .calendar-print-pages,
+  body.calendar-mobile-print .hebrew-calendar-pages,
+  body.calendar-mobile-print .hebrew-calendar-sheet {
+    background: #fff !important;
+  }
+}
