@@ -83,16 +83,18 @@
   }
 
   .calendar-weekday {
+    position: relative !important;
     box-sizing: border-box !important;
     border: 0 !important;
-    border-left: 0.25mm solid #8a8179 !important;
+    border-left: 0.35mm solid #766e67 !important;
   }
 
   .calendar-day {
+    position: relative !important;
     box-sizing: border-box !important;
     border: 0 !important;
-    border-top: 0.25mm solid #8a8179 !important;
-    border-left: 0.25mm solid #8a8179 !important;
+    border-top: 0.35mm solid #766e67 !important;
+    border-left: 0.35mm solid #766e67 !important;
   }
 
   .calendar-weekday.calendar-col-6,
@@ -112,8 +114,8 @@
     left: 0 !important;
     z-index: 5 !important;
     display: block !important;
-    width: 0.25mm !important;
-    background: #8a8179 !important;
+    width: 0.45mm !important;
+    background: #766e67 !important;
     pointer-events: none !important;
   }
 
