@@ -60,6 +60,12 @@
     margin: 25.4mm 31.8mm;
   }
 
+  /* The first month starts on page 1; later months still start on new pages. */
+  .hebrew-calendar-pages > .hebrew-calendar-sheet:first-child {
+    break-before: auto !important;
+    page-break-before: auto !important;
+  }
+
   /* Draw every separator as the same overlay, without changing cell sizes. */
   .calendar-weekday::after,
   .calendar-day::before {
@@ -119,6 +125,15 @@
     box-sizing: border-box !important;
     border: 0 !important;
     background: #fff !important;
+  }
+
+  /* Desktop: use real 92% dimensions so Chrome does not rasterize away lines. */
+  body:not(.calendar-mobile-print) .calendar-grid {
+    width: 92% !important;
+    height: 162.84mm !important;
+    flex: 0 0 162.84mm !important;
+    margin-bottom: 0 !important;
+    transform: none !important;
   }
 
   body.calendar-mobile-print .calendar-grid {
