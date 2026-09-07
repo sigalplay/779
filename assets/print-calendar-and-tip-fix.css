@@ -77,48 +77,22 @@
     margin-left: auto !important;
     transform: scale(0.92) !important;
     transform-origin: top center !important;
-    gap: 0 !important;
-    border: 0.25mm solid #8a8179 !important;
-    background: #fff !important;
+    gap: 0.35mm !important;
+    border: 0.35mm solid #766e67 !important;
+    background: #766e67 !important;
   }
 
   .calendar-weekday {
     position: relative !important;
     box-sizing: border-box !important;
     border: 0 !important;
-    border-left: 0.35mm solid #766e67 !important;
   }
 
   .calendar-day {
     position: relative !important;
     box-sizing: border-box !important;
     border: 0 !important;
-    border-top: 0.35mm solid #766e67 !important;
-    border-left: 0.35mm solid #766e67 !important;
-  }
-
-  .calendar-weekday.calendar-col-6,
-  .calendar-day.calendar-col-6 {
-    border-left: 0 !important;
-  }
-
-  /* Reinforce the two separators that some print engines omit. */
-  .calendar-weekday.calendar-col-1::after,
-  .calendar-day.calendar-col-1::before,
-  .calendar-weekday.calendar-col-2::after,
-  .calendar-day.calendar-col-2::before,
-  .calendar-weekday.calendar-col-4::after,
-  .calendar-day.calendar-col-4::before {
-    content: "" !important;
-    position: absolute !important;
-    top: 0 !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    z-index: 5 !important;
-    display: block !important;
-    width: 0.45mm !important;
-    background: #766e67 !important;
-    pointer-events: none !important;
+    background: #fff !important;
   }
 
   body.calendar-mobile-print .calendar-grid {
