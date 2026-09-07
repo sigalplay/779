@@ -60,10 +60,36 @@
     margin: 25.4mm 31.8mm;
   }
 
-  /* Print the same grid seen on screen. No extra painted lines or gradients. */
+  /* Draw every separator as the same overlay, without changing cell sizes. */
   .calendar-weekday::after,
-  .calendar-day::before,
+  .calendar-day::before {
+    content: "" !important;
+    position: absolute !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    z-index: 4 !important;
+    display: block !important;
+    width: 0.35mm !important;
+    background: #766e67 !important;
+    pointer-events: none !important;
+  }
+
   .calendar-day::after {
+    content: "" !important;
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    left: 0 !important;
+    z-index: 4 !important;
+    display: block !important;
+    height: 0.35mm !important;
+    background: #766e67 !important;
+    pointer-events: none !important;
+  }
+
+  .calendar-weekday.calendar-col-6::after,
+  .calendar-day.calendar-col-6::before {
     display: none !important;
     content: none !important;
   }
@@ -77,9 +103,9 @@
     margin-left: auto !important;
     transform: scale(0.92) !important;
     transform-origin: top center !important;
-    gap: 0.35mm !important;
+    gap: 0 !important;
     border: 0.35mm solid #766e67 !important;
-    background: #766e67 !important;
+    background: #fff !important;
   }
 
   .calendar-weekday {
