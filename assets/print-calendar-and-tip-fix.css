@@ -1,0 +1,64 @@
+/* Keep the ideas heading neutral: only the lamp control stays yellow. */
+.ideas-for-you-heading {
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.difficulty-tip-popover {
+  padding-top: 2.75rem !important;
+}
+
+.difficulty-tip-close {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  z-index: 2;
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid #d8d0c8;
+  border-radius: 999px;
+  color: #4b4038;
+  background: #fff;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+@media print {
+  /* Print the same grid seen on screen. No extra painted lines or gradients. */
+  .calendar-weekday::after,
+  .calendar-day::before,
+  .calendar-day::after {
+    display: none !important;
+    content: none !important;
+  }
+
+  .calendar-grid {
+    gap: 0 !important;
+    border: 0.25mm solid #8a8179 !important;
+    background: #fff !important;
+  }
+
+  .calendar-weekday {
+    box-sizing: border-box !important;
+    border: 0 !important;
+    border-left: 0.25mm solid #8a8179 !important;
+  }
+
+  .calendar-day {
+    box-sizing: border-box !important;
+    border: 0 !important;
+    border-top: 0.25mm solid #8a8179 !important;
+    border-left: 0.25mm solid #8a8179 !important;
+  }
+
+  .calendar-weekday.calendar-col-6,
+  .calendar-day.calendar-col-6 {
+    border-left: 0 !important;
+  }
+}
