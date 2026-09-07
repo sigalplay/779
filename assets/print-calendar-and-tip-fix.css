@@ -105,6 +105,8 @@
   /* Reinforce the two separators that some print engines omit. */
   .calendar-weekday.calendar-col-1::after,
   .calendar-day.calendar-col-1::before,
+  .calendar-weekday.calendar-col-2::after,
+  .calendar-day.calendar-col-2::before,
   .calendar-weekday.calendar-col-4::after,
   .calendar-day.calendar-col-4::before {
     content: "" !important;
