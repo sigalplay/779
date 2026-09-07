@@ -30,6 +30,36 @@
 }
 
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 25.4mm 31.8mm;
+  }
+
+  @page family-calendar {
+    size: A4 portrait;
+    margin: 25.4mm 31.8mm;
+  }
+
+  @page activity-page {
+    size: A4 portrait;
+    margin: 25.4mm 31.8mm;
+  }
+
+  @page routine-page {
+    size: A4 portrait;
+    margin: 25.4mm 31.8mm;
+  }
+
+  @page social-story-full {
+    size: A4 portrait;
+    margin: 25.4mm 31.8mm;
+  }
+
+  @page weekly-landscape {
+    size: A4 landscape;
+    margin: 25.4mm 31.8mm;
+  }
+
   /* Print the same grid seen on screen. No extra painted lines or gradients. */
   .calendar-weekday::after,
   .calendar-day::before,
@@ -39,6 +69,14 @@
   }
 
   .calendar-grid {
+    width: 100% !important;
+    height: 177mm !important;
+    flex: 0 0 177mm !important;
+    margin-right: auto !important;
+    margin-bottom: -35.4mm !important;
+    margin-left: auto !important;
+    transform: scale(0.8) !important;
+    transform-origin: top center !important;
     gap: 0 !important;
     border: 0.25mm solid #8a8179 !important;
     background: #fff !important;
@@ -60,5 +98,36 @@
   .calendar-weekday.calendar-col-6,
   .calendar-day.calendar-col-6 {
     border-left: 0 !important;
+  }
+
+  body.calendar-mobile-print .calendar-grid {
+    width: 100% !important;
+    height: 165mm !important;
+    flex-basis: 165mm !important;
+    margin-bottom: -33mm !important;
+  }
+
+  .calendar-print-pages,
+  .hebrew-calendar-pages,
+  body.calendar-mobile-print .calendar-print-pages,
+  body.calendar-mobile-print .hebrew-calendar-pages {
+    width: 146.4mm !important;
+  }
+
+  .hebrew-calendar-sheet,
+  body.calendar-mobile-print .hebrew-calendar-sheet {
+    box-sizing: border-box !important;
+    width: 146.4mm !important;
+    height: 246.2mm !important;
+    margin: 0 !important;
+    padding-right: 6mm !important;
+    padding-left: 6mm !important;
+  }
+
+  .social-story-page {
+    box-sizing: border-box !important;
+    width: 146.4mm !important;
+    max-width: 146.4mm !important;
+    height: 246.2mm !important;
   }
 }
