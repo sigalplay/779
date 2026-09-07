@@ -18,19 +18,63 @@
     }
     if (!isHome) handledHomePath = null;
 
-    if (path === "/") addDailyRoutineShortcut();
+    if (path === "/") arrangeHomeTools();
     if (path.endsWith("/hebrew-calendar")) addHolidayShortcut();
   }
 
-  function addDailyRoutineShortcut() {
-    if (document.querySelector(".daily-routine-shortcut")) return;
-    const weekly = document.querySelector('a[href="/parent/weekly-board"]');
-    if (!weekly) return;
-    const link = document.createElement("a");
-    link.href = "/parent/daily-routine/";
-    link.className = "daily-routine-shortcut";
-    link.textContent = "✓ מחולל לוח התארגנות יומי";
-    weekly.parentElement?.parentElement?.insertAdjacentElement("beforebegin", link);
+  function directChild(container, element) {
+    let node = element;
+    while (node && node.parentElement !== container) node = node.parentElement;
+    return node;
+  }
+
+  function arrangeHomeTools() {
+    const order = [
+      "/parent/daily-routine/",
+      "/parent/morning-routine",
+      "/parent/evening-routine",
+      "/parent/weekly-board",
+      "/parent/social-stories",
+      "/parent/hebrew-calendar",
+      "/parent/experiments",
+      "/parent/recipes",
+      "/parent/cipher"
+    ];
+    const morning = document.querySelector('a[href="/parent/morning-routine"]');
+    if (!morning) return;
+
+    if (!document.querySelector('a[href="/parent/daily-routine/"]')) {
+      let wrapper = morning;
+      while (wrapper.parentElement && !wrapper.parentElement.classList.contains("grid")) wrapper = wrapper.parentElement;
+      const clone = wrapper.cloneNode(true);
+      const link = clone.matches("a") ? clone : clone.querySelector("a");
+      if (!link) return;
+      link.href = "/parent/daily-routine/";
+      link.querySelectorAll("img").forEach((img) => {
+        img.src = "/icon-bank/navigation-v2/daily-routine-checklist.webp";
+        img.alt = "מחולל לוח התארגנות יומי";
+      });
+      const walker = document.createTreeWalker(link, NodeFilter.SHOW_TEXT);
+      while (walker.nextNode()) {
+        walker.currentNode.nodeValue = walker.currentNode.nodeValue
+          .replace("לוח התארגנות בוקר", "לוח התארגנות יומי")
+          .replace("Morning Routine Board", "Daily Routine Board")
+          .replace("Morning routine", "Daily routine");
+      }
+      wrapper.parentElement?.appendChild(clone);
+    }
+
+    const anchors = order.map((href) => document.querySelector(`a[href="${href}"]`));
+    if (anchors.some((anchor) => !anchor)) return;
+    let grid = anchors[0].parentElement;
+    while (grid && (!grid.classList.contains("grid") || !anchors.every((anchor) => grid.contains(anchor)))) grid = grid.parentElement;
+    if (!grid || grid.dataset.dailyOrderDone === "1") return;
+    order.forEach((href) => {
+      const anchor = document.querySelector(`a[href="${href}"]`);
+      const tile = directChild(grid, anchor);
+      if (tile) grid.appendChild(tile);
+    });
+    grid.dataset.dailyOrderDone = "1";
   }
 
   function addHolidayShortcut() {
