@@ -73,9 +73,9 @@
     height: 177mm !important;
     flex: 0 0 177mm !important;
     margin-right: auto !important;
-    margin-bottom: -35.4mm !important;
+    margin-bottom: -14.16mm !important;
     margin-left: auto !important;
-    transform: scale(0.8) !important;
+    transform: scale(0.92) !important;
     transform-origin: top center !important;
     gap: 0 !important;
     border: 0.25mm solid #8a8179 !important;
@@ -100,11 +100,28 @@
     border-left: 0 !important;
   }
 
+  /* Reinforce the two separators that some print engines omit. */
+  .calendar-weekday.calendar-col-1::after,
+  .calendar-day.calendar-col-1::before,
+  .calendar-weekday.calendar-col-4::after,
+  .calendar-day.calendar-col-4::before {
+    content: "" !important;
+    position: absolute !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    z-index: 5 !important;
+    display: block !important;
+    width: 0.25mm !important;
+    background: #8a8179 !important;
+    pointer-events: none !important;
+  }
+
   body.calendar-mobile-print .calendar-grid {
     width: 100% !important;
     height: 165mm !important;
     flex-basis: 165mm !important;
-    margin-bottom: -33mm !important;
+    margin-bottom: -13.2mm !important;
   }
 
   .calendar-print-pages,
