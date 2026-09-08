@@ -78,7 +78,44 @@
   }
 
   .therapist-mobile-shortcuts a:first-child { background: #edf7f1; }
-  .therapist-mobile-shortcuts a:last-child { background: #f7e4ea; }
+  .therapist-mobile-shortcuts .shortcut-plans { background: #fff2c9; }
+  .therapist-mobile-shortcuts .shortcut-diary { background: #f7e4ea; }
+  .therapist-mobile-shortcuts .shortcut-trail { background: #e8eefb; }
+}
+
+.unified-menu-sections {
+  display: grid;
+  gap: 1.35rem;
+}
+
+.replaced-menu-section { display: none !important; }
+
+.unified-menu-sections section h2 {
+  margin: 0 0 .5rem;
+  color: #40362f;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.unified-menu-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .35rem .7rem;
+}
+
+.unified-menu-links a {
+  min-height: 2.5rem;
+  padding: .55rem .7rem;
+  border-radius: .8rem;
+  color: #40362f;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.unified-menu-links a:hover,
+.unified-menu-links a:focus-visible {
+  background: #edf7f1;
+  outline: 0;
 }
 
 @media screen and (max-width: 767px) {
@@ -95,6 +132,9 @@
     -webkit-overflow-scrolling: touch;
     padding-bottom: calc(7rem + env(safe-area-inset-bottom)) !important;
     touch-action: pan-y;
+    height: calc(100dvh - var(--mobile-menu-top, 72px)) !important;
+    background: #fff !important;
+    z-index: 90 !important;
   }
 
   #site-navigation-menu > div {
@@ -119,6 +159,10 @@
     font: inherit;
     font-weight: 800;
     box-shadow: 0 5px 16px rgba(63, 50, 40, .12);
+  }
+
+  .unified-menu-sections {
+    padding: .6rem 1rem 0;
   }
 }
 

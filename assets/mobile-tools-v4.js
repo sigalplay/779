@@ -20,41 +20,72 @@
 
     if (path === "/") arrangeHomeTools();
     if (path.endsWith("/hebrew-calendar")) addHolidayShortcut();
+    updateSearchPreview(path);
     installTherapistMenu();
-    installTherapistTopLinks();
+    installTherapistTopLinks(path);
     installMobileLanguageSwitch();
     installTherapistMobileShortcuts(path);
+    arrangeUnifiedMenu();
+  }
+
+  function updateSearchPreview(path) {
+    if (path !== "/") return;
+    const english = document.documentElement.lang === "en";
+    const title = english ? "Let's Play - Activities and Tools" : "בואו נשחק - פעילויות וכלים";
+    const description = english
+      ? "Activities, games and tools for home, preschool and the clinic."
+      : "פעילויות, משחקים וכלים - לבית, לגן ולקליניקה.";
+    if (document.title !== title) document.title = title;
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta && meta.content !== description) meta.content = description;
   }
 
   function installTherapistMobileShortcuts(path) {
     if (!path.startsWith("/therapist")) return;
     const main = document.querySelector("main");
-    if (!main || main.querySelector(".therapist-mobile-shortcuts")) return;
+    if (!main) return;
     const language = document.documentElement.lang;
+    const current = main.querySelector(".therapist-mobile-shortcuts");
+    if (current?.dataset.language === language) return;
+    current?.remove();
     const shortcuts = document.createElement("nav");
     shortcuts.className = "therapist-mobile-shortcuts";
+    shortcuts.dataset.language = language;
     shortcuts.setAttribute("aria-label", language === "en" ? "Therapist shortcuts" : "קיצורים למטפלים");
     shortcuts.innerHTML = `
       <a href="/therapist/build?tab=search">${language === "en" ? "Search" : "מנוע חיפוש"}</a>
-      <a href="/therapist/plans">${language === "en" ? "My saved plans" : "התכניות השמורות שלי"}</a>
-      <a href="/therapist/diary">${language === "en" ? "Diary" : "יומן"}</a>`;
+      <a class="shortcut-plans" href="/therapist/plans">${language === "en" ? "My saved plans" : "התכניות השמורות שלי"}</a>
+      <a class="shortcut-diary" href="/therapist/diary">${language === "en" ? "Diary" : "יומן"}</a>
+      <a class="shortcut-trail" href="/therapist/motor-trail">${language === "en" ? "Motor trail" : "מסלול מוטורי"}</a>`;
     main.prepend(shortcuts);
   }
 
-  function installTherapistTopLinks() {
+  function installTherapistTopLinks(path) {
     const trigger = document.querySelector('header a[href="/therapist/build"]');
     const nav = trigger?.parentElement;
-    if (!trigger || !nav || nav.querySelector(".therapist-top-link")) return;
+    if (!nav) return;
+    const existing = [...nav.querySelectorAll(".therapist-top-link")];
+    const parentLink = nav.querySelector('a[href="/parent/play"]');
+    if (parentLink) parentLink.hidden = path.startsWith("/therapist");
+    if (trigger) trigger.hidden = path.startsWith("/parent");
+    if (!trigger || !path.startsWith("/therapist")) {
+      existing.forEach((link) => link.remove());
+      return;
+    }
     const language = document.documentElement.lang;
+    if (existing.length === 3 && existing.every((link) => link.dataset.language === language)) return;
+    existing.forEach((link) => link.remove());
     const items = [
       ["/therapist/plans", language === "en" ? "My saved plans" : "התכניות השמורות שלי"],
-      ["/therapist/diary", language === "en" ? "Diary" : "יומן"]
+      ["/therapist/diary", language === "en" ? "Diary" : "יומן"],
+      ["/therapist/motor-trail", language === "en" ? "Motor trail" : "מסלול מוטורי"]
     ];
     let after = trigger;
     items.forEach(([href, label]) => {
       const link = trigger.cloneNode(false);
       link.href = href;
       link.textContent = label;
+      link.dataset.language = language;
       link.className = "therapist-top-link whitespace-nowrap rounded-full px-3 py-2 text-sm font-semibold transition text-muted-foreground hover:bg-muted hover:text-foreground";
       if (location.pathname === href) {
         link.classList.remove("text-muted-foreground", "hover:bg-muted", "hover:text-foreground");
@@ -83,33 +114,48 @@
     };
     updateLabel();
     button.addEventListener("click", () => {
-      const original = [...menu.querySelectorAll("button")].find((candidate) =>
-        candidate !== button && ["English", "עברית"].includes(candidate.textContent.trim())
-      );
-      original?.click();
-      setTimeout(updateLabel, 0);
+      const nextLanguage = document.documentElement.lang === "en" ? "he" : "en";
+      try { localStorage.setItem("boo_nesahek_language", nextLanguage); } catch (_) {}
+      document.documentElement.lang = nextLanguage;
+      document.documentElement.dir = nextLanguage === "he" ? "rtl" : "ltr";
+      window.dispatchEvent(new Event("boo_language_change"));
+      setTimeout(() => {
+        updateLabel();
+        arrangeUnifiedMenu();
+        updatePathEnhancements();
+      }, 0);
     });
     menu.prepend(button);
   }
 
   function installTherapistMenu() {
     const trigger = document.querySelector('header a[href="/therapist/build"]');
-    if (!trigger || trigger.dataset.quickMenuReady === "1") return;
-    trigger.dataset.quickMenuReady = "1";
-    trigger.setAttribute("aria-haspopup", "menu");
-    trigger.setAttribute("aria-expanded", "false");
+    if (!trigger) return;
+    const language = document.documentElement.lang;
+    if (trigger.dataset.quickMenuReady !== "1") {
+      trigger.dataset.quickMenuReady = "1";
+      trigger.setAttribute("aria-haspopup", "menu");
+      trigger.setAttribute("aria-expanded", "false");
+    }
 
     let menu = document.querySelector(".therapist-quick-menu");
     if (!menu) {
       menu = document.createElement("nav");
       menu.className = "therapist-quick-menu";
       menu.setAttribute("aria-label", "כלים למטפלים");
-      menu.innerHTML = `
-        <a href="/therapist/build?tab=search">מנוע חיפוש</a>
-        <a href="/therapist/plans">התכניות השמורות שלי</a>
-        <a href="/therapist/diary">יומן</a>`;
       document.body.appendChild(menu);
     }
+    if (menu.dataset.language !== language) {
+      menu.dataset.language = language;
+      menu.innerHTML = `
+        <a href="/therapist/build?tab=search">${language === "en" ? "Search" : "מנוע חיפוש"}</a>
+        <a href="/therapist/plans">${language === "en" ? "My saved plans" : "התכניות השמורות שלי"}</a>
+        <a href="/therapist/diary">${language === "en" ? "Diary" : "יומן"}</a>
+        <a href="/therapist/motor-trail">${language === "en" ? "Motor trail" : "מסלול מוטורי"}</a>`;
+    }
+
+    if (trigger.dataset.quickMenuListeners === "1") return;
+    trigger.dataset.quickMenuListeners = "1";
 
     const close = () => {
       menu.dataset.open = "false";
@@ -137,6 +183,76 @@
     });
     window.addEventListener("resize", () => menu.dataset.open === "true" && position());
     window.addEventListener("scroll", () => menu.dataset.open === "true" && position(), { passive: true });
+  }
+
+  function arrangeUnifiedMenu() {
+    const menu = document.getElementById("site-navigation-menu");
+    if (!menu) return;
+    const language = document.documentElement.lang;
+    const english = language === "en";
+    const sections = [...menu.querySelectorAll(":scope section")];
+    if (!sections.length) return;
+    sections.forEach((section) => {
+      const heading = section.querySelector("h2");
+      if (!heading) return;
+      const text = heading.textContent.trim();
+      if (["כלים להורים", "כלים למטפלים", "Tools for parents", "Tools for therapists"].includes(text)) {
+        section.hidden = true;
+        section.classList.add("replaced-menu-section");
+      }
+    });
+    let unified = menu.querySelector(".unified-menu-sections");
+    if (unified) {
+      if (unified.dataset.language === language) return;
+      unified.remove();
+    }
+    unified = document.createElement("div");
+    unified.className = "unified-menu-sections";
+    unified.dataset.language = language;
+    const groups = [
+      [english ? "Parents" : "הורים", [
+        ["/parent/play", english ? "What shall we play today?" : "במה נשחק היום?"],
+        ["/parent/all", english ? "All activities" : "כל הפעילויות"]
+      ]],
+      [english ? "Therapists" : "מטפלים", [
+        ["/therapist/build?tab=search", english ? "Build a therapy session" : "בניית מפגש טיפולי"],
+        ["/therapist/diary", english ? "Therapist diary" : "יומן מטפל"],
+        ["/therapist/plans", english ? "My saved plans" : "התכניות השמורות שלי"],
+        ["/therapist/motor-trail", english ? "Motor trail" : "מסלול מוטורי"]
+      ]],
+      [english ? "More tools" : "כלים נוספים", [
+        ["/parent/daily-routine/", english ? "Daily routine board" : "לוח התארגנות יומי"],
+        ["/parent/morning-routine", english ? "Morning routine board" : "לוח התארגנות בוקר"],
+        ["/parent/evening-routine", english ? "Evening routine board" : "לוח התארגנות ערב"],
+        ["/parent/weekly-board", english ? "Weekly routine board" : "לוח התארגנות שבועי"],
+        ["/parent/social-stories", english ? "Social stories" : "סיפורים חברתיים"],
+        ["/parent/hebrew-calendar", english ? "Create a calendar" : "יצירת לוח שנה"],
+        ["/parent/cipher", english ? "Secret-code generator" : "מחולל כתב סתרים"],
+        ["/parent/recipes", english ? "Recipes" : "מתכונים"],
+        ["/parent/experiments", english ? "Experiments" : "ניסויים"],
+        ["/parent/board-games", english ? "Board games" : "משחקי קופסה"]
+      ]]
+    ];
+    groups.forEach(([title, links]) => {
+      const section = document.createElement("section");
+      const heading = document.createElement("h2");
+      heading.textContent = title;
+      const grid = document.createElement("div");
+      grid.className = "unified-menu-links";
+      links.forEach(([href, label]) => {
+        const link = document.createElement("a");
+        link.href = href;
+        link.textContent = label;
+        grid.appendChild(link);
+      });
+      section.append(heading, grid);
+      unified.appendChild(section);
+    });
+    const accountSection = sections.find((section) => {
+      const text = section.querySelector("h2")?.textContent.trim();
+      return text === "החשבון והאתר" || text === "Account and website";
+    });
+    (accountSection || sections[0]).insertAdjacentElement("beforebegin", unified);
   }
 
   function directChild(container, element) {

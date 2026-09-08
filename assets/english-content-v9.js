@@ -71,7 +71,82 @@
     "לבישת פיג׳מה": "Put on pyjamas",
     "סיפור לפני השינה": "Bedtime story",
     "שינה": "Sleep",
-    "© בואו נשחק — לשימוש אישי בלבד. המידע והפעילויות אינם מהווים תחליף לייעוץ, אבחון או טיפול מקצועי.": "© Let's Play — for personal use only. The information and activities are not a substitute for professional advice, assessment, or treatment."
+    "© בואו נשחק — לשימוש אישי בלבד. המידע והפעילויות אינם מהווים תחליף לייעוץ, אבחון או טיפול מקצועי.": "© Let's Play — for personal use only. The information and activities are not a substitute for professional advice, assessment, or treatment.",
+    "מסלול מוטורי": "Motor Trail",
+    "כלי יצירה": "Creative Tool",
+    "לוחצים על המתקנים מהבנק בסדר הרצוי לבניית המסלול - ומקבלים רשימה ממוספרת מוכנה להדפסה.": "Choose equipment from the bank in the order you want to build a motor trail and get a numbered list ready to print.",
+    "ניתן ללחוץ על סימן המשולש כדי לראות כיצד להשתמש במתקן.": "Select the triangle icon to see how to use each piece of equipment.",
+    "בנק מתקנים": "Equipment Bank",
+    "ארכיון מתקנים": "Equipment Archive",
+    "לוחצים על מתקן כדי להוסיף אותו למסלול, בסדר שרוצים.": "Select a piece of equipment to add it to the trail in the order you want.",
+    "ציוד בקליניקה": "Clinic Equipment",
+    "🏠 מה יש לנו בבית?": "🏠 What do we have at home?",
+    "כל המתקנים נוספו למסלול 🎉": "All equipment has been added to the trail 🎉",
+    "הוסף אביזר יצירה": "Add a Creative Item",
+    "המסלול שלנו": "Our Motor Trail",
+    "איפוס": "Reset",
+    "בחרו מתקנים מהבנק בצד כדי לבנות את המסלול.": "Choose equipment from the bank to build your motor trail.",
+    "איך עושים?": "How do I do it?",
+    "איך משתמשים ב": "How to use ",
+    "הפעלה": "Play",
+    "עצירה": "Pause",
+    "הזז למעלה": "Move up",
+    "הזז למטה": "Move down",
+    "הסרה": "Remove",
+    "התחל מסלול": "Start Trail",
+    "חזרה לעריכה": "Back to Editing",
+    "בהצלחה! עוברים תחנה אחרי תחנה, בסדר.": "Great! Move through the stations one at a time, in order.",
+    "הוסף לתכנית הטיפול": "Add to Treatment Plan",
+    "עדכון המסלול בתוכנית": "Update Trail in Treatment Plan",
+    "הדפסה / שמירה כ-PDF": "Print / Save as PDF",
+    "הוספת אביזר יצירה למסלול": "Add a Creative Item to the Trail",
+    "בוחרים תחנת יצירה לסיום המסלול, מתוך מאגר התמונות של האתר.": "Choose a creative station from the site's image bank to finish the trail.",
+    "כאן נשמרים המתקנים שהוסרת מבנק הקליניקה. אפשר להחזיר אותם למאגר בכל שלב.": "Equipment removed from the clinic bank is stored here. You can return it at any time.",
+    "החזרה למאגר": "Return to Bank",
+    "החזרת כל המתקנים למאגר": "Return All Equipment",
+    "הארכיון ריק": "The Archive is Empty",
+    "מתקנים שתסירי מבנק הקליניקה יופיעו כאן.": "Equipment removed from the clinic bank will appear here.",
+    "נדנדה": "Swing",
+    "מתיישבים במרכז הנדנדה ונשארים יציבים": "Sit in the centre of the swing and keep your body steady.",
+    "צלחת וסטיבולרית": "Vestibular Disc Swing",
+    "נכנסים לצלחת, מתיישבים בתוכה ומסתובבים בישיבה": "Climb into the disc, sit inside it and spin while seated.",
+    "צלחת שיווי משקל": "Balance Board",
+    "עולים על הצלחת בשתי רגליים ושומרים על שיווי משקל": "Stand on the board with both feet and keep your balance.",
+    "ערסל": "Hammock",
+    "מחזיקים בצדדים, נכנסים ומתיישבים בתוך הערסל": "Hold the sides, climb in and sit inside the hammock.",
+    "טרמפולינה": "Trampoline",
+    "קופצים ונוחתים בשתי רגליים במרכז הטרמפולינה": "Jump and land with both feet in the centre of the trampoline.",
+    "מנהרה": "Tunnel",
+    "זוחלים על הידיים והברכיים ועוברים דרך המנהרה": "Crawl on hands and knees through the tunnel.",
+    "אבנים": "Stepping Stones",
+    "דורכים על האבנים אחת אחרי השנייה": "Step on the stones one after another.",
+    "חבית קשיחה": "Rigid Barrel",
+    "מחזיקים בשפת החבית, מכניסים רגל אחת ונעמדים בתוכה": "Hold the rim, place one foot inside and stand in the barrel.",
+    "סולם": "Ladder",
+    "מחזיקים בשלבים ומטפסים שלב אחר שלב": "Hold the rungs and climb one step at a time.",
+    "קביים": "Stilts",
+    "עומדים על הקביים, מותחים את החבלים ומתקדמים בצעדים קטנים": "Stand on the stilts, pull the ropes tight and take small steps.",
+    "כדור פיזיו": "Physio Ball",
+    "נשכבים על הבטן ומתקדמים קדימה בעזרת הידיים": "Lie on your tummy and move forwards using your hands.",
+    "כדור קטן": "Small Ball",
+    "מחזיקים בשתי ידיים, זורקים בעדינות ותופסים": "Hold with both hands, throw gently and catch.",
+    "סקוטר": "Scooter Board",
+    "שוכבים על הבטן במרכז הסקוטר ומתקדמים בדחיפת הרצפה בשתי הידיים": "Lie on your tummy in the centre of the scooter board and push along the floor with both hands.",
+    "חישוקים": "Hoops",
+    "קופצים בשתי רגליים מחישוק לחישוק": "Jump with both feet from one hoop to the next.",
+    "טושים": "Markers",
+    "מדבקות": "Stickers",
+    "דבק": "Glue",
+    "מספריים": "Scissors",
+    "דפי צבע": "Coloured Paper",
+    "כרית": "Pillow",
+    "בקבוק": "Bottle",
+    "כיסא": "Chair",
+    "שמיכה": "Blanket",
+    "קופסת קרטון": "Cardboard Box",
+    "כרית ספה": "Couch Cushion",
+    "מטאטא": "Broom",
+    "חבל או סרט": "Rope or Ribbon"
   };
 
   function isEnglish() {
@@ -85,7 +160,10 @@
     const trimmed = text.trim();
     if (!trimmed) return text;
     if (translations[trimmed]) return text.replace(trimmed, translations[trimmed]);
-    if (trimmed.indexOf("סימון ") === 0) return "Mark " + translateText(trimmed.slice(6));
+    if (trimmed.indexOf("סימון ") === 0) return "Mark " + translateText(trimmed.slice("סימון ".length));
+    if (trimmed.indexOf("הדגמת ") === 0) return "Show how to use " + translateText(trimmed.slice("הדגמת ".length));
+    if (trimmed.indexOf("מחיקת ") === 0) return "Remove " + translateText(trimmed.slice("מחיקת ".length)).replace(" מהמאגר", " from the bank");
+    if (trimmed.indexOf("איך משתמשים ב") === 0) return "How to use " + translateText(trimmed.slice("איך משתמשים ב".length));
     if (trimmed === "העברה למעלה") return "Move up";
     if (trimmed === "העברה למטה") return "Move down";
     if (trimmed === "מחיקה") return "Delete";
@@ -114,17 +192,32 @@
   }
 
   function start() {
+    let lastLanguage = isEnglish() ? "en" : "he";
     translate(document.body);
+    window.addEventListener("boo_language_change", function () {
+      const nextLanguage = isEnglish() ? "en" : "he";
+      if (lastLanguage === "en" && nextLanguage === "he") {
+        window.location.reload();
+        return;
+      }
+      lastLanguage = nextLanguage;
+      if (nextLanguage === "en") translate(document.body);
+    });
     const observer = new MutationObserver(function (mutations) {
       if (!isEnglish()) return;
       mutations.forEach(function (mutation) {
+        if (mutation.type === "characterData") {
+          const translated = translateText(mutation.target.nodeValue);
+          if (translated !== mutation.target.nodeValue) mutation.target.nodeValue = translated;
+          return;
+        }
         mutation.addedNodes.forEach(function (node) {
           if (node.nodeType === 1) translate(node);
           else if (node.nodeType === 3) node.nodeValue = translateText(node.nodeValue);
         });
       });
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, { childList: true, characterData: true, subtree: true });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
