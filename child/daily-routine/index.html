@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>לוח התארגנות יומי — בואו נשחק</title>
+  <link rel="icon" href="/favicon.png"><link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--cream:#fbf7f0;--ink:#40362f;--sage:#b7dec8;--pink:#f7e4ea;--line:#ded4ca}*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:Rubik,Arial,sans-serif}main{width:min(620px,92%);margin:0 auto;padding:22px 0 50px}.head{text-align:center}.logo{width:76px;margin:auto}.head h1{margin:8px 0 5px;font-size:clamp(1.8rem,8vw,2.5rem)}.hint{margin:0 0 20px;color:#756a62}.list{display:grid;gap:12px}.task{display:grid;grid-template-columns:46px 76px 1fr;align-items:center;gap:12px;width:100%;min-height:94px;padding:10px;border:1px solid var(--line);border-radius:22px;background:#fff;color:inherit;font:inherit;text-align:right;box-shadow:0 5px 16px #493b2d0b;cursor:pointer}.task img{width:72px;height:72px;border-radius:15px;object-fit:contain}.box{width:35px;height:35px;border:3px solid #5e554e;border-radius:9px}.task strong{font-size:1.12rem}.task.done{opacity:.55;background:#eef8f2}.task.done .box{border-color:#79b596;background:var(--sage);box-shadow:inset 0 0 0 6px #fff}.task.done strong{text-decoration:line-through}.finish{display:none;margin-top:24px;padding:24px;border-radius:25px;background:var(--pink);text-align:center;font-size:1.35rem;font-weight:800}.reset{display:block;margin:20px auto 0;border:0;border-radius:999px;background:var(--sage);padding:11px 18px;color:inherit;font:inherit;font-weight:800;cursor:pointer}.create-link{display:block;margin-top:24px;border:1px solid #e7c9d3;border-radius:18px;background:var(--pink);padding:13px 16px;color:inherit;text-align:center;text-decoration:none;font-weight:800}.error{padding:30px;border:2px dashed var(--line);border-radius:24px;text-align:center;color:#756a62}@media(max-width:420px){.task{grid-template-columns:38px 64px 1fr;gap:9px}.task img{width:60px;height:60px}.box{width:31px;height:31px}.task strong{font-size:1rem}}
+  </style>
+</head>
+<body><main><div class="head"><img class="logo" src="/boo-nesahek-logo.png" alt="בואו נשחק"><h1 id="title">לוח התארגנות יומי</h1><p class="hint">סיימתם משימה? לחצו עליה כדי לסמן ✓</p></div><div id="list" class="list"></div><div id="finish" class="finish">כל הכבוד! סיימתם את כל המשימות 🌟</div><button id="reset" class="reset">התחלה מחדש</button><a class="create-link" href="/">צור לוח משלך — בואו נשחק</a></main>
+<script>
+const base='/icon-bank/weekly-board-kids/';
+function decodeBoard(value){try{value=value.replace(/-/g,'+').replace(/_/g,'/');while(value.length%4)value+='=';return JSON.parse(decodeURIComponent(escape(atob(value))))}catch{return[]}}
+const q=new URLSearchParams(location.search),items=decodeBoard(q.get('d')||'');title.textContent=q.get('t')||'לוח התארגנות יומי';
+function draw(){list.innerHTML='';if(!items.length){list.innerHTML='<div class="error">הקישור אינו מכיל משימות. בקשו קישור חדש ללוח.</div>';reset.style.display='none';return}items.forEach(([img,label],i)=>{const b=document.createElement('button');b.className='task';b.type='button';b.innerHTML=`<span class="box" aria-hidden="true"></span><img src="${base+img}" alt=""><strong>${label}</strong>`;b.setAttribute('aria-label',`סימון ${label}`);b.onclick=()=>{b.classList.toggle('done');b.setAttribute('aria-pressed',b.classList.contains('done'));finish.style.display=[...list.children].every(x=>x.classList.contains('done'))?'block':'none'};list.append(b)})}
+reset.onclick=()=>{[...list.children].forEach(x=>{x.classList.remove('done');x.setAttribute('aria-pressed','false')});finish.style.display='none'};draw();
+</script><script defer src="/assets/english-content-v9.js"></script></body></html>
