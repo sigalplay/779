@@ -233,8 +233,9 @@
         ["/parent/board-games", english ? "Board games" : "משחקי קופסה"]
       ]]
     ];
-    groups.forEach(([title, links]) => {
+    groups.forEach(([title, links], groupIndex) => {
       const section = document.createElement("section");
+      section.className = ["menu-parents", "menu-therapists", "menu-more-tools"][groupIndex];
       const heading = document.createElement("h2");
       heading.textContent = title;
       const grid = document.createElement("div");
@@ -252,6 +253,7 @@
       const text = section.querySelector("h2")?.textContent.trim();
       return text === "החשבון והאתר" || text === "Account and website";
     });
+    accountSection?.classList.add("menu-account-section");
     (accountSection || sections[0]).insertAdjacentElement("beforebegin", unified);
   }
 
