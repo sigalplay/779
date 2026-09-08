@@ -21,6 +21,7 @@
     if (path === "/") arrangeHomeTools();
     if (path.endsWith("/hebrew-calendar")) addHolidayShortcut();
     installTherapistMenu();
+    installTherapistTopLinks();
     installMobileLanguageSwitch();
     installTherapistMobileShortcuts(path);
   }
@@ -35,8 +36,36 @@
     shortcuts.setAttribute("aria-label", language === "en" ? "Therapist shortcuts" : "קיצורים למטפלים");
     shortcuts.innerHTML = `
       <a href="/therapist/build?tab=search">${language === "en" ? "Search" : "מנוע חיפוש"}</a>
+      <a href="/therapist/plans">${language === "en" ? "My saved plans" : "התכניות השמורות שלי"}</a>
       <a href="/therapist/diary">${language === "en" ? "Diary" : "יומן"}</a>`;
     main.prepend(shortcuts);
+  }
+
+  function installTherapistTopLinks() {
+    const trigger = document.querySelector('header a[href="/therapist/build"]');
+    const nav = trigger?.parentElement;
+    if (!trigger || !nav || nav.querySelector(".therapist-top-link")) return;
+    const language = document.documentElement.lang;
+    const items = [
+      ["/therapist/plans", language === "en" ? "My saved plans" : "התכניות השמורות שלי"],
+      ["/therapist/diary", language === "en" ? "Diary" : "יומן"]
+    ];
+    let after = trigger;
+    items.forEach(([href, label]) => {
+      const link = trigger.cloneNode(false);
+      link.href = href;
+      link.textContent = label;
+      link.className = "therapist-top-link whitespace-nowrap rounded-full px-3 py-2 text-sm font-semibold transition text-muted-foreground hover:bg-muted hover:text-foreground";
+      if (location.pathname === href) {
+        link.classList.remove("text-muted-foreground", "hover:bg-muted", "hover:text-foreground");
+        link.classList.add("bg-primary", "text-primary-foreground");
+      }
+      link.removeAttribute("aria-haspopup");
+      link.removeAttribute("aria-expanded");
+      delete link.dataset.quickMenuReady;
+      after.insertAdjacentElement("afterend", link);
+      after = link;
+    });
   }
 
   function installMobileLanguageSwitch() {
