@@ -28,12 +28,12 @@
     const style = document.createElement("style");
     style.dataset.standardPrintMargins = "true";
     style.textContent = `@media print {
-      @page { size: A4 portrait; margin: 25.4mm 31.8mm; }
-      @page family-calendar { size: A4 portrait; margin: 25.4mm 31.8mm; }
-      @page activity-page { size: A4 portrait; margin: 25.4mm 31.8mm; }
-      @page routine-page { size: A4 portrait; margin: 25.4mm 31.8mm; }
-      @page social-story-full { size: A4 portrait; margin: 25.4mm 31.8mm; }
-      @page weekly-landscape { size: A4 landscape; margin: 25.4mm 31.8mm; }
+      @page { size: A4 portrait; margin: 12mm; }
+      @page family-calendar { size: A4 portrait; margin: 12mm; }
+      @page activity-page { size: A4 portrait; margin: 12mm; }
+      @page routine-page { size: A4 portrait; margin: 12mm; }
+      @page social-story-full { size: A4 portrait; margin: 12mm; }
+      @page weekly-landscape { size: A4 landscape; margin: 12mm; }
     }`;
     document.head.appendChild(style);
   };

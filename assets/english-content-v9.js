@@ -147,6 +147,28 @@
     "כרית ספה": "Couch Cushion",
     "מטאטא": "Broom",
     "חבל או סרט": "Rope or Ribbon"
+    ,"גיל 6–12 חודשים": "Ages 6–12 months"
+    ,"Ages 6–12 חודשים": "Ages 6–12 months"
+    ,"מסלול שקיות תחושה": "Sensory Bag Path"
+    ,"מכינים שקיות תחושה במרקמים ובצבעים שונים, מקבעים אותן היטב לרצפה ומאפשרים לתינוק לגעת, ללחוץ, לזחול ולעבור ביניהן.": "Make sensory bags with different textures and colours, secure them firmly to the floor, and let the baby touch, press, crawl and move between them."
+    ,"שקיות זיפלוק": "Zip-top Bags"
+    ,"סלוטייפ רחב": "Wide Tape"
+    ,"מבוגר ממלא כל שקית, מוציא ממנה ככל האפשר את האוויר, סוגר היטב, מחזק את הפתח בסלוטייפ ומדביק את כל ארבעת צדי השקית לרצפה.": "An adult fills each bag, removes as much air as possible, seals it firmly, reinforces the opening with tape, and tapes all four sides to the floor."
+    ,"ממלאים שקית בפונפונים ובמים.": "Fill a bag with pom-poms and water."
+    ,"ממלאים שקית בצבעי גואש.": "Fill a bag with gouache paint."
+    ,"ממלאים שקית במים עם נצנצים או פאייטים.": "Fill a bag with water and glitter or sequins."
+    ,"ממלאים שקית במים כחולים ומוסיפים חיות ים קטנות.": "Fill a bag with blue water and add small sea animals."
+    ,"ממלאים שקית במים, שמן וצבע מאכל.": "Fill a bag with water, oil and food colouring."
+    ,"ממלאים שקית בעדשים ובאורז, מחביאים בתוכה מדבקות ומחפשים אותן דרך השקית.": "Fill a bag with lentils and rice, hide stickers inside, and find them through the bag."
+    ,"חקירה חושית": "Sensory exploration"
+    ,"חיזוק חגורת כתפיים": "Shoulder-girdle strength"
+    ,"חציית קו האמצע": "Crossing the midline"
+    ,"תיאום עין–יד": "Hand–eye coordination"
+    ,"עידוד זחילה ותנועה במרחב": "Encouraging crawling and movement"
+    ,"לתינוק שעדיין אינו זוחל מציגים בכל פעם שקית אחת בזמן שכיבה על הבטן. לתינוק שמתחיל לזחול מסדרים את השקיות ברצף ומעודדים מעבר ביניהן.": "For a baby who is not yet crawling, offer one bag at a time during tummy time. For a baby who is beginning to crawl, arrange the bags in a row and encourage moving between them."
+    ,"אפשר להניח צעצוע אהוב מעבר לשקית ולעודד הושטת יד, חציית קו האמצע או זחילה לכיוונו.": "Place a favourite toy beyond a bag to encourage reaching, crossing the midline, or crawling towards it."
+    ,"הפעילות מתקיימת בהשגחת מבוגר בלבד. משתמשים בשקיות עבות, סוגרים ומחזקים אותן היטב, בודקים לפני כל שימוש שאין נזילה או קרע ולא מאפשרים לתינוק להכניס את השקית לפה.": "Adult supervision is required. Use strong bags, seal and reinforce them carefully, check for leaks or tears before every use, and do not let the baby put a bag in their mouth."
+    ,"בטיחות:": "Safety:"
   };
 
   function isEnglish() {

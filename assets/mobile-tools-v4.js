@@ -26,6 +26,15 @@
     installMobileLanguageSwitch();
     installTherapistMobileShortcuts(path);
     arrangeUnifiedMenu();
+    formatInfantAgeLabels();
+  }
+
+  function formatInfantAgeLabels() {
+    document.querySelectorAll("span").forEach((span) => {
+      const text = span.textContent.replace(/\s+/g, " ").trim();
+      if (text === "גיל 0.5–1") span.textContent = "גיל 6 חודשים–שנה";
+      if (text === "Ages 0.5–1") span.textContent = "Ages 6–12 months";
+    });
   }
 
   function updateSearchPreview(path) {

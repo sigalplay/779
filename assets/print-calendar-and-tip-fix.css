@@ -32,32 +32,32 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin: 25.4mm 31.8mm;
+    margin: 12mm;
   }
 
   @page family-calendar {
     size: A4 portrait;
-    margin: 25.4mm 31.8mm;
+    margin: 12mm;
   }
 
   @page activity-page {
     size: A4 portrait;
-    margin: 25.4mm 31.8mm;
+    margin: 12mm;
   }
 
   @page routine-page {
     size: A4 portrait;
-    margin: 25.4mm 31.8mm;
+    margin: 12mm;
   }
 
   @page social-story-full {
     size: A4 portrait;
-    margin: 25.4mm 31.8mm;
+    margin: 12mm;
   }
 
   @page weekly-landscape {
     size: A4 landscape;
-    margin: 25.4mm 31.8mm;
+    margin: 12mm;
   }
 
   /* The first month starts on page 1; later months still start on new pages. */
