@@ -18,6 +18,33 @@
 .daily-routine-shortcut { margin: 0 auto 1.1rem; }
 .school-holidays-shortcut { background: #e7f3ec; border-color: #b9dac7; }
 
+.therapist-quick-menu {
+  position: fixed;
+  z-index: 100;
+  display: none;
+  width: 230px;
+  overflow: hidden;
+  border: 1px solid #ded4ca;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 14px 38px rgba(63, 50, 40, .18);
+}
+
+.therapist-quick-menu[data-open="true"] { display: grid; }
+
+.therapist-quick-menu a {
+  padding: .85rem 1rem;
+  border-bottom: 1px solid #eee7df;
+  color: #40362f;
+  font-weight: 700;
+  text-align: right;
+  text-decoration: none;
+}
+
+.therapist-quick-menu a:last-child { border-bottom: 0; }
+.therapist-quick-menu a:hover,
+.therapist-quick-menu a:focus-visible { background: #edf7f1; outline: 0; }
+
 @media screen and (max-width: 1024px) {
   body.home-return-top main { scroll-margin-top: 5rem; }
   .landing-home-logo { margin-top: .75rem !important; }

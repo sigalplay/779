@@ -20,6 +20,54 @@
 
     if (path === "/") arrangeHomeTools();
     if (path.endsWith("/hebrew-calendar")) addHolidayShortcut();
+    installTherapistMenu();
+  }
+
+  function installTherapistMenu() {
+    const trigger = document.querySelector('header a[href="/therapist/build"]');
+    if (!trigger || trigger.dataset.quickMenuReady === "1") return;
+    trigger.dataset.quickMenuReady = "1";
+    trigger.setAttribute("aria-haspopup", "menu");
+    trigger.setAttribute("aria-expanded", "false");
+
+    let menu = document.querySelector(".therapist-quick-menu");
+    if (!menu) {
+      menu = document.createElement("nav");
+      menu.className = "therapist-quick-menu";
+      menu.setAttribute("aria-label", "כלים למטפלים");
+      menu.innerHTML = `
+        <a href="/therapist/build?tab=search">מנוע חיפוש</a>
+        <a href="/therapist/plans">התכניות השמורות שלי</a>
+        <a href="/therapist/diary">יומן</a>`;
+      document.body.appendChild(menu);
+    }
+
+    const close = () => {
+      menu.dataset.open = "false";
+      trigger.setAttribute("aria-expanded", "false");
+    };
+    const position = () => {
+      const rect = trigger.getBoundingClientRect();
+      const width = 230;
+      menu.style.top = `${rect.bottom + 8}px`;
+      menu.style.left = `${Math.max(10, Math.min(innerWidth - width - 10, rect.left + rect.width - width))}px`;
+    };
+    trigger.addEventListener("click", (event) => {
+      event.preventDefault();
+      const opening = menu.dataset.open !== "true";
+      if (opening) position();
+      menu.dataset.open = opening ? "true" : "false";
+      trigger.setAttribute("aria-expanded", opening ? "true" : "false");
+    });
+    menu.addEventListener("click", close);
+    document.addEventListener("click", (event) => {
+      if (!trigger.contains(event.target) && !menu.contains(event.target)) close();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") close();
+    });
+    window.addEventListener("resize", () => menu.dataset.open === "true" && position());
+    window.addEventListener("scroll", () => menu.dataset.open === "true" && position(), { passive: true });
   }
 
   function directChild(container, element) {
