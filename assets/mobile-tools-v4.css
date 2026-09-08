@@ -45,9 +45,81 @@
 .therapist-quick-menu a:hover,
 .therapist-quick-menu a:focus-visible { background: #edf7f1; outline: 0; }
 
+.therapist-mobile-shortcuts {
+  display: none;
+}
+
 @media screen and (max-width: 1024px) {
   body.home-return-top main { scroll-margin-top: 5rem; }
   .landing-home-logo { margin-top: .75rem !important; }
+
+  .therapist-mobile-shortcuts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .6rem;
+    margin: 0 0 1rem;
+    padding: .55rem;
+    border: 1px solid #ded4ca;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 5px 16px rgba(63, 50, 40, .08);
+  }
+
+  .therapist-mobile-shortcuts a {
+    display: flex;
+    min-height: 46px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    color: #40362f;
+    font-weight: 800;
+    text-align: center;
+    text-decoration: none;
+  }
+
+  .therapist-mobile-shortcuts a:first-child { background: #edf7f1; }
+  .therapist-mobile-shortcuts a:last-child { background: #f7e4ea; }
+}
+
+@media screen and (max-width: 767px) {
+  #site-navigation-menu {
+    position: fixed !important;
+    top: var(--mobile-menu-top, 72px) !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    max-height: none !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(7rem + env(safe-area-inset-bottom)) !important;
+    touch-action: pan-y;
+  }
+
+  #site-navigation-menu > div {
+    padding-top: .75rem !important;
+    padding-bottom: 2rem !important;
+  }
+
+  .mobile-language-switch {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(100% - 2rem);
+    min-height: 46px;
+    margin: .75rem auto .25rem;
+    border: 2px solid #9fd6ba;
+    border-radius: 999px;
+    background: #fff;
+    color: #40362f;
+    font: inherit;
+    font-weight: 800;
+    box-shadow: 0 5px 16px rgba(63, 50, 40, .12);
+  }
 }
 
 @media print {

@@ -21,6 +21,46 @@
     if (path === "/") arrangeHomeTools();
     if (path.endsWith("/hebrew-calendar")) addHolidayShortcut();
     installTherapistMenu();
+    installMobileLanguageSwitch();
+    installTherapistMobileShortcuts(path);
+  }
+
+  function installTherapistMobileShortcuts(path) {
+    if (!path.startsWith("/therapist")) return;
+    const main = document.querySelector("main");
+    if (!main || main.querySelector(".therapist-mobile-shortcuts")) return;
+    const language = document.documentElement.lang;
+    const shortcuts = document.createElement("nav");
+    shortcuts.className = "therapist-mobile-shortcuts";
+    shortcuts.setAttribute("aria-label", language === "en" ? "Therapist shortcuts" : "קיצורים למטפלים");
+    shortcuts.innerHTML = `
+      <a href="/therapist/build?tab=search">${language === "en" ? "Search" : "מנוע חיפוש"}</a>
+      <a href="/therapist/diary">${language === "en" ? "Diary" : "יומן"}</a>`;
+    main.prepend(shortcuts);
+  }
+
+  function installMobileLanguageSwitch() {
+    const menu = document.getElementById("site-navigation-menu");
+    if (!menu || menu.querySelector(".mobile-language-switch")) return;
+    const header = menu.closest("header");
+    if (header) menu.style.setProperty("--mobile-menu-top", `${header.getBoundingClientRect().bottom}px`);
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "mobile-language-switch";
+    const updateLabel = () => {
+      button.textContent = document.documentElement.lang === "en" ? "עברית" : "English";
+      button.setAttribute("aria-label", document.documentElement.lang === "en" ? "מעבר לעברית" : "Switch to English");
+    };
+    updateLabel();
+    button.addEventListener("click", () => {
+      const original = [...menu.querySelectorAll("button")].find((candidate) =>
+        candidate !== button && ["English", "עברית"].includes(candidate.textContent.trim())
+      );
+      original?.click();
+      setTimeout(updateLabel, 0);
+    });
+    menu.prepend(button);
   }
 
   function installTherapistMenu() {
