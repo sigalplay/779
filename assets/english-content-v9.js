@@ -169,6 +169,16 @@
     ,"אפשר להניח צעצוע אהוב מעבר לשקית ולעודד הושטת יד, חציית קו האמצע או זחילה לכיוונו.": "Place a favourite toy beyond a bag to encourage reaching, crossing the midline, or crawling towards it."
     ,"הפעילות מתקיימת בהשגחת מבוגר בלבד. משתמשים בשקיות עבות, סוגרים ומחזקים אותן היטב, בודקים לפני כל שימוש שאין נזילה או קרע ולא מאפשרים לתינוק להכניס את השקית לפה.": "Adult supervision is required. Use strong bags, seal and reinforce them carefully, check for leaks or tears before every use, and do not let the baby put a bag in their mouth."
     ,"בטיחות:": "Safety:"
+    ,"קישור לילד/ה — סימון בפלאפון": "Link for the child — tick tasks on a phone"
+    ,"קישור ללוח האינטראקטיבי": "Link to the interactive board"
+    ,"שלחו את הקישור לפלאפון של הילד/ה, או סרקו את קוד ה־QR. מסמנים כל משימה לאחר שמסיימים אותה.": "Send the link to the child's phone or scan the QR code. Tick each task when it is complete."
+    ,"קישור ללוח": "Board link"
+    ,"לוח התארגנות יומי": "Daily Routine Board"
+    ,"סיימתם משימה? לחצו עליה כדי לסמן ✓": "Finished a task? Tap it to tick it ✓"
+    ,"כל הכבוד! סיימתם את כל המשימות 🌟": "Well done! You finished all the tasks 🌟"
+    ,"התחלה מחדש": "Start again"
+    ,"הקישור אינו מכיל משימות. בקשו קישור חדש ללוח.": "This link has no tasks. Please ask for a new board link."
+    ,"צור לוח משלך — בואו נשחק": "Create your own board — Let's Play"
   };
 
   function isEnglish() {
