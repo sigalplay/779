@@ -178,11 +178,12 @@
     };
     trigger.addEventListener("click", (event) => {
       event.preventDefault();
+      event.stopImmediatePropagation();
       const opening = menu.dataset.open !== "true";
       if (opening) position();
       menu.dataset.open = opening ? "true" : "false";
       trigger.setAttribute("aria-expanded", opening ? "true" : "false");
-    });
+    }, true);
     menu.addEventListener("click", close);
     document.addEventListener("click", (event) => {
       if (!trigger.contains(event.target) && !menu.contains(event.target)) close();
