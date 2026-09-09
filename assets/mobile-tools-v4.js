@@ -34,10 +34,16 @@
   }
 
   function fitGuidanceDialogs() {
+    document.querySelectorAll('.guidance-dialog-host').forEach((host) => {
+      if (!host.querySelector('.mobile-guidance-dialog')) host.classList.remove('guidance-dialog-host');
+    });
     document.querySelectorAll('[role="dialog"][aria-label]').forEach((dialog) => {
       const label = dialog.getAttribute('aria-label') || '';
       if (/דגשים ל|posture|writing|coloring|scissors/i.test(label)) {
         dialog.classList.add('mobile-guidance-dialog');
+        let host = dialog.parentElement;
+        while (host && host !== document.body && getComputedStyle(host).position !== 'fixed') host = host.parentElement;
+        if (host && host !== document.body) host.classList.add('guidance-dialog-host');
       }
     });
   }
