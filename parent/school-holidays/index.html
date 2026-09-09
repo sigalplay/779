@@ -14,4 +14,4 @@ const holidays=[['חופשת ראש השנה','2026-09-11','2026-09-13'],['חו�
 const fmt=s=>s.split('-').reverse().join('.');rows.innerHTML=holidays.map(h=>`<tr><td><strong>${h[0]}</strong></td><td class="date">${fmt(h[1])}</td><td class="date">${fmt(h[2])}</td></tr>`).join('');
 function nextDay(s){const d=new Date(s+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10).replaceAll('-','')}
 calendar.onclick=()=>{const body=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Boo Nesahek//School Holidays//HE'];holidays.forEach((h,i)=>body.push('BEGIN:VEVENT','UID:boo-holiday-'+i+'@letsplayot.com','DTSTART;VALUE=DATE:'+h[1].replaceAll('-',''),'DTEND;VALUE=DATE:'+nextDay(h[2]),'SUMMARY:'+h[0],'END:VEVENT'));body.push('END:VCALENDAR');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([body.join('\r\n')],{type:'text/calendar'}));a.download='school-holidays-2026-2027.ics';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
-</script></body></html>
+</script><script defer src="/assets/american-english-v1.js"></script></body></html>
