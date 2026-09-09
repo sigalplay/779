@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#fbf7f0">
+  <title>רצפי ADL — בואו נשחק</title>
+  <meta name="description" content="רצפים חזותיים מאוירים לפעולות יום־יומיות: שירותים, שטיפת ידיים, מקלחת ולבוש.">
+  <link rel="icon" href="/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--cream:#fbf7f0;--ink:#40362f;--pink:#f7e4ea;--sage:#dcefe4;--sky:#e8f2f6;--line:#e4d9cf}
+    *{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:Rubik,Arial,sans-serif}button,a{font:inherit}
+    header{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:.65rem max(1rem,calc((100% - 1120px)/2));border-bottom:1px solid var(--line);background:rgba(251,247,240,.96)}
+    header img{width:82px;height:58px;object-fit:contain}header a{padding:.65rem 1rem;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font-weight:700;text-decoration:none}
+    main{width:min(1120px,calc(100% - 2rem));margin:auto;padding:2rem 0 6rem}h1{margin:.15rem 0;font-size:clamp(2rem,5vw,3rem)}.intro{margin:.5rem 0 1.5rem;color:#756b63;line-height:1.7}
+    .sequence-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.sequence-card{overflow:hidden;padding:0;border:1px solid var(--line);border-radius:24px;background:#fff;color:inherit;text-align:right;box-shadow:0 4px 14px #5c49340d;cursor:pointer}.sequence-card:hover{transform:translateY(-2px)}
+    .sequence-card img{display:block;width:100%;height:235px;padding:1rem;background:#fff;object-fit:contain}.caption{padding:1rem 1.2rem;border-top:1px solid #efd8df;background:var(--pink)}.caption strong{display:block;font-size:1.18rem}.caption span{display:block;margin-top:.25rem;color:#786d66;font-size:.9rem}
+    .detail{display:none;margin-top:1.4rem;padding:1.2rem;border:1px solid var(--line);border-radius:28px;background:#fff}.detail.open{display:block}.detail-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.75rem}.detail h2{margin:0;font-size:1.7rem}.controls{display:flex;flex-wrap:wrap;gap:.5rem}.controls button{padding:.55rem .85rem;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:700;cursor:pointer}.controls button.active{background:var(--sage);border-color:#9bcdb0}
+    .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.8rem;margin-top:1rem;padding:0;list-style:none}.step{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:20px;background:var(--cream)}.step img{display:block;width:100%;aspect-ratio:1/1;padding:.5rem;background:#fff;object-fit:contain}.step p{margin:0;padding:.7rem;text-align:center;font-weight:700}.number{position:absolute;top:.55rem;right:.55rem;display:grid;width:1.8rem;height:1.8rem;place-items:center;border-radius:50%;background:var(--sage);font-weight:800}
+    .close{background:var(--pink)!important}.print{background:var(--sage)!important}.footer{text-align:center;margin-top:2rem;color:#80766e;font-size:.8rem}.footer img{display:block;width:75px;margin:.7rem auto}
+    @media(max-width:700px){main{width:min(100% - 1rem,1120px);padding-top:1rem}.sequence-grid{grid-template-columns:1fr 1fr;gap:.55rem}.sequence-card img{height:145px;padding:.5rem}.caption{padding:.7rem}.caption strong{font-size:.9rem}.caption span{font-size:.72rem}.detail{padding:.75rem}.steps{grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem}.step p{font-size:.8rem}}
+    @media print{@page{size:A4 portrait;margin:12mm}header,.sequence-grid,.intro,.detail-head .close{display:none!important}body,main,.detail{margin:0!important;padding:0!important;background:#fff!important}.detail{display:none!important;border:0!important}.detail.open{display:block!important}.detail-head{margin-bottom:4mm}.controls{display:none}.steps{grid-template-columns:repeat(3,1fr);gap:4mm}.step{break-inside:avoid}.step img{max-height:58mm}.footer{display:block}}
+  </style>
+  <link rel="stylesheet" href="/assets/mobile-tools-v4.css">
+  <script defer src="/assets/mobile-tools-v4.js"></script>
+  <link rel="stylesheet" href="/assets/calendar-qa-v27.css">
+  <script defer src="/assets/calendar-qa-v27.js"></script>
+</head>
+<body>
+  <header><a href="/">חזרה לדף הראשי</a><img src="/boo-nesahek-logo.png" alt="בואו נשחק"></header>
+  <main>
+    <h1>רצפי ADL</h1>
+    <p class="intro">בחרו רצף של פעולה יום־יומית. כל רצף מוצג בשלבים ברורים ומאוירים וניתן להדפסה.</p>
+    <div class="sequence-grid" id="sequence-grid"></div>
+    <section class="detail" id="detail" aria-live="polite"></section>
+    <div class="footer"><img src="/boo-nesahek-logo.png" alt="בואו נשחק"><span>© בואו נשחק</span></div>
+  </main>
+  <script>
+    const root='/icon-bank/daily-sequences/';
+    const sequences=[
+      {id:'toilet',title:'סדר פעולות בשירותים',description:'מהכניסה לשירותים ועד שטיפת הידיים',cover:'toilet/enter.webp',gender:true,steps:[['enter','נכנסים לשירותים'],['clothes','מורידים מכנסיים ותחתונים'],['sit','יושבים בנוחות'],['wipe','מנגבים'],['flush','מורידים את המים'],['hands','שוטפים ידיים']]},
+      {id:'hands',title:'שטיפת ידיים',description:'רצף חזותי קצר וברור ליד הכיור',cover:'hands/rub.webp',steps:[['open','פותחים את הברז'],['water','מרטיבים ידיים'],['soap','שמים סבון'],['rub','משפשפים כפות ידיים, אצבעות וגב היד'],['rinse','שוטפים את הסבון במים'],['close','סוגרים את הברז'],['dry','מנגבים ידיים']]},
+      {id:'shower',title:'סדר פעולות במקלחת',description:'הכנה, רחצה, ניגוב ולבוש',cover:'shower/water.webp',gender:true,steps:[['undress','מורידים חולצה'],['pants','מורידים מכנסיים'],['socks','מורידים גרביים'],['shoes','חולצים נעליים'],['basket','מכניסים את הבגדים לסל'],['water','נכנסים למקלחת ופותחים מים נעימים'],['soap','מסבנים את הגוף'],['rinse','שוטפים את הסבון'],['shampoo','חופפים את השיער בשמפו'],['shampoo-rinse','שוטפים את השמפו במים'],['conditioner','שמים מרכך על השיער'],['conditioner-rinse','שוטפים את המרכך במים'],['dry','סוגרים את המים ומתנגבים'],['dress','לובשים בגדים נקיים']]},
+      {id:'dressing',title:'סדר פעולות לבוש',description:'לבישת הבגדים לפי הסדר',cover:'dressing/done.webp',gender:true,steps:[['underwear','לובשים תחתונים'],['shirt','לובשים חולצה'],['pants','לובשים מכנסיים'],['socks','לובשים גרביים'],['shoes','נועלים נעליים'],['done','בודקים במראה — סיימנו']]}
+    ];
+    const grid=document.getElementById('sequence-grid'),detail=document.getElementById('detail');let active=null,gender='girl';
+    grid.innerHTML=sequences.map(s=>`<button class="sequence-card" data-id="${s.id}"><img src="${root+s.cover}" alt="איור ${s.title}"><div class="caption"><strong>${s.title}</strong><span>${s.description}</span></div></button>`).join('');
+    function imageFor(s,key){const genderKeys={toilet:['enter'],shower:['undress','shampoo','shampoo-rinse','conditioner','conditioner-rinse'],dressing:['underwear','done']};return root+s.id+'/'+((s.gender&&genderKeys[s.id]?.includes(key))?gender+'/':'')+key+'.webp'}
+    function render(){const s=sequences.find(x=>x.id===active);if(!s)return;detail.classList.add('open');detail.innerHTML=`<div class="detail-head"><h2>${s.title}</h2><div class="controls">${s.gender?`<button data-gender="girl" class="${gender==='girl'?'active':''}">ילדה</button><button data-gender="boy" class="${gender==='boy'?'active':''}">ילד</button>`:''}<button class="print" data-print>הדפסה</button><button class="close" data-close>סגירה</button></div></div><ol class="steps">${s.steps.map((x,i)=>`<li class="step"><span class="number">${i+1}</span><img src="${imageFor(s,x[0])}" alt="${x[1]}"><p>${x[1]}</p></li>`).join('')}</ol>`;detail.querySelectorAll('[data-gender]').forEach(b=>b.onclick=()=>{gender=b.dataset.gender;render()});detail.querySelector('[data-print]').onclick=()=>window.print();detail.querySelector('[data-close]').onclick=()=>{detail.classList.remove('open');active=null;scrollTo({top:0,behavior:'smooth'})};detail.scrollIntoView({behavior:'smooth',block:'start'});}
+    grid.addEventListener('click',e=>{const b=e.target.closest('[data-id]');if(!b)return;active=b.dataset.id;gender='girl';render()});
+  </script>
+  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"076cb1e00db44c5c8f0690585fec558a"}'></script>
+</body>
+</html>
