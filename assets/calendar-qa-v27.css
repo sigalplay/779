@@ -1,0 +1,49 @@
+@media print {
+  body.calendar-mobile-print,
+  body.calendar-mobile-print main,
+  body.calendar-mobile-print .calendar-print-pages,
+  body.calendar-mobile-print .hebrew-calendar-pages,
+  body.calendar-mobile-print .hebrew-calendar-sheet,
+  body.calendar-mobile-print .calendar-grid,
+  body.calendar-mobile-print .calendar-day,
+  body.calendar-mobile-print .calendar-day-empty {
+    background: #fff !important;
+  }
+
+  body.calendar-mobile-print .calendar-grid {
+    height: 156.75mm !important;
+    flex-basis: 156.75mm !important;
+  }
+
+  body.calendar-mobile-print .hebrew-calendar-sheet {
+    break-after: page !important;
+    page-break-after: always !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    overflow: hidden !important;
+  }
+
+  body.calendar-mobile-print .hebrew-calendar-sheet:last-child {
+    break-after: auto !important;
+    page-break-after: auto !important;
+  }
+}
+
+.shared-hebrew-calendar .calendar-day.calendar-day-passed {
+  background: #f2f0ed !important;
+  color: #7c746d;
+  opacity: .72;
+}
+
+.shared-hebrew-calendar .calendar-day.calendar-day-passed::after {
+  content: "✓";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  color: #568b76;
+  font-size: clamp(18px, 3vw, 34px);
+  font-weight: 900;
+  opacity: .75;
+  pointer-events: none;
+}
+
