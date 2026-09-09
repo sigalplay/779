@@ -1,4 +1,19 @@
 @media print {
+  .calendar-print-pages .calendar-sheet-header,
+  .calendar-print-pages .calendar-photo-wrap,
+  .calendar-print-pages .calendar-photo-placeholder,
+  .calendar-print-pages .calendar-decoration-frame,
+  .calendar-print-pages .calendar-grid,
+  .shared-hebrew-calendar .calendar-sheet-header,
+  .shared-hebrew-calendar .calendar-photo-wrap,
+  .shared-hebrew-calendar .calendar-photo-placeholder,
+  .shared-hebrew-calendar .calendar-decoration-frame,
+  .shared-hebrew-calendar .calendar-grid {
+    width: 110% !important;
+    align-self: center !important;
+    margin-inline: -5% !important;
+  }
+
   body.calendar-mobile-print,
   body.calendar-mobile-print main,
   body.calendar-mobile-print .calendar-print-pages,
@@ -29,6 +44,12 @@
   }
 }
 
+@media screen and (max-width: 1024px) {
+  [class~="top-[calc(50%-4rem)]"][class~="left-4"][class~="fixed"] {
+    transform: translateY(-32px);
+  }
+}
+
 .shared-hebrew-calendar .calendar-day.calendar-day-passed {
   background: #f2f0ed !important;
   color: #7c746d;
@@ -46,4 +67,3 @@
   opacity: .75;
   pointer-events: none;
 }
-
