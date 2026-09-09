@@ -213,6 +213,13 @@
     ,"התחלה מחדש": "Start again"
     ,"הקישור אינו מכיל משימות. בקשו קישור חדש ללוח.": "This link has no tasks. Please ask for a new board link."
     ,"צור לוח משלך — בואו נשחק": "Create your own board — Let's Play"
+    ,"בחרו אילו שלבים יופיעו ברצף": "Choose the steps to include"
+    ,"כיוון הרצף:": "Sequence layout:"
+    ,"↕ בטור": "↕ Vertical"
+    ,"↔ בשורה": "↔ Horizontal"
+    ,"בחרו לפחות שלב אחד שיופיע ברצף.": "Choose at least one step to include."
+    ,"העברה אחורה": "Move backward"
+    ,"העברה קדימה": "Move forward"
   };
 
   function isEnglish() {
