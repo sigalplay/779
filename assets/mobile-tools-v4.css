@@ -55,8 +55,8 @@
 
   .therapist-mobile-shortcuts {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: .6rem;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: .45rem;
     margin: 0 0 1rem;
     padding: .55rem;
     border: 1px solid #ded4ca;
@@ -67,20 +67,82 @@
 
   .therapist-mobile-shortcuts a {
     display: flex;
-    min-height: 46px;
+    min-height: 37px;
     align-items: center;
     justify-content: center;
     border-radius: 14px;
     color: #40362f;
+    padding: .35rem .25rem;
+    font-size: .8rem;
     font-weight: 800;
     text-align: center;
     text-decoration: none;
   }
 
+  .therapist-mobile-shortcuts a:nth-child(-n+3) { grid-column: span 2; }
+  .therapist-mobile-shortcuts a:nth-child(n+4) { grid-column: span 3; }
   .therapist-mobile-shortcuts a:first-child { background: #edf7f1; }
   .therapist-mobile-shortcuts .shortcut-plans { background: #fff2c9; }
   .therapist-mobile-shortcuts .shortcut-diary { background: #f7e4ea; }
   .therapist-mobile-shortcuts .shortcut-trail { background: #e8eefb; }
+  .therapist-mobile-shortcuts .shortcut-build-plan { background: #f7efcf; }
+
+  /* The hide control must also remain available on iPad-sized screens. */
+  button[aria-label="הסתרת סמלי העזר"],
+  button[aria-label="הצגת סמלי העזר"] { display: flex !important; }
+  button[aria-label="הצגת סמלי העזר"][aria-expanded="false"] + div { display: none !important; }
+
+  /* Guidance popups must fit the visual viewport on phones and iPads. */
+  .mobile-guidance-dialog {
+    top: max(12px, env(safe-area-inset-top)) !important;
+    right: max(12px, env(safe-area-inset-right)) !important;
+    bottom: max(82px, calc(70px + env(safe-area-inset-bottom))) !important;
+    left: max(12px, env(safe-area-inset-left)) !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+    min-width: 0 !important;
+    transform: none !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    padding: 1rem !important;
+    border-radius: 1.25rem !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-guidance-dialog h2 {
+    max-width: calc(100% - 2.5rem);
+    margin-inline: auto !important;
+    font-size: clamp(1.25rem, 4.5vw, 1.8rem) !important;
+    line-height: 1.25 !important;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+
+  .mobile-guidance-dialog img { max-width: 100% !important; }
+  .mobile-guidance-dialog > div { min-width: 0 !important; max-width: 100% !important; }
+}
+
+@media screen and (max-width: 767px) {
+  .mobile-guidance-dialog .grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .mobile-guidance-dialog [class*="h-40"],
+  .mobile-guidance-dialog [class*="h-48"] {
+    height: min(38vh, 15rem) !important;
+  }
+
+  .compact-seasonal-section { padding: .7rem !important; border-radius: 1.25rem !important; }
+  .compact-seasonal-section > div:first-child { margin-bottom: .65rem !important; }
+  .compact-seasonal-section h2 { font-size: 1.1rem !important; }
+  .compact-seasonal-section > div:last-child { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: .35rem !important; }
+  .compact-seasonal-section > div:last-child > a { border-radius: .75rem !important; }
+  .compact-seasonal-section > div:last-child > a > div:first-child { aspect-ratio: 1 / 1 !important; }
+  .compact-seasonal-section > div:last-child > a > div:last-child { min-height: 2.8rem !important; padding: .3rem !important; justify-content: center !important; text-align: center !important; }
+  .compact-seasonal-section h3 { font-size: .62rem !important; line-height: 1.2 !important; }
+  .compact-seasonal-section a span { display: none !important; }
 }
 
 .unified-menu-sections {

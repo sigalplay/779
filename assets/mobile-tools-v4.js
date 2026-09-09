@@ -20,6 +20,9 @@
 
     if (path === "/") arrangeHomeTools();
     if (path.endsWith("/hebrew-calendar")) addHolidayShortcut();
+    if (path === "/") removeHomeDisclaimer();
+    if (path === "/") compactSeasonalSection();
+    if (path === "/about") updateAboutCopy();
     updateSearchPreview(path);
     installTherapistMenu();
     installTherapistTopLinks(path);
@@ -27,6 +30,16 @@
     installTherapistMobileShortcuts(path);
     arrangeUnifiedMenu();
     formatInfantAgeLabels();
+    fitGuidanceDialogs();
+  }
+
+  function fitGuidanceDialogs() {
+    document.querySelectorAll('[role="dialog"][aria-label]').forEach((dialog) => {
+      const label = dialog.getAttribute('aria-label') || '';
+      if (/דגשים ל|posture|writing|coloring|scissors/i.test(label)) {
+        dialog.classList.add('mobile-guidance-dialog');
+      }
+    });
   }
 
   function formatInfantAgeLabels() {
@@ -40,13 +53,22 @@
   function updateSearchPreview(path) {
     if (path !== "/") return;
     const english = document.documentElement.lang === "en";
-    const title = english ? "Let's Play - Activities and Tools" : "בואו נשחק - פעילויות וכלים";
+    const title = english ? "Let's Play - Activities and Tools for Children" : "בואו נשחק - פעילויות וכלים לילדים";
     const description = english
-      ? "Activities, games and tools for home, preschool and the clinic."
-      : "פעילויות, משחקים וכלים - לבית, לגן ולקליניקה.";
+      ? "Ideas in one place for home, preschool, and the clinic: visual routine boards, social stories, activities, experiments, and step-by-step recipes for parents and therapists."
+      : "שפע רעיונות במקום אחד - לגן, לבית ולקליניקה. לוחות התארגנות לילדים, סיפורים חברתיים, פעילויות, ניסויים ומתכונים מותאמים ומובנים להורים ולמטפלים.";
     if (document.title !== title) document.title = title;
     const meta = document.querySelector('meta[name="description"]');
     if (meta && meta.content !== description) meta.content = description;
+    [
+      ['meta[property="og:title"]', title],
+      ['meta[property="og:description"]', description],
+      ['meta[name="twitter:title"]', title],
+      ['meta[name="twitter:description"]', description]
+    ].forEach(([selector, content]) => {
+      const element = document.querySelector(selector);
+      if (element && element.content !== content) element.content = content;
+    });
   }
 
   function installTherapistMobileShortcuts(path) {
@@ -63,9 +85,16 @@
     shortcuts.setAttribute("aria-label", language === "en" ? "Therapist shortcuts" : "קיצורים למטפלים");
     shortcuts.innerHTML = `
       <a href="/therapist/build?tab=search">${language === "en" ? "Search" : "מנוע חיפוש"}</a>
-      <a class="shortcut-plans" href="/therapist/plans">${language === "en" ? "My saved plans" : "התכניות השמורות שלי"}</a>
       <a class="shortcut-diary" href="/therapist/diary">${language === "en" ? "Diary" : "יומן"}</a>
-      <a class="shortcut-trail" href="/therapist/motor-trail">${language === "en" ? "Motor trail" : "מסלול מוטורי"}</a>`;
+      <a class="shortcut-trail" href="/therapist/motor-trail">${language === "en" ? "Motor trail" : "מסלול מוטורי"}</a>
+      <a class="shortcut-build-plan" href="/therapist/build?tab=search#therapy-plan">${language === "en" ? "Build a treatment plan" : "בנה תכנית טיפול"}</a>
+      <a class="shortcut-plans" href="/therapist/plans">${language === "en" ? "My saved plans" : "התכניות השמורות שלי"}</a>`;
+    shortcuts.querySelector(".shortcut-build-plan")?.addEventListener("click", (event) => {
+      if (path !== "/therapist/build") return;
+      event.preventDefault();
+      const heading = [...document.querySelectorAll("h1,h2,h3")].find((item) => /תכנית הטיפול|Treatment plan/i.test(item.textContent));
+      (heading?.closest("aside") || heading)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
     main.prepend(shortcuts);
   }
 
@@ -279,6 +308,7 @@
       "/parent/morning-routine",
       "/parent/evening-routine",
       "/parent/weekly-board",
+      "/parent/daily-sequences/",
       "/parent/social-stories",
       "/parent/hebrew-calendar",
       "/parent/experiments",
@@ -309,6 +339,27 @@
       wrapper.parentElement?.appendChild(clone);
     }
 
+    if (!document.querySelector('a[href="/parent/daily-sequences/"]')) {
+      let wrapper = morning;
+      while (wrapper.parentElement && !wrapper.parentElement.classList.contains("grid")) wrapper = wrapper.parentElement;
+      const clone = wrapper.cloneNode(true);
+      const link = clone.matches("a") ? clone : clone.querySelector("a");
+      if (!link) return;
+      link.href = "/parent/daily-sequences/";
+      link.querySelectorAll("img").forEach((img) => {
+        img.src = "/icon-bank/daily-sequences/hands/rub.webp";
+        img.alt = "רצפי ADL";
+      });
+      const walker = document.createTreeWalker(link, NodeFilter.SHOW_TEXT);
+      while (walker.nextNode()) {
+        walker.currentNode.nodeValue = walker.currentNode.nodeValue
+          .replace("לוח התארגנות בוקר", "רצפי ADL")
+          .replace("Morning Routine Board", "ADL Sequences")
+          .replace("Morning routine", "ADL Sequences");
+      }
+      wrapper.parentElement?.appendChild(clone);
+    }
+
     const anchors = order.map((href) => document.querySelector(`a[href="${href}"]`));
     if (anchors.some((anchor) => !anchor)) return;
     let grid = anchors[0].parentElement;
@@ -320,6 +371,34 @@
       if (tile) grid.appendChild(tile);
     });
     grid.dataset.dailyOrderDone = "1";
+  }
+
+  function removeHomeDisclaimer() {
+    document.querySelectorAll("main p").forEach((paragraph) => {
+      const text = paragraph.textContent.replace(/\s+/g, " ").trim();
+      if (text.startsWith("בואו נשחק מציע רעיונות לפעילות וכלי עזר לתכנון") || text.startsWith("Let's Play offers activity ideas and planning tools")) paragraph.remove();
+    });
+  }
+
+  function compactSeasonalSection() {
+    const heading = [...document.querySelectorAll("main h2")].find((item) => /פעילויות לראש השנה|Rosh Hashanah Activities/.test(item.textContent));
+    const section = heading?.closest("section");
+    if (section) section.classList.add("compact-seasonal-section");
+  }
+
+  function updateAboutCopy() {
+    document.querySelectorAll("main p").forEach((paragraph) => {
+      const text = paragraph.textContent.replace(/\s+/g, " ").trim();
+      if (text.includes("לא פעם ההכנות ממשיכות גם לאחר ששעות העבודה מסתיימות")) {
+        paragraph.textContent = text.replace(" לא פעם ההכנות ממשיכות גם לאחר ששעות העבודה מסתיימות.", "");
+      } else if (text.includes("The preparation often continues after the working day")) {
+        paragraph.textContent = text.replace(/ The preparation often continues after the working day[^.]*\./, "");
+      } else if (text.startsWith("רוצים להתייעץ בנוגע להתפתחות")) {
+        paragraph.textContent = "רוצים להתייעץ בנוגע להתפתחות, לתפקוד או להשתתפות של ילדכם בחיי היום־יום? ניתן לפנות אליי לתיאום ייעוץ מקצועי בזום או בקליניקה שלי בפתח תקווה, הכולל חשיבה משותפת, הדרכת הורים והתאמת המלצות ופעילויות לצרכים הייחודיים של הילד.";
+      } else if (text.startsWith("אשמח לשמוע מכם גם אם") || text.startsWith("אשמח לשמוע גם אם")) {
+        paragraph.textContent = "אשמח לשמוע גם אם יש לכם שאלה בנוגע לאפליקציה, רעיון לפעילות חדשה או הצעה לשיפור :)";
+      }
+    });
   }
 
   function addHolidayShortcut() {

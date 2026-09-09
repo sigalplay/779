@@ -25,6 +25,19 @@
     background: #fff !important;
   }
 
+  /* Keep the successful phone print layout unchanged and use the very same
+     table geometry on desktop. */
+  body:not(.calendar-mobile-print) .calendar-grid {
+    width: 110% !important;
+    height: 156.75mm !important;
+    flex-basis: 156.75mm !important;
+    margin-right: -5% !important;
+    margin-bottom: -13.2mm !important;
+    margin-left: -5% !important;
+    transform: scale(0.92) !important;
+    transform-origin: top center !important;
+  }
+
   body.calendar-mobile-print .calendar-grid {
     height: 156.75mm !important;
     flex-basis: 156.75mm !important;
