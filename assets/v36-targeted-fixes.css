@@ -1,0 +1,63 @@
+/* Focused fixes for print sizing and mobile guidance dialogs. */
+
+@media print {
+  /* Keep visual-sequence cards at their natural size instead of stretching
+     each card across the entire print grid cell. */
+  .activity-print-card ol,
+  .activity-print-card ul {
+    align-items: start !important;
+    justify-items: center !important;
+  }
+
+  .activity-print-card .activity-print-item {
+    width: fit-content !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    align-self: start !important;
+    justify-self: center !important;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  /* Leave a real scrollable buffer below the final instruction so Safari's
+     bottom controls and the dialog edge never cover the text. */
+  .mobile-guidance-dialog {
+    box-sizing: border-box !important;
+    max-height: calc(100dvh - 8.5rem) !important;
+    padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px)) !important;
+    scroll-padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .mobile-guidance-dialog > :last-child,
+  .mobile-guidance-dialog .grid > :last-child {
+    margin-bottom: .5rem !important;
+  }
+
+  .mobile-guidance-dialog p,
+  .mobile-guidance-dialog span {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+  }
+}
+
+/* The existing reorder action swaps neighboring cards. Show the matching
+   direction for the chosen vertical or horizontal sequence layout. */
+.sequence-direction-button {
+  position: relative;
+}
+
+.sequence-direction-button > svg {
+  visibility: hidden !important;
+}
+
+.sequence-direction-button::after {
+  content: attr(data-sequence-direction-glyph);
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 1.1rem;
+  font-weight: 900;
+  line-height: 1;
+}
