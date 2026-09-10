@@ -143,42 +143,75 @@
     return before + core + after;
   }
 
+  function improveText(node) {
+    if (!node?.parentElement || /^(SCRIPT|STYLE|TEXTAREA)$/.test(node.parentElement.tagName)) return;
+    const original = node.nodeValue || "";
+    if (original.trim() === "You can return to this page at any time and move between tools using the top menu.") {
+      node.parentElement.hidden = true;
+      return;
+    }
+    const next = improve(original);
+    if (next !== original) node.nodeValue = next;
+  }
+
+  function improveAttributes(element) {
+    if (!element?.getAttribute) return;
+    ["title", "aria-label", "placeholder", "value"].forEach((name) => {
+      const value = element.getAttribute(name);
+      if (!value) return;
+      const next = improve(value);
+      if (next !== value) element.setAttribute(name, next);
+    });
+  }
+
   function improveRoot(root) {
     if (!isEnglish() || !root) return;
     document.documentElement.lang = "en";
     document.documentElement.dir = "ltr";
+    if (root.nodeType === Node.TEXT_NODE) {
+      improveText(root);
+      return;
+    }
+    improveAttributes(root);
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-    const nodes = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach((node) => {
-      if (!node.parentElement || /^(SCRIPT|STYLE|TEXTAREA)$/.test(node.parentElement.tagName)) return;
-      const next = improve(node.nodeValue || "");
-      if (next !== node.nodeValue) node.nodeValue = next;
-      if (node.nodeValue.trim() === "You can return to this page at any time and move between tools using the top menu.") {
-        node.parentElement.hidden = true;
-      }
-    });
-    root.querySelectorAll?.("[title],[aria-label],[placeholder],[value]").forEach((element) => {
-      ["title", "aria-label", "placeholder", "value"].forEach((name) => {
-        const value = element.getAttribute(name);
-        if (!value) return;
-        const next = improve(value);
-        if (next !== value) element.setAttribute(name, next);
-      });
-    });
+    while (walker.nextNode()) improveText(walker.currentNode);
+    root.querySelectorAll?.("[title],[aria-label],[placeholder],[value]").forEach(improveAttributes);
   }
 
+  const queued = new Set();
   let pending = false;
-  function schedule() {
+  function schedule(root) {
+    if (root) queued.add(root);
     if (pending) return;
     pending = true;
-    requestAnimationFrame(() => { pending = false; improveRoot(document.body); });
+    requestAnimationFrame(() => {
+      pending = false;
+      const roots = [...queued];
+      queued.clear();
+      roots.forEach(improveRoot);
+    });
   }
 
   function start() {
-    schedule();
-    new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true, characterData: true });
-    window.addEventListener("boo_language_change", schedule);
+    improveRoot(document.body);
+    new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === "characterData") {
+          schedule(mutation.target);
+        } else if (mutation.type === "attributes") {
+          schedule(mutation.target);
+        } else {
+          mutation.addedNodes.forEach((node) => schedule(node));
+        }
+      });
+    }).observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ["title", "aria-label", "placeholder", "value"]
+    });
+    window.addEventListener("boo_language_change", () => improveRoot(document.body));
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
