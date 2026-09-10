@@ -160,14 +160,13 @@
     button.addEventListener("click", () => {
       const nextLanguage = document.documentElement.lang === "en" ? "he" : "en";
       try { localStorage.setItem("boo_nesahek_language", nextLanguage); } catch (_) {}
-      document.documentElement.lang = nextLanguage;
-      document.documentElement.dir = nextLanguage === "he" ? "rtl" : "ltr";
-      window.dispatchEvent(new Event("boo_language_change"));
-      setTimeout(() => {
-        updateLabel();
-        arrangeUnifiedMenu();
-        updatePathEnhancements();
-      }, 0);
+      const currentPath = window.location.pathname;
+      const targetPath = nextLanguage === "en"
+        ? (currentPath === "/" ? "/en/" : currentPath.startsWith("/en/") ? currentPath : `/en${currentPath}`)
+        : (currentPath.replace(/^\/en(?=\/|$)/, "") || "/");
+      const target = new URL(window.location.href);
+      target.pathname = targetPath;
+      window.location.assign(target.toString());
     });
     menu.prepend(button);
   }
