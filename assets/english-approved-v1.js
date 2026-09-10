@@ -193,6 +193,7 @@
   }
 
   function start() {
+    document.body.classList.toggle("english-activity-page", /^\/en\/activity(?:\/|$)/.test(location.pathname));
     improveRoot(document.body);
     new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
