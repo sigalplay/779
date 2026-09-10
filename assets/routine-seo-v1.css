@@ -1,0 +1,18 @@
+.routine-seo-content{width:min(1100px,94%);margin:24px auto 70px;color:#40362f;font-family:Rubik,Arial,sans-serif;direction:rtl}
+.routine-seo-links,.routine-seo-guide{border:1px solid #ded4ca;border-radius:28px;background:#fff;padding:clamp(18px,3vw,28px);box-shadow:0 8px 24px #493b2d0d}
+.routine-seo-guide{margin-top:20px}
+.routine-seo-content h2{margin:0 0 10px;font-size:clamp(1.35rem,3vw,1.8rem)}
+.routine-seo-content p{line-height:1.8}
+.routine-seo-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+.routine-seo-card{display:block;border:1px solid #ded4ca;border-radius:20px;padding:18px;color:inherit;text-decoration:none;background:#fffaf7;transition:.2s transform,.2s border-color}
+.routine-seo-card:hover{transform:translateY(-2px);border-color:#73b493}
+.routine-seo-card strong{display:block;margin-bottom:7px;font-size:1.05rem}
+.routine-seo-card span{color:#756a62;font-size:.92rem;line-height:1.6}
+.routine-seo-guide details{border-top:1px solid #eee4dc}
+.routine-seo-guide details:last-child{border-bottom:1px solid #eee4dc}
+.routine-seo-guide summary{padding:17px 4px;font-size:1.08rem;font-weight:800;cursor:pointer}
+.routine-seo-guide details>div{padding:0 4px 18px;line-height:1.8;color:#5f554e}
+.routine-seo-guide ol,.routine-seo-guide ul{padding-right:1.4rem;line-height:1.8}
+.routine-seo-content a:not(.routine-seo-card){color:#2d7252;font-weight:700}
+@media(max-width:760px){.routine-seo-cards{grid-template-columns:1fr}}
+@media print{.routine-seo-content{display:none!important}}

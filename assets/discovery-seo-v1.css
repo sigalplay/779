@@ -1,0 +1,19 @@
+.discovery-seo{width:min(1100px,94%);margin:24px auto 70px;color:#40362f;font-family:Rubik,Arial,sans-serif;direction:rtl}
+.discovery-seo-panel{border:1px solid #ded4ca;border-radius:28px;background:#fff;padding:clamp(18px,3vw,28px);box-shadow:0 8px 24px #493b2d0d}
+.discovery-seo-panel+.discovery-seo-panel{margin-top:20px}
+.discovery-seo h2{margin:0 0 9px;font-size:clamp(1.35rem,3vw,1.8rem)}
+.discovery-seo-intro{margin:0;color:#756a62;line-height:1.8}
+.discovery-seo-links{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:16px}
+.discovery-seo-link{display:block;border:1px solid #ded4ca;border-radius:20px;padding:18px;color:inherit;text-decoration:none;background:#fffaf7;transition:.2s transform,.2s border-color}
+.discovery-seo-link:hover{transform:translateY(-2px);border-color:#73b493}
+.discovery-seo-link strong{display:block;margin-bottom:7px;font-size:1.05rem}
+.discovery-seo-link span{color:#756a62;font-size:.92rem;line-height:1.6}
+.discovery-seo details{border-top:1px solid #eee4dc}
+.discovery-seo details:last-child{border-bottom:1px solid #eee4dc}
+.discovery-seo summary{padding:17px 4px;font-size:1.08rem;font-weight:800;cursor:pointer}
+.discovery-seo details>div{padding:0 4px 18px;line-height:1.8;color:#5f554e}
+.discovery-seo p{line-height:1.8}
+.discovery-seo ul,.discovery-seo ol{padding-right:1.4rem;line-height:1.8}
+.discovery-seo a:not(.discovery-seo-link){color:#2d7252;font-weight:700}
+@media(max-width:650px){.discovery-seo-links{grid-template-columns:1fr}}
+@media print{.discovery-seo{display:none!important}}
