@@ -1,23 +1,5 @@
 /* Focused fixes for print sizing and mobile guidance dialogs. */
 
-@media print {
-  /* Keep visual-sequence cards at their natural size instead of stretching
-     each card across the entire print grid cell. */
-  .activity-print-card ol,
-  .activity-print-card ul {
-    align-items: start !important;
-    justify-items: center !important;
-  }
-
-  .activity-print-card .activity-print-item {
-    width: fit-content !important;
-    min-width: 0 !important;
-    max-width: 100% !important;
-    align-self: start !important;
-    justify-self: center !important;
-  }
-}
-
 @media screen and (max-width: 767px) {
   /* Leave a real scrollable buffer below the final instruction so Safari's
      bottom controls and the dialog edge never cover the text. */
