@@ -128,8 +128,7 @@
   ];
 
   function isEnglish() {
-    try { return document.documentElement.lang === "en" || localStorage.getItem("boo_nesahek_language") === "en"; }
-    catch (_) { return document.documentElement.lang === "en"; }
+    return location.pathname === "/en" || location.pathname.startsWith("/en/") || document.documentElement.lang === "en";
   }
 
   function improve(value) {

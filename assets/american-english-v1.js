@@ -79,8 +79,7 @@
   ];
 
   function isEnglish() {
-    try { return localStorage.getItem("boo_nesahek_language") === "en" || document.documentElement.lang === "en"; }
-    catch (_) { return document.documentElement.lang === "en"; }
+    return location.pathname === "/en" || location.pathname.startsWith("/en/") || document.documentElement.lang === "en";
   }
 
   function polish(value) {
