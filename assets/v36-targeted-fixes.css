@@ -61,3 +61,49 @@
   font-weight: 900;
   line-height: 1;
 }
+
+.adl-sequence-card {
+  position: relative !important;
+  padding-bottom: 3rem !important;
+}
+
+.adl-sequence-move-controls {
+  position: absolute;
+  right: 50%;
+  bottom: .45rem;
+  z-index: 20;
+  display: flex;
+  transform: translateX(50%);
+  gap: .4rem;
+}
+
+.adl-sequence-move-button {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid #d9d0c6;
+  border-radius: 999px;
+  background: #fff;
+  color: #40362f;
+  box-shadow: 0 2px 7px rgba(63, 50, 40, .12);
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.adl-sequence-move-button:disabled {
+  cursor: default;
+  opacity: .28;
+}
+
+@media print {
+  .adl-sequence-card {
+    padding-bottom: 0 !important;
+  }
+
+  .adl-sequence-move-controls {
+    display: none !important;
+  }
+}
