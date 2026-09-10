@@ -326,3 +326,11 @@
     background: #fff !important;
   }
 }
+
+/* Temporary Hebrew-only launch: hide the route to English on Hebrew pages.
+   English files remain intact and English pages still offer a way back to Hebrew. */
+html[lang="he"] [aria-label="בחירת שפה"],
+html[lang="he"] [aria-label="Choose language"],
+html[lang="he"] .mobile-language-switch {
+  display: none !important;
+}
