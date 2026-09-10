@@ -91,10 +91,10 @@
     shortcuts.setAttribute("aria-label", language === "en" ? "Therapist shortcuts" : "קיצורים למטפלים");
     shortcuts.innerHTML = `
       <a href="/therapist/build?tab=search">${language === "en" ? "Search" : "מנוע חיפוש"}</a>
-      <a class="shortcut-diary" href="/therapist/diary">${language === "en" ? "Diary" : "יומן"}</a>
-      <a class="shortcut-trail" href="/therapist/motor-trail">${language === "en" ? "Motor trail" : "מסלול מוטורי"}</a>
+      <a class="shortcut-diary" href="/therapist/diary">${language === "en" ? "Calendar" : "יומן"}</a>
+      <a class="shortcut-trail" href="/therapist/motor-trail">${language === "en" ? "Obstacle course" : "מסלול מוטורי"}</a>
       <a class="shortcut-build-plan" href="/therapist/build?tab=search#therapy-plan">${language === "en" ? "Build a treatment plan" : "בנה תכנית טיפול"}</a>
-      <a class="shortcut-plans" href="/therapist/plans">${language === "en" ? "My saved plans" : "התכניות השמורות שלי"}</a>`;
+      <a class="shortcut-plans" href="/therapist/plans">${language === "en" ? "Saved Plans" : "התכניות השמורות שלי"}</a>`;
     shortcuts.querySelector(".shortcut-build-plan")?.addEventListener("click", (event) => {
       if (path !== "/therapist/build") return;
       event.preventDefault();
@@ -120,9 +120,9 @@
     if (existing.length === 3 && existing.every((link) => link.dataset.language === language)) return;
     existing.forEach((link) => link.remove());
     const items = [
-      ["/therapist/plans", language === "en" ? "My saved plans" : "התכניות השמורות שלי"],
-      ["/therapist/diary", language === "en" ? "Diary" : "יומן"],
-      ["/therapist/motor-trail", language === "en" ? "Motor trail" : "מסלול מוטורי"]
+      ["/therapist/plans", language === "en" ? "Saved Plans" : "התכניות השמורות שלי"],
+      ["/therapist/diary", language === "en" ? "Calendar" : "יומן"],
+      ["/therapist/motor-trail", language === "en" ? "Obstacle course" : "מסלול מוטורי"]
     ];
     let after = trigger;
     items.forEach(([href, label]) => {
@@ -193,9 +193,9 @@
       menu.dataset.language = language;
       menu.innerHTML = `
         <a href="/therapist/build?tab=search">${language === "en" ? "Search" : "מנוע חיפוש"}</a>
-        <a href="/therapist/plans">${language === "en" ? "My saved plans" : "התכניות השמורות שלי"}</a>
-        <a href="/therapist/diary">${language === "en" ? "Diary" : "יומן"}</a>
-        <a href="/therapist/motor-trail">${language === "en" ? "Motor trail" : "מסלול מוטורי"}</a>`;
+        <a href="/therapist/plans">${language === "en" ? "Saved Plans" : "התכניות השמורות שלי"}</a>
+        <a href="/therapist/diary">${language === "en" ? "Calendar" : "יומן"}</a>
+        <a href="/therapist/motor-trail">${language === "en" ? "Obstacle course" : "מסלול מוטורי"}</a>`;
     }
 
     if (trigger.dataset.quickMenuListeners === "1") return;
@@ -256,14 +256,14 @@
     unified.dataset.language = language;
     const groups = [
       [english ? "Parents" : "הורים", [
-        ["/parent/play", english ? "What shall we play today?" : "במה נשחק היום?"],
+        ["/parent/play", english ? "What should we play today?" : "במה נשחק היום?"],
         ["/parent/all", english ? "All activities" : "כל הפעילויות"]
       ]],
       [english ? "Therapists" : "מטפלים", [
         ["/therapist/build?tab=search", english ? "Build a therapy session" : "בניית מפגש טיפולי"],
-        ["/therapist/diary", english ? "Therapist diary" : "יומן מטפל"],
-        ["/therapist/plans", english ? "My saved plans" : "התכניות השמורות שלי"],
-        ["/therapist/motor-trail", english ? "Motor trail" : "מסלול מוטורי"]
+        ["/therapist/diary", english ? "Therapist calendar" : "יומן מטפל"],
+        ["/therapist/plans", english ? "Saved Plans" : "התכניות השמורות שלי"],
+        ["/therapist/motor-trail", english ? "Obstacle course" : "מסלול מוטורי"]
       ]],
       [english ? "More tools" : "כלים נוספים", [
         ["/parent/daily-routine/", english ? "Daily routine board" : "לוח התארגנות יומי"],
@@ -273,8 +273,8 @@
         ["/parent/social-stories", english ? "Social stories" : "סיפורים חברתיים"],
         ["/parent/hebrew-calendar", english ? "Create a calendar" : "יצירת לוח שנה"],
         ["/parent/cipher", english ? "Secret-code generator" : "מחולל כתב סתרים"],
-        ["/parent/recipes", english ? "Recipes" : "מתכונים"],
-        ["/parent/experiments", english ? "Experiments" : "ניסויים"],
+        ["/parent/recipes", english ? "Kid-Friendly Recipes" : "מתכונים"],
+        ["/parent/experiments", english ? "Kids’ Science Experiments" : "ניסויים"],
         ["/parent/board-games", english ? "Board games" : "משחקי קופסה"]
       ]]
     ];
@@ -339,7 +339,7 @@
       while (walker.nextNode()) {
         walker.currentNode.nodeValue = walker.currentNode.nodeValue
           .replace("לוח התארגנות בוקר", "לוח התארגנות יומי")
-          .replace("Morning Routine Board", "Daily Routine Board")
+          .replace("Morning Routine Visual Schedule", "Daily Routine Visual Schedule")
           .replace("Morning routine", "Daily routine");
       }
       wrapper.parentElement?.appendChild(clone);
@@ -360,7 +360,7 @@
       while (walker.nextNode()) {
         walker.currentNode.nodeValue = walker.currentNode.nodeValue
           .replace("לוח התארגנות בוקר", "רצפי ADL")
-          .replace("Morning Routine Board", "ADL Sequences")
+          .replace("Morning Routine Visual Schedule", "ADL Sequences")
           .replace("Morning routine", "ADL Sequences");
       }
       wrapper.parentElement?.appendChild(clone);

@@ -40,12 +40,12 @@
     "חשיפה": "Exposure",
     "רכבת": "Train",
     "דובי": "Teddy bear",
-    "מחולל לוח התארגנות יומי": "Daily Routine Board Builder",
+    "מחולל לוח התארגנות יומי": "Daily Routine Visual Schedule Builder",
     "מחולל לוח התארגנות יומי — בואו נשחק": "Daily Routine Board Builder — Let's Play",
     "בחרו פעולות, סדרו אותן והכינו לוח יומי אישי עם תיבות סימון.": "Choose activities, arrange them, and create a personal daily board with checkboxes.",
     "בחרו פעולות, סדרו אותן והכינו לוח התארגנות יומי לילדים.": "Choose activities, put them in order, and create a daily routine board for your child.",
     "חזרה לבית": "Back to Home",
-    "כותרת הלוח": "Board title",
+    "כותרת הלוח": "Visual schedule title",
     "הלוח היומי שלי": "My Daily Routine",
     "לוח ההתארגנות היומי שלי": "My Daily Routine Board",
     "בחירת בן או בת": "Choose a boy or girl",
@@ -55,8 +55,8 @@
     "הוספה": "Add",
     "הדפסה / הורדה": "Print / Download",
     "ניקוי הלוח": "Clear board",
-    "בחרו פעולות כדי להתחיל לבנות את הלוח": "Choose activities to start building your board",
-    "בחרו פעולות כדי להתחיל לבנות את לוח ההתארגנות היומי": "Choose activities to start building the daily routine board",
+    "בחרו פעולות כדי להתחיל לבנות את הלוח": "Choose activities to start building your visual schedule",
+    "בחרו פעולות כדי להתחיל לבנות את לוח ההתארגנות היומי": "Choose activities to start building the daily routine visual schedule",
     "לוח התארגנות יומי לילדים": "Daily Routine Board for Children",
     "קימה": "Wake up",
     "שירותים": "Use the toilet",
@@ -80,8 +80,8 @@
     "סיפור לפני השינה": "Bedtime story",
     "שינה": "Sleep",
     "© בואו נשחק — לשימוש אישי בלבד. המידע והפעילויות אינם מהווים תחליף לייעוץ, אבחון או טיפול מקצועי.": "© Let's Play — for personal use only. The information and activities are not a substitute for professional advice, assessment, or treatment.",
-    "מסלול מוטורי": "Motor Trail",
-    "כלי יצירה": "Creative Tool",
+    "מסלול מוטורי": "Obstacle Course",
+    "כלי יצירה": "Craft activity",
     "לוחצים על המתקנים מהבנק בסדר הרצוי לבניית המסלול - ומקבלים רשימה ממוספרת מוכנה להדפסה.": "Choose equipment from the bank in the order you want to build a motor trail and get a numbered list ready to print.",
     "ניתן ללחוץ על סימן המשולש כדי לראות כיצד להשתמש במתקן.": "Select the triangle icon to see how to use each piece of equipment.",
     "בנק מתקנים": "Equipment Bank",
@@ -94,14 +94,14 @@
     "המסלול שלנו": "Our Motor Trail",
     "איפוס": "Reset",
     "בחרו מתקנים מהבנק בצד כדי לבנות את המסלול.": "Choose equipment from the bank to build your motor trail.",
-    "איך עושים?": "How do I do it?",
+    "איך עושים?": "How does it work?",
     "איך משתמשים ב": "How to use ",
     "הפעלה": "Play",
     "עצירה": "Pause",
     "הזז למעלה": "Move up",
     "הזז למטה": "Move down",
     "הסרה": "Remove",
-    "התחל מסלול": "Start Trail",
+    "התחל מסלול": "Start Course",
     "חזרה לעריכה": "Back to Editing",
     "בהצלחה! עוברים תחנה אחרי תחנה, בסדר.": "Great! Move through the stations one at a time, in order.",
     "הוסף לתכנית הטיפול": "Add to Treatment Plan",
@@ -204,15 +204,15 @@
     ,"מטפחות": "Scarves"
     ,"משיכה": "Pulling"
     ,"קישור לילד/ה — סימון בפלאפון": "Link for the child — tick tasks on a phone"
-    ,"קישור ללוח האינטראקטיבי": "Link to the interactive board"
+    ,"קישור ללוח האינטראקטיבי": "Link to the interactive visual schedule"
     ,"שלחו את הקישור לפלאפון של הילד/ה, או סרקו את קוד ה־QR. מסמנים כל משימה לאחר שמסיימים אותה.": "Send the link to the child's phone or scan the QR code. Tick each task when it is complete."
-    ,"קישור ללוח": "Board link"
-    ,"לוח התארגנות יומי": "Daily Routine Board"
+    ,"קישור ללוח": "Visual schedule link"
+    ,"לוח התארגנות יומי": "Daily Routine Visual Schedule"
     ,"סיימתם משימה? לחצו עליה כדי לסמן ✓": "Finished a task? Tap it to tick it ✓"
-    ,"כל הכבוד! סיימתם את כל המשימות 🌟": "Well done! You finished all the tasks 🌟"
+    ,"כל הכבוד! סיימתם את כל המשימות 🌟": "Great job! You finished every task 🌟"
     ,"התחלה מחדש": "Start again"
     ,"הקישור אינו מכיל משימות. בקשו קישור חדש ללוח.": "This link has no tasks. Please ask for a new board link."
-    ,"צור לוח משלך — בואו נשחק": "Create your own board — Let's Play"
+    ,"צור לוח משלך — בואו נשחק": "Create your own visual schedule — Let's Play"
     ,"בחרו אילו שלבים יופיעו ברצף": "Choose the steps to include"
     ,"כיוון הרצף:": "Sequence layout:"
     ,"↕ בטור": "↕ Vertical"
