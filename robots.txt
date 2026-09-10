@@ -7,4 +7,4 @@ Disallow: /favorites
 Disallow: /child/
 Disallow: /shared/
 
-Sitemap: https://www.letsplayot.com/sitemap.xml
+Sitemap: https://letsplayot.com/sitemap.xml
