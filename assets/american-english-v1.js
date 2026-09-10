@@ -99,35 +99,66 @@
     return leading + core + trailing;
   }
 
-  function polishRoot(root) {
-    if (!isEnglish()) return;
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-    const nodes = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach((node) => {
-      if (!node.parentElement || /^(SCRIPT|STYLE|TEXTAREA)$/.test(node.parentElement.tagName)) return;
-      const next = polish(node.nodeValue || "");
-      if (next !== node.nodeValue) node.nodeValue = next;
-    });
-    const elements = root.querySelectorAll ? root.querySelectorAll('[title],[aria-label],[placeholder]') : [];
-    elements.forEach((element) => ["title", "aria-label", "placeholder"].forEach((name) => {
+  function polishText(node) {
+    if (!node?.parentElement || /^(SCRIPT|STYLE|TEXTAREA)$/.test(node.parentElement.tagName)) return;
+    const original = node.nodeValue || "";
+    const next = polish(original);
+    if (next !== original) node.nodeValue = next;
+  }
+
+  function polishAttributes(element) {
+    if (!element?.getAttribute) return;
+    ["title", "aria-label", "placeholder"].forEach((name) => {
       const value = element.getAttribute(name);
       const next = polish(value || "");
       if (value && next !== value) element.setAttribute(name, next);
-    }));
+    });
   }
 
+  function polishRoot(root) {
+    if (!isEnglish() || !root) return;
+    if (root.nodeType === Node.TEXT_NODE) {
+      polishText(root);
+      return;
+    }
+    polishAttributes(root);
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) polishText(walker.currentNode);
+    root.querySelectorAll?.('[title],[aria-label],[placeholder]').forEach(polishAttributes);
+  }
+
+  const queued = new Set();
   let scheduled = false;
-  function schedule() {
+  function schedule(root) {
+    if (root) queued.add(root);
     if (scheduled) return;
     scheduled = true;
-    requestAnimationFrame(() => { scheduled = false; polishRoot(document.body); });
+    requestAnimationFrame(() => {
+      scheduled = false;
+      const roots = [...queued];
+      queued.clear();
+      roots.forEach(polishRoot);
+    });
   }
 
   function start() {
-    schedule();
-    new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["title", "aria-label", "placeholder"] });
-    window.addEventListener("boo_language_change", schedule);
+    polishRoot(document.body);
+    new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === "characterData" || mutation.type === "attributes") {
+          schedule(mutation.target);
+        } else {
+          mutation.addedNodes.forEach((node) => schedule(node));
+        }
+      });
+    }).observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ["title", "aria-label", "placeholder"]
+    });
+    window.addEventListener("boo_language_change", () => polishRoot(document.body));
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
