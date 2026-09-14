@@ -1,0 +1,14 @@
+@media(max-width:760px){
+  .mobile-search-category-tabs{gap:5px!important;padding-bottom:2px!important}
+  .mobile-search-category-tab{min-height:34px!important;padding:6px 10px!important;border-radius:13px!important;font-size:12px!important;line-height:1.15!important}
+  .search-filter-chip{box-sizing:border-box!important;min-height:33px!important;padding:4px 9px!important;font-size:12px!important;line-height:1.2!important}
+  .search-development-chip{min-height:33px!important;font-size:12.5px!important}
+  .search-development-chip img{width:17px!important;height:17px!important}
+  .search-age-chip,.search-time-chip{min-height:33px!important;font-size:12.5px!important}
+  .parent-filter-accordion-title{display:flex!important;min-height:37px;align-items:center;justify-content:space-between;gap:8px;margin:0 0 5px!important;padding:7px 10px;border:1px solid #e1d8cf;border-radius:12px;background:#fbf7f0;color:#40362f!important;font-size:13px!important;cursor:pointer}
+  .parent-filter-accordion-title:focus-visible{outline:3px solid #bfe6d1;outline-offset:2px}
+  .parent-filter-accordion-arrow{flex:0 0 auto;font-size:17px;line-height:1;transition:transform .2s ease}
+  .parent-filter-accordion-title[aria-expanded=true] .parent-filter-accordion-arrow{transform:rotate(180deg)}
+  .parent-filter-accordion-content{margin-bottom:9px}
+  .parent-filter-accordion-content[hidden]{display:none!important}
+}

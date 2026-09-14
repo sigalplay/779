@@ -19,10 +19,44 @@
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root{--cream:#fbf7f0;--ink:#40362f;--sage:#b7dec8;--pink:#f7e4ea;--line:#ded4ca}*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:Rubik,Arial,sans-serif}header{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:12px max(18px,4vw);border-bottom:1px solid var(--line);background:#fbf7f0ee;backdrop-filter:blur(8px)}header img{width:64px;height:54px;object-fit:contain}.back{padding:10px 16px;border:1px solid var(--line);border-radius:999px;background:#fff;color:inherit;text-decoration:none;font-weight:700}main{width:min(1100px,94%);margin:24px auto 70px}h1{margin:.2rem 0;font-size:clamp(1.8rem,5vw,2.7rem)}.print-title{display:none}.intro{max-width:850px;margin:.5rem 0 1.3rem;color:#756a62;line-height:1.75}.builder{display:grid;grid-template-columns:330px 1fr;gap:22px}.panel,.board{border:1px solid var(--line);border-radius:28px;background:#fff;padding:20px;box-shadow:0 8px 24px #493b2d0d}.title-input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:14px;font:inherit}.tasks{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.task-choice{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--line);border-radius:14px;background:#fff;text-align:right;font:inherit;font-weight:600;cursor:pointer}.task-choice img{width:42px;height:42px;border-radius:10px;object-fit:cover}.task-choice.selected{border-color:#73b493;background:#eef8f2}.board-head{text-align:center}.board-head img{width:64px}.board-head h2{margin:5px 0 16px}.list{display:grid;gap:10px}.row{display:grid;grid-template-columns:48px 76px 1fr auto;align-items:center;gap:12px;padding:10px;border:1px solid var(--line);border-radius:18px;background:#fff}.check{width:34px;height:34px;border:3px solid #5e554e;border-radius:8px;appearance:none;cursor:pointer}.check:checked{background:#a9d9bd;box-shadow:inset 0 0 0 6px #fff}.row img{width:70px;height:64px;border-radius:13px;object-fit:cover}.row strong{font-size:1.08rem}.moves{display:flex;gap:4px}.moves button{width:34px;height:34px;border:1px solid var(--line);border-radius:50%;background:#fff;cursor:pointer}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}.actions button{padding:11px 17px;border:0;border-radius:999px;background:var(--sage);color:var(--ink);font:inherit;font-weight:800;cursor:pointer}.actions .secondary{background:var(--pink)}.empty{padding:35px;text-align:center;color:#887b71;border:2px dashed var(--line);border-radius:18px}.legal{display:none}.custom{display:flex;gap:8px;margin-top:14px}.custom input{min-width:0;flex:1;padding:10px;border:1px solid var(--line);border-radius:12px;font:inherit}.custom button{border:0;border-radius:12px;background:var(--pink);padding:10px;font-weight:700}.share-overlay{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:18px;background:#40362f66}.share-overlay.open{display:flex}.share-dialog{position:relative;width:min(470px,100%);border:1px solid var(--line);border-radius:28px;background:#fff;padding:24px;box-shadow:0 18px 60px #30282033;text-align:center}.share-dialog h2{margin:0 0 8px}.share-dialog p{margin:0 0 16px;color:#756a62}.share-close{position:absolute;top:12px;left:12px;width:36px;height:36px;border:1px solid var(--line);border-radius:50%;background:#fff;font-size:24px;cursor:pointer}.share-qr{width:180px;height:180px;margin:0 auto 16px;border:1px solid var(--line);border-radius:16px;padding:8px}.share-link{display:flex;gap:8px;padding:8px;border:1px solid var(--line);border-radius:14px;background:#f8f5f1}.share-link input{min-width:0;flex:1;border:0;background:transparent;font:inherit;font-size:.8rem;direction:ltr}.share-link button{border:0;border-radius:999px;background:var(--sage);padding:8px 13px;font:inherit;font-weight:800;cursor:pointer}.seo-content{margin-top:28px}.related-boards,.guide,.author-box{border:1px solid var(--line);border-radius:28px;background:#fff;padding:clamp(18px,3vw,28px);box-shadow:0 8px 24px #493b2d0d}.related-boards h2,.guide>h2{margin:0 0 8px;font-size:clamp(1.35rem,3vw,1.8rem)}.related-intro{margin:0 0 16px;color:#756a62}.board-links{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.board-link{display:block;border:1px solid var(--line);border-radius:20px;padding:18px;color:inherit;text-decoration:none;background:#fffaf7;transition:.2s transform,.2s border-color}.board-link:hover{transform:translateY(-2px);border-color:#73b493}.board-link strong{display:block;margin-bottom:7px;font-size:1.05rem}.board-link span{color:#756a62;font-size:.92rem;line-height:1.6}.guide{margin-top:20px}.guide details{border-top:1px solid #eee4dc}.guide details:last-child{border-bottom:1px solid #eee4dc}.guide summary{padding:17px 4px;font-size:1.08rem;font-weight:800;cursor:pointer}.guide details>div{padding:0 4px 18px;line-height:1.8;color:#5f554e}.guide p{margin:.2rem 0 .8rem}.guide ol,.guide ul{margin:.5rem 0;padding-right:1.4rem}.guide a{color:#2d7252;font-weight:700}.faq-item p{margin-top:0}.author-box{margin-top:20px}.author-box h2{margin:0 0 8px;font-size:1.2rem}.author-box p{margin:0;line-height:1.7}.author-box a{color:#2d7252;font-weight:700}.updated{display:block;margin-top:8px;color:#756a62;font-size:.85rem}
-    .gender-picker{display:flex;gap:10px;margin:14px 0 4px}.gender-picker button{flex:1;min-height:46px;border:1px solid var(--line);border-radius:16px;background:#fff;color:var(--ink);font:inherit;font-weight:800;cursor:pointer}.gender-picker button.active{border-color:#73b493;background:#eef8f2;box-shadow:0 0 0 2px #b7dec866}.task-choice img{background:#fff;object-fit:contain}.row{grid-template-columns:48px 146px 1fr auto}.row img{width:140px;height:128px;object-fit:contain}.task-choice:focus-visible,.gender-picker button:focus-visible{outline:3px solid #8bc9aa;outline-offset:2px}
+    .gender-picker{display:flex;gap:10px;margin:14px 0 4px}.gender-picker button{flex:1;min-height:46px;border:1px solid var(--line);border-radius:16px;background:#fff;color:var(--ink);font:inherit;font-weight:800;cursor:pointer}.gender-picker button.active{border-color:#73b493;background:#eef8f2;box-shadow:0 0 0 2px #b7dec866}.period-label{display:block;margin-top:18px}.period-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px;padding:5px;border:1px solid var(--line);border-radius:18px;background:#f8f5f1}.period-picker button{min-width:0;padding:10px 4px;border:0;border-radius:13px;background:transparent;color:var(--ink);font:inherit;font-weight:800;cursor:pointer}.period-picker button.active{background:#fff;box-shadow:0 2px 8px #493b2d18;color:#276648}.task-choice img{background:#fff;object-fit:contain}.row{grid-template-columns:48px 146px 1fr auto}.row img{width:140px;height:128px;object-fit:contain}.task-choice:focus-visible,.gender-picker button:focus-visible,.period-picker button:focus-visible{outline:3px solid #8bc9aa;outline-offset:2px}
     @media(max-width:760px){.builder{grid-template-columns:1fr}.tasks{grid-template-columns:1fr 1fr}.row{grid-template-columns:42px 122px 1fr}.row img{width:116px;height:110px}.moves{grid-column:2/5;justify-content:flex-end}.board-links{grid-template-columns:1fr}}
     @media(max-width:430px){.tasks{grid-template-columns:1fr}.row{grid-template-columns:38px 106px 1fr;gap:8px}.row img{width:100px;height:96px}}
     @media print{@page{size:A4 portrait;margin:12mm}body{background:#fff}header,.panel,.actions,.intro,.screen-title,.board-head h2,.seo-content{display:none!important}.print-title{display:inline}main{width:100%;margin:0}.page-title{margin:0 0 4mm;text-align:center;font-size:20pt}.builder{display:block}.board{border:0;box-shadow:none;padding:0}.board-head img{width:18mm;margin:0 auto 4mm}.list{grid-template-columns:1fr;gap:2mm}.row{break-inside:avoid;grid-template-columns:10mm 17mm 1fr;gap:3mm;min-height:16mm;padding:1.5mm 2mm;border-color:#8b8179;border-radius:4mm}.check{width:8mm;height:8mm;border-width:.7mm}.row img{width:15mm;height:15mm;object-fit:contain}.row strong{font-size:11pt}.moves{display:none}.empty{display:none}.legal{display:block;margin-top:5mm;border-top:1px solid #ddd;padding-top:2mm;font-size:8pt;text-align:center;color:#706860}body.print-large .list{gap:3mm}body.print-large .row{grid-template-columns:12mm 36mm 1fr;gap:4mm;min-height:38mm;padding:2mm 3mm}body.print-large .check{width:9mm;height:9mm}body.print-large .row img{width:34mm;height:34mm}body.print-large .row strong{font-size:14pt}}
+  </style>
+  <style>
+    /* Compact two-column activity bank on phones only. */
+    @media screen and (max-width:430px){
+      .tasks{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:6px;
+        margin-top:10px;
+      }
+      .task-choice{
+        min-width:0;
+        min-height:54px;
+        padding:5px 6px;
+        gap:5px;
+        border-radius:12px;
+        font-size:.76rem;
+        line-height:1.15;
+      }
+      .task-choice img{
+        width:34px;
+        height:34px;
+        flex:0 0 34px;
+        border-radius:8px;
+      }
+      .task-choice span{
+        min-width:0;
+        overflow-wrap:anywhere;
+      }
+    }
+    @media screen and (max-width:350px){
+      .tasks{gap:5px}
+      .task-choice{padding-inline:4px;font-size:.7rem}
+      .task-choice img{width:31px;height:31px;flex-basis:31px}
+    }
   </style>
     <script
       type="module"
@@ -33,10 +67,11 @@
     <script defer src="/assets/calendar-qa-v27.js"></script>
   <link rel="stylesheet" href="/assets/mobile-tools-v4.css">
   <script defer src="/assets/mobile-tools-v4.js"></script>
+  <script defer src="/assets/mobile-share-links-v1.js?v=90"></script>
 </head>
 <body><header><a class="back" href="/">חזרה לבית</a><img src="/boo-nesahek-logo.png" alt="בואו נשחק"></header>
 <main><h1 class="page-title"><span class="screen-title">לוח התארגנות לילדים</span><span class="print-title">לוח התארגנות יומי</span></h1><p class="intro">הכינו לוח התארגנות לילדים בהתאמה אישית ובחינם. בחרו את הפעולות המתאימות לילד או לילדה, סדרו אותן לפי רצף היום והדפיסו לוח חזותי ברור ונוח לשימוש. הלוח מתאים להתארגנות בבית, בגן ובקליניקה.</p>
-<div class="builder"><section class="panel"><label><strong>כותרת הלוח</strong><input id="title" class="title-input" value="לוח ההתארגנות היומי שלי"></label><div class="gender-picker" role="group" aria-label="בחירת בן או בת"><button id="chooseGirl" class="active" type="button" aria-pressed="true">👧 בת</button><button id="chooseBoy" type="button" aria-pressed="false">👦 בן</button></div><div id="choices" class="tasks"></div><div class="custom"><input id="customText" placeholder="פעולה אישית"><button id="addCustom">הוספה</button></div></section>
+<div class="builder"><section class="panel"><label><strong>כותרת הלוח</strong><input id="title" class="title-input" value="לוח ההתארגנות היומי שלי"></label><div class="gender-picker" role="group" aria-label="בחירת בן או בת"><button id="chooseGirl" class="active" type="button" aria-pressed="true">👧 בת</button><button id="chooseBoy" type="button" aria-pressed="false">👦 בן</button></div><strong class="period-label">מתי הפעולה מתרחשת?</strong><div class="period-picker" role="tablist" aria-label="בחירת זמן ביום"><button type="button" class="active" data-period="morning" role="tab" aria-selected="true">☀️ בוקר</button><button type="button" data-period="afternoon" role="tab" aria-selected="false">🌤️ צהריים</button><button type="button" data-period="evening" role="tab" aria-selected="false">🌙 ערב</button></div><div id="choices" class="tasks" role="tabpanel"></div><div class="custom"><input id="customText" placeholder="פעולה אישית"><button id="addCustom">הוספה</button></div></section>
 <section class="board"><div class="board-head"><img src="/boo-nesahek-logo.png" alt=""><h2 id="boardTitle">לוח ההתארגנות היומי שלי</h2></div><div id="list" class="list"></div><div class="actions"><button id="share" class="secondary">📱 קישור לוח התארגנות לפלאפון</button><button type="button" onclick="printBoard('small')">🖨️ הדפסה/הורדה של לוח התארגנות – איורים קטנים</button><button type="button" onclick="printBoard('large')">🖨️ הדפסה/הורדה של לוח התארגנות – איורים גדולים</button><button id="clear" class="secondary">ניקוי הלוח</button></div><p class="legal">© בואו נשחק — לשימוש אישי בלבד. המידע והפעילויות אינם מהווים תחליף לייעוץ, אבחון או טיפול מקצועי.</p></section></div>
 <section class="seo-content" aria-label="מידע על לוחות התארגנות לילדים">
   <section class="related-boards">
@@ -68,13 +103,37 @@
 const base='/icon-bank/daily-routine/';
 document.querySelectorAll('.guide details[open]').forEach(item=>item.removeAttribute('open'));
 const imageTitle='לוח התארגנות יומי לילדים';
-const tasks=[['0.webp','קימה'],['toilet.webp','שירותים'],['1.webp','צחצוח שיניים'],['2.webp','לבוש'],['3.webp','ארוחת בוקר'],['4.webp','ארגון התיק'],['5.webp','בית ספר'],['6.webp','גן'],['7.webp','חזרה הביתה'],['8.webp','ארוחת צהריים'],['9.webp','שיעורי בית'],['10.webp','משחק עם חברים'],['11.webp','גינה'],['12.webp','יצירה'],['13.webp','קריאה'],['14.webp','סידור משחקים'],['15.webp','זמן מסך'],['16.webp','מקלחת'],['17.webp','לבישת פיג׳מה'],['18.webp','סיפור לפני השינה'],['19.webp','שינה']];
-let gender='girl',selected=[];const choices=document.querySelector('#choices'),list=document.querySelector('#list');
+const tasks=[
+  {id:'wake',img:'0.webp',label:'קימה',periods:['morning']},
+  {id:'toilet',img:'toilet.webp',label:'שירותים',periods:['morning']},
+  {id:'brush-teeth',img:'1.webp',label:'צחצוח שיניים',periods:['morning','evening']},
+  {id:'dress',img:'2.webp',label:'לבוש',periods:['morning']},
+  {id:'breakfast',img:'3.webp',label:'ארוחת בוקר',periods:['morning']},
+  {id:'pack-bag',img:'4.webp',label:'ארגון התיק',periods:['morning']},
+  {id:'school',img:'5.webp',label:'בית ספר',periods:['morning','afternoon']},
+  {id:'kindergarten',img:'6.webp',label:'גן',periods:['morning','afternoon']},
+  {id:'home',img:'7.webp',label:'חזרה הביתה',periods:['afternoon']},
+  {id:'lunch',img:'8.webp',label:'ארוחת צהריים',periods:['afternoon']},
+  {id:'homework',img:'9.webp',label:'שיעורי בית',periods:['afternoon']},
+  {id:'friends',img:'10.webp',label:'משחק עם חברים',periods:['afternoon']},
+  {id:'playground',img:'11.webp',label:'גינה',periods:['afternoon']},
+  {id:'craft',img:'12.webp',label:'יצירה',periods:['afternoon']},
+  {id:'reading',img:'13.webp',label:'קריאה',periods:['afternoon']},
+  {id:'tidy',img:'14.webp',label:'סידור משחקים',periods:['afternoon']},
+  {id:'screen',img:'15.webp',label:'זמן מסך',periods:['afternoon']},
+  {id:'dinner',img:'20.webp',label:'ארוחת ערב',periods:['evening']},
+  {id:'bath',img:'16.webp',label:'מקלחת',periods:['evening']},
+  {id:'pajamas',img:'17.webp',label:'לבישת פיג׳מה',periods:['evening']},
+  {id:'story',img:'18.webp',label:'סיפור לפני השינה',periods:['evening']},
+  {id:'sleep',img:'19.webp',label:'שינה',periods:['evening']}
+];
+let gender='girl',activePeriod='morning',selected=[];const choices=document.querySelector('#choices'),list=document.querySelector('#list');
 const taskImage=img=>`${base}${gender}/${img}`;
-function buildChoices(){choices.innerHTML='';tasks.forEach(([img,label])=>{const b=document.createElement('button');b.className='task-choice';b.innerHTML=`<img src="${taskImage(img)}" alt="${label}" title="${imageTitle}"><span>${label}</span>`;b.onclick=()=>{const i=selected.findIndex(x=>x.label===label);i>=0?selected.splice(i,1):selected.push({img,label});render()};choices.append(b)})}
+function buildChoices(){choices.innerHTML='';tasks.filter(task=>task.periods.includes(activePeriod)).forEach(task=>{const choiceKey=`${activePeriod}:${task.id}`;const b=document.createElement('button');b.className='task-choice';b.dataset.choiceKey=choiceKey;b.innerHTML=`<img src="${taskImage(task.img)}" alt="${task.label}" title="${imageTitle}"><span>${task.label}</span>`;b.onclick=()=>{const i=selected.findIndex(x=>x.choiceKey===choiceKey);i>=0?selected.splice(i,1):selected.push({img:task.img,label:task.label,choiceKey});render()};choices.append(b)})}
+document.querySelectorAll('.period-picker button').forEach(button=>button.onclick=()=>{activePeriod=button.dataset.period;document.querySelectorAll('.period-picker button').forEach(item=>{const active=item===button;item.classList.toggle('active',active);item.setAttribute('aria-selected',active)});buildChoices();render()});
 function chooseGender(next){gender=next;chooseGirl.classList.toggle('active',gender==='girl');chooseBoy.classList.toggle('active',gender==='boy');chooseGirl.setAttribute('aria-pressed',gender==='girl');chooseBoy.setAttribute('aria-pressed',gender==='boy');buildChoices();render()}
 chooseGirl.onclick=()=>chooseGender('girl');chooseBoy.onclick=()=>chooseGender('boy');
-function render(){[...choices.children].forEach((b,i)=>b.classList.toggle('selected',selected.some(x=>x.label===tasks[i][1])));list.innerHTML='';if(!selected.length){list.innerHTML='<div class="empty">בחרו פעולות כדי להתחיל לבנות את לוח ההתארגנות היומי</div>';return}selected.forEach((x,i)=>{const row=document.createElement('div');row.className='row';const src=x.custom?x.img:taskImage(x.img);row.innerHTML=`<input class="check" type="checkbox" aria-label="סימון ${x.label}"><img src="${src}" alt="${x.label}" title="${imageTitle}"><strong>${x.label}</strong><div class="moves"><button aria-label="העברה למעלה">↑</button><button aria-label="העברה למטה">↓</button><button aria-label="מחיקה">×</button></div>`;const bs=row.querySelectorAll('button');bs[0].onclick=()=>move(i,-1);bs[1].onclick=()=>move(i,1);bs[2].onclick=()=>{selected.splice(i,1);render()};list.append(row)})}
+function render(){[...choices.children].forEach(b=>b.classList.toggle('selected',selected.some(x=>x.choiceKey===b.dataset.choiceKey)));list.innerHTML='';if(!selected.length){list.innerHTML='<div class="empty">בחרו פעולות כדי להתחיל לבנות את לוח ההתארגנות היומי</div>';return}selected.forEach((x,i)=>{const row=document.createElement('div');row.className='row';const src=x.custom?x.img:taskImage(x.img);row.innerHTML=`<input class="check" type="checkbox" aria-label="סימון ${x.label}"><img src="${src}" alt="${x.label}" title="${imageTitle}"><strong>${x.label}</strong><div class="moves"><button aria-label="העברה למעלה">↑</button><button aria-label="העברה למטה">↓</button><button aria-label="מחיקה">×</button></div>`;const bs=row.querySelectorAll('button');bs[0].onclick=()=>move(i,-1);bs[1].onclick=()=>move(i,1);bs[2].onclick=()=>{selected.splice(i,1);render()};list.append(row)})}
 function move(i,d){const n=i+d;if(n<0||n>=selected.length)return;[selected[i],selected[n]]=[selected[n],selected[i]];render()}
 function encodeBoard(){const data=selected.map(x=>[x.custom?x.img:taskImage(x.img),x.label]);return btoa(unescape(encodeURIComponent(JSON.stringify(data)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
 function boardLink(){const q=new URLSearchParams;q.set('d',encodeBoard());q.set('t',title.value||'לוח ההתארגנות היומי שלי');return `${location.origin}/child/daily-routine/?${q}`}
