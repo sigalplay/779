@@ -11,4 +11,7 @@
   .parent-filter-accordion-title[aria-expanded=true] .parent-filter-accordion-arrow{transform:rotate(180deg)}
   .parent-filter-accordion-content{margin-bottom:9px}
   .parent-filter-accordion-content[hidden]{display:none!important}
+  body.therapist-search-mobile-page .search-filter-chip,
+  body.therapist-search-mobile-page .search-development-chip,
+  body.therapist-search-mobile-page .search-time-chip{padding-inline:7px!important;font-size:11px!important;line-height:1.15!important}
 }

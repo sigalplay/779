@@ -1,4 +1,4 @@
-import { SEED_ACTIVITIES } from "/assets/activities-data-BqW1L61q.js";
+import { SEED_ACTIVITIES } from "/assets/activities-data-v99.js";
 import { BOARD_GAMES } from "/assets/board-games-data-D4loEPYW.js";
 
 const STORAGE_KEY = "boo_therapist_free_board_v1";
@@ -105,11 +105,11 @@ function activityImage(item) {
     "seed-107": "/icon-bank/crafts-new/seed-107-colorful-butterfly/hero.webp",
     "seed-112": "/icon-bank/crafts-new/seed-110-pomegranate/hero.webp",
     "seed-113": "/icon-bank/crafts-new/seed-113-shark-teeth/hero.webp",
-    "seed-114": "/icon-bank/food-exposure/seed-114-train/hero.png",
-    "seed-115": "/icon-bank/food-exposure/seed-115-bear/hero.png",
-    "seed-116": "/icon-bank/sensory-new/seed-116-sensory-bag-path/hero.png",
-    "seed-117": "/icon-bank/sensory-new/seed-117-paint-bag/hero.png",
-    "seed-118": "/icon-bank/sensory-new/seed-118-colour-scarf-pull/hero.png",
+    "seed-114": "/icon-bank/food-exposure/seed-114-train/hero.webp",
+    "seed-115": "/icon-bank/food-exposure/seed-115-bear/hero.webp",
+    "seed-116": "/icon-bank/sensory-new/seed-116-sensory-bag-path/hero.webp",
+    "seed-117": "/icon-bank/sensory-new/seed-117-paint-bag/hero.webp",
+    "seed-118": "/icon-bank/sensory-new/seed-118-colour-scarf-pull/hero.webp",
   };
   return item.hero_image || item.image || special[item.id] || `/icon-bank/activities/${item.id}.webp`;
 }

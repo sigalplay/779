@@ -23,8 +23,11 @@
   }
 
   function storageKey() {
-    const patientId = new URLSearchParams(location.search).get("patientBoard");
-    return patientId ? `boo_board_drawing_patient_${patientId}_${localDate()}` : "boo_board_drawing_guest";
+    const params = new URLSearchParams(location.search);
+    const patientId = params.get("patientBoard");
+    const requestedDate = params.get("boardDate");
+    const boardDate = /^\d{4}-\d{2}-\d{2}$/.test(requestedDate || "") ? requestedDate : localDate();
+    return patientId ? `boo_board_drawing_patient_${patientId}_${boardDate}` : `boo_board_drawing_guest_${boardDate}`;
   }
 
   function loadStrokes() {
@@ -162,7 +165,7 @@
       wrap = document.createElement("div");
       wrap.className = "meeting-drawing-tools";
       wrap.dataset.drawingTools = "true";
-      wrap.innerHTML = `<button type="button" class="meeting-pen-button" data-board-pen aria-pressed="false" title="כתיבה על הלוח"><span aria-hidden="true">✎</span> כתיבה</button><div class="meeting-drawing-controls" data-drawing-controls hidden><label>צבע <input type="color" value="${color}" data-pen-color></label><label>עובי <input type="range" min="2" max="14" step="1" value="${width}" data-pen-width><output data-width-output>${width}</output></label><button type="button" data-pen-mode class="active">עט</button><button type="button" data-eraser-mode>מחק</button><button type="button" data-clear-drawing>מחיקת הכתיבה</button><small data-drawing-status></small></div>`;
+      wrap.innerHTML = `<button type="button" class="meeting-pen-button" data-board-pen aria-pressed="false" title="עט — כתיבה וציור על הלוח"><span class="meeting-action-icon" aria-hidden="true">✎</span><span class="meeting-action-label-desktop">עט</span><span class="meeting-action-label-mobile">עט</span></button><div class="meeting-drawing-controls" data-drawing-controls hidden><label>צבע <input type="color" value="${color}" data-pen-color></label><label>עובי <input type="range" min="2" max="14" step="1" value="${width}" data-pen-width><output data-width-output>${width}</output></label><button type="button" data-pen-mode class="active">עט</button><button type="button" data-eraser-mode>מחק</button><button type="button" data-clear-drawing>מחיקת הכתיבה</button><small data-drawing-status></small></div>`;
       const timer = actions.querySelector(".meeting-timer");
       actions.insertBefore(wrap, timer || actions.querySelector(".meeting-fullscreen"));
     }

@@ -174,7 +174,8 @@
 
   .compact-seasonal-section { padding: .7rem !important; border-radius: 1.25rem !important; }
   .compact-seasonal-section > div:first-child { margin-bottom: .65rem !important; }
-  .compact-seasonal-section h2 { font-size: 1.1rem !important; }
+  .compact-seasonal-section h2,
+  .compact-seasonal-section #seasonal-title { font-size: 1.1rem !important; }
   .compact-seasonal-section > div:last-child { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: .35rem !important; }
   .compact-seasonal-section > div:last-child > a { border-radius: .75rem !important; }
   .compact-seasonal-section > div:last-child > a > div:first-child { aspect-ratio: 1 / 1 !important; }
@@ -329,8 +330,8 @@
   }
 }
 
-/* Temporary Hebrew-only launch: hide the route to English on Hebrew pages.
-   English files remain intact and English pages still offer a way back to Hebrew. */
+/* English remains available for internal review, but its public switch is
+   paused until the English pages complete their content and loading QA. */
 html[lang="he"] [aria-label="בחירת שפה"],
 html[lang="he"] [aria-label="Choose language"],
 html[lang="he"] .mobile-language-switch {

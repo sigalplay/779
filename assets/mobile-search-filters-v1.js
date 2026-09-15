@@ -98,6 +98,7 @@
 
   function adapt() {
     const path = location.pathname.replace(/\/$/, "");
+    document.body?.classList.toggle("therapist-search-mobile-page", path === "/therapist/build");
     if (path === "/therapist/build") {
       markFilterGroup("מטרות טיפוליות", "search-development-chip");
       markFilterGroup("משך הפעילות", "search-time-chip");

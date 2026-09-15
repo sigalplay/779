@@ -33,7 +33,9 @@
     const params = new URLSearchParams(location.search);
     const patientId = params.get("patientBoard");
     const cloudReady = params.get("cloudBoardReady") === "1";
-    const patientSuffix = patientId ? `&patientBoard=${encodeURIComponent(patientId)}${cloudReady ? "&cloudBoardReady=1" : ""}` : "";
+    const boardDate = params.get("boardDate");
+    const dateSuffix = /^\d{4}-\d{2}-\d{2}$/.test(boardDate || "") ? `&boardDate=${encodeURIComponent(boardDate)}` : "";
+    const patientSuffix = patientId ? `&patientBoard=${encodeURIComponent(patientId)}${dateSuffix}${cloudReady ? "&cloudBoardReady=1" : ""}` : dateSuffix;
     let activePatient = null;
     try { activePatient = JSON.parse(localStorage.getItem("boo_active_cloud_patient") || "null"); } catch {}
     const planningLabel = patientId && activePatient?.id === patientId
@@ -48,6 +50,7 @@
       <a class="meeting-add-activity" href="/therapist/build?tab=search&boardMode=1${patientSuffix}">הוסף פעילות ללוח המפגש</a>
       <a class="meeting-board-link" href="/therapist/motor-trail?returnTo=session${patientSuffix}"><span class="meeting-action-icon" aria-hidden="true">＋</span><span class="meeting-action-label-desktop">הוספת מסלול מוטורי</span><span class="meeting-action-label-mobile">מסלול מוטורי</span></a>
       <button class="meeting-timer" type="button"><span class="meeting-action-icon" aria-hidden="true">⏱</span><span class="meeting-action-label-desktop">טיימר חזותי</span><span class="meeting-action-label-mobile">טיימר</span></button>
+      <button class="meeting-photo" type="button"><span class="meeting-action-icon" aria-hidden="true">📷</span><span class="meeting-action-label-desktop">צילום או הוספת תמונה</span><span class="meeting-action-label-mobile">תמונה</span></button>
       <button class="meeting-fullscreen" type="button" aria-pressed="false"><span class="meeting-action-icon" aria-hidden="true">⛶</span><span data-fullscreen-label>מסך מלא</span></button>`;
     list.parentElement.insertBefore(actions, list);
     hideLegacySessionControls();
@@ -197,7 +200,9 @@
     if (selectedPatient) {
       event.preventDefault();
       const patientId = selectedPatient.dataset.selectPatient;
-      location.assign(`/therapist/build?view=session&patientBoard=${encodeURIComponent(patientId)}`);
+      const boardDate = new URLSearchParams(location.search).get("boardDate");
+      const dateSuffix = /^\d{4}-\d{2}-\d{2}$/.test(boardDate || "") ? `&boardDate=${encodeURIComponent(boardDate)}` : "";
+      location.assign(`/therapist/build?view=session&patientBoard=${encodeURIComponent(patientId)}${dateSuffix}`);
       return;
     }
     if (event.target.closest?.("[data-use-guest-board]")) {
@@ -220,6 +225,13 @@
       document.querySelector("[data-meeting-original-timer]")?.click();
       return;
     }
+    const photo = event.target.closest?.(".meeting-photo");
+    if (photo) {
+      event.preventDefault();
+      event.stopPropagation();
+      window.dispatchEvent(new CustomEvent("boo_open_board_photo_picker"));
+      return;
+    }
     const navigation = event.target.closest?.(".meeting-board-actions a[href]");
     if (navigation) {
       event.preventDefault();
@@ -234,7 +246,8 @@
     const fullscreenLabel = fullscreen.querySelector("[data-fullscreen-label]");
     if (fullscreenLabel) fullscreenLabel.textContent = active ? "יציאה ממסך מלא" : "מסך מלא";
     fullscreen.setAttribute("aria-pressed", String(active));
-    if (active && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+    const board = document.querySelector("ol.meeting-board-surface");
+    if (active && board?.requestFullscreen) board.requestFullscreen().catch(() => {});
     if (!active && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
   }, true);
 
@@ -283,6 +296,15 @@
       if (label) label.textContent = "מסך מלא";
       button.setAttribute("aria-pressed", "false");
     }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !document.body.classList.contains("meeting-board-fullscreen")) return;
+    document.body.classList.remove("meeting-board-fullscreen");
+    const button = document.querySelector(".meeting-fullscreen");
+    button?.setAttribute("aria-pressed", "false");
+    const label = button?.querySelector("[data-fullscreen-label]");
+    if (label) label.textContent = "מסך מלא";
   });
 
   window.addEventListener("boo_cloud_board_status", (event) => {

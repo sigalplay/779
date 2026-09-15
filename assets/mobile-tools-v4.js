@@ -386,7 +386,7 @@
   }
 
   function compactSeasonalSection() {
-    const heading = [...document.querySelectorAll("main h2")].find((item) => /פעילויות לראש השנה|Rosh Hashanah Activities/.test(item.textContent));
+    const heading = document.querySelector("main #seasonal-title") || [...document.querySelectorAll("main h2")].find((item) => /פעילויות לראש השנה|פעילויות לסוכות|Rosh Hashanah Activities|Sukkot Activities/.test(item.textContent));
     const section = heading?.closest("section");
     if (section) section.classList.add("compact-seasonal-section");
   }
