@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="793" viewBox="0 0 1120 793" role="img" aria-labelledby="title desc">
+  <title id="title">שבלונה לסוכה תלת־ממדית</title>
+  <desc id="desc">פריסה לבנה הכוללת קיר אחורי, קיר צד, רצפה ולשונית הדבקה לרצפה</desc>
+  <rect width="1120" height="793" fill="#ffffff"/>
+  <g transform="translate(80 55)" font-family="Arial, sans-serif" direction="rtl">
+    <!-- White printable net: side wall, back wall, floor, one glue tab -->
+    <path d="M80 75 H280 V30 H720 V400 H720 V690 H280 V455 H80 Z" fill="#ffffff" stroke="#171717" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Trim separating the wall tab from the floor -->
+    <path d="M280 400 V455" fill="none" stroke="#171717" stroke-width="5"/>
+    <!-- Fold lines -->
+    <path d="M280 75 V400 M280 400 H720 M80 400 H280" fill="none" stroke="#555" stroke-width="3" stroke-dasharray="13 10"/>
+    <!-- Subtle panel labels for the assisting adult -->
+    <g fill="#444" font-size="24" text-anchor="middle">
+      <text x="180" y="225">קיר צד</text>
+      <text x="500" y="225">קיר אחורי</text>
+      <text x="500" y="555">רצפה</text>
+    </g>
+    <!-- Glue tab label and simple glue-drop cue -->
+    <g fill="#111" text-anchor="middle">
+      <path d="M90 426 C90 417 101 407 101 407 C101 407 112 417 112 426 A11 11 0 1 1 90 426Z" fill="#b9dfcf" stroke="#171717" stroke-width="2"/>
+      <text x="188" y="420" font-size="16" font-weight="700">
+        <tspan x="188">לשונית הדבקה</tspan>
+        <tspan x="188" dy="19">לרצפה</tspan>
+      </text>
+    </g>
+  </g>
+</svg>

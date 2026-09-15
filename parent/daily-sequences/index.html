@@ -26,10 +26,12 @@
     @media(max-width:700px){main{width:min(100% - 1rem,1120px);padding-top:1rem}.sequence-grid{grid-template-columns:1fr 1fr;gap:.55rem}.sequence-card img{height:130px;padding:.45rem}.caption{padding:.65rem}.caption strong{font-size:.88rem}.caption span{font-size:.72rem}.detail{padding:.65rem}.sequence-tools{align-items:flex-start;padding:.7rem}.layout-picker{flex-wrap:wrap}.layout-picker strong{width:100%}.steps.row-layout{grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem}.steps.column-layout{grid-template-columns:minmax(0,230px)}.step p{font-size:.8rem}.bank-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.bank-card span{font-size:.7rem}}
     @media print{@page{size:A4 portrait;margin:10mm}header,.sequence-grid,.intro,.detail-head .close,.sequence-tools,.step-bank,.remove-mark,.move-controls{display:none!important}body,main,.detail{margin:0!important;padding:0!important;background:#fff!important}.detail{display:none!important;border:0!important}.detail.open{display:block!important}.detail-head{margin-bottom:4mm}.controls{display:none}.steps{display:grid!important;width:fit-content!important;max-width:100%!important;margin:0 auto!important;gap:5mm!important;overflow:visible!important;align-items:start!important;justify-content:center!important}.steps.row-layout{grid-template-columns:repeat(4,43mm)!important}.steps.column-layout{grid-template-columns:90mm!important}.step{box-sizing:border-box!important;width:auto!important;height:auto!important;min-height:0!important;padding:0!important;align-self:start!important;break-inside:avoid;page-break-inside:avoid;border:1.5px solid #8f857d;border-radius:5mm;background:#fff}.step-toggle{height:auto!important}.steps.row-layout .step img{width:43mm!important;height:43mm!important;aspect-ratio:auto}.steps.column-layout .step-toggle{display:grid;grid-template-columns:45mm auto;align-items:center}.steps.column-layout .step img{width:45mm;height:45mm;aspect-ratio:auto}.step p{font-size:14pt;padding:3mm}.number{width:8mm;height:8mm;font-size:12pt}.footer{display:none}}
   </style>
-  <link rel="stylesheet" href="/assets/mobile-tools-v4.css">
+  <link rel="stylesheet" href="/assets/mobile-tools-v4.css?v=96">
   <script defer src="/assets/mobile-tools-v4.js"></script>
   <link rel="stylesheet" href="/assets/calendar-qa-v27.css">
   <script defer src="/assets/calendar-qa-v27.js"></script>
+  <link rel="stylesheet" href="/assets/v92-board-and-search.css?v=96">
+  <link rel="stylesheet" href="/assets/mobile-guidance-cards-v1.css?v=92">
 </head>
 <body>
   <header><a href="/">חזרה לדף הראשי</a><img src="/boo-nesahek-logo.png" alt="בואו נשחק"></header>
@@ -59,5 +61,6 @@
     grid.addEventListener('click',e=>{const b=e.target.closest('[data-id]');if(!b)return;active=b.dataset.id;gender='girl';layout='column';const s=sequences.find(x=>x.id===active);selectedKeys=s.steps.map(step=>step[0]);render();detail.scrollIntoView({behavior:'smooth',block:'start'})});
   </script>
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"076cb1e00db44c5c8f0690585fec558a"}'></script>
-<script defer src="/assets/american-english-v1.js"></script></body>
+<script defer src="/assets/american-english-v1.js"></script>  <script defer src="/assets/v92-board-and-search.js?v=96"></script>
+</body>
 </html>
