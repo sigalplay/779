@@ -337,3 +337,24 @@ html[lang="he"] [aria-label="Choose language"],
 html[lang="he"] .mobile-language-switch {
   display: none !important;
 }
+
+/* Keep the legal notice at the end of the page on every screen size. */
+@media screen {
+  .global-print-legal {
+    position: static !important;
+    display: block !important;
+    width: min(100%, 72rem) !important;
+    margin: 0 auto 5.5rem !important;
+    padding: 0.75rem 1rem 1rem !important;
+    color: hsl(var(--muted-foreground)) !important;
+    font-size: 0.75rem !important;
+    line-height: 1.6 !important;
+    text-align: center !important;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .global-print-legal {
+    margin-bottom: 1rem !important;
+  }
+}
