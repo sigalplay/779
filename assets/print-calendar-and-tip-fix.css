@@ -60,10 +60,56 @@
     margin: 12mm;
   }
 
+  /* Keep the calendar visible and centered while editor controls stay hidden. */
+  body.calendar-printing .calendar-builder {
+    display: block !important;
+    width: 100% !important;
+    direction: ltr !important;
+  }
+
+  body.calendar-printing .calendar-builder > :first-child,
+  body.calendar-printing .calendar-builder > .grid > :first-child,
+  body.calendar-printing .calendar-builder > .grid > .min-w-0 > :first-child,
+  body.calendar-printing .calendar-builder > .grid > :last-child {
+    display: none !important;
+  }
+
+  body.calendar-printing .calendar-builder > .grid {
+    display: block !important;
+    width: 100% !important;
+    direction: ltr !important;
+  }
+
+  body.calendar-printing .calendar-builder > .grid > .min-w-0,
+  body.calendar-printing .calendar-preview-frame {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  body.calendar-printing main {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
   /* The first month starts on page 1; later months still start on new pages. */
   .hebrew-calendar-pages > .hebrew-calendar-sheet:first-child {
     break-before: auto !important;
     page-break-before: auto !important;
+  }
+
+  /* Keep the printed calendar clean and ink-friendly in both languages. */
+  .calendar-weekday,
+  .calendar-weekday.calendar-shabbat {
+    background: #fff !important;
+  }
+
+  .calendar-sheet-footer p {
+    font-size: 6pt !important;
+    line-height: 1.25 !important;
   }
 
   /* Draw every separator as the same overlay, without changing cell sizes. */
@@ -148,6 +194,8 @@
   body.calendar-mobile-print .calendar-print-pages,
   body.calendar-mobile-print .hebrew-calendar-pages {
     width: 146.4mm !important;
+    margin-right: auto !important;
+    margin-left: auto !important;
   }
 
   .hebrew-calendar-sheet,
@@ -155,7 +203,7 @@
     box-sizing: border-box !important;
     width: 146.4mm !important;
     height: 246.2mm !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
     padding-right: 6mm !important;
     padding-left: 6mm !important;
   }
