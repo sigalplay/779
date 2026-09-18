@@ -245,12 +245,6 @@
     ,"הוסף לתכנית": "Add to plan"
     ,"הוסף לתוכנית": "Add to plan"
     ,"הוסף למפגש": "Add to session"
-    ,"בית": "Home"
-    ,"פעילויות": "Activities"
-    ,"מועדפים": "Favorites"
-    ,"תפריט": "Menu"
-    ,"אודות": "About"
-    ,"פעילות": "Activity"
   };
 
   function isEnglish() {

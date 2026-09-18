@@ -416,19 +416,30 @@
   }
 
 
-  /* Mobile bottom bar: show About right next to Favorites. */
+  /* Mobile bottom bar: show About right next to Favorites, and translate labels for English. */
   function installMobileAboutTab() {
     const favorites = [...document.querySelectorAll('nav a[href$="/favorites"], nav a[href="/favorites"]')]
       .find((link) => link.closest("nav")?.className.includes("bottom-0"));
     const bar = favorites?.parentElement;
     if (!bar) return;
+
+    /* Translate existing labels when in English mode. */
+    const isEn = (document.documentElement.lang || "").toLowerCase().startsWith("en");
+    if (isEn) {
+      const labelMap = { "בית": "Home", "פעילויות": "Activities", "מועדפים": "Favorites", "תפריט": "Menu", "אודות": "About" };
+      bar.querySelectorAll("span").forEach((span) => {
+        const t = labelMap[span.textContent.trim()];
+        if (t) span.textContent = t;
+      });
+    }
+
     if (bar.querySelector('[data-mobile-about-tab="1"]')) return;
     const link = document.createElement("a");
     link.dataset.mobileAboutTab = "1";
     link.className = favorites.className.replace("text-primary", "text-muted-foreground");
     link.href = favorites.getAttribute("href").replace(/favorites\/?$/, "about/");
     link.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24" style="width: 20px; height: 20px; flex: 0 0 20px; fill: none; stroke: currentcolor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5"></path><path d="M12 8h.01"></path></svg><span></span>';
-    const label = (document.documentElement.lang || "").toLowerCase().startsWith("en") ? "About" : "אודות";
+    const label = isEn ? "About" : "אודות";
     link.querySelector("span").textContent = label;
     favorites.insertAdjacentElement("afterend", link);
     /* grid-cols-5 is not in the compiled CSS, so widen the grid inline. */
