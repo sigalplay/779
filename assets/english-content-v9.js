@@ -220,13 +220,47 @@
     ,"בחרו לפחות שלב אחד שיופיע ברצף.": "Choose at least one step to include."
     ,"העברה אחורה": "Move backward"
     ,"העברה קדימה": "Move forward"
+    ,"מעבר ללוח שמור…": "Go to a saved board…"
+    ,"משכפלת…": "Duplicating…"
+    ,"שכפול לשבוע הבא": "Duplicate for next week"
+    ,"נסי שוב": "Try again"
+    ,"מעבר בין לוחות טיפול": "Navigate treatment boards"
+    ,"הטיפול הקודם": "Previous session"
+    ,"תאריך הטיפול": "Session date"
+    ,"הטיפול הבא": "Next session"
+    ,"מעבר ללוח טיפול שמור": "Go to a saved treatment board"
+    ,"טוענת לוחות…": "Loading boards…"
+    ,"תצוגה מקדימה של התמונה": "Photo preview"
+    ,"התמונה שתתווסף ללוח": "Photo to add to the board"
+    ,"תצוגה מקדימה": "Preview"
+    ,"הוספה ללוח": "Add to board"
+    ,"צילום או בחירה מחדש": "Retake or choose another photo"
+    ,"ביטול": "Cancel"
+    ,"תמונה": "Photo"
+    ,"חיפוש לפי שם הפעילות…": "Search by activity name…"
+    ,"חיפוש לפי שם הפעילות": "Search by activity name"
+    ,"ניקוי החיפוש": "Clear search"
+    ,"כל הפעילויות בבנק": "All activities in the library"
+    ,"לא נמצאה פעילות בשם הזה": "No activity with that name was found"
+    ,"הוסף לתכנית": "Add to plan"
+    ,"הוסף לתוכנית": "Add to plan"
+    ,"הוסף למפגש": "Add to session"
   };
 
   function isEnglish() {
     return location.pathname === "/en" || location.pathname.startsWith("/en/") || document.documentElement.lang === "en";
   }
 
+  const __memo_translateText = new Map();
   function translateText(text) {
+    if (typeof text !== 'string') return __impl_translateText(text);
+    const hit = __memo_translateText.get(text);
+    if (hit !== undefined) return hit;
+    const out = __impl_translateText(text);
+    if (__memo_translateText.size < 8000) __memo_translateText.set(text, out);
+    return out;
+  }
+  function __impl_translateText(text) {
     const exact = translations[text];
     if (exact) return exact;
     const trimmed = text.trim();
@@ -239,6 +273,8 @@
     if (trimmed === "העברה למעלה") return "Move up";
     if (trimmed === "העברה למטה") return "Move down";
     if (trimmed === "מחיקה") return "Delete";
+    const results = trimmed.match(/^(\d+) פעילויות נמצאו$/);
+    if (results) return `${results[1]} activities found`;
     return text;
   }
 

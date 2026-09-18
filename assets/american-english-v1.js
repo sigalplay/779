@@ -82,7 +82,22 @@
     return location.pathname === "/en" || location.pathname.startsWith("/en/") || document.documentElement.lang === "en";
   }
 
+  const __memo_polish = new Map();
   function polish(value) {
+    if (typeof value !== 'string') return __impl_polish(value);
+    const hit = __memo_polish.get(value);
+    if (hit !== undefined) return hit;
+    const out = __impl_polish(value);
+    if (__memo_polish.size < 8000) __memo_polish.set(value, out);
+    return out;
+  }
+  const MINUTES_RE = /(\d+)\s*\u05d3['\u2019]/g;
+  function __impl_polish(value) {
+    if (MINUTES_RE.test(value)) {
+      MINUTES_RE.lastIndex = 0;
+      value = value.replace(MINUTES_RE, (_, n) => `${n} min`);
+    }
+    MINUTES_RE.lastIndex = 0;
     if (!value || !/[A-Za-z]/.test(value)) return value;
     const leading = value.match(/^\s*/)?.[0] || "";
     const trailing = value.match(/\s*$/)?.[0] || "";

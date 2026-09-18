@@ -5,6 +5,14 @@
   window.print = () => window.setTimeout(nativePrint, 400);
 
   const homePaths = new Set(["/", "/parent", "/therapist"]);
+
+  /* Assigning textContent unconditionally re-triggers the MutationObserver
+     below, which re-runs the same assignment forever and freezes the page.
+     Only write when the value actually changes. */
+  function setText(element, value) {
+    if (element.textContent === value) return;
+    element.textContent = value;
+  }
   let handledHomePath = null;
 
   function updatePathEnhancements() {
@@ -29,6 +37,7 @@
     installMobileLanguageSwitch();
     installTherapistMobileShortcuts(path);
     arrangeUnifiedMenu();
+    installMobileAboutTab();
     formatInfantAgeLabels();
     fitGuidanceDialogs();
   }
@@ -51,8 +60,8 @@
   function formatInfantAgeLabels() {
     document.querySelectorAll("span").forEach((span) => {
       const text = span.textContent.replace(/\s+/g, " ").trim();
-      if (text === "גיל 0.5–1") span.textContent = "גיל 6 חודשים–שנה";
-      if (text === "Ages 0.5–1") span.textContent = "Ages 6–12 months";
+      if (text === "גיל 0.5–1") setText(span, "גיל 6 חודשים–שנה");
+      if (text === "Ages 0.5–1") setText(span, "Ages 6–12 months");
     });
   }
 
@@ -395,15 +404,36 @@
     document.querySelectorAll("main p").forEach((paragraph) => {
       const text = paragraph.textContent.replace(/\s+/g, " ").trim();
       if (text.includes("לא פעם ההכנות ממשיכות גם לאחר ששעות העבודה מסתיימות")) {
-        paragraph.textContent = text.replace(" לא פעם ההכנות ממשיכות גם לאחר ששעות העבודה מסתיימות.", "");
+        setText(paragraph, text.replace(" לא פעם ההכנות ממשיכות גם לאחר ששעות העבודה מסתיימות.", ""));
       } else if (text.includes("The preparation often continues after the working day")) {
-        paragraph.textContent = text.replace(/ The preparation often continues after the working day[^.]*\./, "");
+        setText(paragraph, text.replace(/ The preparation often continues after the working day[^.]*\./, ""));
       } else if (text.startsWith("רוצים להתייעץ בנוגע להתפתחות")) {
-        paragraph.textContent = "רוצים להתייעץ בנוגע להתפתחות, לתפקוד או להשתתפות של ילדכם בחיי היום־יום? ניתן לפנות אליי לתיאום ייעוץ מקצועי בזום או בקליניקה שלי בפתח תקווה, הכולל חשיבה משותפת, הדרכת הורים והתאמת המלצות ופעילויות לצרכים הייחודיים של הילד.";
+        setText(paragraph, "רוצים להתייעץ בנוגע להתפתחות, לתפקוד או להשתתפות של ילדכם בחיי היום־יום? ניתן לפנות אליי לתיאום ייעוץ מקצועי בזום או בקליניקה שלי בפתח תקווה, הכולל חשיבה משותפת, הדרכת הורים והתאמת המלצות ופעילויות לצרכים הייחודיים של הילד.");
       } else if (text.startsWith("אשמח לשמוע מכם גם אם") || text.startsWith("אשמח לשמוע גם אם")) {
-        paragraph.textContent = "אשמח לשמוע גם אם יש לכם שאלה בנוגע לאפליקציה, רעיון לפעילות חדשה או הצעה לשיפור :)";
+        setText(paragraph, "אשמח לשמוע גם אם יש לכם שאלה בנוגע לאפליקציה, רעיון לפעילות חדשה או הצעה לשיפור :)");
       }
     });
+  }
+
+
+  /* Mobile bottom bar: show About right next to Favorites. */
+  function installMobileAboutTab() {
+    const favorites = [...document.querySelectorAll('nav a[href$="/favorites"], nav a[href="/favorites"]')]
+      .find((link) => link.closest("nav")?.className.includes("bottom-0"));
+    const bar = favorites?.parentElement;
+    if (!bar) return;
+    if (bar.querySelector('[data-mobile-about-tab="1"]')) return;
+    const link = document.createElement("a");
+    link.dataset.mobileAboutTab = "1";
+    link.className = favorites.className.replace("text-primary", "text-muted-foreground");
+    link.href = favorites.getAttribute("href").replace(/favorites\/?$/, "about/");
+    link.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24" style="width: 20px; height: 20px; flex: 0 0 20px; fill: none; stroke: currentcolor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5"></path><path d="M12 8h.01"></path></svg><span></span>';
+    const label = (document.documentElement.lang || "").toLowerCase().startsWith("en") ? "About" : "אודות";
+    link.querySelector("span").textContent = label;
+    favorites.insertAdjacentElement("afterend", link);
+    /* grid-cols-5 is not in the compiled CSS, so widen the grid inline. */
+    const columns = bar.children.length;
+    bar.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
   }
 
   function addHolidayShortcut() {
@@ -421,9 +451,27 @@
   const originalPushState = history.pushState;
   history.pushState = function (...args) {
     originalPushState.apply(this, args);
-    setTimeout(updatePathEnhancements, 0);
+    setTimeout(runEnhancements, 0);
   };
-  window.addEventListener("popstate", () => setTimeout(updatePathEnhancements, 0));
-  new MutationObserver(updatePathEnhancements).observe(document.documentElement, { childList: true, subtree: true });
-  updatePathEnhancements();
+  window.addEventListener("popstate", () => setTimeout(runEnhancements, 0));
+  let enhancementsRunning = false;
+  let enhancementsScheduled = false;
+  function runEnhancements() {
+    enhancementsScheduled = false;
+    if (enhancementsRunning) return;
+    enhancementsRunning = true;
+    try {
+      updatePathEnhancements();
+    } finally {
+      /* Ignore the mutations we just made, so the observer cannot loop. */
+      window.setTimeout(() => { enhancementsRunning = false; }, 0);
+    }
+  }
+  function scheduleEnhancements() {
+    if (enhancementsRunning || enhancementsScheduled) return;
+    enhancementsScheduled = true;
+    window.setTimeout(runEnhancements, 120);
+  }
+  new MutationObserver(scheduleEnhancements).observe(document.documentElement, { childList: true, subtree: true });
+  runEnhancements();
 })();

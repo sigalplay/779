@@ -131,8 +131,17 @@
     return location.pathname === "/en" || location.pathname.startsWith("/en/") || document.documentElement.lang === "en";
   }
 
+  const __memo_improve = new Map();
   function improve(value) {
-    if (!value) return value;
+    if (typeof value !== 'string') return __impl_improve(value);
+    const hit = __memo_improve.get(value);
+    if (hit !== undefined) return hit;
+    const out = __impl_improve(value);
+    if (__memo_improve.size < 8000) __memo_improve.set(value, out);
+    return out;
+  }
+  function __impl_improve(value) {
+    if (!value || !value.trim()) return value;
     const before = value.match(/^\s*/)?.[0] || "";
     const after = value.match(/\s*$/)?.[0] || "";
     let core = value.trim();

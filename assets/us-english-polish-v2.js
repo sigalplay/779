@@ -48,6 +48,8 @@
   ]);
 
   const phrases = [
+    [/^(\d+)\s*ד['’]?$/, (_, n) => `${n} min`],
+    [/(\d+)\s*ד['’](?=\s|$)/g, (_, n) => `${n} min`],
     [/^(\d+) items$/i, (_, count) => `${count} ${count === "1" ? "activity" : "activities"}`],
     [/\bAdd to Treatment Plan\b/g, "Add to Session Plan"],
     [/\btreatment plan\b/gi, "session plan"],
@@ -81,7 +83,16 @@
     return location.pathname === "/en" || location.pathname.startsWith("/en/") || document.documentElement.lang === "en";
   }
 
+  const __memo_polish = new Map();
   function polish(value) {
+    if (typeof value !== 'string') return __impl_polish(value);
+    const hit = __memo_polish.get(value);
+    if (hit !== undefined) return hit;
+    const out = __impl_polish(value);
+    if (__memo_polish.size < 8000) __memo_polish.set(value, out);
+    return out;
+  }
+  function __impl_polish(value) {
     if (!value || (!/[A-Za-z]/.test(value) && !/[\u0590-\u05FF]/.test(value))) return value;
     const leading = value.match(/^\s*/)?.[0] || "";
     const trailing = value.match(/\s*$/)?.[0] || "";
@@ -113,27 +124,43 @@
     });
   }
 
+  const queued = new Set();
   let scheduled = false;
-  function schedule() {
+  function schedule(root) {
+    queued.add(root && root.nodeType === 1 ? root : document.body);
     if (scheduled) return;
     scheduled = true;
     requestAnimationFrame(() => {
       scheduled = false;
-      polishRoot(document.body);
+      const roots = [...queued];
+      queued.clear();
+      if (roots.includes(document.body)) polishRoot(document.body);
+      else roots.forEach(polishRoot);
     });
   }
 
   function start() {
-    schedule();
-    new MutationObserver(schedule).observe(document.body, {
+    schedule(document.body);
+    new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === "childList") {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === 1) schedule(node);
+            else if (node.parentElement) schedule(node.parentElement);
+          });
+        } else if (mutation.target.nodeType === 1) schedule(mutation.target);
+        else if (mutation.target.parentElement) schedule(mutation.target.parentElement);
+      });
+    }).observe(document.body, {
       childList: true,
       subtree: true,
       characterData: true,
       attributes: true,
       attributeFilter: ["title", "aria-label", "placeholder", "value"]
     });
-    window.addEventListener("boo_language_change", schedule);
+    window.addEventListener("boo_language_change", () => schedule(document.body));
   }
+
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
   else start();

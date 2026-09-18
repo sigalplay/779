@@ -281,6 +281,7 @@
     document.documentElement.lang = englishPreview ? "en" : "he";
     document.documentElement.dir = englishPreview ? "ltr" : "rtl";
     document.querySelectorAll("button,a").forEach((element) => {
+      if (element.hasAttribute("data-boo-lang-switch")) return;
       const text = (element.textContent || "").replace(/\s+/g, " ").trim();
       if (text === "English" || (text === "עברית" && (element.tagName === "BUTTON" || element.getAttribute("href") === "/en"))) {
         element.hidden = true;
