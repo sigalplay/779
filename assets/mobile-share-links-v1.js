@@ -24,13 +24,14 @@
 
   const markLinks = () => {
     if (!phone.matches) return;
+    const isEnglish = (document.documentElement.lang || '').toLowerCase().startsWith('en');
     document.querySelectorAll(selector).forEach((field) => {
       if (!isShareField(field)) return;
       field.classList.add('mobile-openable-board-link');
       field.setAttribute('role', 'link');
       field.setAttribute('tabindex', '0');
-      field.setAttribute('title', 'פתיחת הלוח');
-      field.setAttribute('aria-label', 'פתיחת הקישור ללוח');
+      field.setAttribute('title', isEnglish ? 'Open the board' : 'פתיחת הלוח');
+      field.setAttribute('aria-label', isEnglish ? 'Open the board link' : 'פתיחת הקישור ללוח');
     });
   };
 

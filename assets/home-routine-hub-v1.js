@@ -1,9 +1,10 @@
 (() => {
   "use strict";
 
-  if (window.location.pathname !== "/") return;
+  const pagePath = window.location.pathname.replace(/\/+$/, "") || "/";
+  if (pagePath !== "/" && pagePath !== "/en") return;
 
-  const isEn = document.documentElement.lang === "en" ||
+  const isEn = pagePath === "/en" || document.documentElement.lang === "en" ||
     localStorage.getItem("boo_nesahek_language") === "en";
 
   const t = isEn ? {
@@ -22,17 +23,14 @@
     title: "לוחות התארגנות לילדים",
   };
 
-  const routinePaths = isEn ? [
-    "/en/parent/daily-routine",
-    "/en/parent/weekly-board",
-    "/en/parent/morning-routine",
-    "/en/parent/evening-routine",
-  ] : [
+  const routinePaths = [
     "/parent/daily-routine",
     "/parent/weekly-board",
     "/parent/morning-routine",
     "/parent/evening-routine",
   ];
+
+  const englishRoutinePaths = routinePaths.map((path) => `/en${path}`);
 
   function normalizePath(href) {
     try {
@@ -45,7 +43,8 @@
   function groupRoutineCards() {
     const cards = [...document.querySelectorAll("#root a")].filter((link) => {
       const path = normalizePath(link.getAttribute("href") || "");
-      return routinePaths.includes(path) && link.parentElement?.classList.contains("grid-cols-2");
+      return (routinePaths.includes(path) || (isEn && englishRoutinePaths.includes(path))) &&
+        link.parentElement?.classList.contains("grid-cols-2");
     });
 
     if (cards.length !== routinePaths.length) return false;
