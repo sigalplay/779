@@ -423,14 +423,21 @@
     const bar = favorites?.parentElement;
     if (!bar) return;
 
-    /* Translate existing labels when in English mode. */
+    /* Translate existing labels when in English mode, and keep translating as React re-renders. */
     const isEn = (document.documentElement.lang || "").toLowerCase().startsWith("en");
-    if (isEn) {
-      const labelMap = { "בית": "Home", "פעילויות": "Activities", "מועדפים": "Favorites", "תפריט": "Menu", "אודות": "About" };
+    const labelMap = { "בית": "Home", "פעילויות": "Activities", "מועדפים": "Favorites", "תפריט": "Menu", "אודות": "About" };
+    function translateBarLabels() {
+      if (!(document.documentElement.lang || "").toLowerCase().startsWith("en")) return;
       bar.querySelectorAll("span").forEach((span) => {
         const t = labelMap[span.textContent.trim()];
         if (t) span.textContent = t;
       });
+    }
+    if (isEn) translateBarLabels();
+    if (!bar.dataset.barLabelObserver) {
+      bar.dataset.barLabelObserver = "1";
+      const obs = new MutationObserver(() => translateBarLabels());
+      obs.observe(bar, { childList: true, subtree: true, characterData: true });
     }
 
     if (bar.querySelector('[data-mobile-about-tab="1"]')) return;
