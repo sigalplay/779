@@ -156,6 +156,7 @@
   }
 
   function start() {
+    if (!isEnglish()) return;
     polishRoot(document.body);
     new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {

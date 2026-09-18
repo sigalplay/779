@@ -140,6 +140,7 @@
   }
 
   function start() {
+    if (!isEnglish()) return;
     schedule(document.body);
     new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {

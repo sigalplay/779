@@ -300,6 +300,7 @@
   }
 
   function start() {
+    if (!isEnglish()) return;
     let lastLanguage = isEnglish() ? "en" : "he";
     translate(document.body);
     window.addEventListener("boo_language_change", function () {
