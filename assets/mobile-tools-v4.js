@@ -37,9 +37,14 @@
     installMobileLanguageSwitch();
     installTherapistMobileShortcuts(path);
     arrangeUnifiedMenu();
+    removeCipherReferences();
     installMobileAboutTab();
     formatInfantAgeLabels();
     fitGuidanceDialogs();
+  }
+
+  function removeCipherReferences() {
+    document.querySelectorAll('a[href="/parent/cipher"],a[href="/parent/cipher/"],a[href="/therapist/cipher"],a[href="/therapist/cipher/"]').forEach((link) => link.remove());
   }
 
   function fitGuidanceDialogs() {

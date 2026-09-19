@@ -8,6 +8,13 @@
     ['חופשות מערכת החינוך', 'School breaks']
   ]);
   let scheduled = false;
+  const hideHebrewDates = () => {
+    if (document.getElementById('calendar-english-hide-hebrew-dates')) return;
+    const style = document.createElement('style');
+    style.id = 'calendar-english-hide-hebrew-dates';
+    style.textContent = '.calendar-sheet-range,.calendar-gregorian-day{display:none!important}';
+    document.head.appendChild(style);
+  };
   const translate = () => {
     scheduled = false;
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -31,6 +38,7 @@
     requestAnimationFrame(translate);
   };
   new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
+  hideHebrewDates();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedule);
   else schedule();
 })();

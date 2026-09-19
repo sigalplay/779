@@ -12,19 +12,21 @@
     "/parent/hebrew-calendar",
     "/parent/cipher",
     "/parent/recipes",
-    "/parent/experiments"
+    "/parent/experiments",
+    "/parent/card-games-generator"
   ]);
 
   function pathOf(link) {
     try {
-      return new URL(link.href, location.origin).pathname.replace(/\/$/, "");
+      return new URL(link.href, location.origin).pathname.replace(/\/$/, "").replace(/^\/en(?=\/)/, "");
     } catch {
       return "";
     }
   }
 
   function adaptHomeCards() {
-    const isHome = location.pathname === "/" || location.pathname === "";
+    const homePath = location.pathname.replace(/\/$/, "") || "/";
+    const isHome = homePath === "/" || homePath === "/en";
     document.body.classList.toggle("home-mobile-compact", isHome);
     if (!isHome) return;
 
