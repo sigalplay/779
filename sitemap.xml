@@ -1653,8 +1653,14 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://letsplayot.com/parent/daily-routine/"/>
   </url>
   <url>
+    <loc>https://letsplayot.com/parent/card-games-generator/</loc>
+    <lastmod>2026-09-20</lastmod>
+    <xhtml:link rel="alternate" hreflang="he" href="https://letsplayot.com/parent/card-games-generator/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://letsplayot.com/parent/card-games-generator/"/>
+  </url>
+  <url>
     <loc>https://letsplayot.com/parent/daily-sequences/</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-20</lastmod>
     <xhtml:link rel="alternate" hreflang="he" href="https://letsplayot.com/parent/daily-sequences/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://letsplayot.com/en/parent/daily-sequences/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://letsplayot.com/parent/daily-sequences/"/>
@@ -1766,7 +1772,7 @@
   </url>
   <url>
     <loc>https://letsplayot.com/parent/school-holidays/</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-20</lastmod>
     <xhtml:link rel="alternate" hreflang="he" href="https://letsplayot.com/parent/school-holidays/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://letsplayot.com/parent/school-holidays/"/>
   </url>
