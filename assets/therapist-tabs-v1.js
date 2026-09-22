@@ -19,12 +19,23 @@
   ];
 
   document.addEventListener("click", (event) => {
-    const link = event.target.closest?.(".therapist-tabs a[href]");
+    const link = event.target.closest?.("a[href]");
     if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+    const targetUrl = new URL(link.href, location.href);
+    const targetPath = targetUrl.pathname.replace(/\/$/, "");
+    const bareTherapistEntry =
+      targetUrl.origin === location.origin &&
+      targetPath === "/therapist/build" &&
+      !targetUrl.search &&
+      !targetUrl.hash;
+    const therapistTab = link.matches(".therapist-tabs a[href]");
+    if (!bareTherapistEntry && !therapistTab) return;
+
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
-    window.location.assign(link.href);
+    window.location.assign(bareTherapistEntry ? "/therapist/build?view=session" : link.href);
   }, true);
 
   function activeTab(pathname) {
