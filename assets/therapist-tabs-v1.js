@@ -24,18 +24,29 @@
 
     const targetUrl = new URL(link.href, location.href);
     const targetPath = targetUrl.pathname.replace(/\/$/, "");
+    const sameOrigin = targetUrl.origin === location.origin;
+    const noQueryOrHash = !targetUrl.search && !targetUrl.hash;
     const bareTherapistEntry =
-      targetUrl.origin === location.origin &&
+      sameOrigin &&
       targetPath === "/therapist/build" &&
-      !targetUrl.search &&
-      !targetUrl.hash;
+      noQueryOrHash;
+    const bareHomeReturn =
+      sameOrigin &&
+      location.pathname.startsWith("/therapist/") &&
+      targetPath === "" &&
+      noQueryOrHash;
     const therapistTab = link.matches(".therapist-tabs a[href]");
-    if (!bareTherapistEntry && !therapistTab) return;
+    if (!bareTherapistEntry && !bareHomeReturn && !therapistTab) return;
 
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
-    window.location.assign(bareTherapistEntry ? "/therapist/build?view=session" : link.href);
+    const destination = bareTherapistEntry
+      ? "/therapist/build?view=session"
+      : bareHomeReturn
+        ? "/"
+        : link.href;
+    window.location.assign(destination);
   }, true);
 
   function activeTab(pathname) {
