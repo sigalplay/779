@@ -1,35 +1,37 @@
 (() => {
   "use strict";
 
-  function linkBoard() {
-    if (window.location.pathname !== "/") return false;
-    const link = [...document.querySelectorAll('#root a[href^="/therapist/build"]')].find(
-      (candidate) => candidate.querySelector("h2")?.textContent.trim() === "מטפלים",
-    );
-    if (!link) return false;
+  const target = "/therapist/build?view=session";
+  const isHome = () => location.pathname === "/" || location.pathname === "/en/" || location.pathname === "/en";
+  const isTherapistEntry = (link) => {
+    if (!isHome() || !link?.matches?.('a[href^="/therapist/build"]')) return false;
+    const heading = link.querySelector("h2")?.textContent?.trim();
+    if (heading === "מטפלים" || heading === "Therapists") return true;
+    return link.closest('nav[aria-label="ניווט ראשי"], nav[aria-label="Main navigation"]') !== null
+      && ["למטפלים", "Therapists"].includes(link.textContent.trim());
+  };
 
-    link.href = "/therapist/build?view=session";
-    link.setAttribute("aria-label", "אזור המטפלות - בניית לוח מפגש");
-    if (link.dataset.sessionBoardLinked === "true") return true;
-    link.dataset.sessionBoardLinked = "true";
-    link.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
-      window.location.assign("/therapist/build?view=session");
-    }, true);
-    return true;
+  function updateLinks() {
+    if (!isHome()) return;
+    document.querySelectorAll('#root a[href^="/therapist/build"]').forEach((link) => {
+      if (isTherapistEntry(link)) link.setAttribute("href", target);
+    });
   }
 
+  document.addEventListener("click", (event) => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const link = event.target.closest?.('a[href^="/therapist/build"]');
+    if (!isTherapistEntry(link) || (link.target && link.target !== "_self")) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    location.assign(target);
+  }, true);
+
   let queued = false;
-  const nextFrame = window.requestAnimationFrame?.bind(window) || ((callback) => window.setTimeout(callback, 0));
   function schedule() {
     if (queued) return;
     queued = true;
-    nextFrame(() => {
-      queued = false;
-      linkBoard();
-    });
+    requestAnimationFrame(() => { queued = false; updateLinks(); });
   }
 
   const root = document.getElementById("root") || document.documentElement;
