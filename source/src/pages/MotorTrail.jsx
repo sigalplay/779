@@ -52,6 +52,11 @@ export default function MotorTrail({ mode }) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const returnTo = searchParams.get("returnTo"); // "plan" | "session" | null
+  const requestedReturnPath = searchParams.get("returnPath");
+  const fallbackReturnPath = `/therapist/build${returnTo === "session" ? "?view=session" : ""}`;
+  const returnPath = requestedReturnPath?.startsWith("/") && !requestedReturnPath.startsWith("//")
+    ? requestedReturnPath
+    : fallbackReturnPath;
   const editUid = searchParams.get("edit");
   const [started, setStarted] = useState(false);
 
@@ -156,7 +161,7 @@ export default function MotorTrail({ mode }) {
       addMotorTrailToDraftPlan(order, customItems);
       toast.success("המסלול נוסף לתוכנית הטיפול");
     }
-    navigate(`/therapist/build${returnTo === "session" ? "?view=session" : ""}`);
+    navigate(returnPath);
   }
 
   if (started) {
@@ -207,7 +212,7 @@ export default function MotorTrail({ mode }) {
     <AppShell mode={mode}>
       {returnTo && (
         <Link
-          to={`/therapist/build${returnTo === "session" ? "?view=session" : ""}`}
+          to={returnPath}
           className="mb-4 inline-flex items-center gap-2 rounded-full border border-border/60 bg-card px-4 py-2.5 text-base font-bold text-foreground shadow-sm transition-colors hover:bg-sage/10 print:hidden"
         >
           <ArrowRight className="h-5 w-5" /> {returnTo === "session" ? "חזרה למפגש" : "חזרה לתוכנית הטיפול"}

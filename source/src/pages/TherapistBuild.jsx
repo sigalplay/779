@@ -612,9 +612,9 @@ export default function TherapistBuild() {
                       : t("מסלול מוטורי", "Motor trail");
             const linkTo =
               item.kind === "activity"
-                ? `/activity/${item.id}?mode=therapist&returnTo=session&returnPath=${encodeURIComponent(`/therapist/build?view=session${sessionId ? `&session=${sessionId}` : ""}${linkedPatient?.id ? `&patient=${linkedPatient.id}` : ""}`)}`
+                ? `/activity/${item.id}?${new URLSearchParams({ mode: "therapist", returnTo: "session", returnPath }).toString()}`
                 : item.kind === "motor-trail"
-                  ? `/therapist/motor-trail?returnTo=session&edit=${item.uid}`
+                  ? `/therapist/motor-trail?${new URLSearchParams({ returnTo: "session", returnPath, edit: item.uid }).toString()}`
                   : item.kind === "recipe"
                     ? `/therapist/recipes?r=${item.id}`
                     : item.kind === "experiment"
