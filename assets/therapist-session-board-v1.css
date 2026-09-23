@@ -104,6 +104,31 @@
   .meeting-board-page .meeting-item-controls{top:6px;left:6px;gap:3px}
   .meeting-board-page .meeting-item-controls button{width:24px!important;height:24px!important;min-height:24px!important;font-size:13px!important;box-shadow:0 1px 4px rgba(63,53,46,.08)}
   .meeting-fullscreen-exit{width:44px;height:44px;min-height:44px;font-size:27px}
+
+  .meeting-board-page .meeting-drawing-controls{
+    position:fixed!important;
+    z-index:10010!important;
+    top:50%!important;
+    right:auto!important;
+    left:50%!important;
+    display:grid!important;
+    width:min(420px,calc(100vw - 28px))!important;
+    max-width:none!important;
+    max-height:min(76dvh,620px)!important;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:9px!important;
+    margin:0!important;
+    padding:14px!important;
+    overflow-y:auto;
+    transform:translate(-50%,-50%);
+    border-radius:18px!important;
+    overscroll-behavior:contain;
+  }
+  .meeting-board-page .meeting-drawing-controls label{min-width:0;min-height:42px;justify-content:space-between;padding:6px 8px;border:1px solid #eee7df;border-radius:12px;white-space:normal}
+  .meeting-board-page .meeting-drawing-controls input[type=range]{min-width:0;width:100%}
+  .meeting-board-page .meeting-drawing-controls [data-clear-drawing],
+  .meeting-board-page .meeting-drawing-controls small{grid-column:1/-1}
+  .meeting-board-page .meeting-drawing-controls small{min-width:0;text-align:center}
 }
 
 @media print{.meeting-item-controls,.meeting-fullscreen-exit{display:none!important}}
