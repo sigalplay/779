@@ -25,7 +25,8 @@ import { attachPlanToSession, completeClinicSession, getPatient, getSession, sta
 import { activityTitle, translatedTerm } from "@/lib/content-translations";
 import { useTranslator } from "@/lib/language";
 import { localizedSignLabel, renderVisualSign } from "@/lib/session-board-tools";
-import { getGuestBoard, guestBoardDates, normalizeBoardDate, saveGuestBoard } from "@/lib/session-board-storage";
+import { getGuestBoard, getGuestBoardDrawing, guestBoardDates, normalizeBoardDate, saveGuestBoard, saveGuestBoardDrawing } from "@/lib/session-board-storage";
+import { listPatientBoardDates, loadPatientBoard, savePatientBoard } from "@/lib/session-board-cloud";
 
 function scoreActivity(activity, expandedGoals) {
   return expandedGoals.filter((g) => activity.goals?.includes(g)).length;
@@ -82,7 +83,15 @@ export default function TherapistBuild() {
   const [sessionGuide, setSessionGuide] = useState(null);
   const [sessionTimerOpen, setSessionTimerOpen] = useState(false);
   const [sessionPenActive, setSessionPenActive] = useState(false);
+  const [sessionDrawing, setSessionDrawing] = useState(() => patientBoardId ? [] : getGuestBoardDrawing(currentBoardDate));
   const loadedBoardDateRef = useRef(currentBoardDate);
+  const cloudBoardReadyRef = useRef(false);
+  const skipCloudSaveRef = useRef(false);
+  const cloudSaveTimerRef = useRef(null);
+  const [cloudBoardLoading, setCloudBoardLoading] = useState(false);
+  const [cloudBoardStatus, setCloudBoardStatus] = useState(null);
+  const [cloudPatient, setCloudPatient] = useState(null);
+  const [cloudBoardDates, setCloudBoardDates] = useState([]);
 
   useEffect(() => {
     setDraftPlan(plan);
@@ -93,10 +102,58 @@ export default function TherapistBuild() {
     if (view !== "session" || patientBoardId || loadedBoardDateRef.current === currentBoardDate) return;
     loadedBoardDateRef.current = currentBoardDate;
     setPlan(getGuestBoard(currentBoardDate) ?? []);
+    setSessionDrawing(getGuestBoardDrawing(currentBoardDate));
     setSessionGuide(null);
     setSessionTimerOpen(false);
     setSessionPenActive(false);
   }, [currentBoardDate, patientBoardId, view]);
+
+  useEffect(() => {
+    if (view !== "session" || !patientBoardId) {
+      cloudBoardReadyRef.current = false;
+      return undefined;
+    }
+    let cancelled = false;
+    cloudBoardReadyRef.current = false;
+    setCloudBoardLoading(true);
+    setCloudBoardStatus("loading");
+    Promise.all([loadPatientBoard(patientBoardId, currentBoardDate), listPatientBoardDates(patientBoardId)])
+      .then(([board, dates]) => {
+        if (cancelled) return;
+        loadedBoardDateRef.current = currentBoardDate;
+        skipCloudSaveRef.current = true;
+        setPlan(board.items);
+        setSessionDrawing(board.drawingData);
+        setCloudPatient(board.patient);
+        setCloudBoardDates([...new Set([...dates, currentBoardDate])].sort());
+        localStorage.setItem("boo_active_cloud_patient", JSON.stringify(board.patient));
+        setCloudBoardStatus("saved");
+        cloudBoardReadyRef.current = true;
+      })
+      .catch(() => {
+        if (!cancelled) setCloudBoardStatus("error");
+      })
+      .finally(() => {
+        if (!cancelled) setCloudBoardLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [currentBoardDate, patientBoardId, view]);
+
+  useEffect(() => {
+    if (view !== "session" || !patientBoardId || !cloudBoardReadyRef.current) return undefined;
+    if (skipCloudSaveRef.current) {
+      skipCloudSaveRef.current = false;
+      return undefined;
+    }
+    window.clearTimeout(cloudSaveTimerRef.current);
+    setCloudBoardStatus("saving");
+    cloudSaveTimerRef.current = window.setTimeout(() => {
+      savePatientBoard(patientBoardId, currentBoardDate, plan)
+        .then(() => setCloudBoardStatus("saved"))
+        .catch(() => setCloudBoardStatus("error"));
+    }, 350);
+    return () => window.clearTimeout(cloudSaveTimerRef.current);
+  }, [currentBoardDate, patientBoardId, plan, view]);
 
   useEffect(() => {
     if (view === "session") return;
@@ -367,12 +424,14 @@ export default function TherapistBuild() {
     replaceSessionPlan(plan.filter((_, index) => index !== itemIndex));
   }
 
-  function navigateGuestBoard(date) {
-    if (patientBoardId) return;
-    saveGuestBoard(currentBoardDate, plan);
+  function navigateBoard(date) {
     const nextDate = normalizeBoardDate(date);
-    loadedBoardDateRef.current = nextDate;
-    setPlan(getGuestBoard(nextDate) ?? []);
+    if (!patientBoardId) {
+      saveGuestBoard(currentBoardDate, plan);
+      loadedBoardDateRef.current = nextDate;
+      setPlan(getGuestBoard(nextDate) ?? []);
+      setSessionDrawing(getGuestBoardDrawing(nextDate));
+    }
     const next = new URLSearchParams(searchParams);
     next.set("view", "session");
     next.set("boardDate", nextDate);
@@ -381,11 +440,28 @@ export default function TherapistBuild() {
   }
 
   async function copyGuestBoard(nextDate) {
-    if (patientBoardId) return;
-    saveGuestBoard(currentBoardDate, plan);
-    saveGuestBoard(nextDate, plan);
-    navigateGuestBoard(nextDate);
+    if (patientBoardId) {
+      await savePatientBoard(patientBoardId, nextDate, plan, sessionDrawing);
+      setCloudBoardDates((dates) => [...new Set([...dates, nextDate])].sort());
+    } else {
+      saveGuestBoard(currentBoardDate, plan);
+      saveGuestBoard(nextDate, plan);
+      saveGuestBoardDrawing(nextDate, sessionDrawing);
+    }
+    navigateBoard(nextDate);
     toast.success(t("הלוח שוכפל לשבוע הבא", "The board was copied to next week"));
+  }
+
+  function updateSessionDrawing(nextDrawing) {
+    setSessionDrawing(nextDrawing);
+    if (!patientBoardId) {
+      saveGuestBoardDrawing(currentBoardDate, nextDrawing);
+      return;
+    }
+    setCloudBoardStatus("saving");
+    savePatientBoard(patientBoardId, currentBoardDate, plan, nextDrawing)
+      .then(() => setCloudBoardStatus("saved"))
+      .catch(() => setCloudBoardStatus("error"));
   }
 
   async function addVisualSignToSession(sign) {
@@ -425,11 +501,12 @@ export default function TherapistBuild() {
         >
           <X className="h-6 w-6" />
         </button>
-        {!patientBoardId && <SessionBoardDateNavigation date={currentBoardDate} language={language} savedDates={guestBoardDates(currentBoardDate)} onNavigate={navigateGuestBoard} onCopy={copyGuestBoard} />}
+        <SessionBoardDateNavigation date={currentBoardDate} language={language} savedDates={patientBoardId ? cloudBoardDates : guestBoardDates(currentBoardDate)} onNavigate={navigateBoard} onCopy={copyGuestBoard} />
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="font-display text-3xl font-black">{linkedPatient ? t(`הטיפול של ${linkedPatient.name}`, `${linkedPatient.name}'s session`) : t("לוח המפגש", "Session board")}</h1>
+            <h1 className="font-display text-3xl font-black">{linkedPatient || cloudPatient ? t(`הטיפול של ${(linkedPatient || cloudPatient).name}`, `${(linkedPatient || cloudPatient).name}'s session`) : t("לוח המפגש", "Session board")}</h1>
             <p className="mt-1 text-muted-foreground">{t("בחרי פעילות כדי להתחיל בה. אפשר לחזור ללוח בכל רגע.", "Choose an activity to begin. You can return to the board at any time.")}</p>
+            {patientBoardId && <p role="status" className={cn("mt-1 text-xs font-semibold", cloudBoardStatus === "error" ? "text-red-700" : "text-sage-foreground")}>{cloudBoardStatus === "loading" ? t("טוענת את הלוח…", "Loading board…") : cloudBoardStatus === "saving" ? t("שומרת בענן…", "Saving to cloud…") : cloudBoardStatus === "error" ? t("השמירה בענן נכשלה", "Cloud save failed") : t("נשמר בענן", "Saved to cloud")}</p>}
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex rounded-full border bg-white/90 p-0.5" aria-label={t("בחירת שפה", "Choose language")}>
@@ -445,7 +522,6 @@ export default function TherapistBuild() {
         </div>
 
         <TherapistPostureScissorsTips language={language} hideTriggers openPanel={sessionGuide} onOpenPanelChange={setSessionGuide} />
-        <SessionBoardDrawing active={sessionPenActive} onActiveChange={setSessionPenActive} language={language} />
         <FullscreenBoardTools
           language={language}
           penActive={sessionPenActive}
@@ -455,7 +531,9 @@ export default function TherapistBuild() {
           onAddSign={addVisualSignToSession}
         />
 
-        <ol className="space-y-3">
+        <div className="relative">
+        <SessionBoardDrawing active={sessionPenActive} onActiveChange={setSessionPenActive} language={language} drawingData={sessionDrawing} onDrawingChange={updateSessionDrawing} />
+        {cloudBoardLoading ? <div className="rounded-3xl border border-border/60 bg-card p-10 text-center font-bold text-muted-foreground">{t("טוענת את לוח המטופל…", "Loading the client board…")}</div> : <ol className="space-y-3">
           {plan.map((item, i) => {
             const activity = item.kind === "activity" ? getActivity(item.id) : null;
             const recipe = item.kind === "recipe" ? getRecipe(item.id) : null;
@@ -564,7 +642,8 @@ export default function TherapistBuild() {
               </li>
             );
           })}
-        </ol>
+        </ol>}
+        </div>
       </AppShell>
     );
   }

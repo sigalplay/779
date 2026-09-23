@@ -12,9 +12,10 @@ function headers(token) {
     "Content-Type": "application/json",
   };
 }
-async function request(path, options = {}) {
+export async function cloudRequest(path, options = {}) {
   if (!isCloudAuthConfigured()) throw new Error("cloud-not-configured");
-  const response = await fetch(`${SUPABASE_URL}${path}`, { ...options, headers: { ...headers(options.token), ...options.headers } });
+  const { token, ...requestOptions } = options;
+  const response = await fetch(`${SUPABASE_URL}${path}`, { ...requestOptions, headers: { ...headers(token), ...options.headers } });
   const body = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(body.msg || body.message || body.error_description || "auth-error");
   return body;
@@ -41,24 +42,24 @@ export function clearCloudSession() {
   window.dispatchEvent(new Event("pp_auth_change"));
 }
 export async function signUpWithPassword({ email, password, displayName }) {
-  const result = await request("/auth/v1/signup", { method: "POST", body: JSON.stringify({ email, password, data: { display_name: displayName } }) });
+  const result = await cloudRequest("/auth/v1/signup", { method: "POST", body: JSON.stringify({ email, password, data: { display_name: displayName } }) });
   if (result.access_token) saveCloudSession(result);
   return result;
 }
 export async function signInWithPassword({ email, password }) {
-  const result = await request("/auth/v1/token?grant_type=password", { method: "POST", body: JSON.stringify({ email, password }) });
+  const result = await cloudRequest("/auth/v1/token?grant_type=password", { method: "POST", body: JSON.stringify({ email, password }) });
   saveCloudSession(result);
   return result;
 }
 export async function sendMagicLink(email, redirectTo = `${window.location.origin}/auth`) {
-  return request(`/auth/v1/otp?redirect_to=${encodeURIComponent(redirectTo)}`, { method: "POST", body: JSON.stringify({ email, create_user: true }) });
+  return cloudRequest(`/auth/v1/otp?redirect_to=${encodeURIComponent(redirectTo)}`, { method: "POST", body: JSON.stringify({ email, create_user: true }) });
 }
 export async function completeMagicLinkFromUrl() {
   const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
   const accessToken = hash.get("access_token");
   const refreshToken = hash.get("refresh_token");
   if (!accessToken) return null;
-  const user = await request("/auth/v1/user", { method: "GET", token: accessToken });
+  const user = await cloudRequest("/auth/v1/user", { method: "GET", token: accessToken });
   const session = { access_token: accessToken, refresh_token: refreshToken, user };
   saveCloudSession(session);
   window.history.replaceState({}, "", `${window.location.pathname}${window.location.search}`);
@@ -66,6 +67,6 @@ export async function completeMagicLinkFromUrl() {
 }
 export async function signOutCloud() {
   const session = getCloudSession();
-  if (session?.access_token && isCloudAuthConfigured()) await request("/auth/v1/logout", { method: "POST", token: session.access_token }).catch(() => null);
+  if (session?.access_token && isCloudAuthConfigured()) await cloudRequest("/auth/v1/logout", { method: "POST", token: session.access_token }).catch(() => null);
   clearCloudSession();
 }

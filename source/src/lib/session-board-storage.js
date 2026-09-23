@@ -1,5 +1,6 @@
 const GUEST_BOARDS_KEY = "boo_guest_boards_by_date";
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const DRAWING_PREFIX = "boo_board_drawing_guest";
 
 export function localTodayIso() {
   const date = new Date();
@@ -48,4 +49,17 @@ export function saveGuestBoard(date, items) {
 
 export function guestBoardDates(activeDate) {
   return [...new Set([...Object.keys(readBoards()).filter((date) => DATE_PATTERN.test(date)), normalizeBoardDate(activeDate)])].sort();
+}
+
+export function getGuestBoardDrawing(date) {
+  try {
+    const value = JSON.parse(localStorage.getItem(`${DRAWING_PREFIX}_${normalizeBoardDate(date)}`) || "[]");
+    return Array.isArray(value) ? value : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveGuestBoardDrawing(date, drawingData) {
+  localStorage.setItem(`${DRAWING_PREFIX}_${normalizeBoardDate(date)}`, JSON.stringify(Array.isArray(drawingData) ? drawingData : []));
 }
