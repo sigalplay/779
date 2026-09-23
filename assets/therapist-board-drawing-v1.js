@@ -13,6 +13,13 @@
   let loadedKey = "";
   let saveTimer = 0;
 
+  function isEnglish() {
+    try { return sessionStorage.getItem("boo_english_preview") === "1" && localStorage.getItem("boo_nesahek_language") === "en"; }
+    catch { return document.documentElement.lang === "en"; }
+  }
+
+  const text = (hebrew, english) => isEnglish() ? english : hebrew;
+
   function isMeetingBoard() {
     return location.pathname.replace(/\/$/, "") === "/therapist/build" && new URLSearchParams(location.search).get("view") === "session";
   }
@@ -43,9 +50,9 @@
   function saveStrokes() {
     localStorage.setItem(storageKey(), JSON.stringify(strokes));
     const status = controls?.querySelector("[data-drawing-status]");
-    if (status) status.textContent = "נשמר";
+    if (status) status.textContent = text("נשמר", "Saved");
     if (typeof window.booSaveBoardDrawing === "function") {
-      if (status) status.textContent = "שומרת…";
+      if (status) status.textContent = text("שומרת…", "Saving…");
       window.booSaveBoardDrawing(strokes);
     }
   }
@@ -127,7 +134,7 @@
     if (!canvas) {
       canvas = document.createElement("canvas");
       canvas.className = "meeting-board-canvas";
-      canvas.setAttribute("aria-label", "כתיבה וציור על לוח המפגש");
+      canvas.setAttribute("aria-label", text("כתיבה וציור על לוח המפגש", "Writing and drawing on the session board"));
       board.append(canvas);
       canvas.addEventListener("pointerdown", (event) => {
         if (!drawingEnabled) return;
@@ -165,7 +172,7 @@
       wrap = document.createElement("div");
       wrap.className = "meeting-drawing-tools";
       wrap.dataset.drawingTools = "true";
-      wrap.innerHTML = `<button type="button" class="meeting-pen-button" data-board-pen aria-pressed="false" title="עט — כתיבה וציור על הלוח"><span class="meeting-action-icon" aria-hidden="true">✎</span><span class="meeting-action-label-desktop">עט</span><span class="meeting-action-label-mobile">עט</span></button><div class="meeting-drawing-controls" data-drawing-controls hidden><label>צבע <input type="color" value="${color}" data-pen-color></label><label>עובי <input type="range" min="2" max="14" step="1" value="${width}" data-pen-width><output data-width-output>${width}</output></label><button type="button" data-pen-mode class="active">עט</button><button type="button" data-eraser-mode>מחק</button><button type="button" data-clear-drawing>מחיקת הכתיבה</button><small data-drawing-status></small></div>`;
+      wrap.innerHTML = `<button type="button" class="meeting-pen-button" data-board-pen aria-pressed="false" title="${text("עט — כתיבה וציור על הלוח", "Pen — write and draw on the board")}"><span class="meeting-action-icon" aria-hidden="true">✎</span><span class="meeting-action-label-desktop">${text("עט", "Pen")}</span><span class="meeting-action-label-mobile">${text("עט", "Pen")}</span></button><div class="meeting-drawing-controls" data-drawing-controls hidden><label>${text("צבע", "Color")} <input type="color" value="${color}" data-pen-color></label><label>${text("עובי", "Width")} <input type="range" min="2" max="14" step="1" value="${width}" data-pen-width><output data-width-output>${width}</output></label><button type="button" data-pen-mode class="active">${text("עט", "Pen")}</button><button type="button" data-eraser-mode>${text("מחק", "Eraser")}</button><button type="button" data-clear-drawing>${text("מחיקת הכתיבה", "Clear drawing")}</button><small data-drawing-status></small></div>`;
       const timer = actions.querySelector(".meeting-timer");
       actions.insertBefore(wrap, timer || actions.querySelector(".meeting-fullscreen"));
     }
@@ -203,7 +210,7 @@
       return;
     }
     if (event.target.closest?.("[data-clear-drawing]")) {
-      if (!strokes.length || !window.confirm("למחוק את כל הכתיבה מהלוח?")) return;
+      if (!strokes.length || !window.confirm(text("למחוק את כל הכתיבה מהלוח?", "Clear all drawing from the board?"))) return;
       strokes = [];
       render();
       saveStrokes();
@@ -221,7 +228,7 @@
 
   window.addEventListener("boo_cloud_drawing_status", (event) => {
     const status = controls?.querySelector("[data-drawing-status]");
-    if (status) status.textContent = event.detail === "saved" ? "נשמר בענן" : "השמירה נכשלה";
+    if (status) status.textContent = event.detail === "saved" ? text("נשמר בענן", "Saved to cloud") : text("השמירה נכשלה", "Save failed");
   });
   window.addEventListener("resize", resizeCanvas);
   if (window.ResizeObserver) new ResizeObserver(resizeCanvas).observe(document.documentElement);
