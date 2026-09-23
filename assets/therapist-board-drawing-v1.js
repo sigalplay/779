@@ -176,7 +176,7 @@
       wrap = document.createElement("div");
       wrap.className = "meeting-drawing-tools";
       wrap.dataset.drawingTools = "true";
-      wrap.innerHTML = `<button type="button" class="meeting-pen-button" data-board-pen aria-pressed="false" title="${text("עט — כתיבה וציור על הלוח", "Pen — write and draw on the board")}"><span class="meeting-action-icon" aria-hidden="true">✎</span><span class="meeting-action-label-desktop">${text("עט", "Pen")}</span><span class="meeting-action-label-mobile">${text("עט", "Pen")}</span></button><div class="meeting-drawing-controls" data-drawing-controls hidden><label>${text("צבע", "Color")} <input type="color" value="${color}" data-pen-color></label><label>${text("עובי", "Width")} <input type="range" min="2" max="14" step="1" value="${width}" data-pen-width><output data-width-output>${width}</output></label><button type="button" data-pen-mode class="active">${text("עט", "Pen")}</button><button type="button" data-eraser-mode>${text("מחק", "Eraser")}</button><button type="button" data-clear-drawing>${text("מחיקת הכתיבה", "Clear drawing")}</button><small data-drawing-status></small></div>`;
+      wrap.innerHTML = `<button type="button" class="meeting-pen-button" data-board-pen aria-pressed="false" title="${text("עט — כתיבה וציור על הלוח", "Pen — write and draw on the board")}"><span class="meeting-action-icon" aria-hidden="true">✎</span><span class="meeting-action-label-desktop">${text("עט", "Pen")}</span><span class="meeting-action-label-mobile">${text("עט", "Pen")}</span></button><div class="meeting-drawing-controls" data-drawing-controls hidden><label>${text("צבע", "Color")} <input type="color" value="${color}" data-pen-color></label><label>${text("עובי", "Width")} <input type="range" min="2" max="14" step="1" value="${width}" data-pen-width><output data-width-output>${width}</output></label><button type="button" data-pen-mode class="active">${text("עט", "Pen")}</button><button type="button" data-eraser-mode>${text("מחק", "Eraser")}</button><button type="button" data-clear-drawing>${text("מחיקת הכתיבה", "Clear drawing")}</button><small data-drawing-status></small><button type="button" class="meeting-drawing-close" data-close-drawing>${text("סגירה", "Close")}</button></div>`;
       const timer = actions.querySelector(".meeting-timer");
       actions.insertBefore(wrap, timer || actions.querySelector(".meeting-fullscreen"));
     }
@@ -199,6 +199,11 @@
     if (event.target.closest?.("[data-board-pen]")) {
       event.preventDefault();
       enableDrawing(!drawingEnabled);
+      return;
+    }
+    if (event.target.closest?.("[data-close-drawing]")) {
+      event.preventDefault();
+      enableDrawing(false);
       return;
     }
     if (event.target.closest?.("[data-pen-mode]")) {
