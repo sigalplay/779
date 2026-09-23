@@ -42,7 +42,7 @@ function getExperiment(id) {
 const GAME_MAKING_ACTIVITY_IDS = ["seed-100", "seed-50", "seed-47", "seed-73", "seed-10", "seed-64"];
 
 export default function TherapistBuild() {
-  const { language, t } = useTranslator();
+  const { language, changeLanguage, t } = useTranslator();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const view = searchParams.get("view") === "session" ? "session" : "plan";
@@ -358,12 +358,25 @@ export default function TherapistBuild() {
   if (view === "session") {
     return (
       <AppShell mode="therapist" fullScreen>
+        <button
+          type="button"
+          onClick={endSession}
+          aria-label={t("יציאה ממסך מלא", "Exit full screen")}
+          title={t("יציאה ממסך מלא", "Exit full screen")}
+          className={cn("fixed top-3 z-[60] flex h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-white/95 shadow-lg backdrop-blur hover:bg-muted", language === "en" ? "right-3" : "left-3")}
+        >
+          <X className="h-6 w-6" />
+        </button>
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="font-display text-3xl font-black">{linkedPatient ? t(`הטיפול של ${linkedPatient.name}`, `${linkedPatient.name}'s session`) : t("לוח המפגש", "Session board")}</h1>
             <p className="mt-1 text-muted-foreground">{t("בחרי פעילות כדי להתחיל בה. אפשר לחזור ללוח בכל רגע.", "Choose an activity to begin. You can return to the board at any time.")}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <div className="flex rounded-full border bg-white/90 p-0.5" aria-label={t("בחירת שפה", "Choose language")}>
+              <button type="button" className={cn("rounded-full px-3 py-1.5 text-xs", language === "he" ? "bg-foreground text-background" : "text-muted-foreground")} onClick={() => changeLanguage("he")}>עברית</button>
+              <button type="button" className={cn("rounded-full px-3 py-1.5 text-xs", language === "en" ? "bg-foreground text-background" : "text-muted-foreground")} onClick={() => changeLanguage("en")}>English</button>
+            </div>
             <VisualSessionTimer language={language} open={sessionTimerOpen} onOpenChange={setSessionTimerOpen} hideTrigger />
             <Button variant="outline" onClick={endSession} className="rounded-full">
               <ArrowRight className="h-4 w-4" /> {t("חזרה לעריכת התוכנית", "Back to plan editing")}
