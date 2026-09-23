@@ -1,6 +1,13 @@
 (() => {
   "use strict";
 
+  function isEnglish() {
+    try { return sessionStorage.getItem("boo_english_preview") === "1" && localStorage.getItem("boo_nesahek_language") === "en"; }
+    catch { return document.documentElement.lang === "en"; }
+  }
+
+  const text = (hebrew, english) => isEnglish() ? english : hebrew;
+
   function isTherapistArea() {
     if (location.pathname.startsWith("/therapist/")) return true;
     if (!location.pathname.startsWith("/activity/") && !location.pathname.startsWith("/board-game/")) return false;
@@ -15,7 +22,9 @@
   function adaptHeading() {
     if (location.pathname.replace(/\/$/, "") !== "/therapist/build") return;
     document.querySelectorAll("h1,h2").forEach((heading) => {
-      if (normalize(heading.textContent) === "בנה לוח מובנה למפגש") heading.textContent = "לוח המפגש";
+      const current = normalize(heading.textContent);
+      const desired = text("לוח המפגש", "Session board");
+      if (["בנה לוח מובנה למפגש", "לוח המפגש", "Session board"].includes(current) && current !== desired) heading.textContent = desired;
     });
   }
 
@@ -30,8 +39,8 @@
     if (!navigation) {
       navigation = document.createElement("nav");
       navigation.className = "therapist-mobile-workflow-nav";
-      navigation.setAttribute("aria-label", "ניווט מהיר באזור המטפלות");
-      navigation.innerHTML = `<div class="therapist-mobile-workflow-nav__inner"><a data-workflow-link="search"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg><strong>מנוע חיפוש</strong></a><a data-workflow-link="board"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg><strong>לוח המפגש</strong></a><a data-workflow-link="patients" href="/therapist/my-patients/"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><circle cx="17" cy="9" r="2.5"></circle><path d="M3.5 20c.4-4 2.2-6 5.5-6s5.1 2 5.5 6M14 15c3.7-.7 5.8 1 6.5 4"></path></svg><strong>המטופלים שלי</strong></a><a data-workflow-link="diary" href="/therapist/diary"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M7 3v4M17 3v4M3 10h18M8 14h3M13 14h3M8 17h3"></path></svg><strong>יומן</strong></a><button type="button" data-workflow-menu><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"></path></svg><strong>תפריט</strong></button></div>`;
+      navigation.setAttribute("aria-label", text("ניווט מהיר באזור המטפלות", "Quick therapist navigation"));
+      navigation.innerHTML = `<div class="therapist-mobile-workflow-nav__inner"><a data-workflow-link="search"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg><strong>${text("מנוע חיפוש", "Search")}</strong></a><a data-workflow-link="board"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg><strong>${text("לוח המפגש", "Session board")}</strong></a><a data-workflow-link="patients" href="/therapist/my-patients/"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><circle cx="17" cy="9" r="2.5"></circle><path d="M3.5 20c.4-4 2.2-6 5.5-6s5.1 2 5.5 6M14 15c3.7-.7 5.8 1 6.5 4"></path></svg><strong>${text("המטופלים שלי", "My clients")}</strong></a><a data-workflow-link="diary" href="/therapist/diary"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M7 3v4M17 3v4M3 10h18M8 14h3M13 14h3M8 17h3"></path></svg><strong>${text("יומן", "Diary")}</strong></a><button type="button" data-workflow-menu><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"></path></svg><strong>${text("תפריט", "Menu")}</strong></button></div>`;
       navigation.querySelector("[data-workflow-menu]")?.addEventListener("click", () => {
         const menuButton = document.querySelector('button[aria-controls="site-navigation-menu"],.standard-site-header__menu-button');
         if (menuButton) menuButton.click();
@@ -91,10 +100,10 @@
     if (allActivities) allActivities.remove();
 
     const desired = [
-      { key: "board", text: "לוח מובנה", href: "/therapist/build?view=session" },
-      { key: "diary", text: "יומן", href: "/therapist/diary" },
-      { key: "search", text: "מנוע חיפוש", href: "/therapist/build?tab=search" },
-      { key: "patients", text: "המטופלים שלי", href: "/therapist/my-patients/" }
+      { key: "board", text: text("לוח מובנה", "Session board"), href: "/therapist/build?view=session" },
+      { key: "diary", text: text("יומן", "Diary"), href: "/therapist/diary" },
+      { key: "search", text: text("מנוע חיפוש", "Search"), href: "/therapist/build?tab=search" },
+      { key: "patients", text: text("המטופלים שלי", "My clients"), href: "/therapist/my-patients/" }
     ];
     let anchor = home;
     desired.forEach((item) => {
@@ -105,7 +114,7 @@
         link.dataset.therapistLink = item.key;
       }
       link.href = item.href;
-      link.textContent = item.text;
+      if (normalize(link.textContent) !== item.text) link.textContent = item.text;
       link.dataset.therapistHeaderRoute = "true";
       if (anchor.nextElementSibling !== link) anchor.insertAdjacentElement("afterend", link);
       anchor = link;

@@ -3,6 +3,13 @@
 
   const cleanPath = location.pathname.replace(/\/$/, "");
   const entryParams = new URLSearchParams(location.search);
+
+  function isEnglish() {
+    try { return sessionStorage.getItem("boo_english_preview") === "1" && localStorage.getItem("boo_nesahek_language") === "en"; }
+    catch { return document.documentElement.lang === "en"; }
+  }
+
+  const text = (hebrew, english) => isEnglish() ? english : hebrew;
   const oldBoardPath = cleanPath === "/therapist/board";
   const emptyBuildPath = cleanPath === "/therapist/build" && !entryParams.has("tab") && !entryParams.has("view");
   if (cleanPath === "/therapist" || oldBoardPath || emptyBuildPath) {
@@ -11,11 +18,11 @@
   }
 
   const tabs = [
-    ["board", "/therapist/build?view=session", "לוח טיפול"],
-    ["patients", "/therapist/my-patients/", "המטופלים שלי"],
-    ["plans", "/therapist/plans", "תכניות טיפול"],
-    ["diary", "/therapist/diary", "יומן"],
-    ["tools", "/therapist/tools/", "כלים למטפלות"]
+    ["board", "/therapist/build?view=session", text("לוח טיפול", "Treatment board")],
+    ["patients", "/therapist/my-patients/", text("המטופלים שלי", "My clients")],
+    ["plans", "/therapist/plans", text("תכניות טיפול", "Treatment plans")],
+    ["diary", "/therapist/diary", text("יומן", "Diary")],
+    ["tools", "/therapist/tools/", text("כלים למטפלות", "Therapist tools")]
   ];
 
   document.addEventListener("click", (event) => {
@@ -79,7 +86,7 @@
     const nav = existing || document.createElement("nav");
     nav.className = "therapist-tabs";
     nav.dataset.globalTabs = "true";
-    nav.setAttribute("aria-label", "ניווט באזור המטפלות");
+    nav.setAttribute("aria-label", text("ניווט באזור המטפלות", "Therapist area navigation"));
     nav.innerHTML = tabs.map(([key, href, label]) => `<a href="${href}"${key === active ? ' class="active" aria-current="page"' : ""}>${label}</a>`).join("");
     if (!existing) header.insertAdjacentElement("afterend", nav);
   }
