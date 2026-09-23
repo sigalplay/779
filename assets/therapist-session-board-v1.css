@@ -124,6 +124,7 @@
     border-radius:18px!important;
     overscroll-behavior:contain;
   }
+  .meeting-board-page .meeting-drawing-controls[hidden]{display:none!important}
   .meeting-board-page .meeting-drawing-controls label{min-width:0;min-height:42px;justify-content:space-between;padding:6px 8px;border:1px solid #eee7df;border-radius:12px;white-space:normal}
   .meeting-board-page .meeting-drawing-controls input[type=range]{min-width:0;width:100%}
   .meeting-board-page .meeting-drawing-controls [data-clear-drawing],
