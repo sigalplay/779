@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/generate-illustration-manifest.mjs && node scripts/generate-sitemap.mjs && vite build",
+    "build": "vite build",
+    "build:metadata": "node scripts/generate-illustration-manifest.mjs && node scripts/generate-sitemap.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
