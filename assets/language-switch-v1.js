@@ -34,17 +34,21 @@
       localStorage.setItem("boo_nesahek_language", "he");
       sessionStorage.removeItem("boo_english_preview");
     } catch {}
-    const p = appPath() + location.search + location.hash;
-    if (p === location.pathname + location.search + location.hash) location.reload();
-    else location.assign(p);
+    reloadInLanguage();
   }
 
   function goEnglish() {
-    try { localStorage.setItem("boo_nesahek_language", "en"); } catch {}
-    const url = englishUrl();
-    fetch(url, { method: "HEAD" })
-      .then((res) => { location.assign(res.ok ? url : PREFIX + "/"); })
-      .catch(() => { location.assign(url); });
+    try {
+      localStorage.setItem("boo_nesahek_language", "en");
+      sessionStorage.setItem("boo_english_preview", "1");
+    } catch {}
+    reloadInLanguage();
+  }
+
+  function reloadInLanguage() {
+    const destination = appPath() + location.search + location.hash;
+    if (destination === location.pathname + location.search + location.hash) location.reload();
+    else location.assign(destination);
   }
 
   const globeIcon =
@@ -55,16 +59,15 @@
     const style = document.createElement("style");
     style.id = "boo-lang-switch-style";
     style.textContent = `
-      [data-boo-lang-switch]{display:inline-flex!important;align-items:center;justify-content:center;gap:.4rem;
+      [data-boo-lang-switch]{display:none!important;align-items:center;justify-content:center;gap:.4rem;
         border-radius:9999px;border:1px solid rgba(0,0,0,.12);background:#fff;color:inherit;
         font-size:.8rem;font-weight:700;line-height:1;padding:.5rem .75rem;min-height:2.25rem;
         text-decoration:none;white-space:nowrap;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.05)}
       [data-boo-lang-switch]:hover{background:#f4f4f5}
-      [data-boo-lang-switch][data-boo-lang-place="menu"]{width:100%;justify-content:center;padding:.7rem 1rem;
+      [data-boo-lang-switch][data-boo-lang-place="menu"]{display:inline-flex!important;width:100%;justify-content:center;padding:.7rem 1rem;
         min-height:2.75rem;font-size:.95rem;margin:0}
       [data-boo-lang-menu-row]{padding:.75rem 1.25rem 0}
-      @media (max-width:420px){[data-boo-lang-switch][data-boo-lang-place="header"]{padding:.5rem .6rem;font-size:.75rem}}
-      button.mobile-language-switch{display:none!important}
+      @media (max-width:639px){[data-boo-lang-switch][data-boo-lang-place="header"]{display:inline-flex!important;padding:.5rem .6rem;font-size:.75rem}}
     `;
     document.head.appendChild(style);
   }
@@ -116,10 +119,31 @@
         el.href = isEnglish() ? appPath() : englishUrl();
         el.setAttribute("aria-label", isEnglish() ? "מעבר לעברית" : "Switch to English");
       }
-      el.style.setProperty("display", "inline-flex", "important");
       delete el.dataset.englishSwitchHidden;
     });
   }
+
+  function unhideNativeSwitches() {
+    document.querySelectorAll("button").forEach((button) => {
+      const value = (button.textContent || "").replace(/\s+/g, " ").trim();
+      if (!["English", "Hebrew", "עברית"].includes(value)) return;
+      button.hidden = false;
+      button.style.removeProperty("display");
+      delete button.dataset.englishSwitchHidden;
+    });
+  }
+
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest?.("button");
+    if (!button || button.closest("[data-boo-lang-switch]")) return;
+    const value = (button.textContent || "").replace(/\s+/g, " ").trim();
+    if (!["English", "Hebrew", "עברית"].includes(value)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    if (value === "English") goEnglish();
+    else goHebrew();
+  }, true);
 
   let queued = false;
   function refresh() {
@@ -131,6 +155,7 @@
       mountHeader();
       mountMenu();
       unhideOurs();
+      unhideNativeSwitches();
     }, 200);
   }
 

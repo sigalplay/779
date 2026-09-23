@@ -297,23 +297,17 @@
     search.querySelector("small").textContent = query && !shown ? "לא נמצאה פעילות בשם הזה" : query ? `${shown} פעילויות נמצאו` : "";
   }
 
-  function keepEnglishHidden() {
+  function syncLanguageDocument() {
     let englishPreview = false;
-    try { englishPreview = sessionStorage.getItem("boo_english_preview") === "1" && localStorage.getItem("boo_nesahek_language") === "en"; } catch {}
+    try {
+      englishPreview = location.pathname === "/en" || location.pathname.startsWith("/en/") ||
+        (sessionStorage.getItem("boo_english_preview") === "1" && localStorage.getItem("boo_nesahek_language") === "en");
+    } catch {}
     try {
       if (!englishPreview && localStorage.getItem("boo_nesahek_language") !== "he") localStorage.setItem("boo_nesahek_language", "he");
     } catch {}
     document.documentElement.lang = englishPreview ? "en" : "he";
     document.documentElement.dir = englishPreview ? "ltr" : "rtl";
-    document.querySelectorAll("button,a").forEach((element) => {
-      if (element.hasAttribute("data-boo-lang-switch")) return;
-      const text = (element.textContent || "").replace(/\s+/g, " ").trim();
-      if (text === "English" || (text === "עברית" && (element.tagName === "BUTTON" || element.getAttribute("href") === "/en"))) {
-        element.hidden = true;
-        element.style.setProperty("display", "none", "important");
-        element.dataset.englishSwitchHidden = "true";
-      }
-    });
   }
 
   document.addEventListener("click", (event) => {
@@ -346,7 +340,7 @@
       ensurePhotoInput();
       installActivityNameSearch();
       installCompactCatalogCards();
-      keepEnglishHidden();
+      syncLanguageDocument();
     });
   }
   new MutationObserver(refresh).observe(document.documentElement, { childList: true, subtree: true });
