@@ -495,7 +495,7 @@ export default function TherapistBuild() {
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sage/30 text-sm font-bold">
                   {i + 1}
                 </span>
-                <div className="flex h-40 w-40 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2">
+                <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 sm:h-40 sm:w-40">
                   {hero ? (
                     <img
                       src={hero}
@@ -512,7 +512,7 @@ export default function TherapistBuild() {
                     <span className="text-4xl">{activity ? activityEmoji(activity) : "✨"}</span>
                   )}
                 </div>
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <h3 className="font-display text-base font-bold leading-snug">{title2}</h3>
                   {item.kind === "motor-trail" && (
                     <p className="mt-1 truncate text-xs text-muted-foreground">
@@ -532,9 +532,9 @@ export default function TherapistBuild() {
               >
                 <div className="flex items-center gap-3 p-3">
                   <div className="z-20 flex shrink-0 flex-col gap-1" aria-label={t("שינוי סדר הפעילות", "Change activity order")}>
-                    <button type="button" onClick={() => moveSessionItem(i, -1)} disabled={i === 0} aria-label={t("העלאת הפעילות למעלה", "Move activity up")} className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-white text-muted-foreground shadow-sm hover:bg-muted disabled:opacity-30"><ChevronUp className="h-4 w-4" /></button>
-                    <button type="button" onClick={() => moveSessionItem(i, 1)} disabled={i === plan.length - 1} aria-label={t("הורדת הפעילות למטה", "Move activity down")} className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-white text-muted-foreground shadow-sm hover:bg-muted disabled:opacity-30"><ChevronDown className="h-4 w-4" /></button>
-                    <button type="button" onClick={() => removeSessionItem(i)} aria-label={t("מחיקת הפעילות מלוח המפגש", "Remove activity from the session board")} className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-white text-muted-foreground shadow-sm hover:bg-red-50 hover:text-red-700"><X className="h-4 w-4" /></button>
+                    <button type="button" onClick={() => moveSessionItem(i, -1)} disabled={i === 0} aria-label={t("העלאת הפעילות למעלה", "Move activity up")} className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-muted-foreground shadow-sm hover:bg-muted disabled:opacity-30 sm:h-9 sm:w-9"><ChevronUp className="h-4 w-4" /></button>
+                    <button type="button" onClick={() => moveSessionItem(i, 1)} disabled={i === plan.length - 1} aria-label={t("הורדת הפעילות למטה", "Move activity down")} className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-muted-foreground shadow-sm hover:bg-muted disabled:opacity-30 sm:h-9 sm:w-9"><ChevronDown className="h-4 w-4" /></button>
+                    <button type="button" onClick={() => removeSessionItem(i)} aria-label={t("מחיקת הפעילות מלוח המפגש", "Remove activity from the session board")} className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-muted-foreground shadow-sm hover:bg-red-50 hover:text-red-700 sm:h-9 sm:w-9"><X className="h-4 w-4" /></button>
                   </div>
                   <button
                     type="button"
@@ -543,7 +543,7 @@ export default function TherapistBuild() {
                     title={item.completed ? t("סומן כבוצע", "Completed") : t("סימון כבוצע", "Mark completed")}
                     onClick={() => toggleSessionItemCompleted(i)}
                     className={cn(
-                      "z-20 flex h-9 w-9 shrink-0 items-center justify-center rounded-md border-2 bg-white shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage",
+                      "z-20 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border-2 bg-white shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage sm:h-9 sm:w-9",
                       item.completed
                         ? "border-[#7fb58a] bg-[#a9cfaa] text-[#234f35]"
                         : "border-border text-transparent hover:border-[#9bc4a3] hover:bg-[#f3faf4]",
@@ -552,11 +552,11 @@ export default function TherapistBuild() {
                     <Check className="h-5 w-5" strokeWidth={3} />
                   </button>
                   {linkTo ? (
-                  <Link to={linkTo} className="flex min-w-0 flex-1 items-center gap-4">
+                  <Link to={linkTo} className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
                     {rowInner}
                   </Link>
                 ) : (
-                  <div className="flex min-w-0 flex-1 items-center gap-4">
+                  <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
                     {rowInner}
                   </div>
                 )}
