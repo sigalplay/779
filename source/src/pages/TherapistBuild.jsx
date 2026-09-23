@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Plus, Shuffle, Clock, X, Save, ExternalLink, Route, Play, ArrowRight, ChevronUp, ChevronDown, Printer, FolderOpen, RotateCcw, Camera, ChefHat, FlaskConical, Check, Search } from "lucide-react";
@@ -7,6 +7,7 @@ import { TherapistPostureScissorsTips } from "@/components/TherapistPostureSciss
 import { VisualSessionTimer } from "@/components/VisualSessionTimer";
 import { FullscreenBoardTools } from "@/components/FullscreenBoardTools";
 import { SessionBoardDrawing } from "@/components/SessionBoardDrawing";
+import { SessionBoardDateNavigation } from "@/components/SessionBoardDateNavigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +25,7 @@ import { attachPlanToSession, completeClinicSession, getPatient, getSession, sta
 import { activityTitle, translatedTerm } from "@/lib/content-translations";
 import { useTranslator } from "@/lib/language";
 import { localizedSignLabel, renderVisualSign } from "@/lib/session-board-tools";
+import { getGuestBoard, guestBoardDates, normalizeBoardDate, saveGuestBoard } from "@/lib/session-board-storage";
 
 function scoreActivity(activity, expandedGoals) {
   return expandedGoals.filter((g) => activity.goals?.includes(g)).length;
@@ -49,6 +51,8 @@ export default function TherapistBuild() {
   const sessionId = searchParams.get("session");
   const patientId = searchParams.get("patient");
   const requestedPlanId = searchParams.get("plan");
+  const patientBoardId = searchParams.get("patientBoard");
+  const currentBoardDate = normalizeBoardDate(searchParams.get("boardDate"));
   const linkedSession = sessionId ? getSession(sessionId) : null;
   const linkedPatient = getPatient(patientId || linkedSession?.patientId);
   const loadedTreatmentPlan = requestedPlanId ? getTreatmentPlan(requestedPlanId) : null;
@@ -57,7 +61,12 @@ export default function TherapistBuild() {
   const [contentType, setContentType] = useState("activities"); // "activities" | "recipes" | "experiments"
   const [durationMode, setDurationMode] = useState(() => loadedTreatmentPlan?.params?.durationMode || null); // null | "max" | "min"
   const [index, setIndex] = useState(0);
-  const [plan, setPlan] = useState(() => linkedSession?.treatmentPlanItems || linkedSession?.activities?.map((id) => ({ kind: "activity", id })) || loadedTreatmentPlan?.items || getDraftPlan());
+  const [plan, setPlan] = useState(() => {
+    const fallback = linkedSession?.treatmentPlanItems || linkedSession?.activities?.map((id) => ({ kind: "activity", id })) || loadedTreatmentPlan?.items || getDraftPlan();
+    if (view !== "session" || patientBoardId) return fallback;
+    const savedBoard = getGuestBoard(currentBoardDate);
+    return savedBoard ?? (searchParams.has("boardDate") ? [] : fallback);
+  });
   const [title, setTitle] = useState(() => linkedSession?.title || loadedTreatmentPlan?.title || "");
   const [editingPlanId, setEditingPlanId] = useState(() => loadedTreatmentPlan?.id || null);
   const [saving, setSaving] = useState(false);
@@ -73,10 +82,21 @@ export default function TherapistBuild() {
   const [sessionGuide, setSessionGuide] = useState(null);
   const [sessionTimerOpen, setSessionTimerOpen] = useState(false);
   const [sessionPenActive, setSessionPenActive] = useState(false);
+  const loadedBoardDateRef = useRef(currentBoardDate);
 
   useEffect(() => {
     setDraftPlan(plan);
+    if (view === "session" && !patientBoardId) saveGuestBoard(loadedBoardDateRef.current, plan);
   }, [plan]);
+
+  useEffect(() => {
+    if (view !== "session" || patientBoardId || loadedBoardDateRef.current === currentBoardDate) return;
+    loadedBoardDateRef.current = currentBoardDate;
+    setPlan(getGuestBoard(currentBoardDate) ?? []);
+    setSessionGuide(null);
+    setSessionTimerOpen(false);
+    setSessionPenActive(false);
+  }, [currentBoardDate, patientBoardId, view]);
 
   useEffect(() => {
     if (view === "session") return;
@@ -330,6 +350,44 @@ export default function TherapistBuild() {
     if (sessionId) attachPlanToSession(sessionId, nextPlan, { goals, durationMode });
   }
 
+  function replaceSessionPlan(nextPlan) {
+    setPlan(nextPlan);
+    if (sessionId) attachPlanToSession(sessionId, nextPlan, { goals, durationMode });
+  }
+
+  function moveSessionItem(itemIndex, direction) {
+    const target = itemIndex + direction;
+    if (target < 0 || target >= plan.length) return;
+    const nextPlan = [...plan];
+    [nextPlan[itemIndex], nextPlan[target]] = [nextPlan[target], nextPlan[itemIndex]];
+    replaceSessionPlan(nextPlan);
+  }
+
+  function removeSessionItem(itemIndex) {
+    replaceSessionPlan(plan.filter((_, index) => index !== itemIndex));
+  }
+
+  function navigateGuestBoard(date) {
+    if (patientBoardId) return;
+    saveGuestBoard(currentBoardDate, plan);
+    const nextDate = normalizeBoardDate(date);
+    loadedBoardDateRef.current = nextDate;
+    setPlan(getGuestBoard(nextDate) ?? []);
+    const next = new URLSearchParams(searchParams);
+    next.set("view", "session");
+    next.set("boardDate", nextDate);
+    next.delete("planning");
+    setSearchParams(next);
+  }
+
+  async function copyGuestBoard(nextDate) {
+    if (patientBoardId) return;
+    saveGuestBoard(currentBoardDate, plan);
+    saveGuestBoard(nextDate, plan);
+    navigateGuestBoard(nextDate);
+    toast.success(t("הלוח שוכפל לשבוע הבא", "The board was copied to next week"));
+  }
+
   async function addVisualSignToSession(sign) {
     try {
       const image = await renderVisualSign(sign, language);
@@ -367,6 +425,7 @@ export default function TherapistBuild() {
         >
           <X className="h-6 w-6" />
         </button>
+        {!patientBoardId && <SessionBoardDateNavigation date={currentBoardDate} language={language} savedDates={guestBoardDates(currentBoardDate)} onNavigate={navigateGuestBoard} onCopy={copyGuestBoard} />}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="font-display text-3xl font-black">{linkedPatient ? t(`הטיפול של ${linkedPatient.name}`, `${linkedPatient.name}'s session`) : t("לוח המפגש", "Session board")}</h1>
@@ -472,6 +531,11 @@ export default function TherapistBuild() {
                 )}
               >
                 <div className="flex items-center gap-3 p-3">
+                  <div className="z-20 flex shrink-0 flex-col gap-1" aria-label={t("שינוי סדר הפעילות", "Change activity order")}>
+                    <button type="button" onClick={() => moveSessionItem(i, -1)} disabled={i === 0} aria-label={t("העלאת הפעילות למעלה", "Move activity up")} className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-white text-muted-foreground shadow-sm hover:bg-muted disabled:opacity-30"><ChevronUp className="h-4 w-4" /></button>
+                    <button type="button" onClick={() => moveSessionItem(i, 1)} disabled={i === plan.length - 1} aria-label={t("הורדת הפעילות למטה", "Move activity down")} className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-white text-muted-foreground shadow-sm hover:bg-muted disabled:opacity-30"><ChevronDown className="h-4 w-4" /></button>
+                    <button type="button" onClick={() => removeSessionItem(i)} aria-label={t("מחיקת הפעילות מלוח המפגש", "Remove activity from the session board")} className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-white text-muted-foreground shadow-sm hover:bg-red-50 hover:text-red-700"><X className="h-4 w-4" /></button>
+                  </div>
                   <button
                     type="button"
                     aria-pressed={Boolean(item.completed)}
