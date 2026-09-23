@@ -28,6 +28,7 @@
   document.addEventListener("click", (event) => {
     const link = event.target.closest?.("a[href]");
     if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    if (link.matches("[data-boo-lang-switch]")) return;
 
     const targetUrl = new URL(link.href, location.href);
     const targetPath = targetUrl.pathname.replace(/\/$/, "");
