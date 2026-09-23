@@ -12,16 +12,18 @@ const hotspots = [
   { left: "42.4%", top: "57.4%" },
 ];
 
-export function WritingGuidelinesGuide() {
+export function WritingGuidelinesGuide({ language = "he" }) {
   const [openExplanation, setOpenExplanation] = useState(null);
   const activePoint = openExplanation === null ? null : WRITING_GUIDELINE_POINTS[openExplanation];
+  const pointTitle = (point) => language === "en" ? point.titleEn : point.title;
+  const pointExplanation = (point) => language === "en" ? point.explanationEn : point.explanation;
 
   return (
     <div className="w-full pb-1">
       <div className="relative mx-auto aspect-[1230/783] w-full max-w-[820px] overflow-hidden rounded-2xl bg-white shadow-sm">
         <img
           src={GUIDE_IMAGE}
-          alt="מחברת פתוחה ובה חמשת הדגשים לכתיבה נכונה, עם המחשות של רכבת וקרונות"
+          alt={language === "en" ? "An open notebook showing five writing guidelines with a train illustration" : "מחברת פתוחה ובה חמשת הדגשים לכתיבה נכונה, עם המחשות של רכבת וקרונות"}
           className="absolute inset-0 h-full w-full object-contain"
         />
 
@@ -29,7 +31,7 @@ export function WritingGuidelinesGuide() {
           <button
             key={index}
             type="button"
-            aria-label={`הסבר מלא: ${WRITING_GUIDELINE_POINTS[index].title}`}
+            aria-label={`${language === "en" ? "Full explanation" : "הסבר מלא"}: ${pointTitle(WRITING_GUIDELINE_POINTS[index])}`}
             aria-expanded={openExplanation === index}
             onClick={() => setOpenExplanation((current) => (current === index ? null : index))}
             className="absolute z-10 h-[6.2%] min-h-8 aspect-square rounded-full bg-white/5 ring-2 ring-transparent transition hover:bg-coral/10 hover:ring-coral/45 focus-visible:bg-coral/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral"
@@ -42,13 +44,13 @@ export function WritingGuidelinesGuide() {
             <button
               type="button"
               onClick={() => setOpenExplanation(null)}
-              aria-label="סגירת ההסבר"
+              aria-label={language === "en" ? "Close explanation" : "סגירת ההסבר"}
               className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-muted text-muted-foreground"
             >
               <X className="h-4 w-4" />
             </button>
-            <h3 className="font-bold text-foreground">{activePoint.title}</h3>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{activePoint.explanation}</p>
+            <h3 className="font-bold text-foreground">{pointTitle(activePoint)}</h3>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{pointExplanation(activePoint)}</p>
           </div>
         )}
       </div>

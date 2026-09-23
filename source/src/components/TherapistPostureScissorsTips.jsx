@@ -131,14 +131,14 @@ export function TherapistPostureScissorsTips({
               <div className="h-32 w-full shrink-0 overflow-hidden rounded-2xl bg-white p-1">
                 {tip.image ? <img src={tip.image} alt="" className="h-full w-full object-contain" /> : <tip.icon />}
               </div>
-              <span className="text-sm font-semibold leading-snug text-foreground md:text-base">{tip.text}</span>
+              <span className="text-sm font-semibold leading-snug text-foreground md:text-base">{language === "en" ? tip.textEn : tip.text}</span>
             </div>
           ))}
         </div>
       </TipPanel>
 
       <TipPanel label={text("דגשים לכתיבה", "Writing tips")} open={openPanel === "writing"} onClose={() => setOpenPanel(null)}>
-        <WritingGuidelinesGuide />
+        <WritingGuidelinesGuide language={language} />
       </TipPanel>
 
       <TipPanel label={text("דגשים לצביעה", "Coloring tips")} open={openPanel === "coloring"} onClose={() => setOpenPanel(null)}>
@@ -149,8 +149,8 @@ export function TherapistPostureScissorsTips({
                   <img src={tip.image} alt="" className="h-full w-full object-contain" />
                 </div>
                 <div className="flex flex-1 flex-col gap-2 px-4 py-3 text-center">
-                  <h3 className="font-bold leading-snug text-blue-600">{tip.title}</h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{tip.text}</p>
+                  <h3 className="font-bold leading-snug text-blue-600">{language === "en" ? tip.titleEn : tip.title}</h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">{language === "en" ? tip.textEn : tip.text}</p>
                 </div>
               </div>
             ))}
@@ -161,7 +161,7 @@ export function TherapistPostureScissorsTips({
       </TipPanel>
 
       <TipPanel label={text("דגשים לישיבה נכונה", "Sitting posture tips")} open={openPanel === "posture"} onClose={() => setOpenPanel(null)}>
-        <PencilGripPostureGuide />
+        <PencilGripPostureGuide language={language} />
       </TipPanel>
 
       {children}

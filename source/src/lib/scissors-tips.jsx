@@ -93,9 +93,9 @@ function HandAdvanceIcon() {
 // מוצג מימין, כי כל הדף פועל בכיווניות RTL). מבוסס על עקרונות כלליים
 // ומוכרים בתחום הריפוי בעיסוק - נחלת הכלל, לא ייחודיים למקור מסוים.
 export const SCISSOR_TIP_CARDS = [
-  { icon: TwoHandsIcon, image: "/icon-bank/guidance/scissors/1-two-hands.webp", text: "יד גוזרת ויד עוזרת" },
-  { icon: ThumbEyesIcon, image: "/icon-bank/guidance/scissors/2-thumbs-up.webp", text: "העיניים של אצבע האגודל תמיד למעלה, לראות" },
-  { icon: ScissorsBiteIcon, image: "/icon-bank/guidance/scissors/3-small-snips.gif", text: "המספריים אוכלות ביסים קטנים", emphasize: true },
-  { icon: ScissorsOpenMouthIcon, image: "/icon-bank/guidance/scissors/4-open-scissors.webp", text: "הפה של המספריים תמיד פתוח ולא נסגר" },
-  { icon: HandAdvanceIcon, image: "/icon-bank/guidance/scissors/5-helper-hand.gif", text: "היד העוזרת תמיד מתקדמת יחד עם היד הגוזרת" },
+  { icon: TwoHandsIcon, image: "/icon-bank/guidance/scissors/1-two-hands.webp", text: "יד גוזרת ויד עוזרת", textEn: "One hand cuts and the other hand helps" },
+  { icon: ThumbEyesIcon, image: "/icon-bank/guidance/scissors/2-thumbs-up.webp", text: "העיניים של אצבע האגודל תמיד למעלה, לראות", textEn: "Keep the thumb facing up where you can see it" },
+  { icon: ScissorsBiteIcon, image: "/icon-bank/guidance/scissors/3-small-snips.gif", text: "המספריים אוכלות ביסים קטנים", textEn: "The scissors take small bites", emphasize: true },
+  { icon: ScissorsOpenMouthIcon, image: "/icon-bank/guidance/scissors/4-open-scissors.webp", text: "הפה של המספריים תמיד פתוח ולא נסגר", textEn: "Keep the scissors open as you move forward" },
+  { icon: HandAdvanceIcon, image: "/icon-bank/guidance/scissors/5-helper-hand.gif", text: "היד העוזרת תמיד מתקדמת יחד עם היד הגוזרת", textEn: "Move the helping hand forward with the cutting hand" },
 ];
