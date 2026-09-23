@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  let reloadAfterCloudDelete = false;
+  let reloadAfterCloudSave = false;
   const CLOUD_URL = "https://qcklptudfclzvddjarkw.supabase.co";
   const CLOUD_KEY = "sb_publishable_8Bp_l_qcOxT2A67Sw2T35A_aVCvWh8H";
 
@@ -21,6 +21,7 @@
       hideLegacySessionControls();
       setupVisualTimer(existing);
       addDeleteButtons();
+      ensureFullscreenExit();
       return;
     }
 
@@ -56,6 +57,7 @@
     hideLegacySessionControls();
     setupVisualTimer(actions);
     addDeleteButtons();
+    ensureFullscreenExit();
     if (params.get("planning") === "1") window.setTimeout(() => openPlanningMenu(actions), 0);
   }
 
@@ -126,17 +128,56 @@
     localStorage.setItem("pp_draft_plan", JSON.stringify(items));
     window.dispatchEvent(new CustomEvent("boo_draft_plan_changed", { detail: { items, source: "meeting-board-delete" } }));
     button.closest("ol.space-y-3 > li")?.remove();
-    document.querySelectorAll("[data-delete-meeting-item]").forEach((element, nextIndex) => {
-      element.dataset.deleteMeetingItem = String(nextIndex);
-    });
+    syncItemControlIndexes();
     const cloudBoard = new URLSearchParams(location.search).has("patientBoard");
     if (cloudBoard) {
-      reloadAfterCloudDelete = true;
+      reloadAfterCloudSave = true;
       const status = document.querySelector("[data-cloud-save-state]");
       if (status) status.textContent = "שומרת את המחיקה…";
     } else {
       window.setTimeout(() => location.reload(), 50);
     }
+  }
+
+  function reorderMeetingItem(button) {
+    const index = Number(button.dataset.moveMeetingItem);
+    const direction = Number(button.dataset.moveDirection);
+    if (!Number.isInteger(index) || ![-1, 1].includes(direction)) return;
+    let items = [];
+    try { items = JSON.parse(localStorage.getItem("pp_draft_plan") || "[]"); } catch {}
+    if (!Array.isArray(items)) return;
+    const target = index + direction;
+    if (index < 0 || index >= items.length || target < 0 || target >= items.length) return;
+    const [item] = items.splice(index, 1);
+    items.splice(target, 0, item);
+    localStorage.setItem("pp_draft_plan", JSON.stringify(items));
+    window.dispatchEvent(new CustomEvent("boo_draft_plan_changed", { detail: { items, source: "meeting-board-reorder" } }));
+    const cloudBoard = new URLSearchParams(location.search).has("patientBoard");
+    if (cloudBoard) {
+      reloadAfterCloudSave = true;
+      const status = document.querySelector("[data-cloud-save-state]");
+      if (status) status.textContent = "שומרת את הסדר…";
+    } else {
+      window.setTimeout(() => location.reload(), 50);
+    }
+  }
+
+  function syncItemControlIndexes() {
+    const rows = [...document.querySelectorAll("ol.space-y-3 > li")];
+    rows.forEach((row, index) => {
+      const up = row.querySelector('[data-move-direction="-1"]');
+      const down = row.querySelector('[data-move-direction="1"]');
+      const remove = row.querySelector("[data-delete-meeting-item]");
+      if (up) {
+        up.dataset.moveMeetingItem = String(index);
+        up.disabled = index === 0;
+      }
+      if (down) {
+        down.dataset.moveMeetingItem = String(index);
+        down.disabled = index === rows.length - 1;
+      }
+      if (remove) remove.dataset.deleteMeetingItem = String(index);
+    });
   }
 
   function hideLegacySessionControls() {
@@ -153,21 +194,44 @@
     const list = document.querySelector("ol.space-y-3");
     if (!list) return;
     [...list.querySelectorAll(":scope > li")].forEach((row, index) => {
-      if (row.querySelector("[data-delete-meeting-item]")) return;
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "meeting-delete-item";
-      button.dataset.deleteMeetingItem = String(index);
-      button.setAttribute("aria-label", "מחיקת הפעילות מלוח המפגש");
-      button.title = "מחיקה מהלוח";
-      button.textContent = "×";
-      button.addEventListener("click", (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        deleteMeetingItem(button);
-      }, true);
-      row.querySelector(":scope > div")?.append(button);
+      if (row.querySelector("[data-meeting-item-controls]")) return;
+      const controls = document.createElement("div");
+      controls.className = "meeting-item-controls";
+      controls.dataset.meetingItemControls = "true";
+      controls.setAttribute("aria-label", "שינוי סדר הפעילות");
+      controls.innerHTML = `
+        <button type="button" class="meeting-move-item" data-move-meeting-item="${index}" data-move-direction="-1" aria-label="העלאת הפעילות למעלה" title="העלאה למעלה">↑</button>
+        <button type="button" class="meeting-move-item" data-move-meeting-item="${index}" data-move-direction="1" aria-label="הורדת הפעילות למטה" title="הורדה למטה">↓</button>
+        <button type="button" class="meeting-delete-item" data-delete-meeting-item="${index}" aria-label="מחיקת הפעילות מלוח המפגש" title="מחיקה מהלוח">×</button>`;
+      row.querySelector(":scope > div")?.append(controls);
     });
+    syncItemControlIndexes();
+  }
+
+  function ensureFullscreenExit() {
+    const board = document.querySelector("ol.meeting-board-surface");
+    if (!board || board.querySelector("[data-exit-board-fullscreen]")) return;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "meeting-fullscreen-exit";
+    button.dataset.exitBoardFullscreen = "true";
+    button.setAttribute("aria-label", "יציאה ממסך מלא");
+    button.title = "יציאה ממסך מלא";
+    button.textContent = "×";
+    board.append(button);
+  }
+
+  function setFullscreenState(active) {
+    document.body.classList.toggle("meeting-board-fullscreen", active);
+    const button = document.querySelector(".meeting-fullscreen");
+    const label = button?.querySelector("[data-fullscreen-label]");
+    if (label) label.textContent = active ? "יציאה ממסך מלא" : "מסך מלא";
+    button?.setAttribute("aria-pressed", String(active));
+  }
+
+  function exitBoardFullscreen() {
+    setFullscreenState(false);
+    if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
   }
 
   document.addEventListener("click", (event) => {
@@ -218,6 +282,20 @@
       deleteMeetingItem(remove);
       return;
     }
+    const move = event.target.closest?.("[data-move-meeting-item]");
+    if (move) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      reorderMeetingItem(move);
+      return;
+    }
+    if (event.target.closest?.("[data-exit-board-fullscreen]")) {
+      event.preventDefault();
+      event.stopPropagation();
+      exitBoardFullscreen();
+      return;
+    }
     const timer = event.target.closest?.(".meeting-timer");
     if (timer) {
       event.preventDefault();
@@ -242,10 +320,8 @@
     }
     const fullscreen = event.target.closest?.(".meeting-fullscreen");
     if (!fullscreen) return;
-    const active = document.body.classList.toggle("meeting-board-fullscreen");
-    const fullscreenLabel = fullscreen.querySelector("[data-fullscreen-label]");
-    if (fullscreenLabel) fullscreenLabel.textContent = active ? "יציאה ממסך מלא" : "מסך מלא";
-    fullscreen.setAttribute("aria-pressed", String(active));
+    const active = !document.body.classList.contains("meeting-board-fullscreen");
+    setFullscreenState(active);
     const board = document.querySelector("ol.meeting-board-surface");
     if (active && board?.requestFullscreen) board.requestFullscreen().catch(() => {});
     if (!active && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
@@ -289,29 +365,19 @@
 
   document.addEventListener("fullscreenchange", () => {
     if (document.fullscreenElement) return;
-    document.body.classList.remove("meeting-board-fullscreen");
-    const button = document.querySelector(".meeting-fullscreen");
-    if (button) {
-      const label = button.querySelector("[data-fullscreen-label]");
-      if (label) label.textContent = "מסך מלא";
-      button.setAttribute("aria-pressed", "false");
-    }
+    setFullscreenState(false);
   });
 
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape" || !document.body.classList.contains("meeting-board-fullscreen")) return;
-    document.body.classList.remove("meeting-board-fullscreen");
-    const button = document.querySelector(".meeting-fullscreen");
-    button?.setAttribute("aria-pressed", "false");
-    const label = button?.querySelector("[data-fullscreen-label]");
-    if (label) label.textContent = "מסך מלא";
+    exitBoardFullscreen();
   });
 
   window.addEventListener("boo_cloud_board_status", (event) => {
     const status = document.querySelector("[data-cloud-save-state]");
     if (status) status.textContent = event.detail === "saving" ? "שומרת…" : event.detail === "error" ? "השמירה נכשלה" : "נשמר בענן";
-    if (event.detail === "saved" && reloadAfterCloudDelete) {
-      reloadAfterCloudDelete = false;
+    if (event.detail === "saved" && reloadAfterCloudSave) {
+      reloadAfterCloudSave = false;
       window.setTimeout(() => location.reload(), 50);
     }
   });

@@ -39,9 +39,28 @@
     try { return JSON.parse(localStorage.getItem("boo_cloud_session") || "null"); } catch { return null; }
   }
 
+  function readGuestBoards() {
+    try {
+      const boards = JSON.parse(localStorage.getItem(GUEST_BOARDS_KEY) || "{}");
+      return boards && typeof boards === "object" && !Array.isArray(boards) ? boards : {};
+    } catch { return {}; }
+  }
+
+  function persistGuestBoard(date = activeBoardDate()) {
+    if (!isSessionBoard() || new URLSearchParams(location.search).has("patientBoard")) return;
+    const boards = readGuestBoards();
+    boards[date] = localStorage.getItem(DRAFT_KEY) || "[]";
+    localStorage.setItem(GUEST_BOARDS_KEY, JSON.stringify(boards));
+  }
+
   function moveToBoardDate(date) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date || "")) return;
     const url = new URL(location.href);
+    if (!url.searchParams.has("patientBoard")) {
+      persistGuestBoard();
+      const saved = readGuestBoards()[date];
+      localStorage.setItem(DRAFT_KEY, typeof saved === "string" ? saved : Array.isArray(saved) ? JSON.stringify(saved) : "[]");
+    }
     url.searchParams.set("view", "session");
     url.searchParams.set("boardDate", date);
     url.searchParams.delete("cloudBoardReady");
@@ -63,7 +82,7 @@
         } catch {}
       }
     } else {
-      try { knownBoardDates = Object.keys(JSON.parse(localStorage.getItem(GUEST_BOARDS_KEY) || "{}")); } catch {}
+      knownBoardDates = Object.keys(readGuestBoards());
     }
     knownBoardDates = [...new Set([...knownBoardDates, current])].sort();
     if (!select) return;
@@ -110,8 +129,7 @@
         return;
       }
     } else {
-      let boards = {};
-      try { boards = JSON.parse(localStorage.getItem(GUEST_BOARDS_KEY) || "{}"); } catch {}
+      const boards = readGuestBoards();
       boards[next] = JSON.stringify(items);
       localStorage.setItem(GUEST_BOARDS_KEY, JSON.stringify(boards));
     }
@@ -128,9 +146,9 @@
     navigation.dataset.boardDateNavigation = "true";
     navigation.setAttribute("aria-label", "מעבר בין לוחות טיפול");
     navigation.innerHTML = `
-      <button type="button" data-previous-board>‹ <span>הטיפול הקודם</span></button>
-      <label><span>תאריך הטיפול</span><input type="date" value="${current}" data-board-date-input></label>
-      <button type="button" data-next-board><span>הטיפול הבא</span> ›</button>
+      <button type="button" class="meeting-board-date-card" data-previous-board><span class="meeting-date-arrow" aria-hidden="true">‹</span><strong>הטיפול הקודם</strong></button>
+      <label class="meeting-board-date-card meeting-current-date"><strong>${current === localDate() ? "היום" : "תאריך הטיפול"}</strong><span>${escapeHtml(formatDate(current))}</span><input type="date" value="${current}" data-board-date-input aria-label="בחירת תאריך טיפול"></label>
+      <button type="button" class="meeting-board-date-card" data-next-board><strong>הטיפול הבא</strong><span class="meeting-date-arrow" aria-hidden="true">›</span></button>
       <select data-saved-board-select aria-label="מעבר ללוח טיפול שמור"><option>טוענת לוחות…</option></select>
       <button type="button" class="meeting-copy-board" data-copy-next-board>שכפול לשבוע הבא</button>`;
     actions.parentElement.insertBefore(navigation, actions);
@@ -307,6 +325,9 @@
     ensurePhotoInput();
     document.querySelector("[data-board-photo-input]")?.click();
   });
+
+  window.addEventListener("boo_draft_plan_changed", () => persistGuestBoard());
+  window.addEventListener("pagehide", () => persistGuestBoard());
 
   let queued = false;
   function refresh() {
