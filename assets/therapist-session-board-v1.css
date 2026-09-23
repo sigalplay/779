@@ -101,8 +101,8 @@
   .meeting-board-page .meeting-action-label-desktop{display:none!important}
   .meeting-board-page .meeting-action-label-mobile{display:inline!important}
   .meeting-board-page .meeting-action-icon{font-size:18px!important}
-  .meeting-board-page .meeting-item-controls{top:7px;left:7px;gap:4px}
-  .meeting-board-page .meeting-item-controls button{width:29px!important;height:29px!important;min-height:29px!important;font-size:15px!important}
+  .meeting-board-page .meeting-item-controls{top:6px;left:6px;gap:3px}
+  .meeting-board-page .meeting-item-controls button{width:24px!important;height:24px!important;min-height:24px!important;font-size:13px!important;box-shadow:0 1px 4px rgba(63,53,46,.08)}
   .meeting-fullscreen-exit{width:44px;height:44px;min-height:44px;font-size:27px}
 }
 
