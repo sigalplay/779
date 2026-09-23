@@ -47,6 +47,23 @@
     window.setTimeout(() => location.reload(), 180);
   }
 
+  function localizeSavedGameCards() {
+    let items = [];
+    try { items = JSON.parse(localStorage.getItem(DRAFT_KEY) || "[]"); } catch {}
+    if (!Array.isArray(items)) return;
+    const rows = [...document.querySelectorAll("ol.space-y-3 > li")];
+    items.forEach((item, index) => {
+      if (!item?.boardGame || !rows[index]) return;
+      const game = games.find((candidate) => candidate.id === item.boardGame);
+      if (!game) return;
+      const label = gameLabel(game);
+      const heading = rows[index].querySelector("h2,h3,h4");
+      if (heading) heading.textContent = label;
+      const completion = rows[index].querySelector(":scope > button[aria-label]");
+      if (completion) completion.setAttribute("aria-label", text(`סימון ${game.label} כפעילות שבוצעה`, `Mark ${game.labelEn} as completed`));
+    });
+  }
+
   function openPalette(button) {
     const existing = document.querySelector("[data-games-palette]");
     if (existing) {
@@ -104,6 +121,7 @@
     requestAnimationFrame(() => {
       queued = false;
       install();
+      localizeSavedGameCards();
     });
   };
   new MutationObserver(refresh).observe(document.documentElement, { childList: true, subtree: true });
