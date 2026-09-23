@@ -120,6 +120,10 @@
 
   function enableDrawing(enabled) {
     drawingEnabled = enabled;
+    if (enabled) {
+      document.querySelector("[data-signs-palette]")?.remove();
+      document.querySelector("[data-board-signs]")?.setAttribute("aria-expanded", "false");
+    }
     canvas?.classList.toggle("drawing-enabled", enabled);
     const button = document.querySelector("[data-board-pen]");
     button?.classList.toggle("active", enabled);

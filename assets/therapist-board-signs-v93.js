@@ -87,6 +87,7 @@
   function openPalette(button) {
     const existing = document.querySelector("[data-signs-palette]");
     if (existing) { existing.remove(); button.setAttribute("aria-expanded", "false"); return; }
+    document.querySelector("[data-board-pen][aria-pressed='true']")?.click();
     const palette = document.createElement("div");
     palette.className = "meeting-signs-palette";
     palette.dataset.signsPalette = "true";
