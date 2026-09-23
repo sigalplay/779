@@ -51,7 +51,18 @@
     event.stopPropagation();
     event.stopImmediatePropagation();
     const patientId = params.get("patientBoard");
-    const suffix = patientId ? `&patientBoard=${encodeURIComponent(patientId)}&cloudBoardReady=1` : "";
+    const boardDate = params.get("boardDate");
+    const hasBoardDate = /^\d{4}-\d{2}-\d{2}$/.test(boardDate || "");
+    if (!patientId && hasBoardDate) {
+      let boards = {};
+      try { boards = JSON.parse(localStorage.getItem("boo_guest_boards_by_date") || "{}"); } catch {}
+      boards[boardDate] = localStorage.getItem("pp_draft_plan") || "[]";
+      localStorage.setItem("boo_guest_boards_by_date", JSON.stringify(boards));
+    }
+    const dateSuffix = hasBoardDate ? `&boardDate=${encodeURIComponent(boardDate)}` : "";
+    const suffix = patientId
+      ? `&patientBoard=${encodeURIComponent(patientId)}${dateSuffix}&cloudBoardReady=1`
+      : `${dateSuffix}&guest=1`;
     location.assign(`/therapist/build?view=session${suffix}`);
   }, true);
 
