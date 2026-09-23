@@ -8,6 +8,7 @@ import { VisualSessionTimer } from "@/components/VisualSessionTimer";
 import { FullscreenBoardTools } from "@/components/FullscreenBoardTools";
 import { SessionBoardDrawing } from "@/components/SessionBoardDrawing";
 import { SessionBoardDateNavigation } from "@/components/SessionBoardDateNavigation";
+import { SessionBoardActions } from "@/components/SessionBoardActions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -84,6 +85,8 @@ export default function TherapistBuild() {
   const [sessionTimerOpen, setSessionTimerOpen] = useState(false);
   const [sessionPenActive, setSessionPenActive] = useState(false);
   const [sessionDrawing, setSessionDrawing] = useState(() => patientBoardId ? [] : getGuestBoardDrawing(currentBoardDate));
+  const [sessionFullscreen, setSessionFullscreen] = useState(false);
+  const sessionPresentationRef = useRef(null);
   const loadedBoardDateRef = useRef(currentBoardDate);
   const cloudBoardReadyRef = useRef(false);
   const skipCloudSaveRef = useRef(false);
@@ -163,6 +166,14 @@ export default function TherapistBuild() {
     else next.delete("creativeMode");
     if (next.toString() !== searchParams.toString()) setSearchParams(next, { replace: true });
   }, [mainTab, creativeMode, view]);
+
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      if (!document.fullscreenElement) setSessionFullscreen(false);
+    };
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+  }, []);
 
   function toggleGoal(v) {
     setGoals((prev) => (prev.includes(v) ? prev.filter((g) => g !== v) : [...prev, v]));
@@ -312,8 +323,10 @@ export default function TherapistBuild() {
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-        setPlan((prev) => [...prev, { kind: "photo", uid: `photo-${Date.now()}`, image: dataUrl, label: "תמונה" }]);
-        toast.success("התמונה נוספה לתכנית הטיפול");
+        const photo = { kind: "photo", uid: `photo-${Date.now()}`, image: dataUrl, label: t("תמונה", "Photo") };
+        const nextPlan = [...plan, photo];
+        replaceSessionPlan(nextPlan);
+        toast.success(t("התמונה נוספה ללוח המפגש", "The photo was added to the session board"));
       };
       img.src = reader.result;
     };
@@ -385,6 +398,8 @@ export default function TherapistBuild() {
   }
   function endSession() {
     setActiveSessionItem(null);
+    setSessionFullscreen(false);
+    if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => null);
     const next = new URLSearchParams();
     next.set("tab", "search");
     if (sessionId) next.set("session", sessionId);
@@ -483,6 +498,21 @@ export default function TherapistBuild() {
     }
   }
 
+  async function toggleSessionFullscreen() {
+    if (sessionFullscreen) {
+      if (document.fullscreenElement && document.exitFullscreen) {
+        await document.exitFullscreen().catch(() => null);
+      }
+      setSessionFullscreen(false);
+      return;
+    }
+    const element = sessionPresentationRef.current;
+    if (element?.requestFullscreen) {
+      await element.requestFullscreen().catch(() => null);
+    }
+    setSessionFullscreen(true);
+  }
+
   const totalMinutes = plan.reduce((sum, p) => {
     if (p.kind === "activity") return sum + (getActivity(p.id)?.duration_min ?? 0);
     return sum;
@@ -490,17 +520,30 @@ export default function TherapistBuild() {
 
   // ---------- Session (full-board) view ----------
   if (view === "session") {
+    const returnQuery = new URLSearchParams({ view: "session", boardDate: currentBoardDate });
+    if (sessionId) returnQuery.set("session", sessionId);
+    if (linkedPatient?.id) returnQuery.set("patient", linkedPatient.id);
+    if (patientBoardId) returnQuery.set("patientBoard", patientBoardId);
+    const returnPath = `/therapist/build?${returnQuery.toString()}`;
+    const addActivityQuery = new URLSearchParams({ tab: "search", returnTo: "session", returnPath });
+    if (sessionId) addActivityQuery.set("session", sessionId);
+    if (linkedPatient?.id) addActivityQuery.set("patient", linkedPatient.id);
+    if (patientBoardId) addActivityQuery.set("patientBoard", patientBoardId);
+    addActivityQuery.set("boardDate", currentBoardDate);
+    const motorTrailQuery = new URLSearchParams({ returnTo: "session", returnPath });
+
     return (
       <AppShell mode="therapist" fullScreen>
-        <button
+        <div ref={sessionPresentationRef} dir={language === "en" ? "ltr" : "rtl"} className={cn("session-board-presentation", sessionFullscreen && "is-fullscreen")}>
+        {sessionFullscreen && <button
           type="button"
-          onClick={endSession}
+          onClick={toggleSessionFullscreen}
           aria-label={t("יציאה ממסך מלא", "Exit full screen")}
           title={t("יציאה ממסך מלא", "Exit full screen")}
-          className={cn("fixed top-3 z-[60] flex h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-white/95 shadow-lg backdrop-blur hover:bg-muted", language === "en" ? "right-3" : "left-3")}
+          className={cn("session-fullscreen-close fixed top-3 z-[95] flex h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-white/95 shadow-lg backdrop-blur hover:bg-muted", language === "en" ? "right-3" : "left-3")}
         >
           <X className="h-6 w-6" />
-        </button>
+        </button>}
         <SessionBoardDateNavigation date={currentBoardDate} language={language} savedDates={patientBoardId ? cloudBoardDates : guestBoardDates(currentBoardDate)} onNavigate={navigateBoard} onCopy={copyGuestBoard} />
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -520,6 +563,15 @@ export default function TherapistBuild() {
             {sessionId && <Button onClick={finishSession} className="rounded-full bg-foreground text-background"><Save className="h-4 w-4" /> {t("סיום טיפול", "Finish session")}</Button>}
           </div>
         </div>
+
+        <SessionBoardActions
+          language={language}
+          addActivityHref={`/therapist/build?${addActivityQuery.toString()}`}
+          motorTrailHref={`/therapist/motor-trail?${motorTrailQuery.toString()}`}
+          onPhotoFile={handlePhotoCapture}
+          fullscreenActive={sessionFullscreen}
+          onToggleFullscreen={toggleSessionFullscreen}
+        />
 
         <TherapistPostureScissorsTips language={language} hideTriggers openPanel={sessionGuide} onOpenPanelChange={setSessionGuide} />
         <FullscreenBoardTools
@@ -643,6 +695,7 @@ export default function TherapistBuild() {
             );
           })}
         </ol>}
+        </div>
         </div>
       </AppShell>
     );

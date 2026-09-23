@@ -12,6 +12,38 @@
   font-display: swap;
 }
 
+/* The presentation wrapper is also the Fullscreen API target. The class is a
+   deliberate fallback for iOS Safari, where element fullscreen is not always
+   available. Keeping both paths on the same element prevents layout drift. */
+.session-board-presentation {
+  min-height: 100vh;
+  background: hsl(var(--background));
+}
+
+.session-board-presentation.is-fullscreen,
+.session-board-presentation:fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(2rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  background: hsl(var(--background));
+}
+
+.session-board-presentation:fullscreen {
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 767px) {
+  .session-board-presentation.is-fullscreen,
+  .session-board-presentation:fullscreen {
+    padding-top: max(4rem, env(safe-area-inset-top));
+  }
+}
+
 /* Full-screen therapy board tools. The drawer overlays the checklist, so
    opening it never changes the board width or the location of its controls. */
 .board-tools-edge-trigger {
