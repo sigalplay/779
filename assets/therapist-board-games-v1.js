@@ -3,15 +3,23 @@
 
   const DRAFT_KEY = "pp_draft_plan";
   const games = [
-    { id: "play-kitchen", label: "מטבח ילדים", asset: "/assets/therapist-games/play-kitchen.png" },
-    { id: "paper-pencil", label: "דף ועיפרון", asset: "/assets/therapist-games/paper-pencil.png" },
-    { id: "board-game", label: "משחק קופסה", asset: "/assets/therapist-games/board-game.png" },
-    { id: "doll", label: "בובה", asset: "/assets/therapist-games/doll.png" },
-    { id: "kinetic-sand", label: "חול קינטי", asset: "/assets/therapist-games/kinetic-sand.png" },
-    { id: "play-dough", label: "בצק", asset: "/assets/therapist-games/play-dough.png" },
-    { id: "markers", label: "טושים", asset: "/assets/therapist-games/markers.png" },
-    { id: "chef-hat", label: "כובע שף", asset: "/assets/therapist-games/chef-hat.png" }
+    { id: "play-kitchen", label: "מטבח ילדים", labelEn: "Play kitchen", asset: "/assets/therapist-games/play-kitchen.png" },
+    { id: "paper-pencil", label: "דף ועיפרון", labelEn: "Paper and pencil", asset: "/assets/therapist-games/paper-pencil.png" },
+    { id: "board-game", label: "משחק קופסה", labelEn: "Board game", asset: "/assets/therapist-games/board-game.png" },
+    { id: "doll", label: "בובה", labelEn: "Doll", asset: "/assets/therapist-games/doll.png" },
+    { id: "kinetic-sand", label: "חול קינטי", labelEn: "Kinetic sand", asset: "/assets/therapist-games/kinetic-sand.png" },
+    { id: "play-dough", label: "בצק", labelEn: "Play dough", asset: "/assets/therapist-games/play-dough.png" },
+    { id: "markers", label: "טושים", labelEn: "Markers", asset: "/assets/therapist-games/markers.png" },
+    { id: "chef-hat", label: "כובע שף", labelEn: "Chef hat", asset: "/assets/therapist-games/chef-hat.png" }
   ];
+
+  function isEnglish() {
+    try { return sessionStorage.getItem("boo_english_preview") === "1" && localStorage.getItem("boo_nesahek_language") === "en"; }
+    catch { return document.documentElement.lang === "en"; }
+  }
+
+  const text = (hebrew, english) => isEnglish() ? english : hebrew;
+  const gameLabel = (game) => isEnglish() ? game.labelEn : game.label;
 
   function isBoard() {
     const params = new URLSearchParams(location.search);
@@ -19,7 +27,7 @@
   }
 
   function gameMarkup(game) {
-    return `<span class="board-game-choice"><span><img src="${game.asset}" alt=""></span><strong>${game.label}</strong></span>`;
+    return `<span class="board-game-choice"><span><img src="${game.asset}" alt=""></span><strong>${gameLabel(game)}</strong></span>`;
   }
 
   function addGame(game) {
@@ -30,7 +38,7 @@
       kind: "photo",
       uid: `game-${game.id}-${Date.now()}`,
       image: game.asset,
-      label: game.label,
+      label: gameLabel(game),
       boardGame: game.id
     });
     localStorage.setItem(DRAFT_KEY, JSON.stringify(items));
@@ -52,8 +60,8 @@
     palette.className = "meeting-games-palette";
     palette.dataset.gamesPalette = "true";
     palette.setAttribute("role", "dialog");
-    palette.setAttribute("aria-label", "בחירת משחק ללוח");
-    palette.innerHTML = `<strong>בחירת משחק ללוח</strong><div>${games.map((game) => `<button type="button" data-add-board-game="${game.id}" aria-label="הוספת ${game.label} ללוח">${gameMarkup(game)}</button>`).join("")}</div><button type="button" class="meeting-games-close" data-close-games>סגירה</button>`;
+    palette.setAttribute("aria-label", text("בחירת משחק ללוח", "Choose a game for the board"));
+    palette.innerHTML = `<strong>${text("בחירת משחק ללוח", "Choose a game for the board")}</strong><div>${games.map((game) => `<button type="button" data-add-board-game="${game.id}" aria-label="${text(`הוספת ${game.label} ללוח`, `Add ${game.labelEn} to the board`)}">${gameMarkup(game)}</button>`).join("")}</div><button type="button" class="meeting-games-close" data-close-games>${text("סגירה", "Close")}</button>`;
     button.closest("[data-games-tools]").append(palette);
     button.setAttribute("aria-expanded", "true");
   }
@@ -65,7 +73,7 @@
     const wrap = document.createElement("div");
     wrap.className = "meeting-games-tools";
     wrap.dataset.gamesTools = "true";
-    wrap.innerHTML = `<button type="button" class="meeting-games-button" data-board-games aria-expanded="false" title="הוספת משחק ללוח"><img class="meeting-tool-image-icon" src="/assets/therapist-games/board-game.png" alt=""><span>משחקים</span></button>`;
+    wrap.innerHTML = `<button type="button" class="meeting-games-button" data-board-games aria-expanded="false" title="${text("הוספת משחק ללוח", "Add a game to the board")}"><img class="meeting-tool-image-icon" src="/assets/therapist-games/board-game.png" alt=""><span>${text("משחקים", "Games")}</span></button>`;
     const timer = actions.querySelector(".meeting-timer");
     actions.insertBefore(wrap, timer || actions.querySelector(".meeting-photo"));
   }

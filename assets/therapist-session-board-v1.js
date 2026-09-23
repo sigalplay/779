@@ -4,6 +4,13 @@
   const CLOUD_URL = "https://qcklptudfclzvddjarkw.supabase.co";
   const CLOUD_KEY = "sb_publishable_8Bp_l_qcOxT2A67Sw2T35A_aVCvWh8H";
 
+  function isEnglish() {
+    try { return sessionStorage.getItem("boo_english_preview") === "1" && localStorage.getItem("boo_nesahek_language") === "en"; }
+    catch { return document.documentElement.lang === "en"; }
+  }
+
+  const text = (hebrew, english) => isEnglish() ? english : hebrew;
+
   function isMeetingBoard() {
     return location.pathname.replace(/\/$/, "") === "/therapist/build" && new URLSearchParams(location.search).get("view") === "session";
   }
@@ -41,19 +48,19 @@
     let activePatient = null;
     try { activePatient = JSON.parse(localStorage.getItem("boo_active_cloud_patient") || "null"); } catch {}
     const planningLabel = patientId && activePatient?.id === patientId
-      ? `<strong>לוח המפגש של ${escapeHtml(activePatient.name)}</strong><small data-cloud-save-state>נשמר בענן</small>`
-      : `<strong>תכנון טיפולים</strong><small>בחירת מטופל ושמירת לוחות</small>`;
+      ? `<strong>${text("לוח המפגש של", "Session board for")} ${escapeHtml(activePatient.name)}</strong><small data-cloud-save-state>${text("נשמר בענן", "Saved to cloud")}</small>`
+      : `<strong>${text("תכנון טיפולים", "Treatment planning")}</strong><small>${text("בחירת מטופל ושמירת לוחות", "Choose a client and save boards")}</small>`;
     actions.innerHTML = `
-      <button class="meeting-tools-toggle" type="button" aria-expanded="true" aria-label="כיווץ כלי הלוח" title="כיווץ כלי הלוח"><span aria-hidden="true">⌃</span></button>
+      <button class="meeting-tools-toggle" type="button" aria-expanded="true" aria-label="${text("כיווץ כלי הלוח", "Collapse board tools")}" title="${text("כיווץ כלי הלוח", "Collapse board tools")}"><span aria-hidden="true">⌃</span></button>
       <div class="meeting-planning-wrap">
         <button class="meeting-save-state${patientId ? "" : " guest"}" type="button" data-treatment-planning aria-expanded="false">${planningLabel}<span aria-hidden="true">⌄</span></button>
         <div class="meeting-patient-menu" data-patient-menu hidden></div>
       </div>
-      <a class="meeting-add-activity" href="/therapist/build?tab=search&boardMode=1${patientSuffix}">הוסף פעילות ללוח המפגש</a>
-      <a class="meeting-board-link" href="/therapist/motor-trail?returnTo=session${patientSuffix}"><span class="meeting-action-icon" aria-hidden="true">＋</span><span class="meeting-action-label-desktop">הוספת מסלול מוטורי</span><span class="meeting-action-label-mobile">מסלול מוטורי</span></a>
-      <button class="meeting-timer" type="button"><span class="meeting-action-icon" aria-hidden="true">⏱</span><span class="meeting-action-label-desktop">טיימר חזותי</span><span class="meeting-action-label-mobile">טיימר</span></button>
-      <button class="meeting-photo" type="button"><span class="meeting-action-icon" aria-hidden="true">📷</span><span class="meeting-action-label-desktop">צילום או הוספת תמונה</span><span class="meeting-action-label-mobile">תמונה</span></button>
-      <button class="meeting-fullscreen" type="button" aria-pressed="false"><span class="meeting-action-icon" aria-hidden="true">⛶</span><span data-fullscreen-label>מסך מלא</span></button>`;
+      <a class="meeting-add-activity" href="/therapist/build?tab=search&boardMode=1${patientSuffix}">${text("הוסף פעילות ללוח המפגש", "Add an activity to the session board")}</a>
+      <a class="meeting-board-link" href="/therapist/motor-trail?returnTo=session${patientSuffix}"><span class="meeting-action-icon" aria-hidden="true">＋</span><span class="meeting-action-label-desktop">${text("הוספת מסלול מוטורי", "Add an obstacle course")}</span><span class="meeting-action-label-mobile">${text("מסלול מוטורי", "Obstacle course")}</span></a>
+      <button class="meeting-timer" type="button"><span class="meeting-action-icon" aria-hidden="true">⏱</span><span class="meeting-action-label-desktop">${text("טיימר חזותי", "Visual timer")}</span><span class="meeting-action-label-mobile">${text("טיימר", "Timer")}</span></button>
+      <button class="meeting-photo" type="button"><span class="meeting-action-icon" aria-hidden="true">📷</span><span class="meeting-action-label-desktop">${text("צילום או הוספת תמונה", "Take or add a photo")}</span><span class="meeting-action-label-mobile">${text("תמונה", "Photo")}</span></button>
+      <button class="meeting-fullscreen" type="button" aria-pressed="false"><span class="meeting-action-icon" aria-hidden="true">⛶</span><span data-fullscreen-label>${text("מסך מלא", "Full screen")}</span></button>`;
     list.parentElement.insertBefore(actions, list);
     hideLegacySessionControls();
     setupVisualTimer(actions);
@@ -91,19 +98,19 @@
     const session = readSession();
     if (!session?.access_token || !session?.user?.id) {
       const redirect = encodeURIComponent(planningReturnUrl());
-      menu.innerHTML = `<strong>שמירת לוחות למטופלים</strong><p>התחברי כדי לשמור מספר מטופלים ולפתוח את הלוחות מכל מכשיר.</p><a class="patient-menu-primary" href="/auth?mode=login&intent=patients&redirect=${redirect}">התחברות</a><button type="button" data-close-patient-menu>חזרה ללוח ללא התחברות</button>`;
+      menu.innerHTML = `<strong>${text("שמירת לוחות למטופלים", "Save client boards")}</strong><p>${text("התחברי כדי לשמור מספר מטופלים ולפתוח את הלוחות מכל מכשיר.", "Sign in to save boards for multiple clients and open them from any device.")}</p><a class="patient-menu-primary" href="/auth?mode=login&intent=patients&redirect=${redirect}">${text("התחברות", "Sign in")}</a><button type="button" data-close-patient-menu>${text("חזרה ללוח ללא התחברות", "Return to the board without signing in")}</button>`;
       return;
     }
-    menu.innerHTML = `<strong>בחירת מטופל</strong><p class="patient-menu-loading">טוענת את המטופלים…</p>`;
+    menu.innerHTML = `<strong>${text("בחירת מטופל", "Choose a client")}</strong><p class="patient-menu-loading">${text("טוענת את המטופלים…", "Loading clients…")}</p>`;
     const headers = { apikey: CLOUD_KEY, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" };
     try {
       const response = await fetch(`${CLOUD_URL}/rest/v1/therapist_patients?select=id,display_name,updated_at&order=updated_at.desc`, { headers });
       if (!response.ok) throw new Error("load-failed");
       const patients = await response.json();
-      menu.innerHTML = `<strong>בחירת מטופל</strong><div class="patient-menu-list">${patients.map((patient) => `<button type="button" data-select-patient="${escapeHtml(patient.id)}">${escapeHtml(patient.display_name)}</button>`).join("") || "<p>עדיין לא הוספת מטופלים.</p>"}</div><form data-add-patient-form><label for="quickPatientName">הוספת מטופל</label><div><input id="quickPatientName" name="patientName" maxlength="80" required placeholder="שם פרטי, ראשי תיבות או כינוי"><button type="submit">הוספה</button></div><small>מומלץ לא להזין שם מלא או מידע רפואי.</small></form><button type="button" data-use-guest-board>מעבר ללוח ללא מטופל</button><a href="/therapist/my-patients/">ניהול המטופלים שלי</a><p class="patient-menu-message" role="status"></p>`;
+      menu.innerHTML = `<strong>${text("בחירת מטופל", "Choose a client")}</strong><div class="patient-menu-list">${patients.map((patient) => `<button type="button" data-select-patient="${escapeHtml(patient.id)}">${escapeHtml(patient.display_name)}</button>`).join("") || `<p>${text("עדיין לא הוספת מטופלים.", "You have not added any clients yet.")}</p>`}</div><form data-add-patient-form><label for="quickPatientName">${text("הוספת מטופל", "Add a client")}</label><div><input id="quickPatientName" name="patientName" maxlength="80" required placeholder="${text("שם פרטי, ראשי תיבות או כינוי", "First name, initials, or nickname")}"><button type="submit">${text("הוספה", "Add")}</button></div><small>${text("מומלץ לא להזין שם מלא או מידע רפואי.", "We recommend not entering a full name or medical information.")}</small></form><button type="button" data-use-guest-board>${text("מעבר ללוח ללא מטופל", "Use a board without a client")}</button><a href="/therapist/my-patients/">${text("ניהול המטופלים שלי", "Manage my clients")}</a><p class="patient-menu-message" role="status"></p>`;
       menu.dataset.cloudHeaders = JSON.stringify(headers);
     } catch {
-      menu.innerHTML = `<strong>לא הצלחנו לטעון את המטופלים</strong><p>ייתכן שצריך להתחבר מחדש.</p><a class="patient-menu-primary" href="/auth?mode=login&intent=patients&redirect=${encodeURIComponent(planningReturnUrl())}">התחברות מחדש</a><button type="button" data-close-patient-menu>חזרה ללוח</button>`;
+      menu.innerHTML = `<strong>${text("לא הצלחנו לטעון את המטופלים", "We could not load the clients")}</strong><p>${text("ייתכן שצריך להתחבר מחדש.", "You may need to sign in again.")}</p><a class="patient-menu-primary" href="/auth?mode=login&intent=patients&redirect=${encodeURIComponent(planningReturnUrl())}">${text("התחברות מחדש", "Sign in again")}</a><button type="button" data-close-patient-menu>${text("חזרה ללוח", "Return to the board")}</button>`;
     }
   }
 
@@ -134,7 +141,7 @@
     if (cloudBoard) {
       reloadAfterCloudSave = true;
       const status = document.querySelector("[data-cloud-save-state]");
-      if (status) status.textContent = "שומרת את המחיקה…";
+      if (status) status.textContent = text("שומרת את המחיקה…", "Saving deletion…");
     } else {
       window.setTimeout(() => location.reload(), 50);
     }
@@ -157,7 +164,7 @@
     if (cloudBoard) {
       reloadAfterCloudSave = true;
       const status = document.querySelector("[data-cloud-save-state]");
-      if (status) status.textContent = "שומרת את הסדר…";
+      if (status) status.textContent = text("שומרת את הסדר…", "Saving order…");
     } else {
       window.setTimeout(() => location.reload(), 50);
     }
@@ -199,11 +206,11 @@
       const controls = document.createElement("div");
       controls.className = "meeting-item-controls";
       controls.dataset.meetingItemControls = "true";
-      controls.setAttribute("aria-label", "שינוי סדר הפעילות");
+      controls.setAttribute("aria-label", text("שינוי סדר הפעילות", "Change activity order"));
       controls.innerHTML = `
-        <button type="button" class="meeting-move-item" data-move-meeting-item="${index}" data-move-direction="-1" aria-label="העלאת הפעילות למעלה" title="העלאה למעלה">↑</button>
-        <button type="button" class="meeting-move-item" data-move-meeting-item="${index}" data-move-direction="1" aria-label="הורדת הפעילות למטה" title="הורדה למטה">↓</button>
-        <button type="button" class="meeting-delete-item" data-delete-meeting-item="${index}" aria-label="מחיקת הפעילות מלוח המפגש" title="מחיקה מהלוח">×</button>`;
+        <button type="button" class="meeting-move-item" data-move-meeting-item="${index}" data-move-direction="-1" aria-label="${text("העלאת הפעילות למעלה", "Move activity up")}" title="${text("העלאה למעלה", "Move up")}">↑</button>
+        <button type="button" class="meeting-move-item" data-move-meeting-item="${index}" data-move-direction="1" aria-label="${text("הורדת הפעילות למטה", "Move activity down")}" title="${text("הורדה למטה", "Move down")}">↓</button>
+        <button type="button" class="meeting-delete-item" data-delete-meeting-item="${index}" aria-label="${text("מחיקת הפעילות מלוח המפגש", "Remove activity from the session board")}" title="${text("מחיקה מהלוח", "Remove from board")}">×</button>`;
       row.querySelector(":scope > div")?.append(controls);
     });
     syncItemControlIndexes();
@@ -216,8 +223,8 @@
     button.type = "button";
     button.className = "meeting-fullscreen-exit";
     button.dataset.exitBoardFullscreen = "true";
-    button.setAttribute("aria-label", "יציאה ממסך מלא");
-    button.title = "יציאה ממסך מלא";
+    button.setAttribute("aria-label", text("יציאה ממסך מלא", "Exit full screen"));
+    button.title = text("יציאה ממסך מלא", "Exit full screen");
     button.textContent = "×";
     board.append(button);
   }
@@ -226,7 +233,7 @@
     document.body.classList.toggle("meeting-board-fullscreen", active);
     const button = document.querySelector(".meeting-fullscreen");
     const label = button?.querySelector("[data-fullscreen-label]");
-    if (label) label.textContent = active ? "יציאה ממסך מלא" : "מסך מלא";
+    if (label) label.textContent = active ? text("יציאה ממסך מלא", "Exit full screen") : text("מסך מלא", "Full screen");
     button?.setAttribute("aria-pressed", String(active));
   }
 
@@ -242,8 +249,8 @@
       const actions = toolsToggle.closest(".meeting-board-actions");
       const collapsed = actions?.classList.toggle("meeting-tools-collapsed") || false;
       toolsToggle.setAttribute("aria-expanded", String(!collapsed));
-      toolsToggle.setAttribute("aria-label", collapsed ? "פתיחת כלי הלוח" : "כיווץ כלי הלוח");
-      toolsToggle.title = collapsed ? "פתיחת כלי הלוח" : "כיווץ כלי הלוח";
+      toolsToggle.setAttribute("aria-label", collapsed ? text("פתיחת כלי הלוח", "Expand board tools") : text("כיווץ כלי הלוח", "Collapse board tools"));
+      toolsToggle.title = collapsed ? text("פתיחת כלי הלוח", "Expand board tools") : text("כיווץ כלי הלוח", "Collapse board tools");
       toolsToggle.querySelector("span").textContent = collapsed ? "⌄" : "⌃";
       return;
     }
@@ -352,7 +359,7 @@
       if (!patientId) throw new Error("missing-patient");
       location.assign(`/therapist/build?view=session&patientBoard=${encodeURIComponent(patientId)}`);
     } catch {
-      if (message) message.textContent = "לא הצלחנו להוסיף את המטופל כרגע.";
+      if (message) message.textContent = text("לא הצלחנו להוסיף את המטופל כרגע.", "We could not add the client right now.");
       if (submit) submit.disabled = false;
     }
   }, true);
@@ -376,7 +383,7 @@
 
   window.addEventListener("boo_cloud_board_status", (event) => {
     const status = document.querySelector("[data-cloud-save-state]");
-    if (status) status.textContent = event.detail === "saving" ? "שומרת…" : event.detail === "error" ? "השמירה נכשלה" : "נשמר בענן";
+    if (status) status.textContent = event.detail === "saving" ? text("שומרת…", "Saving…") : event.detail === "error" ? text("השמירה נכשלה", "Save failed") : text("נשמר בענן", "Saved to cloud");
     if (event.detail === "saved" && reloadAfterCloudSave) {
       reloadAfterCloudSave = false;
       window.setTimeout(() => location.reload(), 50);

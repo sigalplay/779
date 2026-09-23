@@ -7,6 +7,13 @@
   const GUEST_BOARDS_KEY = "boo_guest_boards_by_date";
   let knownBoardDates = [];
 
+  function isEnglish() {
+    try { return sessionStorage.getItem("boo_english_preview") === "1" && localStorage.getItem("boo_nesahek_language") === "en"; }
+    catch { return document.documentElement.lang === "en"; }
+  }
+
+  const text = (hebrew, english) => isEnglish() ? english : hebrew;
+
   const escapeHtml = (value) => String(value ?? "").replace(/[&<>\"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[character]);
 
   function localDate() {
@@ -26,7 +33,7 @@
   }
 
   function formatDate(value) {
-    try { return new Intl.DateTimeFormat("he-IL", { day: "numeric", month: "numeric", year: "numeric" }).format(new Date(`${value}T12:00:00`)); }
+    try { return new Intl.DateTimeFormat(isEnglish() ? "en-US" : "he-IL", { day: "numeric", month: "numeric", year: "numeric" }).format(new Date(`${value}T12:00:00`)); }
     catch { return value; }
   }
 
@@ -86,7 +93,7 @@
     }
     knownBoardDates = [...new Set([...knownBoardDates, current])].sort();
     if (!select) return;
-    select.innerHTML = `<option value="">מעבר ללוח שמור…</option>${knownBoardDates.map((date) => `<option value="${escapeHtml(date)}"${date === current ? " selected" : ""}>${escapeHtml(formatDate(date))}</option>`).join("")}`;
+    select.innerHTML = `<option value="">${text("מעבר ללוח שמור…", "Open a saved board…")}</option>${knownBoardDates.map((date) => `<option value="${escapeHtml(date)}"${date === current ? " selected" : ""}>${escapeHtml(formatDate(date))}</option>`).join("")}`;
   }
 
   function neighboringDate(direction) {
@@ -106,12 +113,12 @@
     const params = new URLSearchParams(location.search);
     const patientId = params.get("patientBoard");
     button.disabled = true;
-    button.textContent = "משכפלת…";
+    button.textContent = text("משכפלת…", "Copying…");
     if (patientId) {
       const session = readSession();
       if (!session?.access_token || !session?.user?.id) {
         button.disabled = false;
-        button.textContent = "שכפול לשבוע הבא";
+        button.textContent = text("שכפול לשבוע הבא", "Copy to next week");
         return;
       }
       let drawingData = [];
@@ -125,7 +132,7 @@
         if (!response.ok) throw new Error("copy-failed");
       } catch {
         button.disabled = false;
-        button.textContent = "נסי שוב";
+        button.textContent = text("נסי שוב", "Try again");
         return;
       }
     } else {
@@ -144,13 +151,13 @@
     const navigation = document.createElement("section");
     navigation.className = "meeting-board-date-navigation";
     navigation.dataset.boardDateNavigation = "true";
-    navigation.setAttribute("aria-label", "מעבר בין לוחות טיפול");
+    navigation.setAttribute("aria-label", text("מעבר בין לוחות טיפול", "Navigate treatment boards"));
     navigation.innerHTML = `
-      <button type="button" class="meeting-board-date-card" data-previous-board><span class="meeting-date-arrow" aria-hidden="true">‹</span><strong>הטיפול הקודם</strong></button>
-      <label class="meeting-board-date-card meeting-current-date"><strong>${current === localDate() ? "היום" : "תאריך הטיפול"}</strong><span>${escapeHtml(formatDate(current))}</span><input type="date" value="${current}" data-board-date-input aria-label="בחירת תאריך טיפול"></label>
-      <button type="button" class="meeting-board-date-card" data-next-board><strong>הטיפול הבא</strong><span class="meeting-date-arrow" aria-hidden="true">›</span></button>
-      <select data-saved-board-select aria-label="מעבר ללוח טיפול שמור"><option>טוענת לוחות…</option></select>
-      <button type="button" class="meeting-copy-board" data-copy-next-board>שכפול לשבוע הבא</button>`;
+      <button type="button" class="meeting-board-date-card" data-previous-board><span class="meeting-date-arrow" aria-hidden="true">‹</span><strong>${text("הטיפול הקודם", "Previous session")}</strong></button>
+      <label class="meeting-board-date-card meeting-current-date"><strong>${current === localDate() ? text("היום", "Today") : text("תאריך הטיפול", "Session date")}</strong><span>${escapeHtml(formatDate(current))}</span><input type="date" value="${current}" data-board-date-input aria-label="${text("בחירת תאריך טיפול", "Choose a session date")}"></label>
+      <button type="button" class="meeting-board-date-card" data-next-board><strong>${text("הטיפול הבא", "Next session")}</strong><span class="meeting-date-arrow" aria-hidden="true">›</span></button>
+      <select data-saved-board-select aria-label="${text("מעבר ללוח טיפול שמור", "Open a saved treatment board")}"><option>${text("טוענת לוחות…", "Loading boards…")}</option></select>
+      <button type="button" class="meeting-copy-board" data-copy-next-board>${text("שכפול לשבוע הבא", "Copy to next week")}</button>`;
     actions.parentElement.insertBefore(navigation, actions);
     loadKnownBoardDates(navigation.querySelector("[data-saved-board-select]"));
   }
@@ -193,8 +200,8 @@
     dialog.dataset.boardPhotoPreview = "true";
     dialog.setAttribute("role", "dialog");
     dialog.setAttribute("aria-modal", "true");
-    dialog.setAttribute("aria-label", "תצוגה מקדימה של התמונה");
-    dialog.innerHTML = `<div class="board-photo-preview-card"><h2>התמונה שתתווסף ללוח</h2><img alt="תצוגה מקדימה"><div><button type="button" data-confirm-photo>הוספה ללוח</button><button type="button" data-repick-photo>צילום או בחירה מחדש</button><button type="button" data-cancel-photo>ביטול</button></div></div>`;
+    dialog.setAttribute("aria-label", text("תצוגה מקדימה של התמונה", "Photo preview"));
+    dialog.innerHTML = `<div class="board-photo-preview-card"><h2>${text("התמונה שתתווסף ללוח", "Photo to add to the board")}</h2><img alt="${text("תצוגה מקדימה", "Preview")}"><div><button type="button" data-confirm-photo>${text("הוספה ללוח", "Add to board")}</button><button type="button" data-repick-photo>${text("צילום או בחירה מחדש", "Take or choose another photo")}</button><button type="button" data-cancel-photo>${text("ביטול", "Cancel")}</button></div></div>`;
     dialog.querySelector("img").src = dataUrl;
     const close = () => dialog.remove();
     dialog.querySelector("[data-cancel-photo]").addEventListener("click", close);
@@ -207,7 +214,7 @@
       let items = [];
       try { items = JSON.parse(localStorage.getItem(DRAFT_KEY) || "[]"); } catch {}
       if (!Array.isArray(items)) items = [];
-      items.push({ kind: "photo", uid: `photo-${Date.now()}`, image: dataUrl, label: "תמונה" });
+      items.push({ kind: "photo", uid: `photo-${Date.now()}`, image: dataUrl, label: text("תמונה", "Photo") });
       localStorage.setItem(DRAFT_KEY, JSON.stringify(items));
       window.dispatchEvent(new CustomEvent("boo_draft_plan_changed", { detail: { items, source: "meeting-board-photo" } }));
       close();
