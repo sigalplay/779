@@ -127,8 +127,10 @@
   .meeting-board-page .meeting-drawing-controls label{min-width:0;min-height:42px;justify-content:space-between;padding:6px 8px;border:1px solid #eee7df;border-radius:12px;white-space:normal}
   .meeting-board-page .meeting-drawing-controls input[type=range]{min-width:0;width:100%}
   .meeting-board-page .meeting-drawing-controls [data-clear-drawing],
-  .meeting-board-page .meeting-drawing-controls small{grid-column:1/-1}
+  .meeting-board-page .meeting-drawing-controls small,
+  .meeting-board-page .meeting-drawing-controls .meeting-drawing-close{grid-column:1/-1}
   .meeting-board-page .meeting-drawing-controls small{min-width:0;text-align:center}
+  .meeting-board-page .meeting-drawing-controls .meeting-drawing-close{position:sticky;bottom:0;background:#fff!important}
 }
 
 @media print{.meeting-item-controls,.meeting-fullscreen-exit{display:none!important}}
