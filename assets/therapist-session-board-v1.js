@@ -27,6 +27,7 @@
 
     const list = document.querySelector("ol.space-y-3");
     if (!list?.parentElement) return;
+    list.classList.add("meeting-board-surface");
 
     const actions = document.createElement("div");
     actions.className = "meeting-board-actions";
