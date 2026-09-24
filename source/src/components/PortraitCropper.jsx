@@ -75,7 +75,7 @@ export function PortraitCropper({ source, roleLabel, onCancel, onConfirm }) {
         </div>
         <label className="mt-4 block text-sm font-semibold">
           גודל התמונה
-          <input className="mt-2 w-full accent-primary" type="range" min="0.72" max="1.8" step="0.01" value={scale} onChange={(e) => setScale(Number(e.target.value))} />
+          <input className="mt-2 w-full accent-primary" type="range" min="0.72" max="3.2" step="0.01" value={scale} onChange={(e) => setScale(Number(e.target.value))} />
         </label>
         <p className="mt-1 text-xs text-muted-foreground">נשמרים שוליים קטנים אוטומטית, כדי שהשיער והצוואר לא ייחתכו בהטמעה.</p>
         <div className="mt-5 flex gap-2">

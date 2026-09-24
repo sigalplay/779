@@ -13,6 +13,10 @@ const CHARACTER_ASSETS = {
 
 export function StoryCharacter({ photo, gender = "girl", size = 128, className = "" }) {
   const character = CHARACTER_ASSETS[gender] || CHARACTER_ASSETS.girl;
+  // כשיש תמונת פנים, מטשטשים את צוואר האיור כדי שהפנים יתחברו לגוף בצורה טבעית.
+  const neckMask = gender === "boy"
+    ? "radial-gradient(ellipse 48% 24% at 50% 7%, transparent 0 78%, rgba(0,0,0,.35) 90%, #000 100%)"
+    : "radial-gradient(ellipse 58% 31% at 50% 9%, transparent 0 80%, rgba(0,0,0,.35) 91%, #000 100%)";
   return (
     <div
       className={`shrink-0 ${className}`}
@@ -24,16 +28,20 @@ export function StoryCharacter({ photo, gender = "girl", size = 128, className =
           src={character.body}
           alt=""
           className="absolute left-0 w-full object-contain"
-          style={{ top: size * 0.36, height: size * 1.5 }}
+          style={photo
+            ? { top: size * 0.36, height: size * 1.5, WebkitMaskImage: neckMask, maskImage: neckMask }
+            : { top: size * 0.36, height: size * 1.5 }}
         />
         <div
           className={`absolute inset-x-0 z-10 mx-auto ${photo ? "overflow-hidden rounded-[46%]" : ""}`}
-          style={{ top: size * 0.05, width: size * 0.56, height: size * 0.56 }}
+          style={photo
+            ? { top: size * 0.005, width: size * 0.53, height: size * 0.53 }
+            : { top: size * 0.05, width: size * 0.56, height: size * 0.56 }}
         >
           <img
             src={photo || character.head}
             alt={photo ? "תמונת הילד/ה" : ""}
-            className={`h-full w-full ${photo ? "scale-105 object-cover object-top" : "object-contain"}`}
+            className={`h-full w-full ${photo ? "object-cover object-top" : "object-contain"}`}
           />
         </div>
       </div>
@@ -42,11 +50,26 @@ export function StoryCharacter({ photo, gender = "girl", size = 128, className =
 }
 
 const FACE_LAYOUTS = {
+  "sibling-cover-girl": {
+    child: { left: "42.7%", top: "28.2%", width: "15.2%", height: "18.8%", imageScale: 1.02, imageY: "50%" },
+  },
+  "sibling-cover-boy": {
+    child: { left: "42.9%", top: "29.0%", width: "15.2%", height: "18.8%", imageScale: 1.02, imageY: "50%" },
+  },
+  "school-front-girl": {
+    child: { left: "36.0%", top: "5.0%", width: "28.0%", height: "30.0%", imageScale: 1.02, imageY: "50%" },
+  },
+  "school-front-boy": {
+    child: { left: "36.8%", top: "11.2%", width: "26.3%", height: "27.0%", imageScale: 1.02, imageY: "50%" },
+  },
   "toilet-cover-girl": {
     child: { left: "35.8%", top: "5.8%", width: "25.5%", height: "28.0%", imageScale: 1.08, imageY: "50%" },
   },
   "toilet-1-girl": {
     child: { left: "39.0%", top: "14.7%", width: "22.5%", height: "25.5%", imageScale: 1.08, imageY: "50%" },
+  },
+  "toilet-cover-boy": {
+    child: { left: "46.7%", top: "12.5%", width: "25.0%", height: "26.0%", imageScale: 1.08, imageY: "50%" },
   },
   "kindergarten-arrival-girl": {
     child: { left: "27.0%", top: "37.2%", width: "16.0%", height: "19.5%", imageScale: 1.18, imageY: "48%" },
@@ -56,7 +79,7 @@ const FACE_LAYOUTS = {
     child: { left: "40.2%", top: "25.8%", width: "19.0%", height: "23.0%", imageScale: 0.96, imageY: "52%" },
   },
   "kindergarten-arrival-boy": {
-    child: { left: "27.1%", top: "37.5%", width: "16.0%", height: "19.5%", imageScale: 1.18, imageY: "48%" },
+    child: { left: "28.0%", top: "38.0%", width: "14.2%", height: "17.4%", imageScale: 1.04, imageY: "48%" },
     mother: { left: "50.0%", top: "10.8%", width: "18.8%", height: "22.5%", imageScale: 1.17, imageY: "49%" },
   },
   "kindergarten-cover-boy": {
@@ -143,20 +166,23 @@ export function StoryScene({ photo, facePhotos, faceLayout, faceBase, gender = "
   );
 }
 
-export function StoryBookPage({ page, index, total, photo, facePhotos, gender = "girl", className = "" }) {
-  const firstPageFacePhotos = index === 0 ? facePhotos : {};
+// wordless: מצב "ספר ללא מילים" — מסתיר את הטקסט (חוץ מהכריכה) ומשאיר שורות לכתיבה.
+export function StoryBookPage({ page, index, total, photo, facePhotos, gender = "girl", wordless = false, className = "" }) {
+  const pageFacePhotos = page.faceLayout ? facePhotos : {};
   return (
     <article className={`social-story-page aspect-[210/297] bg-white p-[3.5%] text-foreground ${className}`} dir="rtl">
       <div className="flex h-full flex-col border-[8px] border-double border-[#91a4c4] px-[7%] pb-[4%] pt-[6%]">
-        <p className="min-h-[18%] text-center font-display text-[clamp(1.1rem,3.3vw,1.8rem)] font-bold leading-relaxed">
-          {page.text}
-        </p>
+        {(!wordless || page.isCover) && (
+          <p className="min-h-[18%] text-center font-display text-[clamp(1.1rem,3.3vw,1.8rem)] font-bold leading-relaxed">
+            {page.text}
+          </p>
+        )}
         <div className="flex min-h-0 flex-1 items-center justify-center py-[3%]">
           <StoryScene
             photo={index === 0 ? photo : null}
-            facePhotos={firstPageFacePhotos}
-            faceLayout={index === 0 ? page.faceLayout : null}
-            faceBase={index === 0 ? page.faceBase : null}
+            facePhotos={pageFacePhotos}
+            faceLayout={page.faceLayout || null}
+            faceBase={page.faceBase || null}
             gender={gender}
             illustration={page.illustration}
             integrated={!!page.integrated}
@@ -164,6 +190,11 @@ export function StoryBookPage({ page, index, total, photo, facePhotos, gender = 
             className="w-full max-w-[92%] shadow-none"
           />
         </div>
+        {wordless && !page.isCover && (
+          <div className="mb-[3%] space-y-[6%] px-[4%]" aria-label="מקום לכתיבת הסיפור">
+            {[0, 1, 2].map((line) => <div key={line} className="border-b border-[#7889a6]/60" />)}
+          </div>
+        )}
         <span className="text-center text-xs font-semibold text-[#7889a6]">{index + 1} / {total}</span>
       </div>
     </article>

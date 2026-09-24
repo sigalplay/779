@@ -74,6 +74,7 @@ export function expandGoals(goals) {
 }
 
 export const THERAPIST_GOALS = [
+  "התנסות במאכלים",
   "מוטוריקה עדינה",
   "גראפו מוטורי",
   "גזירה",
@@ -127,6 +128,13 @@ export const FUNCTIONAL_DIFFICULTIES = [
       { label: "רגישות לרעש", icon: "/icon-bank/search/noise-sensitivity.webp" },
       { label: "רגישות למגע", icon: "/icon-bank/search/touch-sensitivity.webp" },
       { label: "מחפש תנועה כל הזמן", icon: "/icon-bank/search/movement-seeking.webp" },
+    ],
+  },
+  {
+    category: "התנסות במאכלים",
+    icon: "/icon-bank/food-exposure/foods.png",
+    items: [
+      { label: "התנסות במאכלים", icon: "/icon-bank/food-exposure/foods.png" },
     ],
   },
   {
