@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useParams, useSearchParams, Link } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, Share2, Printer, Clock, Layers, RotateCcw, Download, Info, ArrowRight, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
@@ -131,6 +131,7 @@ function useMaterialsChecklist(activityId) {
 }
 
 export default function ActivityDetail() {
+  const navigate = useNavigate();
   const { language, t } = useTranslator();
   const { id } = useParams();
   const [searchParams] = useSearchParams();
@@ -146,6 +147,7 @@ export default function ActivityDetail() {
   const [saved, setSaved] = useState(false);
   const [showTags, setShowTags] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
+  const [showIllustrations, setShowIllustrations] = useState(true);
   const nikud = useNikud();
   const handwriting = useHandwriting();
   const pick = (t, tn) => (nikud.on && tn ? tn : t);
@@ -160,12 +162,13 @@ export default function ActivityDetail() {
 
   function handleFav() {
     if (!isSignedIn()) {
-      toast.error(t("צריך להתחבר כדי לשמור למועדפים", "Please sign in to save favourites"));
+      // שמירה למועדפים דורשת חשבון: מעבירים להתחברות ואחר כך חוזרים לפעילות.
+      navigate(`/auth?intent=favorite&redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
       return;
     }
     const res = toggleFavorite(id);
     setSaved(res.favored);
-    toast.success(res.favored ? t("נשמר למועדפים", "Saved to favourites") : t("הוסר מהמועדפים", "Removed from favourites"));
+    toast.success(res.favored ? t("נשמר למועדפים", "Saved to favorites") : t("הוסר מהמועדפים", "Removed from favorites"));
   }
 
   async function share() {
@@ -220,7 +223,7 @@ export default function ActivityDetail() {
       {language === "he" ? <TherapistPostureScissorsTips>
         <VisualSessionTimer roundTrigger />
       </TherapistPostureScissorsTips> : null}
-      <motion.article initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={`space-y-6 ${hwClass}`}>
+      <motion.article initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={`space-y-6 ${hwClass} ${showIllustrations ? "" : "activity-icons-hidden"}`}>
         {returnTo === "session" && (
           <Link
             to={returnPath === "/therapist/build" ? "/therapist/build?view=session" : returnPath}
@@ -267,8 +270,9 @@ export default function ActivityDetail() {
               <Button onClick={share} variant="outline" size="icon" className="h-11 w-11 rounded-full">
                 <Share2 className="h-5 w-5" />
               </Button>
-              <Button onClick={() => window.print()} variant="outline" size="icon" className="h-11 w-11 rounded-full">
+              <Button onClick={() => window.print()} variant="outline" className="h-11 rounded-full px-4">
                 <Printer className="h-5 w-5" />
+                <span>{t("הדפסה", "Print")}</span>
               </Button>
             </div>
           </div>
@@ -302,6 +306,16 @@ export default function ActivityDetail() {
             >
               ✏️ כתב יד {handwriting.on ? "פעיל" : "כבוי"}
             </button> : null}
+            <button
+              type="button"
+              onClick={() => setShowIllustrations((v) => !v)}
+              aria-pressed={showIllustrations}
+              className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-bold transition-colors print:hidden ${
+                showIllustrations ? "bg-sage text-sage-foreground" : "bg-white/80 hover:bg-white"
+              }`}
+            >
+              🖼️ איורי ציוד ושלבים {showIllustrations ? "מוצגים" : "מוסתרים"}
+            </button>
           </div>
         </header>
 
@@ -315,7 +329,7 @@ export default function ActivityDetail() {
               aria-expanded={showDescription}
               className="flex w-full items-center justify-between gap-2 text-right"
             >
-              <h2 className="font-display text-lg font-bold">{t("תיאור המשימה", "Activity description")}</h2>
+              <h2 className="font-display text-lg font-bold">{t("תיאור המשימה", "About This Activity")}</h2>
               <ChevronDown className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform ${showDescription ? "rotate-180" : ""}`} />
             </button>
             {showDescription && (
@@ -343,7 +357,7 @@ export default function ActivityDetail() {
         ) : null}
 
         {a.attachments?.length ? (
-          <Section title={t("קבצים להורדה ולהדפסה", "Downloads and printables")}>
+          <Section title={t("קבצים להורדה ולהדפסה", "Downloads and Printables")}>
             <div className="flex flex-wrap gap-3">
               {a.attachments.map((att) => (
                 <div key={att.file} className="group relative">
@@ -375,7 +389,7 @@ export default function ActivityDetail() {
         )}
 
         {a.flow_text ? (
-          <Section title={t("מהלך הפעילות", "How to play")}>
+          <Section title={t("מהלך הפעילות", "How to Play")}>
             {ACTIVITY_ICON_SETS[id]?.flow ? (
               <img
                 src={ACTIVITY_ICON_SETS[id].flow}
@@ -406,18 +420,18 @@ export default function ActivityDetail() {
         ) : null}
 
         {a.adaptations && (
-          <Section title={t("הורדת רמת הקושי", "Make it easier")}>
+          <Section title={t("הורדת רמת הקושי", "Make It Easier")}>
             <span className={hwClass}>{adaptations}</span>
           </Section>
         )}
         {a.extensions && (
-          <Section title={t("העלאת רמת הקושי / שדרוג", "Add a challenge")}>
+          <Section title={t("העלאת רמת הקושי / שדרוג", "Make It More Challenging")}>
             <span className={hwClass}>{extensions}</span>
           </Section>
         )}
 
         {a.goals?.length || a.functions?.length || a.sensory_systems?.length ? (
-          <Section title={t("על מה עובד (מבחינה התפתחותית)", "Developmental skills supported")}>
+          <Section title={t("על מה עובד (מבחינה התפתחותית)", "Skills Practiced")}>
             <div className="space-y-3 print:hidden">
               {a.goals?.length ? <TagList items={a.goals.map((item) => translatedTerm(item, language))} /> : null}
               {a.functions?.length ? <TagList items={a.functions.map((item) => translatedTerm(item, language))} tone="sky" /> : null}
@@ -433,7 +447,7 @@ export default function ActivityDetail() {
               onClick={() => setShowTags((v) => !v)}
               className="text-sm font-medium text-muted-foreground underline decoration-dotted underline-offset-4 hover:text-foreground"
             >
-              {showTags ? t("הסתר תגיות", "Hide tags") : t("הצג תגיות", "Show tags")}
+              {showTags ? t("הסתר תגיות", "Hide Tags") : t("הצג תגיות", "Show Tags")}
             </button>
             {showTags ? (
               <Section title={t("תגיות", "Tags")}>
@@ -497,89 +511,77 @@ function PrintSheet({ activity: a, activityId, pick, language, title, descriptio
   };
 
   const hero = activityHero(activityId);
-  const desc = description;
   const label = (he, en) => language === "en" ? en : he;
+  // בפעילות "מסלול שקיות תחושה" השלבים הם רעיונות לשקיות, לא רצף פעולות.
+  const ideasList = activityId === "seed-116";
 
   return (
     <div className="activity-print-sheet hidden print:block print:space-y-4 print:text-black">
-      <div className="relative flex items-center justify-center gap-5 border-b-2 border-black pb-3">
+      <div className="activity-print-hero relative flex items-center justify-center gap-5 rounded-3xl border border-border/60 bg-gradient-to-br from-sage/20 to-sky/30 p-5">
         <img src={brandLogo(language)} alt={label("בואו נשחק", "Let's Play")} className="print-sheet-brand absolute left-0 top-0 h-14 w-16 object-contain" />
-        {hero ? <img src={hero} alt="" className="h-24 w-24 shrink-0 object-contain" /> : null}
+        {hero ? <img src={hero} alt="" className="h-28 w-28 shrink-0 rounded-2xl bg-white/80 object-contain p-2" /> : null}
         <h1 className="text-center text-4xl font-black">{title}</h1>
       </div>
 
-      {desc ? <p className="text-lg leading-relaxed">{desc}</p> : null}
+      {description ? (
+        <div className="activity-print-card rounded-3xl border border-border/60 bg-card p-4">
+          <h2 className="mb-2 text-xl font-bold">{label("תיאור המשימה", "About This Activity")}</h2>
+          <p className="text-lg leading-relaxed">{description}</p>
+        </div>
+      ) : null}
 
       {a.materials?.length ? (
-        <div>
-          <div className="mb-1 text-xl font-bold">{label("כלים:", "Materials:")}</div>
-          <table className="w-full table-fixed border-collapse border border-black text-base">
-            <tbody>
-              {a.materials.map((m, i) => {
-                const cell = materialCell(m);
-                const w = i === 0 ? { checkbox: "6%", num: "8%", icon: "16%", label: "70%" } : {};
-                return (
-                  <tr key={i}>
-                    <td style={i === 0 ? { width: w.checkbox } : undefined} className="border border-black p-1 text-center">
-                      <span aria-hidden className="mx-auto block h-4 w-4 border-2 border-black" />
-                    </td>
-                    <td style={i === 0 ? { width: w.num } : undefined} className="border border-black p-1 text-center">
-                      {i + 1}
-                    </td>
-                    <td style={i === 0 ? { width: w.icon } : undefined} className="border border-black p-1">
-                      <PrintCellIcon {...cell} size="small" />
-                    </td>
-                    <td style={i === 0 ? { width: w.label } : undefined} className="border border-black p-1">
-                      {materials[i] || pick(m, a.materialsN?.[i])}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="activity-print-card rounded-3xl border border-border/60 bg-card p-4">
+          <div className="mb-3 text-xl font-bold">{label("ציוד נדרש", "Materials")}</div>
+          <div className="grid grid-cols-2 gap-2">
+            {a.materials.map((m, i) => (
+              <div key={i} className="activity-print-item flex min-w-0 items-center gap-3 rounded-2xl border border-black/60 bg-white p-2.5">
+                <span aria-hidden className="block h-4 w-4 shrink-0 rounded-sm border-2 border-black" />
+                <div className="activity-item-illustration h-14 w-14 shrink-0 rounded-xl border border-border/50 bg-white p-1">
+                  <PrintCellIcon {...materialCell(m)} size="small" />
+                </div>
+                <span className="min-w-0 flex-1 text-base leading-snug">
+                  <span className="me-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-sky/60 text-xs font-bold">{i + 1}</span>
+                  {materials[i] || pick(m, a.materialsN?.[i])}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       ) : null}
 
       {a.preparation ? (
-        <p className="text-lg leading-relaxed">
-          <strong>{label("הכנה מוקדמת: ", "Preparation: ")}</strong>
-          {preparation}
-        </p>
+        <div className="activity-print-card rounded-3xl border border-border/60 bg-card p-4">
+          <p className="text-lg leading-relaxed">
+            <strong>{label("הכנה מוקדמת: ", "Preparation: ")}</strong>
+            {preparation}
+          </p>
+        </div>
       ) : null}
 
       {a.steps?.length ? (
-        <div style={{ breakBefore: "page" }}>
-          <div className="mb-1 text-xl font-bold">{label("שלבים:", "Steps:")}</div>
-          <table className="w-full table-fixed border-collapse border border-black text-base">
-            <tbody>
-              {steps.map((s, i) => {
-                const cell = stepCell(s);
-                const w = i === 0 ? { checkbox: "5%", num: "6%", icon: "18%", label: "71%" } : {};
-                return (
-                  <tr key={s.n}>
-                    <td style={i === 0 ? { width: w.checkbox } : undefined} className="border border-black p-1.5 text-center">
-                      <span aria-hidden className="mx-auto block h-4 w-4 border-2 border-black" />
-                    </td>
-                    <td style={i === 0 ? { width: w.num } : undefined} className="border border-black p-1.5 text-center">
-                      {s.n}
-                    </td>
-                    <td style={i === 0 ? { width: w.icon } : undefined} className="border border-black p-1.5">
-                      <PrintCellIcon {...cell} />
-                    </td>
-                    <td style={i === 0 ? { width: w.label } : undefined} className="border border-black p-1.5">
-                      {s.displayText}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="activity-print-card rounded-3xl border border-border/60 bg-card p-4">
+          <div className="mb-3 text-xl font-bold">{ideasList ? label("רעיונות לשקיות", "Sensory bag ideas") : label("מהלך הפעילות", "How to Play")}</div>
+          <div className="space-y-2.5">
+            {steps.map((step) => (
+              <div key={step.n} className="activity-print-item flex items-center gap-3 rounded-2xl border border-black/60 bg-white p-3">
+                {!ideasList && <span aria-hidden className="block h-4 w-4 shrink-0 rounded-sm border-2 border-black" />}
+                <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border/50 bg-white p-1">
+                  <PrintCellIcon {...stepCell(step)} />
+                </div>
+                <p className="min-w-0 flex-1 text-lg leading-relaxed">
+                  <span className={`me-2 inline-flex items-center justify-center rounded-full bg-sage/70 px-2 py-1 text-sm font-bold ${ideasList ? "h-auto w-auto" : "h-7 w-7"}`}>
+                    {ideasList ? label(`רעיון ${step.n}`, `Idea ${step.n}`) : step.n}
+                  </span>
+                  {step.displayText}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       ) : a.flow_text ? (
         <div className="text-lg leading-relaxed" style={{ breakBefore: "page" }}>
-          {ACTIVITY_ICON_SETS[activityId]?.flow ? (
-            <img src={ACTIVITY_ICON_SETS[activityId].flow} alt="" className="mx-auto mb-4 h-56 w-full object-contain" />
-          ) : null}
+          {ACTIVITY_ICON_SETS[activityId]?.flow ? <img src={ACTIVITY_ICON_SETS[activityId].flow} alt="" className="mx-auto mb-4 h-56 w-full object-contain" /> : null}
           <p>
             <strong>{label("מהלך הפעילות: ", "How to play: ")}</strong>
             {flowText}
@@ -592,15 +594,11 @@ function PrintSheet({ activity: a, activityId, pick, language, title, descriptio
           <div className="mb-1 text-xl font-bold">דגשים:</div>
           <ul className="space-y-1 text-lg">
             {tips.map((tip, i) => (
-              <li key={i}>
-                ⭐ {tip.boldPrefix ? <strong>{tip.boldPrefix} </strong> : null}
-                {tip.text}
-              </li>
+              <li key={i}>⭐ {tip.boldPrefix ? <strong>{tip.boldPrefix} </strong> : null}{tip.text}</li>
             ))}
           </ul>
         </div>
       ) : null}
-
       {a.adaptations ? (
         <p className="text-lg leading-relaxed">
           <strong>{label("הורדת רמת הקושי: ", "Make it easier: ")}</strong>
@@ -615,7 +613,7 @@ function PrintSheet({ activity: a, activityId, pick, language, title, descriptio
       ) : null}
 
       <div className="mt-6 text-center text-xs text-muted-foreground/70">
-        {label("© בואו נשחק — כל הזכויות שמורות. הפעילות הודפסה לשימוש אישי ומשפחתי/טיפולי בלבד; אין להעתיק, למכור או להפיץ מחדש בלי אישור.", "© Let's Play — All rights reserved. Printed for personal, family, or therapeutic use only. Do not copy, sell, or redistribute without permission.")}
+        {label("© בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.", "© Let's Play. All rights reserved. Content is for enrichment and practice only and does not replace diagnosis, assessment, professional advice or treatment.")}
       </div>
     </div>
   );
@@ -672,6 +670,8 @@ function StepsChecklist({ activityId, steps, pick, hwClass, language }) {
       return next;
     });
   };
+  // בפעילות "מסלול שקיות תחושה" השלבים הם רעיונות: בלי סימון וי ובלי פס התקדמות.
+  const ideasList = activityId === "seed-116";
   const toggleTooltip = (n) => {
     setOpenTooltips((prev) => {
       const next = new Set(prev);
@@ -684,20 +684,24 @@ function StepsChecklist({ activityId, steps, pick, hwClass, language }) {
     <section className="rounded-3xl border border-border/60 bg-card p-5 md:p-6 print:hidden">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-lg font-bold">{language === "en" ? "How to play" : "מהלך הפעילות"}</h2>
+          <h2 className="font-display text-lg font-bold">
+            {ideasList ? (language === "en" ? "Sensory bag ideas" : "רעיונות לשקיות") : (language === "en" ? "How to Play" : "מהלך הפעילות")}
+          </h2>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {language === "en" ? `Tick each step when completed · Select a step to enlarge it · Select a word to highlight it · ${done}/${total}` : `סמני כל שלב לאחר ביצועו · לחצו על שלב כדי להגדיל · לחצו על מילה כדי לסמן אותה · ${done}/${total}`}
+            {ideasList ? null : language === "en" ? `Check off each step as you go · Select an illustration to enlarge it or a word to highlight it · ${done}/${total}` : `סמני כל שלב לאחר ביצועו · לחצו על שלב כדי להגדיל · לחצו על מילה כדי לסמן אותה · ${done}/${total}`}
           </p>
         </div>
-        {done > 0 && (
+        {!ideasList && done > 0 && (
           <Button variant="ghost" size="sm" onClick={reset} className="rounded-full text-muted-foreground">
             <RotateCcw className="h-3.5 w-3.5" /> {language === "en" ? "Reset" : "אפס"}
           </Button>
         )}
       </div>
-      <div className="mb-5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-        <div className="h-full bg-sage transition-all duration-300" style={{ width: `${progress}%` }} />
-      </div>
+      {!ideasList && (
+        <div className="mb-5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+          <div className="h-full bg-sage transition-all duration-300" style={{ width: `${progress}%` }} />
+        </div>
+      )}
       <ol className="space-y-3">
         {steps.map((s) => {
           const isChecked = checked.has(s.n);
@@ -719,13 +723,15 @@ function StepsChecklist({ activityId, steps, pick, hwClass, language }) {
               }`}
             >
               <div className="flex items-center gap-3">
-                <Checkbox
-                  id={`step-${s.n}`}
-                  checked={isChecked}
-                  onCheckedChange={() => toggle(s.n)}
-                  aria-label={language === "en" ? `Mark step ${s.n} as complete` : `סימון שלב ${s.n} כהושלם`}
-                  className="h-5 w-5 shrink-0 print:hidden"
-                />
+                {!ideasList && (
+                  <Checkbox
+                    id={`step-${s.n}`}
+                    checked={isChecked}
+                    onCheckedChange={() => toggle(s.n)}
+                    aria-label={language === "en" ? `Mark step ${s.n} as complete` : `סימון שלב ${s.n} כהושלם`}
+                    className="h-5 w-5 shrink-0 print:hidden"
+                  />
+                )}
                 <button
                   type="button"
                   onClick={() => setExpandedStep((current) => (current === s.n ? null : s.n))}
@@ -737,7 +743,7 @@ function StepsChecklist({ activityId, steps, pick, hwClass, language }) {
                 >
                   <div
                     aria-hidden
-                    className={`flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border/40 bg-white p-2 transition-all duration-300 ${
+                    className={`activity-item-illustration flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border/40 bg-white p-2 transition-all duration-300 ${
                       isExpanded
                         ? "h-36 w-36 md:h-44 md:w-44 print:h-16 print:w-16"
                         : "h-16 w-16 print:h-12 print:w-12"
@@ -764,8 +770,8 @@ function StepsChecklist({ activityId, steps, pick, hwClass, language }) {
                       isExpanded ? "text-xl md:text-2xl" : "text-base md:text-lg"
                     } ${isChecked ? "text-muted-foreground line-through" : ""} ${hwClass}`}
                   >
-                    <span className="me-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-sage/70 align-middle text-xs font-bold text-sage-foreground">
-                      {s.n}
+                    <span className={`me-2 inline-flex items-center justify-center rounded-full bg-sage/70 px-2 py-1 align-middle text-xs font-bold text-sage-foreground ${ideasList ? "h-auto w-auto" : "h-6 w-6"}`}>
+                      {ideasList ? (language === "en" ? `Idea ${s.n}` : `רעיון ${s.n}`) : s.n}
                     </span>
                     <HighlightableText
                       text={s.displayText || pick(s.text, s.textN)}
@@ -835,10 +841,10 @@ function MaterialsChecklist({ activityId, materials, displayMaterials, materials
       <div className="mb-4">
         <h2 className="font-display text-lg font-bold">{language === "en" ? "Materials" : "ציוד נדרש"}</h2>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          {language === "en" ? `Tick each item when ready · Select an item to enlarge it · ${done}/${materials.length}` : `סמני כל פריט לאחר הכנתו · לחצו על פריט כדי להגדיל · ${done}/${materials.length}`}
+          {language === "en" ? `Check off each material as you gather it · Select an item to enlarge it · ${done}/${materials.length}` : `סמני כל פריט לאחר הכנתו · לחצו על פריט כדי להגדיל · ${done}/${materials.length}`}
         </p>
       </div>
-      <ol className={materials.length > 4 ? "grid grid-cols-2 items-start gap-2" : "space-y-2"}>
+      <ol className={materials.length > 4 ? "grid grid-cols-1 items-start gap-2 sm:grid-cols-2" : "space-y-2"}>
         {materials.map((m, i) => {
           const isChecked = checked.has(i);
           const isExpanded = expandedMaterial === i;
@@ -869,7 +875,7 @@ function MaterialsChecklist({ activityId, materials, displayMaterials, materials
                 >
                   <div
                     aria-hidden
-                    className={`flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/40 bg-white p-1.5 transition-all duration-300 ${
+                    className={`activity-item-illustration flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/40 bg-white p-1.5 transition-all duration-300 ${
                       isExpanded ? "h-36 w-36 md:h-44 md:w-44" : "h-16 w-16"
                     }`}
                   >
@@ -886,7 +892,7 @@ function MaterialsChecklist({ activityId, materials, displayMaterials, materials
                     )}
                   </div>
                   <span
-                    className={`min-w-0 leading-relaxed transition-all duration-300 ${
+                    className={`min-w-0 break-words leading-relaxed transition-all duration-300 ${
                       isExpanded ? "text-lg md:text-xl" : "flex-1 text-base md:text-lg"
                     } ${isChecked ? "text-muted-foreground line-through" : ""} ${hwClass}`}
                   >

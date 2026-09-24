@@ -6,7 +6,7 @@ import { useTranslator } from "@/lib/language";
 const baseClasses =
   "group relative block overflow-hidden border border-white/80 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2";
 
-function CardContent({ image, title, description, large = false, showArrow = false, captionClassName, language, eager = false }) {
+function CardContent({ image, title, subtitle, description, large = false, showArrow = false, captionClassName, language, eager = false }) {
   return (
     <>
       <img
@@ -31,6 +31,9 @@ function CardContent({ image, title, description, large = false, showArrow = fal
             <h2 className={cn("font-display font-black text-foreground", large ? "text-2xl md:text-3xl" : "text-base leading-snug")}>
               {title}
             </h2>
+            {subtitle ? (
+              <p className={cn("mt-1 font-display font-bold text-foreground", large ? "text-lg md:text-xl" : "text-sm")}>{subtitle}</p>
+            ) : null}
             {description ? <p className="mt-1 text-sm leading-relaxed text-muted-foreground md:text-base">{description}</p> : null}
           </div>
           {showArrow ? (
@@ -44,14 +47,24 @@ function CardContent({ image, title, description, large = false, showArrow = fal
   );
 }
 
-export function IllustratedNavCard({ to, image, title, description, large = false, showArrow = false, className, captionClassName, eager = false }) {
+// עמודים שאינם חלק מאפליקציית React (עמודי HTML עצמאיים) נטענים בטעינה מלאה.
+const STANDALONE_PAGES = new Set([
+  "/parent/card-games-generator/",
+  "/parent/routine-boards/",
+  "/parent/daily-sequences/",
+  "/en/parent/routine-boards/",
+  "/en/parent/daily-sequences/",
+]);
+
+export function IllustratedNavCard({ to, image, title, subtitle, description, large = false, showArrow = false, className, captionClassName, eager = false }) {
   const { language } = useTranslator();
   return (
     <Link
       to={to}
+      reloadDocument={STANDALONE_PAGES.has(to)}
       className={cn(baseClasses, language === "en" ? "text-left" : "text-right", large ? "min-h-[330px] rounded-3xl md:min-h-[370px]" : "min-h-[190px] rounded-2xl", className)}
     >
-      <CardContent image={image} title={title} description={description} large={large} showArrow={showArrow} captionClassName={captionClassName} language={language} eager={eager} />
+      <CardContent image={image} title={title} subtitle={subtitle} description={description} large={large} showArrow={showArrow} captionClassName={captionClassName} language={language} eager={eager} />
     </Link>
   );
 }
