@@ -32,7 +32,7 @@ Status: `done` = behavior is in source, `todo` = not yet, `drop` = intentionally
 | Legal pages (privacy, terms, cookies) | done | |
 | All pages open without login | done | Live removed the login gate |
 | Auth (password sign-up, confirmation, recovery) | todo | |
-| Calendar (photos, print, Google save) | todo | |
+| Calendar (photos, print, Google save) | done | See "Calendar" below |
 | Cipher generator | todo | |
 | Therapist build / board / diary / patient | todo | |
 
@@ -42,10 +42,10 @@ Status: `done` = behavior is in source, `todo` = not yet, `drop` = intentionally
 |---|---|---|
 | mobile-tools-v4.js / .css | todo | Menu layout, home cleanup, therapist shortcuts, print delay |
 | v92-board-and-search.js / .css | partial | Name search on /parent/all and /therapist/all and compact catalog cards: done. Board dates and search in the builder: stage 4 |
-| tip-close-fix.js, print-calendar-and-tip-fix.css | todo | |
+| tip-close-fix.js, print-calendar-and-tip-fix.css | done | Tip close button in ParentPlay; phone style for the holidays link in mobile-tools-v4.css; print margins come from the print CSS (inline @page rules that live overrode were removed) |
 | mobile-guidance-cards-v1.css | todo | |
-| calendar-qa-v27.js / .css, mobile-calendar-compact-v1.css | todo | |
-| calendar-multi-photo-v1.js / .css, calendar-english-complete-v1.js | todo | |
+| calendar-qa-v27.js / .css, mobile-calendar-compact-v1.css | done | "Day passed" is built into the shared calendar page |
+| calendar-multi-photo-v1.js / .css, calendar-english-complete-v1.js | done | Built into the calendar components |
 | mobile-context-nav-v1.js, mobile-search-filters-v1.js / .css | todo | |
 | mobile-share-links-v1.js | done | Standalone pages: `standalone-page.js`. React share dialogs: check in stage 3/4 |
 | adl-sequence-reorder-v2.js | drop | Loaded only on the React home page, where nothing matches it; the ADL page has its own move buttons |
@@ -80,3 +80,22 @@ In English mode, menu links to these pages now go to the `/en/` copy (live sent 
 The live site can be served from a checkout of `main` and compared page by page with a
 build of `source/`. Rendered text, links and screenshots should match, except where a
 difference is intentional and listed above.
+
+## Calendar
+
+Checked against live: the dates, holidays and school breaks match for 6,573 days, and the
+printout is exactly 12 pages (desktop, phone, "decorate yourself" and English).
+
+Changes from live, on purpose:
+- Up to 5 photos per month, move and resize, as on live. In "one photo" mode the photos
+  now show on every month in the preview too (live showed them only on the month where
+  they were added, but printed them on all months). In "one for each month" mode each month
+  prints its own photos (live printed the current month's photos on every page).
+- Printed pages show the logo at the top and the copyright line at the bottom. Live showed
+  only one of the two, depending on how the page was opened.
+- "Day passed" on a shared calendar link now works when the link is opened directly (on live
+  it only worked after navigating inside the site).
+- English: all holiday names are in English (live left most of them in Hebrew), the calendar
+  uses the English logo, and the shared link opens in English. Hebrew dates are hidden in
+  English, as on live.
+- The "Ministry of Education holidays" link shows only in Hebrew (that page is Hebrew only).

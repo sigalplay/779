@@ -261,15 +261,9 @@ export default function WeeklyBoard({ mode }) {
 
   // ההדפסה של הלוח השבועי רחבה מדף A4 לאורך - עוברים לנוף (landscape) ולרוחב מלא כל עוד הדף הזה פתוח.
   useEffect(() => {
+    // The landscape page size and margins come from the "weekly-landscape" named page in the print CSS.
     document.body.classList.add("print-landscape");
-    const style = document.createElement("style");
-    style.id = "weekly-board-print-style";
-    style.textContent = "@media print { @page { size: A4 landscape; margin: 10mm; } }";
-    document.head.appendChild(style);
-    return () => {
-      document.body.classList.remove("print-landscape");
-      style.remove();
-    };
+    return () => document.body.classList.remove("print-landscape");
   }, []);
 
   function refresh() {

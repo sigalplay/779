@@ -617,7 +617,7 @@
     margin:0!important;
     padding:0!important;
   }
-  body.calendar-printing .calendar-builder, body.calendar-printing footer, body.calendar-printing .accessibility-button {
+  body.calendar-printing .calendar-builder, body.calendar-printing footer:not(.calendar-sheet-footer), body.calendar-printing .accessibility-button {
     display:none!important;
   }
   .hebrew-calendar-pages {

@@ -246,3 +246,85 @@ export function encodeCalendarPayload(payload) {
 export function decodeCalendarPayload(value) {
   try { return JSON.parse(decodeURIComponent(escape(atob(value)))); } catch { return null; }
 }
+
+// ---------- English (shown only in the English area) ----------
+export const GREGORIAN_MONTHS_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+export const WEEKDAYS_HE = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
+export const WEEKDAYS_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+const EVENT_LABELS_EN = {
+  "ערב ראש השנה": "Rosh Hashanah eve",
+  "ראש השנה": "Rosh Hashanah",
+  "ראש השנה ב׳": "Rosh Hashanah, day 2",
+  "צום גדליה": "Fast of Gedaliah",
+  "ערב יום כיפור": "Yom Kippur eve",
+  "יום כיפור": "Yom Kippur",
+  "ערב סוכות": "Sukkot eve",
+  "סוכות": "Sukkot",
+  "חול המועד סוכות": "Sukkot intermediate days",
+  "הושענא רבה": "Hoshana Rabbah",
+  "שמחת תורה": "Simchat Torah",
+  "ערב חנוכה": "Hanukkah eve",
+  "חנוכה": "Hanukkah",
+  "עשרה בטבת": "Tenth of Tevet",
+  "ט״ו בשבט": "Tu BiShvat",
+  "פורים": "Purim",
+  "שושן פורים": "Shushan Purim",
+  "ערב פסח": "Passover eve",
+  "פסח": "Passover",
+  "חול המועד פסח": "Passover intermediate days",
+  "שביעי של פסח": "Seventh day of Passover",
+  "יום העצמאות*": "Independence Day*",
+  "ל״ג בעומר": "Lag BaOmer",
+  "יום ירושלים": "Jerusalem Day",
+  "ערב שבועות": "Shavuot eve",
+  "שבועות": "Shavuot",
+  "י״ז בתמוז": "Seventeenth of Tammuz",
+  "תשעה באב": "Tisha B’Av",
+  "ט״ו באב": "Tu B’Av",
+  "חופשת ראש השנה": "Rosh Hashanah break",
+  "חופשת יום כיפור": "Yom Kippur break",
+  "גשר בין יום כיפור לסוכות": "Bridge days between Yom Kippur and Sukkot",
+  "חופשת סוכות": "Sukkot break",
+  "חופשת חנוכה": "Hanukkah break",
+  "חופשת פורים": "Purim break",
+  "חופשת פסח": "Passover break",
+  "חופשת יום העצמאות": "Independence Day break",
+  "חופשת שבועות": "Shavuot break",
+  "חופשת מערכת החינוך*": "School break*",
+  "אל־אסראא׳ ואל־מעראג׳*": "Isra and Mi’raj*",
+  "לילת אל־בראאה*": "Laylat al-Bara’ah*",
+  "תחילת רמדאן*": "Start of Ramadan*",
+  "לילת אל־קדר*": "Laylat al-Qadr*",
+  "עיד אל־פיטר*": "Eid al-Fitr*",
+  "יום ערפאת / ערב עיד אל־אדחא*": "Day of Arafah / Eid al-Adha eve*",
+  "יום ערפאת*": "Day of Arafah*",
+  "עיד אל־אדחא*": "Eid al-Adha*",
+  "ראש השנה ההיג׳רית*": "Islamic New Year*",
+  "עשוראא׳*": "Ashura*",
+  "מולד הנביא*": "Mawlid al-Nabi*",
+  "חג המולד – מערבי": "Christmas – Western",
+  "ראש השנה – מערבי": "New Year’s Day – Western",
+  "חג ההתגלות – מערבי": "Epiphany – Western",
+  "חג הבשורה – מערבי": "Annunciation – Western",
+  "יום ראשון של הדקלים – מערבי": "Palm Sunday – Western",
+  "יום שישי הטוב – מערבי": "Good Friday – Western",
+  "פסחא – מערבי": "Easter – Western",
+  "חג המולד – אורתודוקסי": "Christmas – Orthodox",
+  "ראש השנה – אורתודוקסי": "New Year – Orthodox",
+  "חג ההתגלות – אורתודוקסי": "Epiphany – Orthodox",
+  "חג ההתגלות – אורתודוקסי / חג המולד הארמני": "Epiphany – Orthodox / Armenian Christmas",
+  "יום ראשון של הדקלים – אורתודוקסי": "Palm Sunday – Orthodox",
+  "יום שישי הטוב – אורתודוקסי": "Good Friday – Orthodox",
+  "פסחא – אורתודוקסי": "Easter – Orthodox",
+};
+
+// Holiday labels are stored in Hebrew; personal events stay as the user typed them.
+export function eventLabel(event, language) {
+  if (language !== "en" || event.type === "custom") return event.label;
+  return EVENT_LABELS_EN[event.label] || event.label;
+}
+
+export function monthName(month, language) {
+  return language === "en" ? GREGORIAN_MONTHS_EN[month.days[0].gregorianMonth - 1] : month.name;
+}

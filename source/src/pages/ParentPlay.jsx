@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { RefreshCw, RotateCcw, Search } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
@@ -388,9 +388,10 @@ export default function ParentPlay() {
 }
 
 function DifficultyTipButton({ points }) {
+  const details = useRef(null);
   return (
     <div className="relative z-40 shrink-0 print:hidden">
-      <details className="group relative">
+      <details ref={details} className="group relative">
         <summary
           aria-label="לפני שמתחילים: מה כדאי לדעת"
           title="לפני שמתחילים: מה כדאי לדעת"
@@ -403,6 +404,7 @@ function DifficultyTipButton({ points }) {
           aria-label="לפני שמתחילים: מה כדאי לדעת"
           className="difficulty-tip-popover absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border-2 border-[#D9B64A] bg-[#FFFEF7] p-4 shadow-xl"
         >
+          <button type="button" className="difficulty-tip-close" aria-label="סגירת חלון ההסבר" onClick={() => details.current?.removeAttribute("open")}>×</button>
           <h4 className="mb-2 font-display text-sm font-bold">לפני שמתחילים: מה כדאי לדעת</h4>
           <ul className="space-y-1.5">
             {points.map((point, i) => (

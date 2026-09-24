@@ -4,6 +4,7 @@ import App from "./App.jsx";
 import "./index.css";
 // סגנונות שהיו קבצי תיקון נפרדים באתר החי. נטענים באותו סדר כמו באתר החי.
 import "./styles/print-calendar-and-tip-fix.css";
+import "./styles/calendar-multi-photo-v1.css";
 import "./styles/mobile-tools-v4.css";
 import "./styles/v36-targeted-fixes.css";
 import "./styles/therapist-tabs-v1.css";
