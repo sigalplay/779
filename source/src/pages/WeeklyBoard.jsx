@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ShareLinkField } from "@/components/ShareLinkField";
 import { toast } from "sonner";
 import {
   CalendarDays,
@@ -916,12 +917,7 @@ export default function WeeklyBoard({ mode }) {
             />
           </div>
           <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-muted/50 p-2">
-            <input
-              readOnly
-              value={shareUrlToShow}
-              className="flex-1 bg-transparent px-2 text-sm text-muted-foreground sm:text-xs"
-              onFocus={(e) => e.target.select()}
-            />
+            <ShareLinkField value={shareUrlToShow} className="flex-1 bg-transparent px-2 text-sm text-muted-foreground sm:text-xs" />
             <Button type="button" size="sm" variant="ghost" onClick={copyShareLink} className="shrink-0 rounded-full" disabled={shareCompressing}>
               {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
               {copied ? "הועתק" : "העתקה"}

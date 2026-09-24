@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ShareLinkField } from "@/components/ShareLinkField";
 import { Printer, RotateCcw, X, ChevronUp, ChevronDown, Plus, Smartphone, Copy, Check } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
@@ -255,7 +256,7 @@ export default function MorningRoutine({ mode }) {
                 />
               </div>
               <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-muted/50 p-2">
-                <input readOnly value={childUrl} className="flex-1 bg-transparent px-2 text-sm text-muted-foreground sm:text-xs" onFocus={(e) => e.target.select()} />
+                <ShareLinkField value={childUrl} className="flex-1 bg-transparent px-2 text-sm text-muted-foreground sm:text-xs" />
                 <Button type="button" size="sm" variant="ghost" onClick={copyLink} className="shrink-0 rounded-full">
                   {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                   {copied ? "הועתק" : "העתקה"}

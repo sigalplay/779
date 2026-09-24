@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ShareLinkField } from "@/components/ShareLinkField";
 import { Printer, RotateCcw, X, ChevronUp, ChevronDown, Plus, Smartphone, Copy, Check } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
@@ -96,7 +97,7 @@ export default function EveningRoutine({ mode }) {
         </section>
       </div>
 
-      <Dialog open={shareOpen} onOpenChange={setShareOpen}><DialogContent><DialogHeader><DialogTitle>קישור ללוח האינטראקטיבי</DialogTitle></DialogHeader><p className="mb-4 text-sm text-muted-foreground">שלחו את הקישור לפלאפון של הילד/ה. מסמנים כל שלב לאחר שסיימו אותו.</p>{childUrl && <><div className="mb-4 flex justify-center"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(childUrl)}`} alt="קוד QR ללוח הערב" width={180} height={180} className="rounded-2xl border bg-white p-2" /></div><div className="flex items-center gap-2 rounded-xl border bg-muted/50 p-2"><input readOnly value={childUrl} className="flex-1 bg-transparent px-2 text-sm" onFocus={(e) => e.target.select()} /><Button size="sm" variant="ghost" onClick={copyLink} className="rounded-full">{copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{copied ? "הועתק" : "העתקה"}</Button></div></>}</DialogContent></Dialog>
+      <Dialog open={shareOpen} onOpenChange={setShareOpen}><DialogContent><DialogHeader><DialogTitle>קישור ללוח האינטראקטיבי</DialogTitle></DialogHeader><p className="mb-4 text-sm text-muted-foreground">שלחו את הקישור לפלאפון של הילד/ה. מסמנים כל שלב לאחר שסיימו אותו.</p>{childUrl && <><div className="mb-4 flex justify-center"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(childUrl)}`} alt="קוד QR ללוח הערב" width={180} height={180} className="rounded-2xl border bg-white p-2" /></div><div className="flex items-center gap-2 rounded-xl border bg-muted/50 p-2"><ShareLinkField value={childUrl} className="flex-1 bg-transparent px-2 text-sm" /><Button size="sm" variant="ghost" onClick={copyLink} className="rounded-full">{copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{copied ? "הועתק" : "העתקה"}</Button></div></>}</DialogContent></Dialog>
     </AppShell>
   );
 }

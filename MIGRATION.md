@@ -33,7 +33,9 @@ Status: `done` = behavior is in source, `todo` = not yet, `drop` = intentionally
 | All pages open without login | done | Live removed the login gate |
 | Auth (password sign-up, confirmation, recovery) | todo | |
 | Calendar (photos, print, Google save) | done | See "Calendar" below |
-| Cipher generator | todo | |
+| Cipher generator | done | Same keys and symbols as live; `?key=sukkot` opens the Sukkot key |
+| Child boards, shared weekly board | done | "Make your own board" button, print logo and legal line |
+| Favorites / board game favorite | done | Sends to sign-in with return address, as live |
 | Therapist build / board / diary / patient | todo | |
 
 ## Patch files (`assets/*.js`, `assets/*.css`)
@@ -47,14 +49,14 @@ Status: `done` = behavior is in source, `todo` = not yet, `drop` = intentionally
 | calendar-qa-v27.js / .css, mobile-calendar-compact-v1.css | done | "Day passed" is built into the shared calendar page |
 | calendar-multi-photo-v1.js / .css, calendar-english-complete-v1.js | done | Built into the calendar components |
 | mobile-context-nav-v1.js, mobile-search-filters-v1.js / .css | todo | |
-| mobile-share-links-v1.js | done | Standalone pages: `standalone-page.js`. React share dialogs: check in stage 3/4 |
+| mobile-share-links-v1.js | done | Standalone pages: `standalone-page.js`. React boards: `components/ShareLinkField.jsx` (on live the patch did not take effect in the React share dialogs) |
 | adl-sequence-reorder-v2.js | drop | Loaded only on the React home page, where nothing matches it; the ADL page has its own move buttons |
 | v36-targeted-fixes.css | todo | |
 | therapist-*.js / .css (tabs, header, session board, drawing, signs, games, cloud, search bridge) | todo | |
 | english-content-v9, english-approved-v1, american-english-v1, us-english-polish-v2 | todo | Move all translations into source |
 | language-switch-v1.js, english-route-boot-v93.js, english-ltr-v1/v2.css | todo | |
 | google-snippet-guard-v1.js | todo | |
-| CipherGenerator-v99.js | todo | Hand-edited compiled chunk |
+| CipherGenerator-v99.js | done | Hand-edited compiled chunk, now in `pages/CipherGenerator.jsx` |
 | home-*.js, sequence-direction-controls-v1.js, index-v99.js, activities-data-v97.js | drop | Not loaded by any page |
 
 ## Standalone pages (plain HTML, outside the React app)

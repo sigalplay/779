@@ -144,10 +144,12 @@ export default function CipherGenerator({ mode = "therapist" }) {
   const defaultTitle = t("היכן הרמז הבא?", "Where is the next clue?");
   const [title, setTitle] = useState(defaultTitle);
   const [word, setWord] = useState("");
-  const [keyId, setKeyId] = useState("roshHashanah");
+  // ?key=sukkot opens the Sukkot key (used by the Sukkot activities on the home page).
+  const requestedKey = () => (new URLSearchParams(window.location.search).get("key") === "sukkot" ? "sukkot" : "roshHashanah");
+  const [keyId, setKeyId] = useState(requestedKey);
 
   useEffect(() => {
-    const nextKey = isEnglish ? "shapes" : "roshHashanah";
+    const nextKey = isEnglish ? "shapes" : requestedKey();
     setKeyId(nextKey);
     setTitle(isEnglish ? "Where is the next clue?" : "היכן הרמז הבא?");
     setWord("");
@@ -203,7 +205,7 @@ export default function CipherGenerator({ mode = "therapist" }) {
             <p className="mb-4 rounded-2xl bg-sky/20 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
               {activeKeyId === "christmas"
                 ? "A festive Christmas key with 26 different symbols — one for every English letter."
-                : "A colourful Easter and spring key with 26 different symbols — one for every English letter."}
+                : "A colorful Easter and spring key with 26 different symbols — one for every English letter."}
             </p>
           )}
 
