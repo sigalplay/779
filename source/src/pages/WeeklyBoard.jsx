@@ -436,7 +436,7 @@ export default function WeeklyBoard({ mode }) {
         <div className="mb-1">
           <TherapistQuickTips />
         </div>
-        <h1 className="font-display text-3xl font-black md:text-4xl">{t("לוח התארגנות שבועי", "Weekly Visual Planner")}</h1>
+        <h1 className="font-display text-3xl font-black md:text-4xl">{t("לוח התארגנות שבועי", "Weekly Visual Schedule")}</h1>
         <section className="mt-4 rounded-2xl border bg-card p-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-bold">הלוחות שלי</span>
@@ -456,7 +456,7 @@ export default function WeeklyBoard({ mode }) {
         <img src="/boo-nesahek-logo.png" alt="בואו נשחק" className="weekly-board-print-logo object-contain" />
         <div className="text-center">
           <h1 className="font-display text-xl font-black">{displayBoardName(activeBoard?.name)}</h1>
-          <p className="text-sm font-bold">{t("לוח התארגנות שבועי", "Weekly Visual Planner")} · {formatWeekRangeLabel(weekDates, language)}</p>
+          <p className="text-sm font-bold">{t("לוח התארגנות שבועי", "Weekly Visual Schedule")} · {formatWeekRangeLabel(weekDates, language)}</p>
         </div>
         <div className="weekly-board-print-logo" aria-hidden />
       </div>

@@ -110,6 +110,9 @@ export default function ChildMorningRoutine() {
             </Button>
           </div>
         )}
+        <a href="/" className="mt-8 block rounded-2xl border border-rose/30 bg-rose/20 px-4 py-3 text-center font-bold text-foreground transition hover:bg-rose/30">
+          צור לוח משלך — בואו נשחק
+        </a>
       </div>
     </div>
   );

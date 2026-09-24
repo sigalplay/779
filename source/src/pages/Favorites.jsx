@@ -17,7 +17,7 @@ export default function Favorites() {
 
   useEffect(() => {
     if (!isSignedIn()) {
-      navigate("/auth");
+      navigate("/auth?intent=favorite&redirect=%2Ffavorites", { replace: true });
       return;
     }
     setFavs(listFavorites());

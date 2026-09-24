@@ -63,6 +63,7 @@ export default function SharedWeeklyBoard() {
       <div className="shared-weekly-board-page mx-auto max-w-5xl px-4 py-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 print:hidden">
           <div className="flex items-center gap-2">
+            <img src="/boo-nesahek-logo.png" alt="בואו נשחק" className="h-14 w-14 rounded-xl object-contain" />
             <CalendarDays className="h-6 w-6 text-sage-foreground" />
             <div>
               <h1 className="font-display text-2xl font-black md:text-3xl">הלוח השבועי שלנו</h1>
@@ -184,9 +185,15 @@ export default function SharedWeeklyBoard() {
           </table>
         </div>
 
+        <a href="/" className="mx-auto mt-6 block max-w-md rounded-2xl border border-rose/30 bg-rose/20 px-4 py-3 text-center font-bold text-foreground transition hover:bg-rose/30 print:hidden">
+          צור לוח משלך — בואו נשחק
+        </a>
         <div className="shared-weekly-board-logo hidden items-center justify-start print:flex">
           <img src="/boo-nesahek-logo.png" alt="בואו נשחק" className="h-11 w-auto object-contain" />
         </div>
+        <p className="shared-weekly-board-legal hidden print:block">
+          © בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.
+        </p>
       </div>
     </div>
   );

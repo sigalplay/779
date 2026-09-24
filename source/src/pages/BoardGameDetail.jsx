@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useParams, useSearchParams, Link } from "react-router-dom";
+import { useParams, useSearchParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, Share2, Printer, Clock, Layers, RotateCcw, ArrowRight, Dices } from "lucide-react";
 import { toast } from "sonner";
@@ -117,6 +117,7 @@ export default function BoardGameDetail() {
   const [saved, setSaved] = useState(false);
   const [showTags, setShowTags] = useState(false);
   const game = getBoardGame(id);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (game) setSaved(isFavorite(`board-game-${game.id}`));
@@ -124,7 +125,7 @@ export default function BoardGameDetail() {
 
   function handleFav() {
     if (!isSignedIn()) {
-      toast.error("צריך להתחבר כדי לשמור למועדפים");
+      navigate(`/auth?intent=favorite&redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
       return;
     }
     const res = toggleFavorite(`board-game-${game.id}`);
