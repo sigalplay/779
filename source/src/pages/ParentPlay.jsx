@@ -14,6 +14,15 @@ import { useSearchParams } from "react-router-dom";
 import { useTranslator } from "@/lib/language";
 import { activityTitle, translatedTerm } from "@/lib/content-translations";
 
+// טווחי גיל לסינון בחיפוש. אפשר לבחור כמה טווחים יחד.
+const AGE_RANGES = [
+  { label: "6–12 חודשים", min: 0.5, max: 1 },
+  { label: "2–3", min: 2, max: 3 },
+  { label: "4–5", min: 4, max: 5 },
+  { label: "6–7", min: 6, max: 7 },
+  { label: "8–10", min: 8, max: 10 },
+];
+
 export default function ParentPlay() {
   const { language, t } = useTranslator();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -21,6 +30,7 @@ export default function ParentPlay() {
   const requestedTab = searchParams.get("tab");
   const [mainTab, setMainTab] = useState(validTabs.has(requestedTab) ? requestedTab : "search");
   const [difficulty, setDifficulty] = useState(null);
+  const [selectedAges, setSelectedAges] = useState([]);
   const [maxDur, setMaxDur] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [results, setResults] = useState(null);
@@ -54,6 +64,7 @@ export default function ParentPlay() {
       maxDuration: selectedDuration?.mode === "max" ? selectedDuration.value : undefined,
       minDuration: selectedDuration?.mode === "min" ? selectedDuration.value : undefined,
       functionalDifficulty: difficulty ?? undefined,
+      ageRanges: AGE_RANGES.filter((range) => selectedAges.includes(range.label)),
       limit: 60,
     });
     setResults(result);
@@ -102,7 +113,7 @@ export default function ParentPlay() {
   return (
     <AppShell mode="parent">
       <div className="mb-2">
-        <h2 className="font-display text-2xl font-black md:text-3xl">{t("במה נשחק היום?", "What shall we play today?")}</h2>
+        <h2 className="font-display text-2xl font-black md:text-3xl">{t("במה נשחק היום?", "What should we play today?")}</h2>
       </div>
 
       {language === "he" ? <TherapistPostureScissorsTips /> : null}
@@ -117,16 +128,16 @@ export default function ParentPlay() {
             {t("כל הפעילויות", "All activities")}
           </SideTabBtn>
           <SideTabBtn active={mainTab === "creative"} onClick={() => selectMainTab("creative")}>
-            🎨 {t("פעילויות יצירה", "Creative activities")}
+            🎨 {t("פעילויות יצירה", "Creative Activities")}
           </SideTabBtn>
           <SideTabBtn active={mainTab === "sensory"} onClick={() => selectMainTab("sensory")}>
-            🌈 {t("פעילויות סנסוריות", "Sensory activities")}
+            🌈 {t("פעילויות סנסוריות", "Sensory Activities")}
           </SideTabBtn>
           <SideTabBtn active={mainTab === "movement"} onClick={() => selectMainTab("movement")}>
-            🤸 {t("פעילויות תנועה", "Movement activities")}
+            🤸 {t("פעילויות תנועה", "Movement Activities")}
           </SideTabBtn>
           <SideTabBtn active={mainTab === "social"} onClick={() => selectMainTab("social")}>
-            🎉 {t("משחקי חברה", "Social games")}
+            🎉 {t("משחקי חברה", "Social Play Activities")}
           </SideTabBtn>
         </div>
 
@@ -138,7 +149,23 @@ export default function ParentPlay() {
         >
           {mainTab === "search" ? (
             <div>
-              <Section title={t("1. במה את/ה רוצה להתמקד? (בחירה אחת)", "1. What would you like to focus on? (Choose one)")}>
+              <p className="mb-4 text-sm text-muted-foreground">
+                {t("בחרו גיל, תחום התפתחות וזמן, ונמצא רעיון מתאים. אפשר לבחור גם רק מסנן אחד.", "Choose an age, developmental area, and duration to find a suitable activity. You can also use just one filter.")}
+              </p>
+              <Section title={t("1. גיל (אפשר לבחור כמה טווחים)", "1. Age (choose one or more ranges)")}>
+                <div className="flex flex-wrap gap-2">
+                  {AGE_RANGES.map((range) => (
+                    <Chip
+                      key={range.label}
+                      active={selectedAges.includes(range.label)}
+                      onClick={() => setSelectedAges((prev) => prev.includes(range.label) ? prev.filter((label) => label !== range.label) : [...prev, range.label])}
+                    >
+                      {t(`גיל ${range.label}`, `Ages ${range.label}`)}
+                    </Chip>
+                  ))}
+                </div>
+              </Section>
+              <Section title={t("2. תחום שתרצו לחזק (בחירה אחת)", "2. Developmental area (choose one)")}>
                 <div className="space-y-2">
                   {FUNCTIONAL_DIFFICULTIES.map((group) => (
                     <div key={group.category}>
@@ -173,7 +200,7 @@ export default function ParentPlay() {
                 </div>
               </Section>
 
-              <Section title={t("2. כמה זמן יש?", "2. How much time do you have?")}>
+              <Section title={t("3. כמה זמן יש?", "3. How much time do you have?")}>
                 <div className="flex flex-wrap gap-2">
                   {DURATIONS.map((d) => (
                     <Chip key={d.mode} active={maxDur === d.mode} onClick={() => setMaxDur(d.mode)}>
@@ -196,7 +223,7 @@ export default function ParentPlay() {
               {showResultsArea ? (
                 displayed.length > 0 ? (
                   <div className="mt-10">
-                    <div className="mb-4 flex items-center gap-2">
+                    <div className="ideas-for-you-heading mb-4 flex items-center gap-3 rounded-2xl border-2 border-[#D9B64A] bg-[#FFF4BF] px-4 py-3 shadow-sm">
                       <h3 className="font-display text-xl font-black">{t("רעיונות בשבילך", "Ideas for you")}</h3>
                       {language === "he" && difficulty && DIFFICULTY_GUIDANCE[difficulty] ? (
                         <DifficultyTipButton points={DIFFICULTY_GUIDANCE[difficulty]} />
@@ -367,14 +394,14 @@ function DifficultyTipButton({ points }) {
         <summary
           aria-label="לפני שמתחילים: מה כדאי לדעת"
           title="לפני שמתחילים: מה כדאי לדעת"
-          className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-xl border border-[#8FC7A6] bg-[#DCEEE4] text-lg shadow-sm transition-transform marker:content-none hover:scale-105 group-open:scale-105"
+          className="flex h-12 w-12 cursor-pointer list-none items-center justify-center rounded-full border-2 border-[#C89E18] bg-[#FFE47A] text-[26px] shadow-md transition-transform marker:content-none hover:scale-105 group-open:scale-105"
         >
           💡
         </summary>
         <div
           role="dialog"
           aria-label="לפני שמתחילים: מה כדאי לדעת"
-          className="absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-3rem)] rounded-2xl border border-border/60 bg-card p-4 shadow-lg"
+          className="difficulty-tip-popover absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border-2 border-[#D9B64A] bg-[#FFFEF7] p-4 shadow-xl"
         >
           <h4 className="mb-2 font-display text-sm font-bold">לפני שמתחילים: מה כדאי לדעת</h4>
           <ul className="space-y-1.5">

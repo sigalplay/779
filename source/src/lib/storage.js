@@ -133,6 +133,10 @@ export function searchActivities(params) {
       rows = rows.filter((a) => a.age_min <= params.age && a.age_max >= params.age);
     }
   }
+  if (Array.isArray(params.ageRanges) && params.ageRanges.length) {
+    // כמה טווחי גיל: פעילות מתאימה אם טווח הגילאים שלה חופף לאחד מהטווחים שנבחרו.
+    rows = rows.filter((a) => params.ageRanges.some(({ min, max }) => a.age_min <= max && a.age_max >= min));
+  }
   if (typeof params.maxDuration === "number") {
     rows = rows.filter((a) => a.duration_min <= params.maxDuration);
   }
@@ -186,7 +190,7 @@ export function searchActivities(params) {
  * מחזיר { result, relaxed } כאשר relaxed מתאר מה הורפה (אם בכלל).
  */
 export function searchActivitiesSmart(params) {
-  const base = { audience: params.audience, age: params.age, limit: params.limit ?? 60 };
+  const base = { audience: params.audience, age: params.age, ageRanges: params.ageRanges, limit: params.limit ?? 60 };
 
   const tiers = params.functionalDifficulty
     ? [

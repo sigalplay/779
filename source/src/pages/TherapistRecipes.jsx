@@ -11,24 +11,6 @@ import { brandLogo, useTranslator } from "@/lib/language";
 import { RECIPE_EN } from "@/lib/recipe-content-en";
 import { useCmsCollection } from "@/lib/cms-content";
 
-const RECIPE_TITLES_EN = {
-  "chocolate-apple-slices": "Chocolate-Dipped Apple Slices",
-  "biscuit-sandwich": "Biscuit Sandwiches",
-  "chocolate-toastie": "Chocolate Toastie",
-  shoko: "Hot Chocolate",
-  "tortilla-pizza": "Tortilla Pizza",
-  "chocolate-balls": "Chocolate Balls",
-  smores: "S'mores",
-  "chocolate-lollipops": "Chocolate Lollipops",
-  "strawberry-banana-smoothie": "Strawberry-Banana Smoothie",
-  "chocolate-tortilla-swirls": "Chocolate Tortilla Swirls",
-  "baked-potato-chips": "Baked Potato Crisps",
-  "olive-muffins": "Olive Muffins",
-  "mug-cake": "Mug Cake",
-  "fruit-popsicles": "Fruit Ice Lollies",
-  "homemade-ice-cream": "Homemade Ice Cream",
-};
-
 function translatedRecipe(recipe, language) {
   if (language !== "en" || !RECIPE_EN[recipe.id]) return recipe;
   const en = RECIPE_EN[recipe.id];
@@ -1921,8 +1903,8 @@ export default function TherapistRecipes({ mode = "therapist" }) {
       <div className="mb-6 flex items-center gap-3">
         <ChefHat className="h-7 w-7 text-primary" />
         <div>
-          <h1 className="font-display text-3xl font-black">{t("מתכונים", "Recipes")}</h1>
-          <p className="text-muted-foreground">{t("מתכונים טיפוליים פשוטים לשימוש במפגשים או בבית", "Simple, child-friendly recipes for sessions or home.")}</p>
+          <h1 className="font-display text-3xl font-black">{t("מתכונים לילדים", "Kid-Friendly Recipes")}</h1>
+          <p className="text-muted-foreground">{t("מתכונים קלים לילדים עם שלבים ואיורים.", "Simple, child-friendly recipes for sessions or home.")}</p>
         </div>
       </div>
 
@@ -2090,7 +2072,7 @@ function RecipePrintSheet({ recipe, pick, language }) {
       ) : null}
 
       <div className="mt-6 text-center text-xs text-muted-foreground/70">
-        {label("© בואו נשחק — כל הזכויות שמורות. המתכון הודפס לשימוש אישי ומשפחתי/טיפולי בלבד; אין להעתיק, למכור או להפיץ מחדש בלי אישור.", "© Let's Play — All rights reserved. Printed for personal, family, or therapeutic use only. Do not copy, sell, or redistribute without permission.")}
+        {label("© בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.", "© Let's Play. All rights reserved. Content is for enrichment and practice only and does not replace diagnosis, assessment, professional advice or treatment.")}
       </div>
     </div>
   );
