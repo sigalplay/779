@@ -1,0 +1,64 @@
+{
+  "auditDate": "2026-09-24",
+  "repository": "sigalplay/779",
+  "productionCommit": "49e0a2a19b02bdf5dbb04568d89bd1b76d280875",
+  "publicUrlCount": 262,
+  "counts": {
+    "english": 130,
+    "activities": 101,
+    "boardGames": 11,
+    "parentTopLevel": 15,
+    "liveActivityRecords": 104,
+    "v774ActivityRecords": 93
+  },
+  "parentRoutes": [
+    "/parent/all/",
+    "/parent/board-games/",
+    "/parent/daily-routine/",
+    "/parent/card-games-generator/",
+    "/parent/daily-sequences/",
+    "/parent/evening-routine/",
+    "/parent/experiments/",
+    "/parent/hebrew-calendar/",
+    "/parent/morning-routine/",
+    "/parent/play/",
+    "/parent/recipes/",
+    "/parent/routine-boards/",
+    "/parent/school-holidays/",
+    "/parent/social-stories/",
+    "/parent/weekly-board/"
+  ],
+  "therapistRoutes": [
+    "/therapist/build?view=session",
+    "/therapist/build?tab=search",
+    "/therapist/diary",
+    "/therapist/my-patients/",
+    "/therapist/patient/:id",
+    "/therapist/plans",
+    "/therapist/session-notes",
+    "/therapist/motor-trail",
+    "/therapist/board-games",
+    "/therapist/recipes",
+    "/therapist/experiments",
+    "/therapist/morning-routine",
+    "/therapist/evening-routine",
+    "/therapist/weekly-board",
+    "/therapist/hebrew-calendar"
+  ],
+  "sharedRoutes": [
+    "/shared/weekly-board",
+    "/shared/hebrew-calendar",
+    "/child/morning-routine",
+    "/child/evening-routine"
+  ],
+  "requiredLanguages": [
+    "he-IL",
+    "en-US"
+  ],
+  "requiredViewports": [
+    "phone",
+    "tablet",
+    "desktop"
+  ],
+  "deploymentAllowed": false
+}
