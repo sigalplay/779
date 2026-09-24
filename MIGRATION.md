@@ -47,8 +47,8 @@ Status: `done` = behavior is in source, `todo` = not yet, `drop` = intentionally
 | calendar-qa-v27.js / .css, mobile-calendar-compact-v1.css | todo | |
 | calendar-multi-photo-v1.js / .css, calendar-english-complete-v1.js | todo | |
 | mobile-context-nav-v1.js, mobile-search-filters-v1.js / .css | todo | |
-| mobile-share-links-v1.js | todo | |
-| adl-sequence-reorder-v2.js | todo | |
+| mobile-share-links-v1.js | done | Standalone pages: `standalone-page.js`. React share dialogs: check in stage 3/4 |
+| adl-sequence-reorder-v2.js | drop | Loaded only on the React home page, where nothing matches it; the ADL page has its own move buttons |
 | v36-targeted-fixes.css | todo | |
 | therapist-*.js / .css (tabs, header, session board, drawing, signs, games, cloud, search bridge) | todo | |
 | english-content-v9, english-approved-v1, american-english-v1, us-english-polish-v2 | todo | Move all translations into source |
@@ -61,10 +61,16 @@ Status: `done` = behavior is in source, `todo` = not yet, `drop` = intentionally
 
 | Page | Status |
 |---|---|
-| /parent/routine-boards/, /parent/daily-routine/, /child/daily-routine/ | todo |
-| /parent/daily-sequences/ (ADL) | todo |
-| /parent/school-holidays/ | todo |
-| /parent/card-games-generator/ | todo |
+| /parent/routine-boards/, /parent/daily-routine/, /child/daily-routine/ (+ /en/) | done |
+| /parent/daily-sequences/ (ADL) (+ /en/) | done |
+| /parent/school-holidays/ | done |
+| /parent/card-games-generator/ | done |
+
+These pages live in `source/public/` as plain HTML. They no longer load the site-wide patch
+files (checked: pixel-identical without them). Their only shared helper is
+`public/standalone-page.js` (print delay for iPhone, tap-to-open share link on phones).
+The game builder's script and styles moved next to the page (`generator.js`, `generator.css`).
+In English mode, menu links to these pages now go to the `/en/` copy (live sent them to the Hebrew page).
 | /therapist/board/, /therapist/tools/, /therapist/my-patients/ | todo |
 | English versions under /en/ | todo |
 | ~250 SEO pages (activity/*, board-game/*, en/*) | todo |

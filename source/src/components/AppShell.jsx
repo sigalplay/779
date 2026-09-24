@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isCloudSignedIn } from "@/lib/cloud-auth";
-import { brandLogo, useTranslator } from "@/lib/language";
+import { brandLogo, useTranslator, standaloneHref } from "@/lib/language";
 
 // תפריט האתר: שלוש קבוצות קישורים וקבוצת "החשבון והאתר".
 const MENU_GROUPS = [
@@ -71,7 +71,8 @@ export function isTherapistArea(location) {
 }
 
 function NavLink({ to, className, children, ...rest }) {
-  if (isStandalonePage(to)) return <a href={to} className={className} {...rest}>{children}</a>;
+  const { language } = useTranslator();
+  if (isStandalonePage(to)) return <a href={standaloneHref(to, language)} className={className} {...rest}>{children}</a>;
   return <Link to={to} className={className} {...rest}>{children}</Link>;
 }
 
