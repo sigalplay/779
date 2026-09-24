@@ -39,17 +39,16 @@ export default function About() {
             </p>
             <p>
               בעבודתי כמרפאה בעיסוק אני מקדישה זמן רב לתכנון כל טיפול, לחיפוש רעיונות, להכנת חומרים
-              ולהתאמת הפעילויות למטרות ולצרכים הייחודיים של כל ילד. לא פעם ההכנות ממשיכות גם לאחר
-              ששעות העבודה מסתיימות.
+              ולהתאמת הפעילויות למטרות ולצרכים הייחודיים של כל ילד.
             </p>
             <p>
               לכן החלטתי לרכז את החומרים והרעיונות שאני מכינה עבור הטיפולים שלי במקום אחד —
               <strong> „בואו נשחק”</strong>. זהו אתר שנועד להקל על הורים ועל מטפלות ולהציע רעיונות
               איכותיים, ברורים ונגישים שאפשר ליישם בקלות.
             </p></> : <>
-              <p>I’m Sigal Sasson-Spector, mum to Niv and Itamar and a developmental occupational therapist. I hold a bachelor’s degree in occupational therapy from the University of Haifa and a master’s degree from the Schwartz Programme in Early Childhood Studies at the Hebrew University of Jerusalem.</p>
+              <p>I’m Sigal Sasson-Spector, mom to Niv and Itamar and a developmental occupational therapist. I hold a bachelor’s degree in occupational therapy from the University of Haifa and a master’s degree from the Schwartz Program in Early Childhood Studies at the Hebrew University of Jerusalem.</p>
               <p>In my work, I meet parents who want to play with their children, support their development, and enjoy meaningful time together—but do not always know where to begin. Sometimes it is hard to find the right idea, and sometimes there simply is not enough time to search, gather supplies, and prepare.</p>
-              <p>As an occupational therapist, I spend a great deal of time planning each session, finding ideas, preparing materials, and adapting activities to each child’s individual goals and needs. The preparation often continues after the working day is over.</p>
+              <p>As an occupational therapist, I spend a great deal of time planning each session, finding ideas, preparing materials, and adapting activities to each child’s individual goals and needs.</p>
               <p>That is why I brought the materials and ideas I create for my sessions together in one place: <strong>Let’s Play</strong>. The website is designed to support parents and therapists with high-quality, clear, and accessible ideas that are easy to use.</p>
             </>}
           </div>
@@ -76,7 +75,7 @@ export default function About() {
               מהנים ומשמעותיים של משחק, למידה והצלחה.
             </p></> : <>
               <p>You will find creative, movement, social, and sensory activities, along with recipes, experiments, and ideas that need little or no advance preparation.</p>
-              <p>Each activity includes clear guidance, a supply list, and illustrated steps. You can search by your child’s needs or by a therapy goal, and find ideas that support fine and gross motor skills, language, planning, organisation, working memory, flexible thinking, sensory regulation, and more.</p>
+              <p>Each activity includes clear guidance, a supply list, and illustrated steps. You can search by your child’s needs or by a therapy goal, and find ideas that support fine and gross motor skills, language, planning, organization, working memory, flexible thinking, sensory regulation, and more.</p>
               <p>The website also includes practical tools for morning routines and weekly planning. I continue to develop and add new activities, resources, and tools.</p>
               <p>I hope the website saves you preparation time and helps you create enjoyable, meaningful moments of play, learning, and success with children.</p>
             </>}
@@ -88,13 +87,13 @@ export default function About() {
           <div className="mt-5 space-y-4 leading-8 text-foreground/90">
             {language === "he" ? <><p>
               רוצים להתייעץ בנוגע להתפתחות, לתפקוד או להשתתפות של ילדכם בחיי היום־יום? ניתן לפנות
-              אליי לתיאום ייעוץ מקצועי בתשלום בריפוי בעיסוק, הכולל חשיבה משותפת, הדרכת הורים והתאמת
-              המלצות ופעילויות לצרכים הייחודיים של הילד.
+              אליי לתיאום ייעוץ מקצועי בזום או בקליניקה שלי בפתח תקווה, הכולל חשיבה משותפת, הדרכת הורים
+              והתאמת המלצות ופעילויות לצרכים הייחודיים של הילד.
             </p>
             <p>
-              אשמח לשמוע מכם גם אם יש לכם שאלה בנוגע לאפליקציה, רעיון לפעילות חדשה או הצעה לשיפור.
+              אשמח לשמוע גם אם יש לכם שאלה בנוגע לאפליקציה, רעיון לפעילות חדשה או הצעה לשיפור :)
             </p></> : <>
-              <p>Would you like advice about your child’s development, daily functioning, or participation? You are welcome to contact me to arrange a paid occupational therapy consultation. This may include thinking together, parent guidance, and recommendations and activities tailored to your child’s needs.</p>
+              <p>Would you like advice about your child’s development, daily functioning, or participation? You are welcome to contact me to arrange a paid occupational therapy consultation on Zoom or at my clinic in Petah Tikva. This may include thinking together, parent guidance, and recommendations and activities tailored to your child’s needs.</p>
               <p>I would also be glad to hear from you if you have a question about the website, an idea for a new activity, or a suggestion for improvement.</p>
             </>}
           </div>

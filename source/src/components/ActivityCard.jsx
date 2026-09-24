@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { ageRangeLabel } from "@/lib/age-label";
 import { Clock, Layers, Heart, ListPlus, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -112,7 +113,7 @@ export function ActivityCard({ activity, index = 0, mode, returnPath, returnLabe
         </div>
         <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1">
-            {t("גיל", "Ages")} {activity.age_min}–{activity.age_max}
+            {ageRangeLabel(activity, language)}
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1">
             <Clock className="h-3 w-3" /> {getActivityDurationShortLabel(activity)}

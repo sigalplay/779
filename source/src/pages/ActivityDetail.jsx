@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { ageRangeLabel } from "@/lib/age-label";
 import { useParams, useSearchParams, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, Share2, Printer, Clock, Layers, RotateCcw, Download, Info, ArrowRight, ChevronDown } from "lucide-react";
@@ -278,7 +279,7 @@ export default function ActivityDetail() {
           </div>
           <div className="mt-4 flex flex-wrap gap-2 text-sm">
             <Pill>
-              {t("גיל", "Ages")} {a.age_min}–{a.age_max}
+              {ageRangeLabel(a, language)}
             </Pill>
             <Pill>
               <Clock className="h-3.5 w-3.5" /> {language === "en" ? `${a.duration_min} minutes` : getActivityDurationLabel(a)}
