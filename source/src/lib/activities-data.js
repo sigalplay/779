@@ -7381,7 +7381,7 @@ const ALL_SEED_ACTIVITIES = [
     "materials": ["דף כריש עם פה עגול גדול", "פלסטלינה אדומה", "מקלות אוזניים חתוכים לחתיכות קצרות"],
     "materialsN": ["דַּף כָּרִישׁ עִם פֶּה עָגֹל גָּדוֹל", "פְּלַסְטֶלִינָה אֲדֻמָּה", "מַקְלוֹת אָזְנַיִם חֲתוּכִים לַחֲתִיכוֹת קְצָרוֹת"],
     "attachments": [
-      {"file": "/downloads/shark-teeth/shark-colour.pdf", "preview": "/downloads/shark-teeth/shark-colour.png", "label": "דף כריש צבעוני להדפסה - PDF"},
+      {"file": "/downloads/shark-teeth/shark-color.pdf", "preview": "/downloads/shark-teeth/shark-color.png", "label": "דף כריש צבעוני להדפסה - PDF"},
       {"file": "/downloads/shark-teeth/shark-black-white.pdf", "preview": "/downloads/shark-teeth/shark-black-white.png", "label": "דף כריש בשחור־לבן להדפסה - PDF"}
     ],
     "preparation": "מבוגר מצייר או מדפיס כריש עם פה עגול וריק, וחותך מראש את מקלות האוזניים לחתיכות קצרות. החלקים הקטנים מיועדים לעבודה בהשגחת מבוגר בלבד ואינם מתאימים לילדים שמכניסים חפצים לפה.",
@@ -7466,8 +7466,38 @@ function withCompleteNikud(activity) {
   return enriched;
 }
 
-// הפעילויות הוסרו מהקטלוג, אך קובצי האיורים שלהן נשמרים לשימוש עתידי.
+const unique = (values = []) => [...new Set(values.filter(Boolean))];
+const TAG_FIELDS = ["categories", "goals", "functions", "sensory_systems", "tags"];
+const EYE_HAND_LABELS = ["קשר עין-יד", "קשר עין־יד", "תיאום עין יד", "תיאום עין־יד", "תיאום עין-יד"];
+const withoutLabels = (activity, labels) => {
+  const blocked = new Set(labels);
+  for (const field of TAG_FIELDS) activity[field] = activity[field].filter((value) => !blocked.has(value));
+};
+
+// ניקוי תגיות: מסיר כפילויות ואת התגית "חזותית", ומתקן שיוך תחומים בפעילויות ספציפיות.
+function normalizeActivityTags(source) {
+  const activity = { ...source };
+  for (const field of TAG_FIELDS) activity[field] = unique(source[field]).filter((value) => value !== "חזותית");
+
+  if (activity.materials?.some((material) => material.includes("נייר סופג")) && !activity.goals.includes("ויסות כוח")) {
+    activity.goals = [...activity.goals, "ויסות כוח"];
+  }
+  if (["seed-92", "seed-99", "seed-100", "seed-104", "seed-109"].includes(activity.id)) activity.functions = [];
+  if (activity.id === "seed-103") {
+    const removed = ["גמישות מחשבתית", "טקטילית", "בקרה"];
+    activity.goals = activity.goals.filter((value) => !removed.includes(value));
+    activity.functions = activity.functions.filter((value) => !removed.includes(value));
+    activity.sensory_systems = activity.sensory_systems.filter((value) => value !== "טקטילית");
+  }
+  if (activity.id === "seed-107") withoutLabels(activity, ["ויסות כוח", ...EYE_HAND_LABELS]);
+  if (["seed-114", "seed-115"].includes(activity.id)) {
+    withoutLabels(activity, ["השתתפות באכילה", "תכנון וארגון", "רצף פעולות", "משחק ויצירתיות", "תכנון, ארגון, רצף ודיוק", "חזותית", "ריח וטעם", ...EYE_HAND_LABELS]);
+  }
+  return activity;
+}
+
+// seed-28 ו-seed-31 הוסרו מהקטלוג, אך קובצי האיורים שלהן נשמרים לשימוש עתידי.
 export const SEED_ACTIVITIES = [
   ...ALL_SEED_ACTIVITIES.map(withCompleteNikud).filter((activity) => !["seed-28", "seed-31"].includes(activity.id)),
   ...PINTEREST_ACTIVITIES,
-];
+].map(normalizeActivityTags);

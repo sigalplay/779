@@ -1318,6 +1318,13 @@ export const ACTIVITY_ICON_SETS = {
       3: "/icon-bank/crafts-new/seed-113-shark-teeth/step-3.webp",
     },
   },
+  "seed-114": { hero: "/icon-bank/food-exposure/seed-114-train/hero.webp" },
+  "seed-115": { hero: "/icon-bank/food-exposure/seed-115-bear/hero.webp" },
+  "seed-116": { hero: "/icon-bank/sensory-new/seed-116-sensory-bag-path/hero.webp" },
+  "seed-117": { hero: "/icon-bank/sensory-new/seed-117-paint-bag/hero.webp" },
+  "seed-118": { hero: "/icon-bank/sensory-new/seed-118-color-scarf-pull/hero.webp" },
+  "seed-119": { large: true, hero: "/icon-bank/crafts-new/seed-119-sukkah/hero.webp" },
+  "seed-120": { large: true, hero: "/icon-bank/crafts-new/seed-120-heart-chain/hero.webp" },
 };
 
 // The activity bank uses one calm, unified watercolor illustration per card.
