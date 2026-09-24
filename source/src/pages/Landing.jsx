@@ -32,7 +32,6 @@ export default function Landing() {
     ["/parent/social-stories", "/icon-bank/navigation-v2/social-stories-flat.webp", "מחולל סיפורים חברתיים", "Social Story Builder"],
     [language === "en" ? "/en/parent/routine-boards/" : "/parent/routine-boards/", "/icon-bank/navigation-v2/daily-routine-checklist.webp", "לוחות התארגנות לילדים", "Routine Boards for Children"],
     ["/parent/hebrew-calendar", "/icon-bank/navigation-v2/family-calendar-illustrated-v2.webp", "יצירת לוח שנה", "Create a Family Calendar"],
-    ["/parent/cipher", "/icon-bank/navigation-v2/cipher-flat.webp", "מחולל כתב סתרים", "Secret Code Generator"],
     ["/parent/recipes", "/icon-bank/navigation-v2/recipes-flat.webp", "מתכונים", "Kid-Friendly Recipes"],
     ["/parent/experiments", "/icon-bank/navigation-v2/experiments-flat.webp", "ניסויים", "Kids’ Science Experiments"],
     ...(language === "he"
@@ -89,19 +88,13 @@ export default function Landing() {
         <p className="mt-5 text-center text-xs text-muted-foreground">
           {t("אפשר לחזור למסך הזה בכל שלב, ולעבור בין הכלים דרך התפריט העליון.", "You can return to this page at any time and move between tools using the top menu.")}
         </p>
-        <p className="mx-auto mt-2 max-w-3xl text-center text-xs leading-relaxed text-muted-foreground">
-          {t(
-            "בואו נשחק מציע רעיונות לפעילות וכלי עזר לתכנון. התכנים אינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה ולטיפול של איש מקצוע מוסמך.",
-            "Let's Play offers activity ideas and planning tools. The content is not a diagnosis, personalized clinical advice, or a substitute for assessment and treatment by a qualified professional.",
-          )}
-        </p>
 
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {quickLinks.map(([to, image, he, en]) => <IllustratedNavCard key={to} to={to} image={image} title={t(he, en)} captionClassName={pinkCaption} />)}
         </div>
 
         {language === "he" && (
-          <section className="mt-8 rounded-[2rem] border border-rose/55 bg-secondary/80 p-4 shadow-soft md:p-6" aria-labelledby="seasonal-title">
+          <section className="compact-seasonal-section mt-8 rounded-[2rem] border border-rose/55 bg-secondary/80 p-4 shadow-soft md:p-6" aria-labelledby="seasonal-title">
             <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
               <div>
                 <p className="text-sm font-bold text-rose">{t("פעילויות לפי התקופה", "Seasonal activities")}</p>

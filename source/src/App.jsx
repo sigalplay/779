@@ -5,16 +5,10 @@ import { SeoManager } from "@/components/SeoManager";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { useRuntimeEnglishLoader } from "@/lib/runtime-ui-loader";
 import Landing from "@/pages/Landing";
-import { isCloudSignedIn } from "@/lib/cloud-auth";
+import { AnalyticsConsent } from "@/components/AnalyticsConsent";
+import { setLanguage } from "@/lib/language";
 
-function RequireAuth({ children }) {
-  const location = useLocation();
-  if (isCloudSignedIn()) return children;
-  const redirect = `${location.pathname}${location.search}`;
-  return <Navigate to={`/auth?redirect=${encodeURIComponent(redirect)}`} replace />;
-}
 
-const protectedPage = (element) => <RequireAuth>{element}</RequireAuth>;
 
 function lazyRoute(importer) {
   return lazy(() => Promise.race([
@@ -65,7 +59,7 @@ const TherapistDiary = lazyRoute(() => import("@/pages/TherapistDiary"));
 const TherapistPatient = lazyRoute(() => import("@/pages/TherapistPatient"));
 const HebrewCalendarGenerator = lazyRoute(() => import("@/pages/HebrewCalendarGenerator"));
 const SharedHebrewCalendar = lazyRoute(() => import("@/pages/SharedHebrewCalendar"));
-const DailySequences = lazyRoute(() => import("@/pages/DailySequences"));
+const LegalPage = lazy(() => import("@/pages/LegalPage"));
 const DeferredReportErrorButton = lazy(() => import("@/components/ReportErrorButton").then((module) => ({ default: module.ReportErrorButton })));
 const DeferredToaster = lazy(() => import("sonner").then((module) => ({ default: module.Toaster })));
 
@@ -102,6 +96,14 @@ function DeferredServices() {
   return <Suspense fallback={null}><DeferredReportErrorButton /><DeferredToaster position="top-center" richColors dir="rtl" duration={1800} /></Suspense>;
 }
 
+// כתובות /en ו-/en/... מעבירות את האתר לאנגלית ומציגות את אותו עמוד בלי הקידומת.
+function EnglishEntry() {
+  const location = useLocation();
+  setLanguage("en");
+  const target = location.pathname.replace(/^\/en(?=\/|$)/, "") || "/";
+  return <Navigate to={`${target}${location.search}${location.hash}`} replace />;
+}
+
 export default function App() {
   useImageSeo();
   useRuntimeEnglishLoader();
@@ -109,48 +111,55 @@ export default function App() {
     <RouteErrorBoundary><BrowserRouter>
       <ScrollToTop />
       <SeoManager />
+      <AnalyticsConsent />
       <DeferredServices />
       <Suspense fallback={<PageLoader />}><Routes>
         <Route path="/" element={<Landing />} />
-        <Route path="/parent/play" element={protectedPage(<ParentPlay />)} />
-        <Route path="/parent/recipes" element={protectedPage(<TherapistRecipes mode="parent" />)} />
-        <Route path="/parent/experiments" element={protectedPage(<TherapistExperiments mode="parent" />)} />
-        <Route path="/therapist/build" element={protectedPage(<TherapistBuild />)} />
-        <Route path="/therapist/recipes" element={protectedPage(<TherapistRecipes />)} />
-        <Route path="/therapist/experiments" element={protectedPage(<TherapistExperiments />)} />
-        <Route path="/therapist/cipher" element={protectedPage(<CipherGenerator />)} />
-        <Route path="/parent/cipher" element={protectedPage(<CipherGenerator mode="parent" />)} />
-        <Route path="/therapist/morning-routine" element={protectedPage(<MorningRoutine mode="therapist" />)} />
-        <Route path="/therapist/evening-routine" element={protectedPage(<EveningRoutine mode="therapist" />)} />
-        <Route path="/therapist/weekly-board" element={protectedPage(<WeeklyBoard mode="therapist" />)} />
-        <Route path="/therapist/motor-trail" element={protectedPage(<MotorTrail mode="therapist" />)} />
-        <Route path="/therapist/plans" element={protectedPage(<TherapistPlans />)} />
-        <Route path="/therapist/session-notes" element={protectedPage(<SessionNotes />)} />
-        <Route path="/therapist/diary" element={protectedPage(<TherapistDiary />)} />
-        <Route path="/therapist/patient/:id" element={protectedPage(<TherapistPatient />)} />
-        <Route path="/therapist/board-games" element={protectedPage(<BoardGames mode="therapist" />)} />
-        <Route path="/parent/board-games" element={protectedPage(<BoardGames mode="parent" />)} />
-        <Route path="/board-game/:id" element={protectedPage(<BoardGameDetail />)} />
-        <Route path="/therapist/social-stories" element={protectedPage(<SocialStories mode="therapist" />)} />
-        <Route path="/parent/social-stories" element={protectedPage(<SocialStories mode="parent" />)} />
-        <Route path="/parent/morning-routine" element={protectedPage(<MorningRoutine mode="parent" />)} />
-        <Route path="/parent/evening-routine" element={protectedPage(<EveningRoutine mode="parent" />)} />
-        <Route path="/parent/weekly-board" element={protectedPage(<WeeklyBoard mode="parent" />)} />
-        <Route path="/parent/hebrew-calendar" element={protectedPage(<HebrewCalendarGenerator />)} />
-        <Route path="/parent/daily-sequences" element={protectedPage(<DailySequences />)} />
-        <Route path="/therapist/hebrew-calendar" element={protectedPage(<HebrewCalendarGenerator />)} />
+        <Route path="/en" element={<EnglishEntry />} />
+        <Route path="/en/*" element={<EnglishEntry />} />
+        <Route path="/parent/play" element={<ParentPlay />} />
+        <Route path="/parent/recipes" element={<TherapistRecipes mode="parent" />} />
+        <Route path="/parent/experiments" element={<TherapistExperiments mode="parent" />} />
+        <Route path="/therapist/build" element={<TherapistBuild />} />
+        <Route path="/therapist/recipes" element={<TherapistRecipes />} />
+        <Route path="/therapist/experiments" element={<TherapistExperiments />} />
+        <Route path="/therapist/cipher" element={<CipherGenerator />} />
+        <Route path="/parent/cipher" element={<CipherGenerator mode="parent" />} />
+        <Route path="/therapist/morning-routine" element={<MorningRoutine mode="therapist" />} />
+        <Route path="/therapist/evening-routine" element={<EveningRoutine mode="therapist" />} />
+        <Route path="/therapist/weekly-board" element={<WeeklyBoard mode="therapist" />} />
+        <Route path="/therapist/motor-trail" element={<MotorTrail mode="therapist" />} />
+        <Route path="/therapist/plans" element={<TherapistPlans />} />
+        <Route path="/therapist/session-notes" element={<SessionNotes />} />
+        <Route path="/therapist/diary" element={<TherapistDiary />} />
+        <Route path="/therapist/patient/:id" element={<TherapistPatient />} />
+        <Route path="/therapist/board-games" element={<BoardGames mode="therapist" />} />
+        <Route path="/parent/board-games" element={<BoardGames mode="parent" />} />
+        <Route path="/board-game/:id" element={<BoardGameDetail />} />
+        <Route path="/therapist/social-stories" element={<SocialStories mode="therapist" />} />
+        <Route path="/parent/social-stories" element={<SocialStories mode="parent" />} />
+        <Route path="/parent/morning-routine" element={<MorningRoutine mode="parent" />} />
+        <Route path="/parent/evening-routine" element={<EveningRoutine mode="parent" />} />
+        <Route path="/parent/weekly-board" element={<WeeklyBoard mode="parent" />} />
+        <Route path="/parent/hebrew-calendar" element={<HebrewCalendarGenerator />} />
+        {/* רצפי ADL הם עמוד עצמאי (/parent/daily-sequences/) שנטען מחוץ לאפליקציה */}
+        <Route path="/parent/daily-sequences" element={<Navigate to="/" replace />} />
+        <Route path="/therapist/hebrew-calendar" element={<HebrewCalendarGenerator />} />
         <Route path="/child/morning-routine" element={<ChildMorningRoutine />} />
         <Route path="/child/evening-routine" element={<ChildEveningRoutine />} />
         <Route path="/shared/weekly-board" element={<SharedWeeklyBoard />} />
         <Route path="/shared/hebrew-calendar" element={<SharedHebrewCalendar />} />
-        <Route path="/therapist/all" element={protectedPage(<AllActivities mode="therapist" />)} />
-        <Route path="/parent/all" element={protectedPage(<AllActivities mode="parent" />)} />
-        <Route path="/activity/:id" element={protectedPage(<ActivityDetail />)} />
-        <Route path="/favorites" element={protectedPage(<Favorites />)} />
-        <Route path="/profile" element={protectedPage(<Profile />)} />
+        <Route path="/therapist/all" element={<AllActivities mode="therapist" />} />
+        <Route path="/parent/all" element={<AllActivities mode="parent" />} />
+        <Route path="/activity/:id" element={<ActivityDetail />} />
+        <Route path="/favorites" element={<Favorites />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/auth" element={<Auth />} />
-        <Route path="/admin/cms" element={protectedPage(<CmsAdmin />)} />
+        <Route path="/admin/cms" element={<CmsAdmin />} />
         <Route path="/about" element={<About />} />
+        <Route path="/privacy" element={<LegalPage type="privacy" />} />
+        <Route path="/terms" element={<LegalPage type="terms" />} />
+        <Route path="/cookies" element={<LegalPage type="cookies" />} />
         <Route path="*" element={<Landing />} />
       </Routes></Suspense>
     </BrowserRouter></RouteErrorBoundary>

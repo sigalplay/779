@@ -6,10 +6,29 @@ function readLanguage() {
   catch { return null; }
 }
 
-export function getLanguage() { return readLanguage() === "en" ? "en" : "he"; }
+// הבחירה באנגלית נשמרת לשיחת הגלישה הנוכחית (sessionStorage). ביקור חדש נפתח בעברית,
+// אלא אם הכתובת מתחילה ב-/en.
+const SESSION_KEY = "boo_english_preview";
+
+function isEnglishPath() {
+  const path = window.location.pathname;
+  return path === "/en" || path.startsWith("/en/");
+}
+
+export function getLanguage() {
+  if (isEnglishPath()) return "en";
+  try {
+    return window.sessionStorage.getItem(SESSION_KEY) === "1" && readLanguage() === "en" ? "en" : "he";
+  } catch {
+    return readLanguage() === "en" ? "en" : "he";
+  }
+}
 export function setLanguage(language) {
-  try { window.localStorage.setItem(KEY, language); }
-  catch { /* The site must still work when browser storage is blocked. */ }
+  try {
+    window.localStorage.setItem(KEY, language);
+    if (language === "en") window.sessionStorage.setItem(SESSION_KEY, "1");
+    else window.sessionStorage.removeItem(SESSION_KEY);
+  } catch { /* The site must still work when browser storage is blocked. */ }
   document.documentElement.lang = language;
   document.documentElement.dir = language === "he" ? "rtl" : "ltr";
   window.dispatchEvent(new Event("boo_language_change"));
