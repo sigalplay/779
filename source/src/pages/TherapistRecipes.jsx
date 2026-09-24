@@ -42,6 +42,74 @@ function translatedRecipe(recipe, language) {
   };
 }
 
+// בחירת כמות: מחשבת מחדש את כמויות המצרכים (שברים, טווחים ומילים כמו "חצי").
+const BATCH_SIZES = {
+  session: { scale: 0.25, he: "כמות קטנה למפגש", en: "Small session batch" },
+  half: { scale: 0.5, he: "חצי כמות", en: "Half batch" },
+  full: { scale: 1, he: "כמות מלאה", en: "Full batch" },
+};
+// מתכונים שבהם "כמות למפגש" היא יחס אחר מרבע.
+const SESSION_SCALE_OVERRIDES = { "cookie-sandwich": 0.5, "chocolate-toastie": 1, shoko: 1, "tortilla-pizza": 1, "olive-muffins": 0.5, "mug-cake": 1 };
+const FRACTIONS = { "⅛": 0.125, "¼": 0.25, "⅜": 0.375, "½": 0.5, "⅝": 0.625, "¾": 0.75, "⅞": 0.875 };
+
+function formatAmount(value) {
+  const rounded = Math.round(value * 100) / 100;
+  const whole = Math.floor(rounded);
+  const fraction = rounded - whole;
+  const symbol = Object.entries(FRACTIONS).find(([, amount]) => Math.abs(amount - fraction) < 0.01)?.[0];
+  if (symbol) return `${whole || ""}${symbol}`;
+  return Number.isInteger(rounded) ? String(rounded) : String(rounded).replace(".", ",");
+}
+
+function scaleIngredientText(text, scale, language) {
+  if (!text || scale === 1) return text;
+  const range = text.match(/^(\d+(?:[.,]\d+)?)\s*[–-]\s*(\d+(?:[.,]\d+)?)(.*)$/);
+  if (range) return `${formatAmount(Number(range[1].replace(",", ".")) * scale)}–${formatAmount(Number(range[2].replace(",", ".")) * scale)}${range[3]}`;
+  const number = text.match(/^(\d+(?:[.,]\d+)?|[⅛¼⅜½⅝¾⅞])(.*)$/);
+  if (number) {
+    const amount = FRACTIONS[number[1]] ?? Number(number[1].replace(",", "."));
+    return `${formatAmount(amount * scale)}${number[2]}`;
+  }
+  const words = language === "en"
+    ? [[/^Half\s+/i, 0.5], [/^Quarter\s+/i, 0.25], [/^One\s+/i, 1]]
+    : [[/^(?:חצי|חֲצִי)\s+/, 0.5], [/^(?:רבע|רֶבַע)\s+/, 0.25]];
+  for (const [pattern, amount] of words) {
+    if (pattern.test(text)) return `${formatAmount(amount * scale)} ${text.replace(pattern, "")}`;
+  }
+  const upTo = language === "en" ? text.match(/^Up to (?:one|1)\s+(.*)$/i) : text.match(/^(עד|עַד)\s+((?:כוס|כּוֹס).*)$/);
+  if (upTo) return language === "en" ? `Up to ${formatAmount(scale)} ${upTo[1]}` : `${upTo[1]} ${formatAmount(scale)} ${upTo[2]}`;
+  const unit = language === "en"
+    ? text.match(/^(cup|tablespoon|teaspoon)\s+(.*)$/i)
+    : text.match(/^((?:כוס|כּוֹס|כף|כַּף|כפית|כַּפִּית))\s+(.*)$/);
+  return unit ? `${formatAmount(scale)} ${unit[1]} ${unit[2]}` : text;
+}
+
+function scaledRecipe(recipe, batch, language) {
+  const size = BATCH_SIZES[batch] || BATCH_SIZES.full;
+  const scale = batch === "session" ? SESSION_SCALE_OVERRIDES[recipe.id] ?? size.scale : size.scale;
+  const amountLabel = language === "en" ? size.en : size.he;
+  if (batch === "session" && recipe.id === "chocolate-apple-slices") {
+    const texts = language === "en"
+      ? ["1 apple", "4 wooden skewers", "50 g chocolate", "Optional sprinkles"]
+      : ["תפוח אחד", "4 שיפודי עץ", "50 גרם שוקולד", "סוכריות לבחירה"];
+    const textsN = ["תַּפּוּחַ אֶחָד", "4 שִׁפּוּדֵי עֵץ", "50 גְּרַם שׁוֹקוֹלָד", "סֻכָּרִיּוֹת לִבְחִירָה"];
+    return {
+      ...recipe,
+      amountLabel,
+      ingredients: recipe.ingredients.map((item, index) => ({ ...item, text: texts[index] || item.text, textN: language === "he" ? textsN[index] || item.textN : item.textN })),
+    };
+  }
+  return {
+    ...recipe,
+    amountLabel,
+    ingredients: recipe.ingredients.map((item) => ({
+      ...item,
+      text: scaleIngredientText(item.text, scale, language),
+      textN: language === "he" ? scaleIngredientText(item.textN || item.text, scale, language) : item.textN,
+    })),
+  };
+}
+
 /* ---------- Custom flat-style SVG icons for "כריכון שוקולד" ---------- */
 
 function BreadPlainIcon() {
@@ -762,51 +830,120 @@ export const RECIPES = [
     cover: "/icon-bank/manual/chocolate-apple-slices/cover.webp",
     duration: "כ־25 דקות",
     ingredients: [
-      { text: "3–4 תפוחים גדולים", textN: "3–4 תַּפּוּחִים גְּדוֹלִים", img: "/icon-bank/manual/chocolate-apple-slices/ingredient-apples-v2.png" },
-      { text: "12–16 שיפודי עץ", textN: "12–16 שִׁפּוּדֵי עֵץ", img: "/icon-bank/crafts-new/seed-63-independent/material-skewers.webp" },
-      { text: "200 גרם שוקולד", textN: "200 גְּרַם שׁוֹקוֹלָד", img: "/icon-bank/manual/chocolate-apple-slices/ingredient-chocolate-v2.png" },
-      { text: "חצי כוס תוספות לבחירה", textN: "חֲצִי כּוֹס תּוֹסָפוֹת לִבְחִירָה", img: "/icon-bank/manual/recipe-choco-sprinkles-flat.webp" },
+      {
+        text: "3–4 תפוחים גדולים",
+        textN: "3–4 תַּפּוּחִים גְּדוֹלִים",
+        img: "/icon-bank/manual/chocolate-apple-slices/ingredient-apples-v2.webp",
+      },
+      {
+        text: "12–16 שיפודי עץ",
+        textN: "12–16 שִׁפּוּדֵי עֵץ",
+        img: "/icon-bank/crafts-new/seed-63-independent/material-skewers.webp",
+      },
+      {
+        text: "200 גרם שוקולד",
+        textN: "200 גְּרַם שׁוֹקוֹלָד",
+        img: "/icon-bank/manual/chocolate-apple-slices/ingredient-chocolate-v2.webp",
+      },
+      {
+        text: "סוכריות לבחירה",
+        textN: "סֻכָּרִיּוֹת לִבְחִירָה",
+        img: "/icon-bank/manual/recipe-choco-sprinkles-flat.webp",
+      },
     ],
     tools: [
-      { text: "סכין – לשימוש מבוגר", textN: "סַכִּין – לְשִׁמּוּשׁ מְבֻגָּר", img: "/icon-bank/manual/pizza-new/pizza-knife.webp" },
-      { text: "נייר סופג", textN: "נְיָר סוֹפֵג", img: "/icon-bank/crafts-new/seed-101-illustrated/material-paper-towel.webp" },
-      { text: "מגש", textN: "מַגָּשׁ", img: "/icon-bank/manual/chocolate-apple-slices/tool-tray-v2.png" },
-      { text: "קערה המתאימה למיקרוגל", textN: "קְעָרָה הַמַּתְאִימָה לַמִּיקְרוֹגַל", img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-bowl.webp" },
-      { text: "מיקרוגל – בהשגחת מבוגר", textN: "מִיקְרוֹגַל – בְּהַשְׁגָּחַת מְבֻגָּר", img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-microwave.webp" },
-      { text: "מקפיא", textN: "מַקְפִּיא", img: "/icon-bank/manual/chocolate-lollipops-fridge-tool.webp" },
+      {
+        text: "סכין – לשימוש מבוגר",
+        textN: "סַכִּין – לְשִׁמּוּשׁ מְבֻגָּר",
+        img: "/icon-bank/manual/pizza-new/pizza-knife.webp",
+      },
+      {
+        text: "נייר סופג",
+        textN: "נְיָר סוֹפֵג",
+        img: "/icon-bank/crafts-new/seed-101-illustrated/material-paper-towel.webp",
+      },
+      { text: "צלחת", textN: "צַלַּחַת", img: "/icon-bank/manual/sandwich-plate.webp" },
+      {
+        text: "קערה המתאימה למיקרוגל",
+        textN: "קְעָרָה הַמַּתְאִימָה לַמִּיקְרוֹגַל",
+        img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-bowl.webp",
+      },
+      {
+        text: "מיקרוגל – בהשגחת מבוגר",
+        textN: "מִיקְרוֹגַל – בְּהַשְׁגָּחַת מְבֻגָּר",
+        img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-microwave.webp",
+      },
     ],
     steps: [
-      { n: 1, text: "חותכים כל תפוח ל־4 או ל־6 פלחים עבים.", textN: "חוֹתְכִים כָּל תַּפּוּחַ לְ־4 אוֹ לְ־6 פְּלָחִים עָבִים.", img: "/icon-bank/manual/chocolate-apple-slices/step-1.webp" },
-      { n: 2, text: "מייבשים לחלוטין את פלחי התפוחים בעזרת נייר סופג, כדי שהציפוי יידבק היטב.", textN: "מְיַבְּשִׁים לַחֲלוּטִין אֶת פִּלְחֵי הַתַּפּוּחִים בְּעֶזְרַת נְיָר סוֹפֵג, כְּדֵי שֶׁהַצִּפּוּי יִדָּבֵק הֵיטֵב.", img: "/icon-bank/manual/chocolate-apple-slices/step-2.webp" },
-      { n: 3, text: "נועצים בעדינות שיפוד עץ בתחתית של כל פלח תפוח.", textN: "נוֹעֲצִים בַּעֲדִינוּת שִׁפּוּד עֵץ בַּתַּחְתִּית שֶׁל כָּל פֶּלַח תַּפּוּחַ.", img: "/icon-bank/manual/chocolate-apple-slices/step-3.webp" },
-      { n: 4, text: "מניחים את הפלחים על מגש ומכניסים למקפיא למשך 10–15 דקות.", textN: "מַנִּיחִים אֶת הַפְּלָחִים עַל מַגָּשׁ וּמַכְנִיסִים לַמַּקְפִּיא לְמֶשֶׁךְ 10–15 דַּקּוֹת.", img: "/icon-bank/manual/chocolate-apple-slices/step-4.webp" },
-      { n: 5, text: "ממיסים את השוקולד במיקרוגל בפולסים של 30 שניות, תוך ערבוב בין הפעלה להפעלה.", textN: "מְמִסִּים אֶת הַשּׁוֹקוֹלָד בַּמִּיקְרוֹגַל בְּפוּלְסִים שֶׁל 30 שְׁנִיּוֹת, תּוֹךְ עִרְבּוּב בֵּין הַפְעָלָה לְהַפְעָלָה.", img: "/icon-bank/manual/chocolate-apple-slices/step-5.webp" },
-      { n: 6, text: "טובלים את החצי העליון של כל פלח בשוקולד ומוסיפים תוספות לבחירה לפני שהציפוי מתקשה.", textN: "טוֹבְלִים אֶת הַחֵצִי הָעֶלְיוֹן שֶׁל כָּל פֶּלַח בַּשּׁוֹקוֹלָד וּמוֹסִיפִים תּוֹסָפוֹת לִבְחִירָה לִפְנֵי שֶׁהַצִּפּוּי מִתְקַשֶּׁה.", img: "/icon-bank/manual/chocolate-apple-slices/step-6.webp" },
+      {
+        n: 1,
+        text: "חותכים כל תפוח ל־4 או ל־6 פלחים עבים.",
+        textN: "חוֹתְכִים כָּל תַּפּוּחַ לְ־4 אוֹ לְ־6 פְּלָחִים עָבִים.",
+        img: "/icon-bank/manual/chocolate-apple-slices/step-1.webp",
+      },
+      {
+        n: 2,
+        text: "מייבשים לחלוטין את פלחי התפוחים בעזרת נייר סופג, כדי שהציפוי יידבק היטב.",
+        textN: "מְיַבְּשִׁים לַחֲלוּטִין אֶת פִּלְחֵי הַתַּפּוּחִים בְּעֶזְרַת נְיָר סוֹפֵג, כְּדֵי שֶׁהַצִּפּוּי יִדָּבֵק הֵיטֵב.",
+        img: "/icon-bank/manual/chocolate-apple-slices/step-2.webp",
+      },
+      {
+        n: 3,
+        text: "נועצים בעדינות שיפוד עץ בתחתית של כל פלח תפוח.",
+        textN: "נוֹעֲצִים בַּעֲדִינוּת שִׁפּוּד עֵץ בַּתַּחְתִּית שֶׁל כָּל פֶּלַח תַּפּוּחַ.",
+        img: "/icon-bank/manual/chocolate-apple-slices/step-3.webp",
+      },
+      {
+        n: 4,
+        text: "ממיסים את השוקולד במיקרוגל בפולסים של 30 שניות, תוך ערבוב בין הפעלה להפעלה.",
+        textN: "מְמִסִּים אֶת הַשּׁוֹקוֹלָד בַּמִּיקְרוֹגַל בְּפוּלְסִים שֶׁל 30 שְׁנִיּוֹת, תּוֹךְ עִרְבּוּב בֵּין הַפְעָלָה לְהַפְעָלָה.",
+        img: "/icon-bank/manual/chocolate-apple-slices/step-5.webp",
+      },
+      {
+        n: 5,
+        text: "טובלים את החצי העליון של כל פלח בשוקולד ומוסיפים תוספות לבחירה לפני שהציפוי מתקשה.",
+        textN: "טוֹבְלִים אֶת הַחֵצִי הָעֶלְיוֹן שֶׁל כָּל פֶּלַח בַּשּׁוֹקוֹלָד וּמוֹסִיפִים תּוֹסָפוֹת לִבְחִירָה לִפְנֵי שֶׁהַצִּפּוּי מִתְקַשֶּׁה.",
+        img: "/icon-bank/manual/chocolate-apple-slices/step-6.webp",
+      },
     ],
   },
   {
-    id: "biscuit-sandwich",
+    id: "cookie-sandwich",
     title: "סנדוויץ' ביסקוויט",
     titleN: "סֶנְדְּוִיץ' בִּיסְקְוִיט",
     cover: "/icon-bank/manual/sandwich-closed-petit-beurre.webp",
     duration: "5 דקות",
     ingredients: [
       { text: "4 ביסקוויטים", textN: "4 בִּיסְקְוִיטִים", img: "/icon-bank/manual/sandwich-single-petit-beurre.webp" },
-      { text: "2 כפות ממרח שוקולד", textN: "2 כַּפּוֹת מִמְרָח שׁוֹקוֹלָד", img: "/icon-bank/manual/sandwich-chocolate-spread.webp" },
+      {
+        text: "2 כפות ממרח שוקולד",
+        textN: "2 כַּפּוֹת מִמְרָח שׁוֹקוֹלָד",
+        img: "/icon-bank/manual/sandwich-chocolate-spread.webp",
+      },
     ],
     tools: [
       { text: "סכין", textN: "סַכִּין", img: "/icon-bank/manual/sandwich-knife.webp" },
       { text: "צלחת", textN: "צַלַּחַת", img: "/icon-bank/manual/sandwich-plate.webp" },
     ],
     steps: [
-      { n: 1, text: "מניחים ביסקוויט אחד על הצלחת.", textN: "מַנִּיחִים בִּיסְקְוִיט אֶחָד עַל הַצַּלַּחַת.", img: "/icon-bank/manual/biscuit-sandwich-new/biscuit-sandwich-step-1.webp" },
+      {
+        n: 1,
+        text: "מניחים ביסקוויט אחד על הצלחת.",
+        textN: "מַנִּיחִים בִּיסְקְוִיט אֶחָד עַל הַצַּלַּחַת.",
+        img: "/icon-bank/manual/biscuit-sandwich-new/biscuit-sandwich-step-1.webp",
+      },
       {
         n: 2,
         text: "מורחים ממרח שוקולד על הביסקוויט.",
         textN: "מוֹרְחִים מִמְרָח שׁוֹקוֹלָד עַל הַבִּיסְקְוִיט.",
         img: "/icon-bank/manual/biscuit-sandwich-new/biscuit-sandwich-step-2.webp",
       },
-      { n: 3, text: "סוגרים עם ביסקוויט נוסף מלמעלה.", textN: "סוֹגְרִים עִם בִּיסְקְוִיט נוֹסָף מִלְמַעְלָה.", img: "/icon-bank/manual/biscuit-sandwich-new/biscuit-sandwich-step-3.webp" },
+      {
+        n: 3,
+        text: "סוגרים עם ביסקוויט נוסף מלמעלה.",
+        textN: "סוֹגְרִים עִם בִּיסְקְוִיט נוֹסָף מִלְמַעְלָה.",
+        img: "/icon-bank/manual/biscuit-sandwich-new/biscuit-sandwich-step-3.webp",
+      },
     ],
   },
   {
@@ -816,14 +953,30 @@ export const RECIPES = [
     cover: "/icon-bank/manual/chocolate-toastie-new/chocolate-toastie-shapes-cover.webp",
     duration: "10 דקות",
     ingredients: [
-      { text: "2 פרוסות לחם", textN: "2 פְּרוּסוֹת לֶחֶם", img: "/icon-bank/manual/chocolate-toastie-new/chocolate-toastie-bread.webp" },
-      { text: "כף ממרח שוקולד (או כל ממרח אחר)", textN: "כַּף מִמְרַח שׁוֹקוֹלָד (אוֹ כָּל מִמְרָח אַחֵר)", img: "/icon-bank/manual/sandwich-chocolate-spread.webp" },
+      {
+        text: "2 פרוסות לחם",
+        textN: "2 פְּרוּסוֹת לֶחֶם",
+        img: "/icon-bank/manual/chocolate-toastie-new/chocolate-toastie-bread.webp",
+      },
+      {
+        text: "כף ממרח שוקולד (או כל ממרח אחר)",
+        textN: "כַּף מִמְרַח שׁוֹקוֹלָד (אוֹ כָּל מִמְרָח אַחֵר)",
+        img: "/icon-bank/manual/sandwich-chocolate-spread.webp",
+      },
     ],
     tools: [
       { text: "סכין", textN: "סַכִּין", img: "/icon-bank/manual/sandwich-knife.webp" },
       { text: "צלחת", textN: "צַלַּחַת", img: "/icon-bank/manual/chocolate-toastie-new/chocolate-toastie-plate.webp" },
-      { text: "קורצנים", textN: "קוֹרְצָנִים", img: "/icon-bank/manual/chocolate-toastie-new/chocolate-toastie-cutters.webp" },
-      { text: "טוסטר", textN: "טוֹסְטֶר", img: "/icon-bank/manual/chocolate-toastie-new/chocolate-toastie-toaster.webp" },
+      {
+        text: "קורצנים",
+        textN: "קוֹרְצָנִים",
+        img: "/icon-bank/manual/chocolate-toastie-new/chocolate-toastie-cutters.webp",
+      },
+      {
+        text: "טוסטר",
+        textN: "טוֹסְטֶר",
+        img: "/icon-bank/manual/chocolate-toastie-new/chocolate-toastie-toaster.webp",
+      },
     ],
     steps: [
       {
@@ -832,8 +985,18 @@ export const RECIPES = [
         textN: "מוֹרְחִים שׁוֹקוֹלָד עַל פְּרוּסַת לֶחֶם.",
         img: "/icon-bank/manual/chocolate-toastie-new/chocolate-toastie-step-1.webp",
       },
-      { n: 2, text: "סוגרים עם פרוסת לחם נוספת.", textN: "סוֹגְרִים עִם פְּרוּסַת לֶחֶם נוֹסֶפֶת.", img: "/icon-bank/manual/chocolate-toastie-new/chocolate-toastie-step-2.webp" },
-      { n: 3, text: "קורצים צורה שאנחנו בוחרים.", textN: "קוֹרְצִים צוּרָה שֶׁאֲנַחְנוּ בּוֹחֲרִים.", img: "/icon-bank/manual/chocolate-toastie-new/chocolate-toastie-step-3.webp" },
+      {
+        n: 2,
+        text: "סוגרים עם פרוסת לחם נוספת.",
+        textN: "סוֹגְרִים עִם פְּרוּסַת לֶחֶם נוֹסֶפֶת.",
+        img: "/icon-bank/manual/chocolate-toastie-new/chocolate-toastie-step-2.webp",
+      },
+      {
+        n: 3,
+        text: "קורצים צורה שאנחנו בוחרים.",
+        textN: "קוֹרְצִים צוּרָה שֶׁאֲנַחְנוּ בּוֹחֲרִים.",
+        img: "/icon-bank/manual/chocolate-toastie-new/chocolate-toastie-step-3.webp",
+      },
       {
         n: 4,
         text: "מכניסים לטוסטר.",
@@ -851,7 +1014,11 @@ export const RECIPES = [
     ingredients: [
       { text: "כפית שוקולית", textN: "כַּפִּית שׁוֹקוֹלִית", img: "/icon-bank/manual/shoko-new/shoko-cocoa.webp" },
       { text: "חצי כוס חלב", textN: "חֲצִי כּוֹס חָלָב", img: "/icon-bank/manual/mug-cake-new/mug-cake-milk.webp" },
-      { text: "חצי כוס מים חמים", textN: "חֲצִי כּוֹס מַיִם חַמִּים", img: "/icon-bank/manual/shoko-new/shoko-hot-water.webp" },
+      {
+        text: "חצי כוס מים חמים",
+        textN: "חֲצִי כּוֹס מַיִם חַמִּים",
+        img: "/icon-bank/manual/shoko-new/shoko-hot-water.webp",
+      },
       { text: "כפית סוכר", textN: "כַּפִּית סֻכָּר", img: "/icon-bank/manual/mug-cake-new/mug-cake-sugar.webp" },
     ],
     tools: [
@@ -859,11 +1026,36 @@ export const RECIPES = [
       { text: "כפית", textN: "כַּפִּית", img: "/icon-bank/manual/shoko-new/shoko-teaspoon.webp" },
     ],
     steps: [
-      { n: 1, text: "שמים בכוס כפית סוכר וכפית שוקולית.", textN: "שָׂמִים בַּכּוֹס כַּפִּית סֻכָּר וְכַפִּית שׁוֹקוֹלִית.", img: "/icon-bank/manual/shoko-new/shoko-step-1.webp" },
-      { n: 2, text: "מוסיפים חצי כוס מים חמים.", textN: "מוֹסִיפִים חֲצִי כּוֹס מַיִם חַמִּים.", img: "/icon-bank/manual/shoko-new/shoko-step-2.webp" },
-      { n: 3, text: "מערבבים היטב עד שהסוכר והשוקולית נמסים.", textN: "מְעַרְבְּבִים הֵיטֵב עַד שֶׁהַסֻּכָּר וְהַשּׁוֹקוֹלִית נְמַסִּים.", img: "/icon-bank/manual/shoko-new/shoko-step-4.webp" },
-      { n: 4, text: "מוסיפים חצי כוס חלב.", textN: "מוֹסִיפִים חֲצִי כּוֹס חָלָב.", img: "/icon-bank/manual/shoko-new/shoko-step-3.webp" },
-      { n: 5, text: "מערבבים שוב ונהנים!", textN: "מְעַרְבְּבִים שׁוּב וְנֶהֱנִים!", img: "/icon-bank/manual/shoko-new/shoko-step-4.webp" },
+      {
+        n: 1,
+        text: "שמים בכוס כפית סוכר וכפית שוקולית.",
+        textN: "שָׂמִים בַּכּוֹס כַּפִּית סֻכָּר וְכַפִּית שׁוֹקוֹלִית.",
+        img: "/icon-bank/manual/shoko-new/shoko-step-1.webp",
+      },
+      {
+        n: 2,
+        text: "מוסיפים חצי כוס מים חמים.",
+        textN: "מוֹסִיפִים חֲצִי כּוֹס מַיִם חַמִּים.",
+        img: "/icon-bank/manual/shoko-new/shoko-step-2.webp",
+      },
+      {
+        n: 3,
+        text: "מערבבים היטב עד שהסוכר והשוקולית נמסים.",
+        textN: "מְעַרְבְּבִים הֵיטֵב עַד שֶׁהַסֻּכָּר וְהַשּׁוֹקוֹלִית נְמַסִּים.",
+        img: "/icon-bank/manual/shoko-new/shoko-step-4.webp",
+      },
+      {
+        n: 4,
+        text: "מוסיפים חצי כוס חלב.",
+        textN: "מוֹסִיפִים חֲצִי כּוֹס חָלָב.",
+        img: "/icon-bank/manual/shoko-new/shoko-step-3.webp",
+      },
+      {
+        n: 5,
+        text: "מערבבים שוב ונהנים!",
+        textN: "מְעַרְבְּבִים שׁוּב וְנֶהֱנִים!",
+        img: "/icon-bank/manual/shoko-new/shoko-step-4.webp",
+      },
     ],
   },
   {
@@ -875,8 +1067,16 @@ export const RECIPES = [
     ingredients: [
       { text: "טורטייה אחת", textN: "טוֹרְטִיָּה אַחַת", img: "/icon-bank/manual/pizza-new/pizza-tortilla.webp" },
       { text: "2 כפות קטשופ", textN: "2 כַּפּוֹת קֶטְשׁוֹפּ", img: "/icon-bank/manual/pizza-new/pizza-ketchup.webp" },
-      { text: "חצי כוס גבינה צהובה מגוררת", textN: "חֲצִי כּוֹס גְּבִינָה צְהֻבָּה מְגֹרֶרֶת", img: "/icon-bank/manual/pizza-new/pizza-cheese.webp" },
-      { text: "רבע כוס תוספות (לא חובה)", textN: "רֶבַע כּוֹס תּוֹסָפוֹת (לֹא חוֹבָה)", img: "/icon-bank/manual/pizza-new/pizza-toppings.webp" },
+      {
+        text: "חצי כוס גבינה צהובה מגוררת",
+        textN: "חֲצִי כּוֹס גְּבִינָה צְהֻבָּה מְגֹרֶרֶת",
+        img: "/icon-bank/manual/pizza-new/pizza-cheese.webp",
+      },
+      {
+        text: "רבע כוס תוספות (לא חובה)",
+        textN: "רֶבַע כּוֹס תּוֹסָפוֹת (לֹא חוֹבָה)",
+        img: "/icon-bank/manual/pizza-new/pizza-toppings.webp",
+      },
     ],
     tools: [
       { text: "נייר אפייה", textN: "נְיַר אֲפִיָּה", img: "/icon-bank/manual/recipe-parchment-paper-flat.webp" },
@@ -884,10 +1084,30 @@ export const RECIPES = [
       { text: "תנור", textN: "תַּנּוּר", img: "/icon-bank/manual/pizza-new/pizza-oven.webp" },
     ],
     steps: [
-      { n: 1, text: "מורחים על טורטייה קטשופ.", textN: "מוֹרְחִים עַל טוֹרְטִיָּה קֶטְשׁוֹפּ.", img: "/icon-bank/manual/pizza-new/pizza-step-1.webp" },
-      { n: 2, text: "מפזרים גבינה צהובה.", textN: "מְפַזְּרִים גְּבִינָה צְהֻבָּה.", img: "/icon-bank/manual/pizza-new/pizza-step-2.webp" },
-      { n: 3, text: "מוסיפים תוספות – מי שרוצה.", textN: "מוֹסִיפִים תּוֹסָפוֹת – מִי שֶׁרוֹצֶה.", img: "/icon-bank/manual/pizza-new/pizza-step-3.webp" },
-      { n: 4, text: "מניחים על נייר אפייה ואופים בתנור למשך כ־10 דקות על חום של 180 מעלות.", textN: "מַנִּיחִים עַל נְיַר אֲפִיָּה וְאוֹפִים בַּתַּנּוּר לְמֶשֶׁךְ כְּ־10 דַּקּוֹת עַל חֹם שֶׁל 180 מַעֲלוֹת.", img: "/icon-bank/manual/pizza-new/pizza-step-4.webp" },
+      {
+        n: 1,
+        text: "מורחים על טורטייה קטשופ.",
+        textN: "מוֹרְחִים עַל טוֹרְטִיָּה קֶטְשׁוֹפּ.",
+        img: "/icon-bank/manual/pizza-new/pizza-step-1.webp",
+      },
+      {
+        n: 2,
+        text: "מפזרים גבינה צהובה.",
+        textN: "מְפַזְּרִים גְּבִינָה צְהֻבָּה.",
+        img: "/icon-bank/manual/pizza-new/pizza-step-2.webp",
+      },
+      {
+        n: 3,
+        text: "מוסיפים תוספות – מי שרוצה.",
+        textN: "מוֹסִיפִים תּוֹסָפוֹת – מִי שֶׁרוֹצֶה.",
+        img: "/icon-bank/manual/pizza-new/pizza-step-3.webp",
+      },
+      {
+        n: 4,
+        text: "מניחים על נייר אפייה ואופים בתנור למשך כ־10 דקות על חום של 180 מעלות.",
+        textN: "מַנִּיחִים עַל נְיַר אֲפִיָּה וְאוֹפִים בַּתַּנּוּר לְמֶשֶׁךְ כְּ־10 דַּקּוֹת עַל חֹם שֶׁל 180 מַעֲלוֹת.",
+        img: "/icon-bank/manual/pizza-new/pizza-step-4.webp",
+      },
     ],
   },
   {
@@ -897,22 +1117,62 @@ export const RECIPES = [
     cover: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-cover.webp",
     duration: "15 דקות",
     ingredients: [
-      { text: "250 גרם ביסקוויטים", textN: "250 גְּרַם בִּיסְקְוִיטִים", img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-biscuits.webp" },
-      { text: "3 כפות קקאו או שוקולית", textN: "3 כַּפּוֹת קָקָאוֹ אוֹ שׁוֹקוֹלִית", img: "/icon-bank/manual/mug-cake-new/mug-cake-cocoa.webp" },
-      { text: "חצי כוס שמנת מתוקה", textN: "חֲצִי כּוֹס שַׁמֶּנֶת מְתוּקָה", img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-cream.webp" },
-      { text: "חצי כוס סוכריות לציפוי", textN: "חֲצִי כּוֹס סֻכָּרִיּוֹת לְצִפּוּי", img: "/icon-bank/manual/recipe-choco-sprinkles-flat.webp" },
+      {
+        text: "250 גרם ביסקוויטים",
+        textN: "250 גְּרַם בִּיסְקְוִיטִים",
+        img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-cookies.webp",
+      },
+      {
+        text: "3 כפות קקאו או שוקולית",
+        textN: "3 כַּפּוֹת קָקָאוֹ אוֹ שׁוֹקוֹלִית",
+        img: "/icon-bank/manual/mug-cake-new/mug-cake-cocoa.webp",
+      },
+      {
+        text: "חצי כוס שמנת מתוקה",
+        textN: "חֲצִי כּוֹס שַׁמֶּנֶת מְתוּקָה",
+        img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-cream.webp",
+      },
+      {
+        text: "סוכריות לקישוט",
+        textN: "סֻכָּרִיּוֹת לְקִשּׁוּט",
+        img: "/icon-bank/manual/recipe-choco-sprinkles-flat.webp",
+      },
     ],
     tools: [
       { text: "קערה", textN: "קְעָרָה", img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-bowl.webp" },
-      { text: "מערוך", textN: "מַעֲרוֹךְ", img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-rolling-pin.webp" },
+      {
+        text: "מערוך",
+        textN: "מַעֲרוֹךְ",
+        img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-rolling-pin.webp",
+      },
       { text: "כף", textN: "כַּף", img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-spoon.webp" },
       { text: "שקית אוכל", textN: "שַׂקִּית אֹכֶל", img: "/icon-bank/manual/recipe-choco-bag-flat.webp" },
     ],
     steps: [
-      { n: 1, text: "שוברים את הביסקוויטים בשקית באמצעות מערוך.", textN: "שׁוֹבְרִים אֶת הַבִּיסְקְוִיטִים בַּשַּׂקִּית בְּאֶמְצָעוּת מַעֲרוֹךְ.", img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-step-1.webp" },
-      { n: 2, text: "מוסיפים לקערה את הביסקוויטים, הקקאו או השוקולית והשמנת.", textN: "מוֹסִיפִים לַקְּעָרָה אֶת הַבִּיסְקְוִיטִים, הַקָּקָאוֹ אוֹ הַשּׁוֹקוֹלִית וְהַשַּׁמֶּנֶת.", img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-step-3.webp" },
-      { n: 3, text: "מערבבים ביחד את כל המצרכים.", textN: "מְעַרְבְּבִים בְּיַחַד אֶת כָּל הַמִּצְרָכִים.", img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-step-4.webp" },
-      { n: 4, text: "מכינים כדורי שוקולד וטובלים בסוכריות.", textN: "מְכִינִים כַּדּוּרֵי שׁוֹקוֹלָד וְטוֹבְלִים בְּסֻכָּרִיּוֹת.", img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-step-5.webp" },
+      {
+        n: 1,
+        text: "שוברים את הביסקוויטים בשקית באמצעות מערוך.",
+        textN: "שׁוֹבְרִים אֶת הַבִּיסְקְוִיטִים בַּשַּׂקִּית בְּאֶמְצָעוּת מַעֲרוֹךְ.",
+        img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-step-1.webp",
+      },
+      {
+        n: 2,
+        text: "מוסיפים לקערה את הביסקוויטים, הקקאו או השוקולית והשמנת.",
+        textN: "מוֹסִיפִים לַקְּעָרָה אֶת הַבִּיסְקְוִיטִים, הַקָּקָאוֹ אוֹ הַשּׁוֹקוֹלִית וְהַשַּׁמֶּנֶת.",
+        img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-step-3.webp",
+      },
+      {
+        n: 3,
+        text: "מערבבים ביחד את כל המצרכים.",
+        textN: "מְעַרְבְּבִים בְּיַחַד אֶת כָּל הַמִּצְרָכִים.",
+        img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-step-4.webp",
+      },
+      {
+        n: 4,
+        text: "מכינים כדורי שוקולד וטובלים בסוכריות.",
+        textN: "מְכִינִים כַּדּוּרֵי שׁוֹקוֹלָד וְטוֹבְלִים בְּסֻכָּרִיּוֹת.",
+        img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-step-5.webp",
+      },
     ],
   },
   {
@@ -922,10 +1182,26 @@ export const RECIPES = [
     cover: "/icon-bank/manual/recipe-marsh-hero.webp",
     duration: "15 דקות",
     ingredients: [
-      { text: "100 גרם שוקולד", textN: "100 גְּרַם שׁוֹקוֹלָד", img: "/icon-bank/manual/chocolate-lollipops-choco-cubes-flat.webp" },
-      { text: "4 ביסקוויטים", textN: "4 בִּיסְקְוִיטִים", img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-biscuits.webp" },
-      { text: "8 יחידות מרשמלו", textN: "8 יְחִידוֹת מַרְשְׁמֶלוֹ", img: "/icon-bank/manual/recipe-marsh-marshmallows.webp" },
-      { text: "2 כוסות מים רותחים", textN: "2 כּוֹסוֹת מַיִם רוֹתְחִים", img: "/icon-bank/manual/shoko-new/shoko-hot-water.webp" },
+      {
+        text: "100 גרם שוקולד",
+        textN: "100 גְּרַם שׁוֹקוֹלָד",
+        img: "/icon-bank/manual/chocolate-lollipops-choco-cubes-flat.webp",
+      },
+      {
+        text: "4 ביסקוויטים",
+        textN: "4 בִּיסְקְוִיטִים",
+        img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-cookies.webp",
+      },
+      {
+        text: "8 יחידות מרשמלו",
+        textN: "8 יְחִידוֹת מַרְשְׁמֶלוֹ",
+        img: "/icon-bank/manual/recipe-marsh-marshmallows.webp",
+      },
+      {
+        text: "2 כוסות מים רותחים",
+        textN: "2 כּוֹסוֹת מַיִם רוֹתְחִים",
+        img: "/icon-bank/manual/shoko-new/shoko-hot-water.webp",
+      },
     ],
     tools: [
       { text: "2 קערות", textN: "2 קְעָרוֹת", img: "/icon-bank/manual/recipe-marsh-two-bowls.webp" },
@@ -973,13 +1249,25 @@ export const RECIPES = [
     cover: "/icon-bank/manual/chocolate-lollipops-hero-flat.webp",
     duration: "20 דקות",
     ingredients: [
-      { text: "100 גרם שוקולד", textN: "100 גְּרַם שׁוֹקוֹלָד", img: "/icon-bank/manual/chocolate-lollipops-choco-cubes-flat.webp" },
-      { text: "סוכריות לקישוט", textN: "סֻכָּרִיּוֹת לְקִשּׁוּט", img: "/icon-bank/manual/recipe-choco-sprinkles-flat.webp" },
+      {
+        text: "100 גרם שוקולד",
+        textN: "100 גְּרַם שׁוֹקוֹלָד",
+        img: "/icon-bank/manual/chocolate-lollipops-choco-cubes-flat.webp",
+      },
+      {
+        text: "סוכריות לקישוט",
+        textN: "סֻכָּרִיּוֹת לְקִשּׁוּט",
+        img: "/icon-bank/manual/recipe-choco-sprinkles-flat.webp",
+      },
       { text: "6 מקלות ארטיק", textN: "6 מַקְלוֹת אַרְטִיק", img: "/icon-bank/manual/popsicle-sticks-flat.webp" },
     ],
     tools: [
       { text: "שקית אוכל", textN: "שַׂקִּית אֹכֶל", img: "/icon-bank/manual/recipe-choco-bag-flat.webp" },
-      { text: "קערה עם מים חמים", textN: "קְעָרָה עִם מַיִם חַמִּים", img: "/icon-bank/manual/chocolate-lollipops-bag-in-water-flat.webp" },
+      {
+        text: "קערה עם מים חמים",
+        textN: "קְעָרָה עִם מַיִם חַמִּים",
+        img: "/icon-bank/manual/chocolate-lollipops-bag-in-water-flat.webp",
+      },
       { text: "נייר אפייה", textN: "נְיַר אֲפִיָּה", img: "/icon-bank/manual/recipe-parchment-paper-flat.webp" },
       { text: "מספריים", textN: "מִסְפָּרַיִם", img: "/icon-bank/crafts-new/shared-independent/scissors.webp" },
       { text: "מקרר", textN: "מְקָרֵר", img: "/icon-bank/manual/chocolate-lollipops-fridge-tool.webp" },
@@ -1015,7 +1303,12 @@ export const RECIPES = [
         textN: "מְפַזְּרִים סֻכָּרִיּוֹת.",
         img: "/icon-bank/manual/chocolate-lollipops-sprinkles-flat.webp",
       },
-      { n: 6, text: "מכניסים למקרר.", textN: "מַכְנִיסִים לַמְּקָרֵר.", img: "/icon-bank/manual/chocolate-lollipops-fridge-flat.webp" },
+      {
+        n: 6,
+        text: "מכניסים למקרר.",
+        textN: "מַכְנִיסִים לַמְּקָרֵר.",
+        img: "/icon-bank/manual/chocolate-lollipops-fridge-flat.webp",
+      },
     ],
   },
   {
@@ -1030,16 +1323,44 @@ export const RECIPES = [
       { text: "כוס חלב", textN: "כּוֹס חָלָב", img: "/icon-bank/manual/smoothie-item-4.webp" },
     ],
     tools: [
-      { text: "סכין – מבוגר בלבד", textN: "סַכִּין – מְבֻגָּר בִּלְבַד", img: "/icon-bank/manual/smoothie-item-5.webp" },
+      {
+        text: "סכין – מבוגר בלבד",
+        textN: "סַכִּין – מְבֻגָּר בִּלְבַד",
+        img: "/icon-bank/manual/smoothie-item-5.webp",
+      },
       { text: "קרש חיתוך", textN: "קֶרֶשׁ חִתּוּךְ", img: "/icon-bank/manual/smoothie-item-6.webp" },
-      { text: "בלנדר – בהשגחת מבוגר", textN: "בְּלֶנְדֶּר – בְּהַשְׁגָּחַת מְבֻגָּר", img: "/icon-bank/manual/smoothie-item-7.webp" },
+      {
+        text: "בלנדר – בהשגחת מבוגר",
+        textN: "בְּלֶנְדֶּר – בְּהַשְׁגָּחַת מְבֻגָּר",
+        img: "/icon-bank/manual/smoothie-item-7.webp",
+      },
       { text: "כוס", textN: "כּוֹס", img: "/icon-bank/manual/smoothie-item-8.webp" },
     ],
     steps: [
-      { n: 1, text: "חותכים בזהירות את הבננה והתותים לחתיכות.", textN: "חוֹתְכִים בִּזְהִירוּת אֶת הַבָּנָנָה וְהַתּוּתִים לַחֲתִיכוֹת.", img: "/icon-bank/manual/smoothie-step-1.webp" },
-      { n: 2, text: "מכניסים לבלנדר את הפירות וכוס של חלב.", textN: "מַכְנִיסִים לַבְּלֶנְדֶּר אֶת הַפֵּרוֹת וְכוֹס שֶׁל חָלָב.", img: "/icon-bank/manual/smoothie-step-2.webp" },
-      { n: 3, text: "סוגרים ומפעילים את הבלנדר עד שהשייק חלק.", textN: "סוֹגְרִים וּמַפְעִילִים אֶת הַבְּלֶנְדֶּר עַד שֶׁהַשֵּׁייק חָלָק.", img: "/icon-bank/manual/smoothie-step-3.webp" },
-      { n: 4, text: "מוזגים לכוס ושותים.", textN: "מוֹזְגִים לַכּוֹס וְשׁוֹתִים.", img: "/icon-bank/manual/smoothie-step-4.webp" },
+      {
+        n: 1,
+        text: "חותכים בזהירות את הבננה והתותים לחתיכות.",
+        textN: "חוֹתְכִים בִּזְהִירוּת אֶת הַבָּנָנָה וְהַתּוּתִים לַחֲתִיכוֹת.",
+        img: "/icon-bank/manual/smoothie-step-1.webp",
+      },
+      {
+        n: 2,
+        text: "מכניסים לבלנדר את הפירות וכוס של חלב.",
+        textN: "מַכְנִיסִים לַבְּלֶנְדֶּר אֶת הַפֵּרוֹת וְכוֹס שֶׁל חָלָב.",
+        img: "/icon-bank/manual/smoothie-step-2.webp",
+      },
+      {
+        n: 3,
+        text: "סוגרים ומפעילים את הבלנדר עד שהשייק חלק.",
+        textN: "סוֹגְרִים וּמַפְעִילִים אֶת הַבְּלֶנְדֶּר עַד שֶׁהַשֵּׁייק חָלָק.",
+        img: "/icon-bank/manual/smoothie-step-3.webp",
+      },
+      {
+        n: 4,
+        text: "מוזגים לכוס ושותים.",
+        textN: "מוֹזְגִים לַכּוֹס וְשׁוֹתִים.",
+        img: "/icon-bank/manual/smoothie-step-4.webp",
+      },
     ],
   },
   {
@@ -1050,22 +1371,58 @@ export const RECIPES = [
     duration: "30 דקות",
     ingredients: [
       { text: "טורטייה אחת", textN: "טוֹרְטִיָּה אַחַת", img: "/icon-bank/manual/swirl-item-1.webp" },
-      { text: "2 כפות ממרח שוקולד", textN: "2 כַּפּוֹת מִמְרָח שׁוֹקוֹלָד", img: "/icon-bank/manual/swirl-item-2.webp" },
+      {
+        text: "2 כפות ממרח שוקולד",
+        textN: "2 כַּפּוֹת מִמְרָח שׁוֹקוֹלָד",
+        img: "/icon-bank/manual/swirl-item-2.webp",
+      },
       { text: "כפית שמן", textN: "כַּפִּית שֶׁמֶן", img: "/icon-bank/manual/swirl-item-4.webp" },
-      { text: "כפית אבקת סוכר – לא חובה", textN: "כַּפִּית אַבְקַת סֻכָּר – לֹא חוֹבָה", img: "/icon-bank/manual/swirl-item-3.webp" },
+      {
+        text: "כפית אבקת סוכר – לא חובה",
+        textN: "כַּפִּית אַבְקַת סֻכָּר – לֹא חוֹבָה",
+        img: "/icon-bank/manual/swirl-item-3.webp",
+      },
     ],
     tools: [
       { text: "צלחת", textN: "צַלַּחַת", img: "/icon-bank/manual/swirl-item-5.webp" },
       { text: "סכין", textN: "סַכִּין", img: "/icon-bank/manual/swirl-item-6.webp" },
       { text: "מברשת", textN: "מִבְרֶשֶׁת", img: "/icon-bank/manual/swirl-item-7.webp" },
-      { text: "תבנית עם נייר אפייה", textN: "תַּבְנִית עִם נְיַר אֲפִיָּה", img: "/icon-bank/manual/swirl-item-8.webp" },
-      { text: "תנור – מבוגר בלבד", textN: "תַּנּוּר – מְבֻגָּר בִּלְבַד", img: "/icon-bank/manual/pizza-new/pizza-oven.webp" },
+      {
+        text: "תבנית עם נייר אפייה",
+        textN: "תַּבְנִית עִם נְיַר אֲפִיָּה",
+        img: "/icon-bank/manual/swirl-item-8.webp",
+      },
+      {
+        text: "תנור – מבוגר בלבד",
+        textN: "תַּנּוּר – מְבֻגָּר בִּלְבַד",
+        img: "/icon-bank/manual/pizza-new/pizza-oven.webp",
+      },
     ],
     steps: [
-      { n: 1, text: "מורחים שוקולד על הטורטייה ומגלגלים לגליל הדוק.", textN: "מוֹרְחִים שׁוֹקוֹלָד עַל הַטּוֹרְטִיָּה וּמְגַלְגְּלִים לְגָלִיל הָדוּק.", img: "/icon-bank/manual/swirl-new/swirl-step-1.webp" },
-      { n: 2, text: "חותכים את הגליל לפרוסות עבות.", textN: "חוֹתְכִים אֶת הַגָּלִיל לִפְרוּסוֹת עָבוֹת.", img: "/icon-bank/manual/swirl-new/swirl-step-2.webp" },
-      { n: 3, text: "מסדרים בתבנית ומברישים במעט שמן.", textN: "מְסַדְּרִים בַּתַּבְנִית וּמַבְרִישִׁים בִּמְעַט שֶׁמֶן.", img: "/icon-bank/manual/swirl-new/swirl-step-3.webp" },
-      { n: 4, text: "מבוגר אופה בתנור שחומם ל־190 מעלות במשך 15–18 דקות.", textN: "מְבֻגָּר אוֹפֶה בַּתַּנּוּר בְּ־190 מַעֲלוֹת בְּמֶשֶׁךְ 15–18 דַּקּוֹת.", img: "/icon-bank/manual/swirl-new/swirl-step-4.webp" },
+      {
+        n: 1,
+        text: "מורחים שוקולד על הטורטייה ומגלגלים לגליל הדוק.",
+        textN: "מוֹרְחִים שׁוֹקוֹלָד עַל הַטּוֹרְטִיָּה וּמְגַלְגְּלִים לְגָלִיל הָדוּק.",
+        img: "/icon-bank/manual/swirl-new/swirl-step-1.webp",
+      },
+      {
+        n: 2,
+        text: "חותכים את הגליל לפרוסות עבות.",
+        textN: "חוֹתְכִים אֶת הַגָּלִיל לִפְרוּסוֹת עָבוֹת.",
+        img: "/icon-bank/manual/swirl-new/swirl-step-2.webp",
+      },
+      {
+        n: 3,
+        text: "מסדרים בתבנית ומברישים במעט שמן.",
+        textN: "מְסַדְּרִים בַּתַּבְנִית וּמַבְרִישִׁים בִּמְעַט שֶׁמֶן.",
+        img: "/icon-bank/manual/swirl-new/swirl-step-3.webp",
+      },
+      {
+        n: 4,
+        text: "מבוגר אופה בתנור שחומם ל־190 מעלות במשך 15–18 דקות.",
+        textN: "מְבֻגָּר אוֹפֶה בַּתַּנּוּר בְּ־190 מַעֲלוֹת בְּמֶשֶׁךְ 15–18 דַּקּוֹת.",
+        img: "/icon-bank/manual/swirl-new/swirl-step-4.webp",
+      },
     ],
   },
   {
@@ -1084,14 +1441,38 @@ export const RECIPES = [
       { text: "סכין – מבוגר בלבד", textN: "סַכִּין – מְבֻגָּר בִּלְבַד", img: "/icon-bank/manual/chips-item-5.webp" },
       { text: "מסננת", textN: "מְסַנֶּנֶת", img: "/icon-bank/manual/chips-item-6.webp" },
       { text: "2 מגבות", textN: "2 מַגָּבוֹת", img: "/icon-bank/manual/chips-item-7.webp" },
-      { text: "תבנית עם נייר אפייה", textN: "תַּבְנִית עִם נְיַר אֲפִיָּה", img: "/icon-bank/manual/chips-item-8.webp" },
+      {
+        text: "תבנית עם נייר אפייה",
+        textN: "תַּבְנִית עִם נְיַר אֲפִיָּה",
+        img: "/icon-bank/manual/chips-item-8.webp",
+      },
       { text: "תנור – מבוגר בלבד", textN: "תַּנּוּר – מְבֻגָּר בִּלְבַד", img: "/icon-bank/manual/chips-item-9.webp" },
     ],
     steps: [
-      { n: 1, text: "מבוגר פורס את תפוחי האדמה לפרוסות דקות מאוד.", textN: "מְבֻגָּר פּוֹרֵס אֶת תַּפּוּחֵי הָאֲדָמָה לִפְרוּסוֹת דַּקּוֹת מְאֹד.", img: "/icon-bank/manual/chips-step-1.webp" },
-      { n: 2, text: "מסדרים בשכבה אחת על נייר אפייה ומשמנים מעט משני הצדדים.", textN: "מְסַדְּרִים בְּשִׁכְבָה אַחַת וּמְשַׁמְּנִים מְעַט.", img: "/icon-bank/manual/chips-step-4.webp" },
-      { n: 3, text: "מבוגר אופה בתנור: 15–18 דקות ב־200 מעלות ועוד כ־5 דקות ב־150 מעלות.", textN: "מְבֻגָּר אוֹפֶה בַּתַּנּוּר.", img: "/icon-bank/manual/chips-step-5.webp" },
-      { n: 4, text: "מצננים על רשת ומפזרים מעט מלח גס.", textN: "מְצַנְּנִים עַל רֶשֶׁת וּמְפַזְּרִים מְעַט מֶלַח גַּס.", img: "/icon-bank/manual/chips-step-6.webp" },
+      {
+        n: 1,
+        text: "מבוגר פורס את תפוחי האדמה לפרוסות דקות מאוד.",
+        textN: "מְבֻגָּר פּוֹרֵס אֶת תַּפּוּחֵי הָאֲדָמָה לִפְרוּסוֹת דַּקּוֹת מְאֹד.",
+        img: "/icon-bank/manual/chips-step-1.webp",
+      },
+      {
+        n: 2,
+        text: "מסדרים בשכבה אחת על נייר אפייה ומשמנים מעט משני הצדדים.",
+        textN: "מְסַדְּרִים בְּשִׁכְבָה אַחַת וּמְשַׁמְּנִים מְעַט.",
+        img: "/icon-bank/manual/chips-step-4.webp",
+      },
+      {
+        n: 3,
+        text: "מבוגר אופה בתנור: 15–18 דקות ב־200 מעלות ועוד כ־5 דקות ב־150 מעלות.",
+        textN: "מְבֻגָּר אוֹפֶה בַּתַּנּוּר.",
+        img: "/icon-bank/manual/chips-step-5.webp",
+      },
+      {
+        n: 4,
+        text: "מצננים על רשת ומפזרים מעט מלח גס.",
+        textN: "מְצַנְּנִים עַל רֶשֶׁת וּמְפַזְּרִים מְעַט מֶלַח גַּס.",
+        img: "/icon-bank/manual/chips-step-6.webp",
+      },
     ],
   },
   {
@@ -1101,25 +1482,73 @@ export const RECIPES = [
     cover: "/icon-bank/manual/olive-muffins-new/olive-muffins-cover.webp",
     duration: "40 דקות",
     ingredients: [
-      { text: "2 כוסות קמח תופח", textN: "2 כּוֹסוֹת קֶמַח תּוֹפֵחַ", img: "/icon-bank/manual/mug-cake-new/mug-cake-flour.webp" },
+      {
+        text: "2 כוסות קמח תופח",
+        textN: "2 כּוֹסוֹת קֶמַח תּוֹפֵחַ",
+        img: "/icon-bank/manual/mug-cake-new/mug-cake-flour.webp",
+      },
       { text: "כפית מלח", textN: "כַּפִּית מֶלַח", img: "/icon-bank/manual/olive-muffins-new/olive-muffins-salt.webp" },
       { text: "2 ביצים", textN: "2 בֵּיצִים", img: "/icon-bank/manual/olive-muffins-new/olive-muffins-eggs.webp" },
       { text: "חצי כוס שמן", textN: "חֲצִי כּוֹס שֶׁמֶן", img: "/icon-bank/manual/mug-cake-new/mug-cake-oil.webp" },
-      { text: "250 גרם יוגורט או גבינה לבנה", textN: "250 גְרָם יוֹגוּרְט אוֹ גְּבִינָה לְבָנָה", img: "/icon-bank/manual/olive-muffins-new/olive-muffins-yogurt.webp" },
-      { text: "חצי כוס גבינה צהובה מגורדת", textN: "חֲצִי כּוֹס גְּבִינָה צְהֻבָּה מְגֹרֶדֶת", img: "/icon-bank/manual/pizza-new/pizza-cheese.webp" },
-      { text: "כוס זיתים ירוקים פרוסים", textN: "כּוֹס זֵיתִים יְרֻקִּים פְּרוּסִים", img: "/icon-bank/manual/olive-muffins-new/olive-muffins-olives.webp" },
+      {
+        text: "250 גרם יוגורט או גבינה לבנה",
+        textN: "250 גְרָם יוֹגוּרְט אוֹ גְּבִינָה לְבָנָה",
+        img: "/icon-bank/manual/olive-muffins-new/olive-muffins-yogurt.webp",
+      },
+      {
+        text: "חצי כוס גבינה צהובה מגורדת",
+        textN: "חֲצִי כּוֹס גְּבִינָה צְהֻבָּה מְגֹרֶדֶת",
+        img: "/icon-bank/manual/pizza-new/pizza-cheese.webp",
+      },
+      {
+        text: "כוס זיתים ירוקים פרוסים",
+        textN: "כּוֹס זֵיתִים יְרֻקִּים פְּרוּסִים",
+        img: "/icon-bank/manual/olive-muffins-new/olive-muffins-olives.webp",
+      },
     ],
     tools: [
-      { text: "קערה ומטרפה", textN: "קְעָרָה וּמַטְרֵפָה", img: "/icon-bank/manual/olive-muffins-new/olive-muffins-bowl-whisk.webp" },
+      {
+        text: "קערה ומטרפה",
+        textN: "קְעָרָה וּמַטְרֵפָה",
+        img: "/icon-bank/manual/olive-muffins-new/olive-muffins-bowl-whisk.webp",
+      },
       { text: "כף", textN: "כַּף", img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-spoon.webp" },
-      { text: "תבנית מאפינס ומנג׳טים", textN: "תַּבְנִית מָאפִינְס וּמַנְגֶ'טִים", img: "/icon-bank/manual/olive-muffins-new/olive-muffins-tray.webp" },
-      { text: "תנור – מבוגר בלבד", textN: "תַּנּוּר – מְבֻגָּר בִּלְבַד", img: "/icon-bank/manual/pizza-new/pizza-oven.webp" },
+      {
+        text: "תבנית מאפינס ומנג׳טים",
+        textN: "תַּבְנִית מָאפִינְס וּמַנְגֶ'טִים",
+        img: "/icon-bank/manual/olive-muffins-new/olive-muffins-tray.webp",
+      },
+      {
+        text: "תנור – מבוגר בלבד",
+        textN: "תַּנּוּר – מְבֻגָּר בִּלְבַד",
+        img: "/icon-bank/manual/pizza-new/pizza-oven.webp",
+      },
     ],
     steps: [
-      { n: 1, text: "מבוגר מחמם תנור מראש ל־180 מעלות.", textN: "מְבֻגָּר מְחַמֵּם תַּנּוּר מֵרֹאשׁ לְ־180 מַעֲלוֹת.", img: "/icon-bank/manual/olive-muffins-new/olive-muffins-step-1.webp" },
-      { n: 2, text: "מכניסים לקערה את כל החומרים ומערבבים לתערובת אחידה.", textN: "מַכְנִיסִים לַקְּעָרָה אֶת כָּל הַחֳמָרִים וּמְעַרְבְּבִים.", img: "/icon-bank/manual/olive-muffins-new/olive-muffins-step-2.webp" },
-      { n: 3, text: "מחלקים את התערובת למנג׳טים.", textN: "מְחַלְּקִים אֶת הַתַּעֲרֹבֶת לַמַּנְגֶ'טִים.", img: "/icon-bank/manual/olive-muffins-new/olive-muffins-step-3.webp" },
-      { n: 4, text: "מבוגר אופה כ־30 דקות עד להזהבה קלה ומוציא בזהירות.", textN: "מְבֻגָּר אוֹפֶה כְּ־30 דַּקּוֹת עַד לְהַזְהָבָה קַלָּה.", img: "/icon-bank/manual/olive-muffins-new/olive-muffins-step-4.webp" },
+      {
+        n: 1,
+        text: "מבוגר מחמם תנור מראש ל־180 מעלות.",
+        textN: "מְבֻגָּר מְחַמֵּם תַּנּוּר מֵרֹאשׁ לְ־180 מַעֲלוֹת.",
+        img: "/icon-bank/manual/olive-muffins-new/olive-muffins-step-1.webp",
+      },
+      {
+        n: 2,
+        text: "מכניסים לקערה את כל החומרים ומערבבים לתערובת אחידה.",
+        textN: "מַכְנִיסִים לַקְּעָרָה אֶת כָּל הַחֳמָרִים וּמְעַרְבְּבִים.",
+        img: "/icon-bank/manual/olive-muffins-new/olive-muffins-step-2.webp",
+      },
+      {
+        n: 3,
+        text: "מחלקים את התערובת למנג׳טים.",
+        textN: "מְחַלְּקִים אֶת הַתַּעֲרֹבֶת לַמַּנְגֶ'טִים.",
+        img: "/icon-bank/manual/olive-muffins-new/olive-muffins-step-3.webp",
+      },
+      {
+        n: 4,
+        text: "מבוגר אופה כ־30 דקות עד להזהבה קלה ומוציא בזהירות.",
+        textN: "מְבֻגָּר אוֹפֶה כְּ־30 דַּקּוֹת עַד לְהַזְהָבָה קַלָּה.",
+        img: "/icon-bank/manual/olive-muffins-new/olive-muffins-step-4.webp",
+      },
     ],
   },
   {
@@ -1129,18 +1558,46 @@ export const RECIPES = [
     cover: "/icon-bank/manual/mug-cake-new/mug-cake-cover.webp",
     duration: "5 דקות",
     ingredients: [
-      { text: "4 כפות קמח לבן", textN: "4 כַּפּוֹת קֶמַח לָבָן", img: "/icon-bank/manual/mug-cake-new/mug-cake-flour.webp" },
+      {
+        text: "4 כפות קמח לבן",
+        textN: "4 כַּפּוֹת קֶמַח לָבָן",
+        img: "/icon-bank/manual/mug-cake-new/mug-cake-flour.webp",
+      },
       { text: "2 כפות סוכר", textN: "2 כַּפּוֹת סֻכָּר", img: "/icon-bank/manual/mug-cake-new/mug-cake-sugar.webp" },
-      { text: "כף אבקת קקאו", textN: "כַּף אַבְקַת קָקָאוֹ", img: "/icon-bank/manual/mug-cake-new/mug-cake-cocoa.webp" },
-      { text: "רבע כפית אבקת אפייה", textN: "רֶבַע כַּפִּית אַבְקַת אֲפִיָּה", img: "/icon-bank/manual/mug-cake-new/mug-cake-baking-powder.webp" },
-      { text: "3 כפות חלב (או מים)", textN: "3 כַּפּוֹת חָלָב (אוֹ מַיִם)", img: "/icon-bank/manual/mug-cake-new/mug-cake-milk.webp" },
+      {
+        text: "כף אבקת קקאו",
+        textN: "כַּף אַבְקַת קָקָאוֹ",
+        img: "/icon-bank/manual/mug-cake-new/mug-cake-cocoa.webp",
+      },
+      {
+        text: "רבע כפית אבקת אפייה",
+        textN: "רֶבַע כַּפִּית אַבְקַת אֲפִיָּה",
+        img: "/icon-bank/manual/mug-cake-new/mug-cake-baking-powder.webp",
+      },
+      {
+        text: "3 כפות חלב (או מים)",
+        textN: "3 כַּפּוֹת חָלָב (אוֹ מַיִם)",
+        img: "/icon-bank/manual/mug-cake-new/mug-cake-milk.webp",
+      },
       { text: "2 כפות שמן", textN: "2 כַּפּוֹת שֶׁמֶן", img: "/icon-bank/manual/mug-cake-new/mug-cake-oil.webp" },
-      { text: "רבע כפית תמצית וניל (לא חובה)", textN: "רֶבַע כַּפִּית תַּמְצִית וָנִיל (לֹא חוֹבָה)", img: "/icon-bank/manual/mug-cake-new/mug-cake-vanilla.webp" },
+      {
+        text: "רבע כפית תמצית וניל (לא חובה)",
+        textN: "רֶבַע כַּפִּית תַּמְצִית וָנִיל (לֹא חוֹבָה)",
+        img: "/icon-bank/manual/mug-cake-new/mug-cake-vanilla.webp",
+      },
     ],
     tools: [
-      { text: "ספל גדול שמתאים למיקרוגל", textN: "סֵפֶל גָּדוֹל שֶׁמַּתְאִים לְמִיקְרוֹגַל", img: "/icon-bank/manual/mug-cake-new/mug-cake-mug.webp" },
+      {
+        text: "ספל גדול שמתאים למיקרוגל",
+        textN: "סֵפֶל גָּדוֹל שֶׁמַּתְאִים לְמִיקְרוֹגַל",
+        img: "/icon-bank/manual/mug-cake-new/mug-cake-mug.webp",
+      },
       { text: "כף", textN: "כַּף", img: "/icon-bank/manual/mug-cake-new/mug-cake-spoon.webp" },
-      { text: "מיקרוגל", textN: "מִיקְרוֹגַל", img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-microwave.webp" },
+      {
+        text: "מיקרוגל",
+        textN: "מִיקְרוֹגַל",
+        img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-microwave.webp",
+      },
     ],
     steps: [
       {
@@ -1210,26 +1667,10 @@ export const RECIPES = [
         textN: "תַּבְנִיּוֹת יִעוּדִיּוֹת לְאַרְטִיק",
         img: "/icon-bank/manual/fruit-popsicles/molds.webp",
       },
-      {
-        text: "מקלות עץ",
-        textN: "מַקְלוֹת עֵץ",
-        img: "/icon-bank/manual/popsicle-sticks-flat.webp",
-      },
-      {
-        text: "כוס מדידה",
-        textN: "כּוֹס מְדִידָה",
-        img: "/icon-bank/manual/smoothie-item-8.webp",
-      },
-      {
-        text: "כף",
-        textN: "כַּף",
-        img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-spoon.webp",
-      },
-      {
-        text: "מקפיא",
-        textN: "מַקְפִּיא",
-        img: "/icon-bank/manual/chocolate-lollipops-fridge-tool.webp",
-      },
+      { text: "מקלות עץ", textN: "מַקְלוֹת עֵץ", img: "/icon-bank/manual/popsicle-sticks-flat.webp" },
+      { text: "כוס מדידה", textN: "כּוֹס מְדִידָה", img: "/icon-bank/manual/smoothie-item-8.webp" },
+      { text: "כף", textN: "כַּף", img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-spoon.webp" },
+      { text: "מקפיא", textN: "מַקְפִּיא", img: "/icon-bank/manual/chocolate-lollipops-fridge-tool.webp" },
     ],
     steps: [
       {
@@ -1271,8 +1712,8 @@ export const RECIPES = [
         img: "/icon-bank/manual/homemade-ice-cream/condensed-milk.webp",
       },
       {
-        text: "עד כוס תוספות לבחירה: תמצית וניל, שברי עוגיות, שוקולד צ׳יפס או מחית פיסטוק",
-        textN: "עַד כּוֹס תּוֹסָפוֹת לִבְחִירָה: תַּמְצִית וָנִיל, שִׁבְרֵי עוּגִיּוֹת, שׁוֹקוֹלָד צ׳יפְּס אוֹ מְחִית פִיסְטוּק",
+        text: "תוספות לבחירה: תמצית וניל, שברי עוגיות, שוקולד צ׳יפס או מחית פיסטוק",
+        textN: "תּוֹסָפוֹת לִבְחִירָה: תַּמְצִית וָנִיל, שִׁבְרֵי עוּגִיּוֹת, שׁוֹקוֹלָד צ׳יפְּס אוֹ מְחִית פִיסְטוּק",
         img: "/icon-bank/manual/chocolate-chunks.webp",
       },
     ],
@@ -1292,11 +1733,7 @@ export const RECIPES = [
         textN: "מְכַל פְּלַסְטִיק עִם מִכְסֶה",
         img: "/icon-bank/manual/homemade-ice-cream/container.webp",
       },
-      {
-        text: "מקפיא",
-        textN: "מַקְפִּיא",
-        img: "/icon-bank/manual/chocolate-lollipops-fridge-tool.webp",
-      },
+      { text: "מקפיא", textN: "מַקְפִּיא", img: "/icon-bank/manual/chocolate-lollipops-fridge-tool.webp" },
     ],
     steps: [
       {
@@ -1613,7 +2050,9 @@ function RecipePrintSheet({ recipe, pick, language }) {
 
       {recipe.ingredients?.length ? (
         <div>
-          <div className="mb-1 text-xl font-bold">{label("מצרכים:", "Ingredients:")}</div>
+          <div className="mb-1 text-xl font-bold">
+            {label("מצרכים:", "Ingredients:")} <span className="text-base font-normal">({recipe.amountLabel})</span>
+          </div>
           <table className="w-full table-fixed border-collapse border border-black text-base">
             <tbody>
               {recipe.ingredients.map((it, i) => (
@@ -1660,6 +2099,8 @@ function RecipePrintSheet({ recipe, pick, language }) {
 function RecipeDetail({ recipe, mode, onBack }) {
   const { language, t } = useTranslator();
   recipe = translatedRecipe(recipe, language);
+  const [batch, setBatch] = useState("full");
+  const scaled = scaledRecipe(recipe, batch, language);
   const title = recipe.title;
   const { checked, toggle, reset, done, total } = useRecipeChecklist(recipe.id, recipe.steps.length);
   const ingChecklist = useItemsChecklist(`recipe-ing:${recipe.id}`, recipe.ingredients.length);
@@ -1734,6 +2175,19 @@ function RecipeDetail({ recipe, mode, onBack }) {
         <span className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-base text-muted-foreground">
           <Clock className="h-4 w-4" /> {recipe.duration}
         </span>
+        <label className="inline-flex items-center gap-2 rounded-full bg-rose/30 px-3 py-1.5 text-base font-bold">
+          <span>{t("כמות", "Batch size")}</span>
+          <select
+            value={batch}
+            onChange={(e) => setBatch(e.target.value)}
+            className="rounded-full border border-border bg-background px-2 py-1 text-sm font-semibold outline-none focus:ring-2 focus:ring-sage"
+            aria-label={t("בחירת כמות למתכון", "Choose recipe batch size")}
+          >
+            {Object.entries(BATCH_SIZES).map(([value, size]) => (
+              <option key={value} value={value}>{language === "en" ? size.en : size.he}</option>
+            ))}
+          </select>
+        </label>
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2 print:hidden">
@@ -1742,7 +2196,7 @@ function RecipeDetail({ recipe, mode, onBack }) {
             {t("מצרכים", "Ingredients")} <span className="text-sm font-normal text-muted-foreground">· {ingChecklist.done}/{ingChecklist.total}</span>
           </h2>
           <div className="space-y-1.5">
-            {recipe.ingredients.map((it, i) => (
+            {scaled.ingredients.map((it, i) => (
               <IconChip
                 key={it.text}
                 item={it}
@@ -1860,7 +2314,7 @@ function RecipeDetail({ recipe, mode, onBack }) {
         </ol>
       </section>
 
-      <RecipePrintSheet recipe={recipe} pick={pick} language={language} />
+      <RecipePrintSheet recipe={scaled} pick={pick} language={language} />
     </AppShell>
   );
 }
