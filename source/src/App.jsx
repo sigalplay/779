@@ -96,6 +96,17 @@ function DeferredServices() {
   return <Suspense fallback={null}><DeferredReportErrorButton /><DeferredToaster position="top-center" richColors dir="rtl" duration={1800} /></Suspense>;
 }
 
+// "/therapist", the old "/therapist/board" and a bare "/therapist/build" all open the treatment board.
+function TherapistBoardEntry() {
+  return <Navigate to="/therapist/build?view=session" replace />;
+}
+function TherapistBuildEntry() {
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  if (!params.has("tab") && !params.has("view")) return <TherapistBoardEntry />;
+  return <TherapistBuild />;
+}
+
 // כתובות /en ו-/en/... מעבירות את האתר לאנגלית ומציגות את אותו עמוד בלי הקידומת.
 function EnglishEntry() {
   const location = useLocation();
@@ -120,7 +131,9 @@ export default function App() {
         <Route path="/parent/play" element={<ParentPlay />} />
         <Route path="/parent/recipes" element={<TherapistRecipes mode="parent" />} />
         <Route path="/parent/experiments" element={<TherapistExperiments mode="parent" />} />
-        <Route path="/therapist/build" element={<TherapistBuild />} />
+        <Route path="/therapist" element={<TherapistBoardEntry />} />
+        <Route path="/therapist/board" element={<TherapistBoardEntry />} />
+        <Route path="/therapist/build" element={<TherapistBuildEntry />} />
         <Route path="/therapist/recipes" element={<TherapistRecipes />} />
         <Route path="/therapist/experiments" element={<TherapistExperiments />} />
         <Route path="/therapist/cipher" element={<CipherGenerator />} />
