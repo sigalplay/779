@@ -25,6 +25,8 @@ Status: `done` = behavior is in source, `todo` = not yet, `drop` = intentionally
 | Home page (cards, quick links, seasonal switcher) | done | |
 | Activity page (illustration toggle, print sheet) | done | |
 | Parent activity finder (age filter) | done | |
+| Age label "6 months–1 year" | done | Live shows it only in the parent area; source uses it everywhere |
+| Page titles on /about, /parent/recipes, /parent/experiments | review | Live shows the generic site title; source gives each page its own title. To be decided in the SEO stage |
 | Site shell: header, menu, footer, bottom bar, accessibility | done | |
 | Cookie consent + Google Analytics after consent | done | |
 | Legal pages (privacy, terms, cookies) | done | |
@@ -39,7 +41,7 @@ Status: `done` = behavior is in source, `todo` = not yet, `drop` = intentionally
 | Patch | Status | Notes |
 |---|---|---|
 | mobile-tools-v4.js / .css | todo | Menu layout, home cleanup, therapist shortcuts, print delay |
-| v92-board-and-search.js / .css | todo | Activity name search, board dates, language sync |
+| v92-board-and-search.js / .css | partial | Name search on /parent/all and /therapist/all and compact catalog cards: done. Board dates and search in the builder: stage 4 |
 | tip-close-fix.js, print-calendar-and-tip-fix.css | todo | |
 | mobile-guidance-cards-v1.css | todo | |
 | calendar-qa-v27.js / .css, mobile-calendar-compact-v1.css | todo | |

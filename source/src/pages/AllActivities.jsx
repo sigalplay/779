@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Search, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { ActivityCard } from "@/components/ActivityCard";
 import { Input } from "@/components/ui/input";
+import { ActivityNameSearch, matchesName } from "@/components/ActivityNameSearch";
 import { cn } from "@/lib/utils";
 import { AGES, DURATIONS, THERAPIST_GOALS, ACTIVITY_GROUPS, expandGoals } from "@/lib/constants";
 import { allActivities, isSearchActive } from "@/lib/storage";
@@ -65,6 +66,12 @@ export default function AllActivities({ mode = "therapist" }) {
     }
     return rows;
   }, [all, group, age, category, duration, q]);
+  const [nameQuery, setNameQuery] = useState("");
+  const shownRows = useMemo(() => filtered.filter((a) => matchesName(activityTitle(a, language), nameQuery)), [filtered, nameQuery, language]);
+  useEffect(() => {
+    document.body.classList.add("activities-two-column-page");
+    return () => document.body.classList.remove("activities-two-column-page");
+  }, []);
   const returnPath = `/${mode}/all${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
   const returnLabel = group ? t(`חזרה ל${group.label}`, `Back to ${translatedTerm(group.label, "en")}`) : category ? t(`חזרה לפעילויות ${category}`, `Back to ${translatedTerm(category, "en")} activities`) : t("חזרה לכל הפעילויות", "Back to all activities");
 
@@ -139,9 +146,11 @@ export default function AllActivities({ mode = "therapist" }) {
         </div>
       )}
 
+      {filtered.length >= 2 && <ActivityNameSearch value={nameQuery} onChange={setNameQuery} shown={shownRows.length} />}
+
       {filtered.length ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((a, i) => (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">
+          {shownRows.map((a, i) => (
             <ActivityCard key={a.id} activity={a} index={i} mode={mode} returnPath={returnPath} returnLabel={returnLabel} />
           ))}
         </div>

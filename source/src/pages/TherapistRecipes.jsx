@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useBodyClass } from "@/lib/use-body-class";
 import { useSearchParams } from "react-router-dom";
 import { ChefHat, Clock, ArrowLeft, RotateCcw, ListPlus, Check, Printer, X } from "lucide-react";
 import { toast } from "sonner";
@@ -1891,6 +1892,7 @@ function AddToPlanButton({ kind, id, mode, className = "" }) {
 
 export default function TherapistRecipes({ mode = "therapist" }) {
   const { language, t } = useTranslator();
+  useBodyClass("compact-catalog-mobile-page");
   const cmsRecipes = useCmsCollection("recipe", RECIPES);
   const [searchParams, setSearchParams] = useSearchParams();
   const activeId = searchParams.get("r");
@@ -1908,12 +1910,12 @@ export default function TherapistRecipes({ mode = "therapist" }) {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 compact-catalog-grid-v95">
         {cmsRecipes.map((original) => {
           const r = translatedRecipe(original, language);
           const title = r.title;
           return (
-          <div key={r.id} className="group relative overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+          <div key={r.id} className="group relative overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md compact-catalog-card-v95">
             <AddToPlanButton kind="recipe" id={r.id} mode={mode} />
             <button
               onClick={() => setSearchParams({ r: r.id })}
