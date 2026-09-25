@@ -8,18 +8,26 @@
 .toolbox-toggle.open{background:#40362f;color:#fff}
 .toolbox-toggle.open svg{width:28px;height:28px}
 
-.toolbox-panel{position:fixed;z-index:10030;max-width:calc(100vw - 24px);padding:14px 16px 12px;border:1px solid #eee4da;border-radius:28px;background:rgba(255,255,255,.97);box-shadow:0 14px 40px rgba(64,54,47,.2);font-family:Rubik,Arial,sans-serif;animation:toolbox-pop .16s ease-out}
-@keyframes toolbox-pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
-.toolbox-row{display:flex;flex-wrap:wrap;justify-content:center;gap:12px 10px}
-.toolbox-tool{display:flex;width:74px;flex-direction:column;align-items:center;gap:6px;padding:0;border:0;background:none;color:#40362f;font:700 12px/1.2 Rubik,Arial,sans-serif;text-align:center;cursor:pointer}
-.toolbox-tool-circle{display:grid;width:62px;height:62px;place-items:center;overflow:hidden;border:3px solid #fff;border-radius:50%;box-shadow:0 3px 10px rgba(64,54,47,.14);transition:transform .15s ease,box-shadow .15s ease}
-.toolbox-tool:hover .toolbox-tool-circle,.toolbox-tool:focus-visible .toolbox-tool-circle{transform:translateY(-3px) scale(1.05);box-shadow:0 7px 16px rgba(64,54,47,.2)}
+/* The tools float in one row beside the button, with no window around them. */
+.toolbox-strip{position:fixed;z-index:10030;display:flex;gap:12px;padding:10px 8px 8px;overflow-x:auto;overflow-y:hidden;overscroll-behavior:contain;scrollbar-width:none;touch-action:pan-x;font-family:Rubik,Arial,sans-serif}
+.toolbox-strip::-webkit-scrollbar{display:none}
+.toolbox-strip.opens-right{direction:ltr}
+.toolbox-strip.opens-left{direction:rtl}
+.toolbox-strip.overflowing.opens-right{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 40px),transparent)}
+.toolbox-strip.overflowing.opens-left{-webkit-mask-image:linear-gradient(to left,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(to left,#000 calc(100% - 40px),transparent)}
+.toolbox-tool{display:flex;flex:0 0 auto;width:68px;flex-direction:column;align-items:center;gap:5px;padding:0;border:0;background:none;color:#40362f;font:800 12px/1.2 Rubik,Arial,sans-serif;text-align:center;cursor:pointer;animation:toolbox-pop .32s cubic-bezier(.34,1.56,.64,1) both;animation-delay:calc(var(--i,0) * 45ms)}
+@keyframes toolbox-pop{from{opacity:0;transform:scale(.3) translateX(var(--from,-40px))}to{opacity:1;transform:none}}
+.opens-left .toolbox-tool{--from:40px}
+.toolbox-tool-circle{display:grid;width:60px;height:60px;place-items:center;overflow:hidden;border:3px solid #fff;border-radius:50%;box-shadow:0 6px 16px rgba(64,54,47,.22);animation:toolbox-float 3.2s ease-in-out infinite;animation-delay:calc(var(--i,0) * -0.55s);transition:transform .15s ease}
+@keyframes toolbox-float{0%,100%{translate:0 0}50%{translate:0 -4px}}
+.toolbox-tool:hover .toolbox-tool-circle,.toolbox-tool:focus-visible .toolbox-tool-circle{transform:scale(1.08)}
 .toolbox-tool-circle svg{width:28px;height:28px;color:#40362f;stroke-width:2.2}
 .toolbox-tool-circle img{width:80%;height:80%;object-fit:contain;mix-blend-mode:multiply}
-.toolbox-tool-item{background:#fff;box-shadow:0 0 0 2px #f8df9a,0 3px 10px rgba(64,54,47,.14)}
+.toolbox-tool-item{background:#fff;box-shadow:0 0 0 2px #f8df9a,0 6px 16px rgba(64,54,47,.22)}
 .toolbox-tool-item img{mix-blend-mode:normal}
 .toolbox-tool-back{background:#f3eee8}
-.toolbox-tool small{font-size:12px;line-height:1.2}
+.toolbox-tool small{max-width:100%;padding:1px 7px;border-radius:9px;background:rgba(255,255,255,.94);box-shadow:0 1px 4px rgba(64,54,47,.1);font-size:12px;line-height:1.3;white-space:nowrap}
+@media(prefers-reduced-motion:reduce){.toolbox-tool,.toolbox-tool-circle{animation:none}}
 
 .toolbox-pen-bar{position:fixed;z-index:10030;bottom:max(14px,env(safe-area-inset-bottom));left:50%;display:flex;max-width:calc(100vw - 28px);flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;padding:9px 12px;border:1px solid #d9d0c5;border-radius:999px;background:#fff;box-shadow:0 8px 26px rgba(38,31,27,.2);transform:translateX(-50%)}
 .toolbox-pen-bar button{min-height:38px;padding:6px 13px;border:1px solid #d9d0c5;border-radius:999px;background:#fff;color:#40362f;font:700 13px Rubik,Arial,sans-serif;cursor:pointer}
@@ -35,8 +43,9 @@
 
 @media(max-width:760px){
   .toolbox-pen-bar{border-radius:22px}
+  .toolbox-strip{gap:8px}
   .toolbox-tool{width:62px}
-  .toolbox-tool-circle{width:52px;height:52px}
-  .toolbox-tool-circle svg{width:24px;height:24px}
+  .toolbox-tool-circle{width:54px;height:54px}
+  .toolbox-tool-circle svg{width:25px;height:25px}
 }
-@media print{.toolbox-toggle,.toolbox-panel,.toolbox-pen-bar,.page-drawing-layer{display:none!important}}
+@media print{.toolbox-toggle,.toolbox-strip,.toolbox-pen-bar,.page-drawing-layer{display:none!important}}

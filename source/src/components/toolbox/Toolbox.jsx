@@ -4,6 +4,7 @@ import { ArrowRight, X } from "lucide-react";
 const BUTTON_SIZE = 64;
 const EDGE = 12;
 const DRAG_THRESHOLD = 6;
+const HINT_KEY = "boo_toolbox_scroll_hint";
 
 function clampPosition({ x, y }) {
   return {
@@ -32,9 +33,9 @@ function ToolboxIcon() {
   );
 }
 
-function ToolCircle({ tool, className = "", onClick }) {
+function ToolCircle({ tool, index, className = "", onClick }) {
   return (
-    <button type="button" className="toolbox-tool" data-toolbox-tool={tool.id} aria-label={tool.ariaLabel} onClick={onClick}>
+    <button type="button" className="toolbox-tool" style={{ "--i": index }} data-toolbox-tool={tool.id} aria-label={tool.ariaLabel} onClick={onClick}>
       <span className={`toolbox-tool-circle ${className}`} style={tool.color ? { background: tool.color } : undefined}>
         {tool.image ? <img src={tool.image} alt="" /> : tool.icon}
       </span>
@@ -44,7 +45,7 @@ function ToolCircle({ tool, className = "", onClick }) {
 }
 
 // A toolbox button that can be dragged anywhere on the screen. A click opens a row of round tools
-// above it. Each tool is { id, label, color, icon | image, onSelect } or, to open a second row,
+// that float beside it. Each tool is { id, label, color, icon | image, onSelect } or, to open a second row,
 // { id, label, color, icon, items: [{ id, label, image, ariaLabel, onSelect }] }.
 export function Toolbox({ language, tools, storageKey, placement = "middle", hidden = false }) {
   const t = (he, en) => (language === "en" ? en : he);
@@ -68,16 +69,33 @@ export function Toolbox({ language, tools, storageKey, placement = "middle", hid
     return () => document.removeEventListener("keydown", onKey);
   }, [view]);
 
-  // The window opens above the button (below it when there is no room), and stays inside the screen.
+  // The row floats beside the button, towards the side with more room, level with the button.
+  const opensRight = position.x + BUTTON_SIZE / 2 < window.innerWidth / 2;
   useLayoutEffect(() => {
-    const panel = panelRef.current;
-    if (!view || !panel) { setPanelStyle(null); return; }
-    const { width, height } = panel.getBoundingClientRect();
-    const left = Math.min(Math.max(EDGE, position.x + BUTTON_SIZE / 2 - width / 2), window.innerWidth - width - EDGE);
-    const above = position.y - height - 12;
-    const top = above >= EDGE ? above : Math.min(position.y + BUTTON_SIZE + 12, window.innerHeight - height - EDGE);
-    setPanelStyle({ left, top: Math.max(EDGE, top) });
-  }, [view, position]);
+    const strip = panelRef.current;
+    if (!view || !strip) { setPanelStyle(null); return; }
+    const height = strip.getBoundingClientRect().height;
+    const top = Math.min(Math.max(EDGE, position.y + BUTTON_SIZE / 2 - height / 2), window.innerHeight - height - EDGE);
+    setPanelStyle(opensRight
+      ? { top, left: position.x + BUTTON_SIZE + 4, maxWidth: window.innerWidth - position.x - BUTTON_SIZE - 4 - EDGE }
+      : { top, right: window.innerWidth - position.x + 4, maxWidth: position.x - 4 - EDGE });
+  }, [view, position, opensRight]);
+
+  // When not every tool fits, the row is cut off with a fade and can be scrolled. The first time,
+  // it nudges sideways to show that.
+  const [overflowing, setOverflowing] = useState(false);
+  useEffect(() => {
+    const strip = panelRef.current;
+    if (!view || !strip || !panelStyle) return undefined;
+    const more = strip.scrollWidth > strip.clientWidth + 2;
+    setOverflowing(more);
+    if (!more) return undefined;
+    try { if (localStorage.getItem(HINT_KEY)) return undefined; localStorage.setItem(HINT_KEY, "1"); } catch { return undefined; }
+    const step = opensRight ? 70 : -70;
+    const out = window.setTimeout(() => strip.scrollBy({ left: step, behavior: "smooth" }), 450);
+    const back = window.setTimeout(() => strip.scrollBy({ left: -step, behavior: "smooth" }), 1050);
+    return () => { window.clearTimeout(out); window.clearTimeout(back); };
+  }, [view, panelStyle, opensRight]);
 
   if (hidden) return null;
 
@@ -132,23 +150,24 @@ export function Toolbox({ language, tools, storageKey, placement = "middle", hid
       {view && (
         <div
           ref={panelRef}
-          className="toolbox-panel"
+          key={view}
+          className={["toolbox-strip", opensRight ? "opens-right" : "opens-left", overflowing && "overflowing"].filter(Boolean).join(" ")}
           style={panelStyle || { left: -9999, top: -9999 }}
           role="dialog"
           aria-label={subTool ? subTool.label : t("ארגז כלים", "Toolbox")}
         >
-          <div className="toolbox-row">
-            {subTool ? (
-              <>
-                <ToolCircle tool={{ id: "back", label: t("חזרה", "Back"), icon: <ArrowRight className="ltr:rotate-180" /> }} className="toolbox-tool-back" onClick={() => setView("bank")} />
-                {subTool.items.map((item) => (
-                  <ToolCircle key={item.id} tool={item} className="toolbox-tool-item" onClick={() => { setView(null); item.onSelect(); }} />
-                ))}
-              </>
-            ) : (
-              tools.map((tool) => <ToolCircle key={tool.id} tool={tool} onClick={() => select(tool)} />)
-            )}
-          </div>
+          {(subTool
+            ? [{ id: "back", label: t("חזרה", "Back"), icon: <ArrowRight className={opensRight ? "rotate-180" : undefined} />, back: true }, ...subTool.items]
+            : tools
+          ).map((tool, index) => (
+            <ToolCircle
+              key={tool.id}
+              tool={tool}
+              index={index}
+              className={tool.back ? "toolbox-tool-back" : subTool ? "toolbox-tool-item" : ""}
+              onClick={() => (tool.back ? setView("bank") : subTool ? (setView(null), tool.onSelect()) : select(tool))}
+            />
+          ))}
         </div>
       )}
     </>
