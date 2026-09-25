@@ -19,6 +19,7 @@ import "./styles/mobile-calendar-compact-v1.css";
 import "./styles/mobile-guidance-cards-v1.css";
 import "./styles/english-ltr-v1.css";
 import "./styles/site-shell.css";
+import "./styles/activity-print-sheet.css";
 
 // בספארי באייפון חלון ההדפסה נפתח לפעמים לפני שהעמוד מוכן להדפסה, ויוצא קובץ ריק.
 // השהיה קצרה מונעת את זה.

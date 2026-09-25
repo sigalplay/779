@@ -20,6 +20,7 @@ import { brandLogo, useTranslator } from "@/lib/language";
 import { activityTitle, translatedTerm } from "@/lib/content-translations";
 import { activityEnglishContent } from "@/lib/activity-content-en";
 import { activityContext, imageAlt, shortLabel } from "@/lib/image-seo";
+import { pageUrl } from "@/lib/seo";
 
 const NIKUD_KEY = "activity:nikud";
 const HANDWRITING_KEY = "activity:handwriting";
@@ -323,7 +324,7 @@ export default function ActivityDetail() {
           </div>
         </header>
 
-        <PrintSheet altWhere={altWhere} activity={a} activityId={id} pick={pick} language={language} title={title} description={description} materials={materials} steps={steps} preparation={preparation} flowText={flowText} adaptations={adaptations} extensions={extensions} tips={en?.tips || a.tips} />
+        <PrintSheet altWhere={altWhere} activity={a} activityId={id} pick={pick} language={language} title={title} materials={materials} steps={steps} preparation={preparation} flowText={flowText} />
 
         {(a.description || a.short_description) && (
           <section className="rounded-3xl border border-border/60 bg-card p-5 md:p-6 print:hidden">
@@ -486,8 +487,7 @@ function PrintCellIcon({ src, srcs, Icon, size = "large", alt = "" }) {
   return null;
 }
 
-function PrintSheet({ altWhere, activity: a, activityId, pick, language, title, description, materials, steps, preparation, flowText, adaptations, extensions, tips }) {
-  const { t } = useTranslator();
+function PrintSheet({ altWhere, activity: a, activityId, pick, language, title, materials, steps, preparation, flowText }) {
   const customMaterials = ACTIVITY_ICON_SETS[activityId]?.materials;
   const customSteps = ACTIVITY_ICON_SETS[activityId]?.steps;
 
@@ -519,108 +519,104 @@ function PrintSheet({ altWhere, activity: a, activityId, pick, language, title, 
   const label = (he, en) => language === "en" ? en : he;
   // בפעילות "מסלול שקיות תחושה" השלבים הם רעיונות לשקיות, לא רצף פעולות.
   const ideasList = activityId === "seed-116";
+  // The printed page (and a PDF sent on WhatsApp) links back to this activity on the site.
+  const siteUrl = pageUrl(`/activity/${activityId}`, language);
+  const siteUrlText = siteUrl.replace(/^https:\/\//, "").replace(/\/$/, "");
 
+  // The copyright line and the link sit in the table footer, which the browser repeats at the bottom
+  // of every printed page, so a long activity never ends with the footer alone on a new page.
   return (
-    <div className="activity-print-sheet hidden print:block print:space-y-4 print:text-black">
-      <div className="activity-print-hero relative flex items-center justify-center gap-5 rounded-3xl border border-border/60 bg-gradient-to-br from-sage/20 to-sky/30 p-5">
-        <img src={brandLogo(language)} alt={label(t("בואו נשחק", "Let's Play"), "Let's Play")} className="print-sheet-brand absolute left-0 top-0 h-14 w-16 object-contain" />
-        {hero ? <img src={hero} alt={altWhere} className="h-28 w-28 shrink-0 rounded-2xl bg-white/80 object-contain p-2" /> : null}
-        <h1 className="text-center text-4xl font-black">{title}</h1>
+    <div className="activity-print-sheet hidden print:block print:text-black">
+      <table className="print-sheet-frame">
+        <tfoot>
+          <tr>
+            <td>
+              <div className="print-sheet-footer">
+                <p>
+                  {label(
+                    "© בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.",
+                    "© Let's Play. All rights reserved. The content here is for enrichment and practice only. It is not a diagnosis, personal therapeutic advice, or a substitute for evaluation, consultation, or treatment by a qualified professional.",
+                  )}
+                </p>
+                <a href={siteUrl}><bdi dir="ltr">{siteUrlText}</bdi></a>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
+        <tbody>
+          <tr>
+            <td>
+      <div className="print-sheet-head">
+        {hero ? <img src={hero} alt={altWhere} className="print-sheet-hero" /> : null}
+        <div className="min-w-0 flex-1">
+          <h1 className="print-sheet-title">{title}</h1>
+          <a href={siteUrl} className="print-sheet-link">{label("לפעילות באתר: ", "Open on the site: ")}<bdi dir="ltr">{siteUrlText}</bdi></a>
+        </div>
+        <img src={brandLogo(language)} alt={label("בואו נשחק", "Let's Play")} className="print-sheet-logo" />
       </div>
 
-      {description ? (
-        <div className="activity-print-card rounded-3xl border border-border/60 bg-card p-4">
-          <h2 className="mb-2 text-xl font-bold">{label(t("תיאור המשימה", "Task description"), "About This Activity")}</h2>
-          <p className="text-lg leading-relaxed">{description}</p>
-        </div>
-      ) : null}
-
       {a.materials?.length ? (
-        <div className="activity-print-card rounded-3xl border border-border/60 bg-card p-4">
-          <div className="mb-3 text-xl font-bold">{label(t("ציוד נדרש", "Equipment needed"), "Materials")}</div>
-          <div className="grid grid-cols-2 gap-2">
-            {a.materials.map((m, i) => (
-              <div key={i} className="activity-print-item flex min-w-0 items-center gap-3 rounded-2xl border border-black/60 bg-white p-2.5">
-                <span aria-hidden className="block h-4 w-4 shrink-0 rounded-sm border-2 border-black" />
-                <div className="activity-item-illustration h-14 w-14 shrink-0 rounded-xl border border-border/50 bg-white p-1">
-                  <PrintCellIcon {...materialCell(m)} size="small" alt={imageAlt(materials[i] || pick(m, a.materialsN?.[i]), altWhere)} />
-                </div>
-                <span className="min-w-0 flex-1 text-base leading-snug">
-                  <span className="me-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-sky/60 text-xs font-bold">{i + 1}</span>
-                  {materials[i] || pick(m, a.materialsN?.[i])}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <PrintTable
+          heading={label("ציוד נדרש", "Materials")}
+          rows={a.materials.map((m, i) => {
+            const text = materials[i] || pick(m, a.materialsN?.[i]);
+            return { key: i, number: i + 1, text, image: <PrintCellIcon {...materialCell(m)} alt={imageAlt(text, altWhere)} /> };
+          })}
+        />
       ) : null}
 
       {a.preparation ? (
-        <div className="activity-print-card rounded-3xl border border-border/60 bg-card p-4">
-          <p className="text-lg leading-relaxed">
-            <strong>{label(t("הכנה מוקדמת: ", "Preparation: "), "Preparation: ")}</strong>
-            {preparation}
-          </p>
-        </div>
+        <p className="print-sheet-note"><strong>{label("הכנה מוקדמת: ", "Preparation: ")}</strong>{preparation}</p>
       ) : null}
 
       {a.steps?.length ? (
-        <div className="activity-print-card rounded-3xl border border-border/60 bg-card p-4">
-          <div className="mb-3 text-xl font-bold">{ideasList ? label(t("רעיונות לשקיות", "Bag ideas"), "Sensory bag ideas") : label(t("מהלך הפעילות", "How to Play"), "How to Play")}</div>
-          <div className="space-y-2.5">
-            {steps.map((step) => (
-              <div key={step.n} className="activity-print-item flex items-center gap-3 rounded-2xl border border-black/60 bg-white p-3">
-                {!ideasList && <span aria-hidden className="block h-4 w-4 shrink-0 rounded-sm border-2 border-black" />}
-                <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border/50 bg-white p-1">
-                  <PrintCellIcon {...stepCell(step)} alt={imageAlt(shortLabel(step.displayText), altWhere)} />
-                </div>
-                <p className="min-w-0 flex-1 text-lg leading-relaxed">
-                  <span className={`me-2 inline-flex items-center justify-center rounded-full bg-sage/70 px-2 py-1 text-sm font-bold ${ideasList ? "h-auto w-auto" : "h-7 w-7"}`}>
-                    {ideasList ? label(`רעיון ${step.n}`, `Idea ${step.n}`) : step.n}
-                  </span>
-                  {step.displayText}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
+        <PrintTable
+          heading={ideasList ? label("רעיונות לשקיות", "Sensory bag ideas") : label("מהלך הפעילות", "How to Play")}
+          rows={steps.map((step) => ({
+            key: step.n,
+            number: ideasList ? label(`רעיון ${step.n}`, `Idea ${step.n}`) : step.n,
+            text: step.displayText,
+            image: <PrintCellIcon {...stepCell(step)} alt={imageAlt(shortLabel(step.displayText), altWhere)} />,
+          }))}
+        />
       ) : a.flow_text ? (
-        <div className="text-lg leading-relaxed" style={{ breakBefore: "page" }}>
-          {ACTIVITY_ICON_SETS[activityId]?.flow ? <img src={ACTIVITY_ICON_SETS[activityId].flow} alt={imageAlt(label("מהלך הפעילות", "How to play"), altWhere)} className="mx-auto mb-4 h-56 w-full object-contain" /> : null}
-          <p>
-            <strong>{label(t("מהלך הפעילות: ", "How to play: "), "How to play: ")}</strong>
-            {flowText}
-          </p>
-        </div>
+        <section className="print-sheet-section">
+          <h2 className="print-sheet-heading">{label("מהלך הפעילות", "How to Play")}</h2>
+          {ACTIVITY_ICON_SETS[activityId]?.flow ? <img src={ACTIVITY_ICON_SETS[activityId].flow} alt={imageAlt(label("מהלך הפעילות", "How to play"), altWhere)} className="print-sheet-flow" /> : null}
+          <p className="print-sheet-note">{flowText}</p>
+        </section>
       ) : null}
-
-      {tips?.length ? (
-        <div>
-          <div className="mb-1 text-xl font-bold">{t("דגשים:", "Tips:")}</div>
-          <ul className="space-y-1 text-lg">
-            {tips.map((tip, i) => (
-              <li key={i}>⭐ {tip.boldPrefix ? <strong>{tip.boldPrefix} </strong> : null}{tip.text}</li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-      {a.adaptations ? (
-        <p className="text-lg leading-relaxed">
-          <strong>{label(t("הורדת רמת הקושי: ", "Make it easier: "), "Make it easier: ")}</strong>
-          {adaptations}
-        </p>
-      ) : null}
-      {a.extensions ? (
-        <p className="text-lg leading-relaxed">
-          <strong>{label(t("העלאת רמת הקושי / שדרוג: ", "Make it harder / level up: "), "Add a challenge: ")}</strong>
-          {extensions}
-        </p>
-      ) : null}
-
-      <div className="mt-6 text-center text-xs text-muted-foreground/70">
-        {label(t("© בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.", "© Let’s Play. All rights reserved. The content here is for enrichment and practice only. It is not a diagnosis, personal therapeutic advice, or a substitute for evaluation, consultation, or treatment by a qualified professional."), "© Let's Play. All rights reserved. Content is for enrichment and practice only and does not replace diagnosis, assessment, professional advice or treatment.")}
-      </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+  );
+}
+
+// One printed list (materials or steps) in the layout of a simple table:
+// a tick box, the picture, and the numbered text.
+function PrintTable({ heading, rows }) {
+  return (
+    <section className="print-sheet-section">
+      <h2 className="print-sheet-heading">{heading}</h2>
+      <table className="print-sheet-table">
+        <colgroup>
+          <col className="print-sheet-col-check" />
+          <col className="print-sheet-col-image" />
+          <col />
+        </colgroup>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.key}>
+              <td className="print-sheet-check"><span aria-hidden /></td>
+              <td className="print-sheet-image">{row.image}</td>
+              <td className="print-sheet-text"><strong className="print-sheet-number">{row.number}.</strong> {row.text}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
   );
 }
 
