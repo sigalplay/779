@@ -7,15 +7,15 @@ const PRESETS = [5, 10, 15, 20, 30, 45, 60];
 const RAINBOW = ["#e88ba5", "#efbc81", "#e0d884", "#a9cfaa", "#91bad1", "#b19acd"];
 const TIMER_STORAGE = {
   width: "boo_visual_timer_width_v2",
-  height: "boo_visual_timer_height_v2",
   position: "boo_visual_timer_position_v2",
 };
 const DEFAULT_PANEL_WIDTH = 336;
-const DEFAULT_PANEL_HEIGHT = 748;
-
-function defaultPanelHeight() {
-  return typeof window === "undefined" ? DEFAULT_PANEL_HEIGHT : Math.min(DEFAULT_PANEL_HEIGHT, window.innerHeight - 16);
-}
+// Everything in the timer stays visible without scrolling: the dial shrinks on short screens
+// to leave room for the controls (about this much height). Phones also keep clear of the
+// bottom navigation bar.
+const CONTROLS_HEIGHT = 390;
+const PHONE_BOTTOM_BAR = 76;
+const bottomReserve = () => (window.innerWidth <= 760 ? PHONE_BOTTOM_BAR : 0);
 
 function defaultPanelPosition() {
   if (typeof window === "undefined") return { x: 80, y: 8 };
@@ -50,7 +50,6 @@ export function VisualSessionTimer({
   };
   const text = (hebrew, english) => language === "en" ? english : hebrew;
   const [panelWidth, setPanelWidth] = useState(() => Number(localStorage.getItem(TIMER_STORAGE.width)) || DEFAULT_PANEL_WIDTH);
-  const [panelHeight, setPanelHeight] = useState(() => Number(localStorage.getItem(TIMER_STORAGE.height)) || defaultPanelHeight());
   const [position, setPosition] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem(TIMER_STORAGE.position)) || defaultPanelPosition();
@@ -101,16 +100,13 @@ export function VisualSessionTimer({
   useEffect(() => {
     if (!open || minimized || !panelRef.current || !window.ResizeObserver) return undefined;
     const observer = new ResizeObserver(([entry]) => {
-      const width = Math.round(entry.contentRect.width);
-      const height = Math.round(entry.contentRect.height);
-      if (width >= 280) {
-        setPanelWidth(width);
-        localStorage.setItem(TIMER_STORAGE.width, String(width));
-      }
-      if (height >= 360) {
-        setPanelHeight(height);
-        localStorage.setItem(TIMER_STORAGE.height, String(height));
-      }
+      // Keep the whole panel on screen when it opens or changes size.
+      const rect = entry.target.getBoundingClientRect();
+      setPosition((current) => {
+        const x = Math.max(8, Math.min(current.x, window.innerWidth - rect.width - 8));
+        const y = Math.max(8, Math.min(current.y, window.innerHeight - bottomReserve() - rect.height - 8));
+        return x === current.x && y === current.y ? current : { x, y };
+      });
     });
     observer.observe(panelRef.current);
     return () => observer.disconnect();
@@ -164,7 +160,7 @@ export function VisualSessionTimer({
       </button>}
 
       {open && (
-        <section ref={panelRef} dir={language === "en" ? "ltr" : "rtl"} style={{ left: position.x, top: position.y, width: panelWidth, height: minimized ? "auto" : panelHeight, minWidth: 280, minHeight: minimized ? 0 : 420, maxWidth: "calc(100vw - 16px)", maxHeight: "calc(100vh - 16px)", resize: minimized ? "none" : "both", overflow: minimized ? "hidden" : "auto" }} className="fixed z-[100] rounded-[24px] border border-border/70 bg-white p-4 shadow-2xl" aria-label={text(t("טיימר חזותי ללוח המפגש", "Visual timer for the session schedule"), "Visual session timer")}>
+        <section ref={panelRef} dir={language === "en" ? "ltr" : "rtl"} style={{ left: position.x, top: position.y, width: panelWidth, minWidth: 280, maxWidth: "calc(100vw - 16px)", maxHeight: "calc(100dvh - 16px)", overflow: minimized ? "hidden" : "auto" }} className="fixed z-[100] rounded-[24px] border border-border/70 bg-white p-4 shadow-2xl" aria-label={text(t("טיימר חזותי ללוח המפגש", "Visual timer for the session schedule"), "Visual session timer")}>
           <div onPointerDown={beginDrag} className="flex cursor-move touch-none select-none items-center justify-between rounded-xl bg-muted/50 px-2 py-1">
             <div className="flex items-center gap-2"><GripVertical className="h-5 w-5 text-muted-foreground" /><h2 className="font-display text-lg font-bold">{text(t("כמה זמן נשאר?", "How much time is left?"), "How much time is left?")}</h2></div>
             <div className="flex items-center gap-1">
@@ -176,7 +172,7 @@ export function VisualSessionTimer({
           {!minimized && <>
           <div className="mt-3 flex items-center gap-2 rounded-2xl bg-muted/60 p-2"><button type="button" onClick={() => resizePanel(panelWidth - 40)} aria-label={t("הקטנת הטיימר", "Reduce timer")} className="rounded-full border bg-white p-1.5"><Minus className="h-4 w-4" /></button><input type="range" min="280" max="760" step="10" value={panelWidth} onChange={(event) => resizePanel(event.target.value)} aria-label={t("גודל הטיימר", "Timer size")} className="min-w-0 flex-1 accent-[#a9cfaa]" /><button type="button" onClick={() => resizePanel(panelWidth + 40)} aria-label={t("הגדלת הטיימר", "Enlarge timer")} className="rounded-full border bg-white p-1.5"><Plus className="h-4 w-4" /></button></div>
 
-          <div className="mx-auto mt-2 w-[min(100%,390px)]">
+          <div className="mx-auto mt-2 w-[min(100%,390px)]" style={{ maxWidth: `max(130px, calc(100dvh - ${CONTROLS_HEIGHT + bottomReserve()}px))` }}>
             <svg viewBox="0 0 240 240" role="img" aria-label={t(`נותרו ${timeLabel}`, `${timeLabel} left`)} className="h-auto w-full">
               <defs><clipPath id={clipId}><path d={sectorPath(fraction)} /></clipPath></defs>
               <circle cx="120" cy="120" r="112" fill="#f5f7f5" stroke="#d9e3df" strokeWidth="2" />
@@ -210,7 +206,7 @@ export function VisualSessionTimer({
             </button>
             <button type="button" onClick={() => selectMinutes(minutes)} className="flex items-center gap-2 rounded-full border px-4 py-2 text-sm"><RotateCcw className="h-4 w-4" />{text(t("איפוס", "Reset"), "Reset")}</button>
           </div>
-          <div className="mt-3 text-center text-[11px] text-muted-foreground">{text(t("אפשר לגרור מהכותרת ולשנות גודל מהפינה", "Drag the title bar to move the timer and use the corner to resize it."), "Drag the title bar and resize from the corner")}</div>
+          <div className="mt-3 text-center text-[11px] text-muted-foreground">{text(t("אפשר לגרור מהכותרת ולשנות גודל עם הפס", "Drag the title bar to move the timer and use the slider to resize it."), "Drag the title bar to move the timer and use the slider to resize it.")}</div>
           </>}
         </section>
       )}
