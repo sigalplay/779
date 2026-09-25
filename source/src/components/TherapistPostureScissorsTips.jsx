@@ -112,7 +112,7 @@ export function TherapistPostureScissorsTips({
           {iconsHidden ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
         </button>
       )}
-      <div className={iconsHidden ? "hidden md:contents" : "contents"}>
+      <div className={iconsHidden && !hideTriggers ? "hidden md:contents" : "contents"}>
       {!hideTriggers && (
       <div className="relative">
         <TipButton
