@@ -3,14 +3,14 @@ import { Link, useLocation, useNavigate, useSearchParams } from "react-router-do
 import { toast } from "sonner";
 import { Camera, Check, ChevronDown, ChevronUp, Clock, ExternalLink, FlaskConical, FolderOpen, Play, Plus, Printer, RotateCcw, Route, Save, Search, Shuffle, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { TherapistPostureScissorsTips } from "@/components/TherapistPostureScissorsTips";
+import { PageToolbox } from "@/components/toolbox/PageToolbox";
 import { VisualSessionTimer } from "@/components/VisualSessionTimer";
 import { ActivityNameSearch, matchesName } from "@/components/ActivityNameSearch";
 import { BoardDateNavigation } from "@/components/session-board/BoardDateNavigation";
 import { BoardToolbar } from "@/components/session-board/BoardToolbar";
 import { BoardCanvas } from "@/components/session-board/BoardCanvas";
 import { BoardPhotoPreview } from "@/components/session-board/BoardPhotoPreview";
-import { BoardFullscreenTools } from "@/components/session-board/BoardFullscreenTools";
+import { BoardToolbox } from "@/components/session-board/BoardToolbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -400,7 +400,7 @@ export default function TherapistBuild() {
         {linkedPatient && <p className="mt-1 font-bold text-sage-foreground">{t("עבור", "For")} {linkedPatient.name}{linkedSession ? ` · ${linkedSession.date} · ${linkedSession.time || t("שעה לא נקבעה", "Time not set")}` : ""}</p>}
       </div>
 
-      <TherapistPostureScissorsTips />
+      <PageToolbox />
 
       <div className="grid gap-6 lg:grid-cols-[180px_1fr_320px]">
         <div className="mobile-search-category-tabs flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
@@ -902,8 +902,6 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
         </div>
       </div>
 
-      <TherapistPostureScissorsTips />
-
       <BoardDateNavigation date={boardDate} savedDates={savedDates} language={language} onNavigate={goToDate} onCopyToNextWeek={copyToNextWeek} />
 
       <BoardToolbar
@@ -992,10 +990,10 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
           );
         })}
         <button type="button" className="meeting-fullscreen-exit" data-exit-board-fullscreen="true" aria-label={t("יציאה ממסך מלא", "Exit full screen")} title={t("יציאה ממסך מלא", "Exit full screen")} onClick={exitFullscreen}>×</button>
-        {/* Inside the board so the timer and the full-screen tools stay visible in full screen. */}
+        {/* Inside the board so the timer and the toolbox stay visible in full screen. */}
         <div className="meeting-board-overlay">
           <VisualSessionTimer language={language} open={timerOpen} onOpenChange={setTimerOpen} hideTrigger />
-          {fullscreen && <BoardFullscreenTools language={language} pen={pen} onOpenTimer={openTimer} onAddSign={addSign} />}
+          <BoardToolbox language={language} fullscreen={fullscreen} pen={pen} onOpenTimer={openTimer} onAddSign={addSign} />
         </div>
         <BoardCanvas boardRef={boardRef} strokes={strokes} onStrokesChange={updateStrokes} enabled={penEnabled} tool={penTool} color={penColor} width={penWidth} language={language} />
       </ol>

@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { ChefHat, Clock, ArrowLeft, RotateCcw, ListPlus, Check, Printer, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
-import { TherapistPostureScissorsTips } from "@/components/TherapistPostureScissorsTips";
+import { PageToolbox } from "@/components/toolbox/PageToolbox";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { addToDraftPlan } from "@/lib/storage";
@@ -2043,7 +2043,7 @@ function RecipeDetail({ recipe, mode, onBack }) {
 
   return (
     <AppShell mode={mode}>
-      {language === "he" ? <TherapistPostureScissorsTips showScissors={false} /> : null}
+      <PageToolbox showScissors={false} />
       <button onClick={onBack} className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground print:hidden">
         <ArrowLeft className="h-4 w-4" /> {t("חזרה למתכונים", "Back to recipes")}
       </button>

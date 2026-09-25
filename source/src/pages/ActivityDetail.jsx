@@ -14,8 +14,7 @@ import { ACTIVITY_ICON_SETS, activityHero } from "@/lib/activity-icons";
 import { libMaterialIcon, libStepIcon } from "@/lib/icon-library";
 import { bankMaterialIcon, bankStepIcon } from "@/lib/icon-bank";
 import { TagList } from "@/components/TagList";
-import { TherapistPostureScissorsTips } from "@/components/TherapistPostureScissorsTips";
-import { VisualSessionTimer } from "@/components/VisualSessionTimer";
+import { PageToolbox } from "@/components/toolbox/PageToolbox";
 import { useTranslator } from "@/lib/language";
 import { activityTitle, translatedTerm } from "@/lib/content-translations";
 import { activityEnglishContent } from "@/lib/activity-content-en";
@@ -225,9 +224,7 @@ export default function ActivityDetail() {
 
   return (
     <AppShell mode={mode}>
-      {language === "he" ? <TherapistPostureScissorsTips>
-        <VisualSessionTimer roundTrigger />
-      </TherapistPostureScissorsTips> : null}
+      <PageToolbox />
       <motion.article initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={`space-y-6 ${hwClass} ${showIllustrations ? "" : "activity-icons-hidden"}`}>
         {returnTo === "session" && (
           <Link
