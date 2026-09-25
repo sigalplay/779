@@ -1,4 +1,5 @@
 import { PINTEREST_ACTIVITIES } from "./pinterest-activities.js";
+import { ACTIVITY_SKILLS, REMOVED_ACTIVITY_IDS } from "./activity-skills.js";
 
 // נתוני הפעילויות המלאים של האפליקציה.
 const ALL_SEED_ACTIVITIES = [
@@ -750,8 +751,8 @@ const ALL_SEED_ACTIVITIES = [
   },
   {
     "id": "seed-13",
-    "title": "משחק המילים המתגלגלות (לנסיעה ברכב)",
-    "titleN": "מִשְׂחַק הַמִּלִּים הַמִּתְגַּלְגְּלוֹת (לִנְסִיעָה בָּרֶכֶב)",
+    "title": "משחק המילים המתגלגלות",
+    "titleN": "מִשְׂחַק הַמִּלִּים הַמִּתְגַּלְגְּלוֹת",
     "short_description": "משחק מילולי פשוט לזמן נסיעה — ללא ציוד.",
     "short_descriptionN": "מִשְׂחָק מִלּוּלִי פָּשׁוּט לִזְמַן נְסִיעָה — לְלֹא צִיּוּד.",
     "description": "משחק מילולי פשוט לזמן נסיעה — ללא ציוד.",
@@ -1175,8 +1176,8 @@ const ALL_SEED_ACTIVITIES = [
   },
   {
     "id": "seed-21",
-    "title": "מצאתי! (משחק חיפוש בנסיעה)",
-    "titleN": "מָצָאתִי! (מִשְׂחַק חִפּוּשׂ בִּנְסִיעָה)",
+    "title": "מצאתי!",
+    "titleN": "מָצָאתִי!",
     "short_description": "משחק איתור עצמים לפי צבע או צורה מבעד לחלון הרכב.",
     "short_descriptionN": "מִשְׂחַק אִתּוּר עֲצָמִים לְפִי צֶבַע אוֹ צוּרָה מִבְּעַד לְחַלּוֹן הָרֶכֶב.",
     "description": "משחק איתור עצמים לפי צבע או צורה מבעד לחלון הרכב.",
@@ -7493,11 +7494,19 @@ function normalizeActivityTags(source) {
   if (["seed-114", "seed-115"].includes(activity.id)) {
     withoutLabels(activity, ["השתתפות באכילה", "תכנון וארגון", "רצף פעולות", "משחק ויצירתיות", "תכנון, ארגון, רצף ודיוק", "חזותית", "ריח וטעם", ...EYE_HAND_LABELS]);
   }
+  // The reviewed "על מה עובד" list replaces goals and functions, so each term is shown once.
+  const skills = ACTIVITY_SKILLS[activity.id];
+  if (skills) {
+    activity.goals = [...skills.skills];
+    activity.functions = [];
+    activity.sensory_systems = [...skills.sensory];
+    if (skills.parent) activity.difficulties = unique([...(activity.difficulties || []), ...skills.parent]);
+  }
   return activity;
 }
 
-// seed-28 ו-seed-31 הוסרו מהקטלוג, אך קובצי האיורים שלהן נשמרים לשימוש עתידי.
+// פעילויות שהוסרו מהקטלוג (REMOVED_ACTIVITY_IDS); התוכן וקובצי האיורים שלהן נשמרים לשימוש עתידי.
 export const SEED_ACTIVITIES = [
-  ...ALL_SEED_ACTIVITIES.map(withCompleteNikud).filter((activity) => !["seed-28", "seed-31"].includes(activity.id)),
+  ...ALL_SEED_ACTIVITIES.map(withCompleteNikud).filter((activity) => !REMOVED_ACTIVITY_IDS.includes(activity.id)),
   ...PINTEREST_ACTIVITIES,
 ].map(normalizeActivityTags);
