@@ -29,6 +29,8 @@ window.print = () => window.setTimeout(nativePrint, 400);
 // while the page's code loads (see PageLoader in App.jsx), and its entrance animations are skipped
 // so it does not disappear and fade in again. Animations come back for the next page.
 const root = document.getElementById("root");
+// While the build saves pages, nothing animates, so every page is saved in its final look.
+if (window.__PRERENDER__) MotionGlobalConfig.skipAnimations = true;
 if (root.hasChildNodes()) {
   window.__prerenderedPage = root.innerHTML;
   MotionGlobalConfig.skipAnimations = true;

@@ -127,25 +127,41 @@ const origin = `http://127.0.0.1:${server.address().port}`;
 
 // ---------- render ----------
 const BLOCKED = /cloudflareinsights\.com|googletagmanager\.com|google-analytics\.com|api\.qrserver\.com/;
-const browser = await puppeteer.launch({ executablePath: findChrome(), headless: true, args: ["--no-sandbox", "--disable-dev-shm-usage"] });
+// Pages render four at a time; without these flags Chrome slows the ones in the background and
+// their animations never finish.
+const browser = await puppeteer.launch({
+  executablePath: findChrome(),
+  headless: true,
+  args: ["--no-sandbox", "--disable-dev-shm-usage", "--disable-background-timer-throttling", "--disable-renderer-backgrounding", "--disable-backgrounding-occluded-windows"],
+});
 const failures = [];
 const warnings = [];
 
 async function renderPage(page) {
   const tab = await browser.newPage();
   await tab.setViewport({ width: 1280, height: 900 });
+  // The app skips its entrance animations when this is set (src/main.jsx), so nothing is saved half-faded.
+  await tab.evaluateOnNewDocument(() => { window.__PRERENDER__ = true; });
   await tab.setRequestInterception(true);
   // No visits in the site statistics from the build, and no external calls that are not needed.
   tab.on("request", (request) => (BLOCKED.test(request.url()) ? request.abort() : request.continue()));
   try {
     await tab.goto(`${origin}${page.address}`, { waitUntil: "networkidle0", timeout: 45000 });
     await tab.waitForFunction(() => document.querySelector("#root main") && !document.body.innerText.includes("טוענת…"), { timeout: 20000 });
-    // Let entrance animations finish so nothing is saved half-transparent.
-    await new Promise((resolve) => setTimeout(resolve, 900));
     const result = await tab.evaluate(() => {
       document.querySelectorAll(".analytics-consent, [data-prerender-skip]").forEach((node) => node.remove());
-      return { html: document.getElementById("root").innerHTML, title: document.title, h1: document.querySelector("h1")?.textContent?.trim() || "" };
+      // Entrance animations start from transparent and slightly moved. A tab in the background may not
+      // have drawn their last frame yet, so the saved copy gets their end state: visible, in place.
+      document.querySelectorAll("#root [style*='opacity']").forEach((node) => {
+        if (Number(node.style.opacity) < 1 && node.style.transform) {
+          node.style.opacity = "";
+          node.style.transform = "";
+        }
+      });
+      const hidden = [...document.querySelectorAll("#root main [style*='opacity']")].filter((node) => Number(node.style.opacity) < 1).length;
+      return { html: document.getElementById("root").innerHTML, title: document.title, h1: document.querySelector("h1")?.textContent?.trim() || "", hidden };
     });
+    if (result.hidden) throw new Error(`${result.hidden} parts of the page were saved while still transparent`);
     if (result.title !== page.seo.title) throw new Error(`title in the app "${result.title}" differs from "${page.seo.title}"`);
     if (!result.h1) warnings.push(`${page.address}: no <h1> heading`);
     writePage(page.address, renderHtml({ seo: page.seo, rootHtml: result.html }));
