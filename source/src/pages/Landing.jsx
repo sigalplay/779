@@ -61,7 +61,7 @@ export default function Landing() {
               to="/therapist/build"
               image="/icon-bank/navigation-v2/therapy-build-flat.webp"
               title={t("מטפלים", "Therapists")}
-              subtitle={t("בנה לוח מובנה למפגש", "Build a structured visual schedule for a session")}
+              subtitle={t("בנה לוח מובנה למפגש", "Plan a Therapy Session")}
               description={t("בחרו גיל, תחום התפתחות וזמן, ותכננו מפגש מובנה.", "Choose an age, developmental area, and duration to plan a structured session.")}
               large
               showArrow
@@ -85,9 +85,11 @@ export default function Landing() {
           </div>
         </div>
 
-        <p className="mt-5 text-center text-xs text-muted-foreground">
-          {t("אפשר לחזור למסך הזה בכל שלב, ולעבור בין הכלים דרך התפריט העליון.", "You can return to this page at any time and move between tools using the top menu.")}
-        </p>
+        {language === "he" && (
+          <p className="mt-5 text-center text-xs text-muted-foreground">
+            אפשר לחזור למסך הזה בכל שלב, ולעבור בין הכלים דרך התפריט העליון.
+          </p>
+        )}
 
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {quickLinks.map(([to, image, he, en]) => <IllustratedNavCard key={to} to={to} image={image} title={t(he, en)} captionClassName={pinkCaption} />)}

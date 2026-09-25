@@ -8,6 +8,15 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MOTOR_TRAIL_ITEMS, CREATIVE_ACCESSORIES, HOME_ITEMS } from "@/lib/motor-trail-items";
 import { addMotorTrailToDraftPlan, updateMotorTrailInDraftPlan, getDraftPlan } from "@/lib/storage";
+import { useTranslator } from "@/lib/language";
+
+// English names for equipment, including items saved in a plan before (looked up by id or Hebrew name).
+const ALL_ITEMS = [...MOTOR_TRAIL_ITEMS, ...CREATIVE_ACCESSORIES, ...HOME_ITEMS];
+function englishItem(item) {
+  return ALL_ITEMS.find((known) => known.id === item?.id) || ALL_ITEMS.find((known) => known.label === item?.label) || item || {};
+}
+const itemLabel = (item) => englishItem(item).labelEn || item?.label;
+const itemAction = (item) => englishItem(item).actionEn || item?.action;
 
 const HIDDEN_EQUIPMENT_KEY = "boo_motor_trail_hidden_equipment";
 
@@ -21,11 +30,12 @@ function loadHiddenEquipment() {
 }
 
 function MotorDemoDialog({ item, frame, playing, onPlayingChange, onClose }) {
+  const { t } = useTranslator();
   return (
     <Dialog open={Boolean(item)} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle className="text-center font-display text-2xl">איך משתמשים ב{item?.label}?</DialogTitle>
+          <DialogTitle className="text-center font-display text-2xl">{t(`איך משתמשים ב${item?.label}?`, `How to use the ${itemLabel(item)}?`)}</DialogTitle>
         </DialogHeader>
         {item?.demo ? (
           <div className="space-y-3">
@@ -37,10 +47,10 @@ function MotorDemoDialog({ item, frame, playing, onPlayingChange, onClose }) {
             <div className="flex items-center justify-center gap-2">
               {item.demo.map((_, index) => <span key={index} className={`h-2.5 w-2.5 rounded-full transition-colors ${index === frame ? "bg-sage" : "bg-muted"}`} />)}
             </div>
-            <p className="text-center text-lg font-bold text-blue-600">{item.action}</p>
+            <p className="text-center text-lg font-bold text-blue-600">{t(item.action, itemAction(item))}</p>
             <button type="button" onClick={() => onPlayingChange(!playing)} className="mx-auto flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm font-bold">
               {playing ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
-              {playing ? "עצירה" : "הפעלה"}
+              {playing ? t("עצירה", "Pause") : t("הפעלה", "Play")}
             </button>
           </div>
         ) : null}
@@ -50,6 +60,7 @@ function MotorDemoDialog({ item, frame, playing, onPlayingChange, onClose }) {
 }
 
 export default function MotorTrail({ mode }) {
+  const { t } = useTranslator();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const returnTo = searchParams.get("returnTo"); // "plan" | "session" | null
@@ -114,14 +125,14 @@ export default function MotorTrail({ mode }) {
     setCustomItems((prev) => [...prev, item]);
     setOrder((prev) => [...prev, id]);
     setPickerOpen(false);
-    toast.success(`"${accessory.label}" נוסף למסלול`);
+    toast.success(t(`"${accessory.label}" נוסף למסלול`, `"${itemLabel(accessory)}" added to the course`));
   }
   function addHomeItem(homeItem) {
     const id = `custom-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
     const item = { id, label: homeItem.label, emoji: homeItem.emoji };
     setCustomItems((prev) => [...prev, item]);
     setOrder((prev) => [...prev, id]);
-    toast.success(`"${homeItem.label}" נוסף למסלול`);
+    toast.success(t(`"${homeItem.label}" נוסף למסלול`, `"${itemLabel(homeItem)}" added to the course`));
   }
   function removeItem(id) {
     setOrder((prev) => prev.filter((x) => x !== id));
@@ -135,17 +146,17 @@ export default function MotorTrail({ mode }) {
     next.add(item.id);
     saveHiddenEquipment(next);
     setOrder((prev) => prev.filter((id) => id !== item.id));
-    toast.success(`„${item.label}” הוסר ממאגר המתקנים`);
+    toast.success(t(`„${item.label}” הוסר ממאגר המתקנים`, `"${itemLabel(item)}" removed from the equipment library`));
   }
   function restoreToBank(id) {
     const next = new Set(hiddenEquipment);
     next.delete(id);
     saveHiddenEquipment(next);
-    toast.success("המתקן הוחזר למאגר");
+    toast.success(t("המתקן הוחזר למאגר", "The equipment was returned to the bank"));
   }
   function restoreAllEquipment() {
     saveHiddenEquipment(new Set());
-    toast.success("כל המתקנים הוחזרו למאגר");
+    toast.success(t("כל המתקנים הוחזרו למאגר", "All equipment was returned to the bank"));
   }
   function move(index, dir) {
     setOrder((prev) => {
@@ -164,10 +175,10 @@ export default function MotorTrail({ mode }) {
     if (!order.length) return;
     if (editUid) {
       updateMotorTrailInDraftPlan(editUid, order, customItems);
-      toast.success("המסלול עודכן בתוכנית הטיפול");
+      toast.success(t("המסלול עודכן בתוכנית הטיפול", "Trail updated in the session plan."));
     } else {
       addMotorTrailToDraftPlan(order, customItems);
-      toast.success("המסלול נוסף לתוכנית הטיפול");
+      toast.success(t("המסלול נוסף לתוכנית הטיפול", "Trail added to the session plan."));
     }
     // A board without a client is kept per date; store the updated board so the course stays on it.
     if (returnTo === "session" && !patientBoard) saveGuestBoard(normalizeBoardDate(boardDate), getDraftPlan());
@@ -179,11 +190,11 @@ export default function MotorTrail({ mode }) {
       <AppShell mode={mode}>
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="font-display text-3xl font-black md:text-4xl">המסלול שלנו</h1>
-            <p className="mt-1 text-muted-foreground">בהצלחה! עוברים תחנה אחרי תחנה, בסדר.</p>
+            <h1 className="font-display text-3xl font-black md:text-4xl">{t("המסלול שלנו", "Our obstacle course")}</h1>
+            <p className="mt-1 text-muted-foreground">{t("בהצלחה! עוברים תחנה אחרי תחנה, בסדר.", "Great! Move through the stations one at a time, in order.")}</p>
           </div>
           <Button variant="outline" onClick={() => setStarted(false)} className="rounded-full">
-            <ArrowRight className="h-4 w-4" /> חזרה לעריכה
+            <ArrowRight className="h-4 w-4" />{" "}{t("חזרה לעריכה", "Back to Editing")}
           </Button>
         </div>
 
@@ -203,10 +214,10 @@ export default function MotorTrail({ mode }) {
                 )}
               </div>
               <div className="p-3">
-                <h3 className="text-center font-display text-lg font-bold">{it.label}</h3>
+                <h3 className="text-center font-display text-lg font-bold">{t(it.label, itemLabel(it))}</h3>
                 {it.demo ? (
                   <button type="button" onClick={() => openDemo(it)} className="mx-auto mt-2 flex items-center gap-1.5 rounded-full bg-sage/20 px-3 py-1.5 text-sm font-bold text-sage-foreground">
-                    <Play className="h-4 w-4 fill-current" /> איך עושים?
+                    <Play className="h-4 w-4 fill-current" />{" "}{t("איך עושים?", "How Does It Work?")}
                   </button>
                 ) : null}
               </div>
@@ -225,7 +236,7 @@ export default function MotorTrail({ mode }) {
           to={returnPath}
           className="mb-4 inline-flex items-center gap-2 rounded-full border border-border/60 bg-card px-4 py-2.5 text-base font-bold text-foreground shadow-sm transition-colors hover:bg-sage/10 print:hidden"
         >
-          <ArrowRight className="h-5 w-5" /> {returnTo === "session" ? "חזרה למפגש" : "חזרה לתוכנית הטיפול"}
+          <ArrowRight className="h-5 w-5" /> {returnTo === "session" ? t("חזרה למפגש", "Back to the session") : t("חזרה לתוכנית הטיפול", "Back to the session plan")}
         </Link>
       )}
 
@@ -233,12 +244,12 @@ export default function MotorTrail({ mode }) {
         <div className="flex-1">
           <div className="flex items-center gap-2 text-sage">
             <Route className="h-5 w-5" />
-            <span className="text-sm font-bold">כלי יצירה</span>
+            <span className="text-sm font-bold">{t("כלי יצירה", "Creative tool")}</span>
           </div>
-          <h1 className="mt-1 font-display text-3xl font-black md:text-4xl">מסלול מוטורי</h1>
+          <h1 className="mt-1 font-display text-3xl font-black md:text-4xl">{t("מסלול מוטורי", "Obstacle Course")}</h1>
           <p className="mt-1 text-muted-foreground">
-            לוחצים על המתקנים מהבנק בסדר הרצוי לבניית המסלול - ומקבלים רשימה ממוספרת מוכנה להדפסה.
-            <br />ניתן ללחוץ על סימן המשולש כדי לראות כיצד להשתמש במתקן.
+            {t("לוחצים על המתקנים מהבנק בסדר הרצוי לבניית המסלול - ומקבלים רשימה ממוספרת מוכנה להדפסה.", "Choose equipment from the bank in the order you want to build a obstacle course and get a numbered list ready to print.")}
+            <br />{t("ניתן ללחוץ על סימן המשולש כדי לראות כיצד להשתמש במתקן.", "Select the triangle icon to see how to use each piece of equipment.")}
           </p>
         </div>
         <div className="flex h-32 w-32 shrink-0 items-center justify-center rounded-3xl bg-gradient-to-br from-sage/20 to-sky/20 p-2 sm:h-36 sm:w-36">
@@ -250,15 +261,15 @@ export default function MotorTrail({ mode }) {
         {/* ---------- Bank of available equipment images ---------- */}
         <section className="print:hidden rounded-3xl border border-border/60 bg-card p-5 md:p-6">
           <div className="mb-1 flex items-center justify-between gap-2">
-            <h2 className="font-display text-lg font-bold">בנק מתקנים</h2>
+            <h2 className="font-display text-lg font-bold">{t("בנק מתקנים", "Equipment Library")}</h2>
             {mode === "therapist" && (
               <button type="button" onClick={() => setArchiveOpen(true)} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-bold text-muted-foreground transition hover:border-sage hover:text-foreground">
-                <Archive className="h-3.5 w-3.5" /> ארכיון מתקנים
+                <Archive className="h-3.5 w-3.5" />{" "}{t("ארכיון מתקנים", "Equipment Archive")}
                 {removedEquipment.length > 0 && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-sage/25 px-1 text-[10px] text-sage-foreground">{removedEquipment.length}</span>}
               </button>
             )}
           </div>
-          <p className="mb-3 text-xs text-muted-foreground">לוחצים על מתקן כדי להוסיף אותו למסלול, בסדר שרוצים.</p>
+          <p className="mb-3 text-xs text-muted-foreground">{t("לוחצים על מתקן כדי להוסיף אותו למסלול, בסדר שרוצים.", "Select a piece of equipment to add it to the trail in the order you want.")}</p>
 
           <div className="mb-4 inline-flex rounded-full bg-muted p-1">
             <button
@@ -268,7 +279,7 @@ export default function MotorTrail({ mode }) {
                 bankTab === "clinic" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
               }`}
             >
-              ציוד בקליניקה
+              {t("ציוד בקליניקה", "Clinic Equipment")}
             </button>
             <button
               type="button"
@@ -277,7 +288,7 @@ export default function MotorTrail({ mode }) {
                 bankTab === "home" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
               }`}
             >
-              🏠 מה יש לנו בבית?
+              {t("🏠 מה יש לנו בבית?", "🏠 What do we have at home?")}
             </button>
           </div>
 
@@ -286,22 +297,22 @@ export default function MotorTrail({ mode }) {
             <div className="grid grid-cols-3 gap-3">
               {available.map((it) => (
                 <div key={it.id} className="group relative flex aspect-square flex-col overflow-hidden rounded-3xl border border-border/60 bg-cream transition-colors hover:border-sage/60">
-                  <button type="button" onClick={() => addItem(it.id)} className="flex min-h-0 flex-1 items-center justify-center p-2" aria-label={`הוספת ${it.label} למסלול`}>
+                  <button type="button" onClick={() => addItem(it.id)} className="flex min-h-0 flex-1 items-center justify-center p-2" aria-label={t(`הוספת ${it.label} למסלול`, `Add ${itemLabel(it)} to the course`)}>
                     <img src={it.image} alt="" className="max-h-full max-w-full object-contain" />
                   </button>
-                  {it.demo ? <button type="button" onClick={() => openDemo(it)} className="absolute left-1.5 top-1.5 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sage-foreground shadow-md transition hover:scale-105" aria-label={`הדגמת ${it.label}`} title="איך עושים?">
+                  {it.demo ? <button type="button" onClick={() => openDemo(it)} className="absolute left-1.5 top-1.5 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sage-foreground shadow-md transition hover:scale-105" aria-label={t(`הדגמת ${it.label}`, `${itemLabel(it)} demo`)} title={t("איך עושים?", "How Does It Work?")}>
                     <Play className="h-4 w-4 fill-current" />
                   </button> : null}
-                  {mode === "therapist" && <button type="button" onClick={() => deleteFromBank(it)} className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-white/95 text-muted-foreground shadow-sm transition hover:bg-destructive/10 hover:text-destructive" aria-label={`מחיקת ${it.label} מהמאגר`} title="מחיקה מהמאגר">
+                  {mode === "therapist" && <button type="button" onClick={() => deleteFromBank(it)} className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-white/95 text-muted-foreground shadow-sm transition hover:bg-destructive/10 hover:text-destructive" aria-label={t(`מחיקת ${it.label} מהמאגר`, `Remove ${itemLabel(it)} from the bank`)} title={t("מחיקה מהמאגר", "Delete from the library")}>
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>}
                   <button type="button" onClick={() => addItem(it.id)} className="w-full bg-background/90 px-1 py-1.5 text-center text-[11px] font-semibold leading-tight text-blue-600">
-                    {it.label}
+                    {t(it.label, itemLabel(it))}
                   </button>
                 </div>
               ))}
               {available.length === 0 && (
-                <p className="col-span-3 py-6 text-center text-sm text-muted-foreground">כל המתקנים נוספו למסלול 🎉</p>
+                <p className="col-span-3 py-6 text-center text-sm text-muted-foreground">{t("כל המתקנים נוספו למסלול 🎉", "All equipment has been added to the trail 🎉")}</p>
               )}
               <button
                 type="button"
@@ -311,7 +322,7 @@ export default function MotorTrail({ mode }) {
                 <span className="text-4xl" aria-hidden>
                   🎨
                 </span>
-                <span className="px-1 text-center text-[11px] font-semibold leading-tight">הוסף אביזר יצירה</span>
+                <span className="px-1 text-center text-[11px] font-semibold leading-tight">{t("הוסף אביזר יצירה", "Add a Creative Item")}</span>
               </button>
             </div>
             </div>
@@ -331,7 +342,7 @@ export default function MotorTrail({ mode }) {
                     </span>
                   </div>
                   <span className="w-full bg-background/90 px-1 py-1.5 text-center text-[11px] font-semibold leading-tight text-blue-600">
-                    {it.label}
+                    {t(it.label, itemLabel(it))}
                   </span>
                 </button>
               ))}
@@ -342,18 +353,18 @@ export default function MotorTrail({ mode }) {
         {/* ---------- Scheduled order / printable list ---------- */}
         <section className="rounded-3xl border border-border/60 bg-card p-5 md:p-6 print:!rounded-none print:!border-none print:!p-0">
           <div className="mb-4 flex items-center justify-between print:hidden">
-            <h2 className="font-display text-lg font-bold">המסלול שלנו</h2>
+            <h2 className="font-display text-lg font-bold">{t("המסלול שלנו", "Our obstacle course")}</h2>
             {scheduled.length > 0 && (
               <Button variant="ghost" size="sm" onClick={resetAll} className="rounded-full text-muted-foreground">
-                <RotateCcw className="h-3.5 w-3.5" /> איפוס
+                <RotateCcw className="h-3.5 w-3.5" />{" "}{t("איפוס", "Reset")}
               </Button>
             )}
           </div>
 
-          <h3 className="mb-3 hidden text-center font-display text-xl font-bold print:!mb-1 print:block print:text-sm">מסלול מוטורי</h3>
+          <h3 className="mb-3 hidden text-center font-display text-xl font-bold print:!mb-1 print:block print:text-sm">{t("מסלול מוטורי", "Obstacle Course")}</h3>
 
           {scheduled.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground print:hidden">בחרו מתקנים מהבנק בצד כדי לבנות את המסלול.</p>
+            <p className="py-8 text-center text-sm text-muted-foreground print:hidden">{t("בחרו מתקנים מהבנק בצד כדי לבנות את המסלול.", "Choose equipment from the bank to build your obstacle course.")}</p>
           ) : (
             <ol className="space-y-2 print:!space-y-0.5">
               {scheduled.map((it, i) => (
@@ -373,16 +384,16 @@ export default function MotorTrail({ mode }) {
                       </span>
                     )}
                   </div>
-                  <span className="flex-1 text-lg font-medium leading-snug print:text-xs">{it.label}</span>
+                  <span className="flex-1 text-lg font-medium leading-snug print:text-xs">{t(it.label, itemLabel(it))}</span>
                   <div className="flex shrink-0 items-center gap-1 print:hidden">
-                    {it.demo ? <button type="button" onClick={() => openDemo(it)} aria-label={`איך משתמשים ב${it.label}`} className="me-1 flex h-8 items-center gap-1 rounded-full bg-sage/15 px-2.5 text-xs font-bold text-sage-foreground hover:bg-sage/25">
-                      <Play className="h-3.5 w-3.5 fill-current" /> איך עושים?
+                    {it.demo ? <button type="button" onClick={() => openDemo(it)} aria-label={t(`איך משתמשים ב${it.label}`, `How to use ${itemLabel(it)}`)} className="me-1 flex h-8 items-center gap-1 rounded-full bg-sage/15 px-2.5 text-xs font-bold text-sage-foreground hover:bg-sage/25">
+                      <Play className="h-3.5 w-3.5 fill-current" />{" "}{t("איך עושים?", "How Does It Work?")}
                     </button> : null}
                     <button
                       type="button"
                       onClick={() => move(i, -1)}
                       disabled={i === 0}
-                      aria-label="הזז למעלה"
+                      aria-label={t("הזז למעלה", "Move up")}
                       className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted disabled:opacity-30"
                     >
                       <ChevronUp className="h-4 w-4" />
@@ -391,7 +402,7 @@ export default function MotorTrail({ mode }) {
                       type="button"
                       onClick={() => move(i, 1)}
                       disabled={i === scheduled.length - 1}
-                      aria-label="הזז למטה"
+                      aria-label={t("הזז למטה", "Move down")}
                       className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted disabled:opacity-30"
                     >
                       <ChevronDown className="h-4 w-4" />
@@ -399,7 +410,7 @@ export default function MotorTrail({ mode }) {
                     <button
                       type="button"
                       onClick={() => removeItem(it.id)}
-                      aria-label="הסרה"
+                      aria-label={t("הסרה", "Remove")}
                       className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                     >
                       <X className="h-4 w-4" />
@@ -413,15 +424,15 @@ export default function MotorTrail({ mode }) {
           {scheduled.length > 0 && (
             <div className="mt-5 space-y-2 print:hidden">
               <Button onClick={() => setStarted(true)} className="w-full rounded-full bg-sage text-sage-foreground">
-                <Play className="h-4 w-4" /> התחל מסלול
+                <Play className="h-4 w-4" />{" "}{t("התחל מסלול", "Start Course")}
               </Button>
               {mode === "therapist" && (
                 <Button onClick={handleAddToPlan} variant="outline" className="w-full rounded-full">
-                  <ListPlus className="h-4 w-4" /> {editUid ? "עדכון המסלול בתוכנית" : "הוסף לתכנית הטיפול"}
+                  <ListPlus className="h-4 w-4" /> {editUid ? t("עדכון המסלול בתוכנית", "Update Trail in session plan") : t("הוסף לתכנית הטיפול", "Add to Session Plan")}
                 </Button>
               )}
               <Button onClick={() => window.print()} variant="outline" className="w-full rounded-full">
-                <Printer className="h-4 w-4" /> הדפסה / שמירה כ-PDF
+                <Printer className="h-4 w-4" />{" "}{t("הדפסה / שמירה כ-PDF", "Print / Save as PDF")}
               </Button>
             </div>
           )}
@@ -431,9 +442,9 @@ export default function MotorTrail({ mode }) {
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>הוספת אביזר יצירה למסלול</DialogTitle>
+            <DialogTitle>{t("הוספת אביזר יצירה למסלול", "Add a Creative Item to the Trail")}</DialogTitle>
           </DialogHeader>
-          <p className="mb-4 text-sm text-muted-foreground">בוחרים תחנת יצירה לסיום המסלול, מתוך מאגר התמונות של האתר.</p>
+          <p className="mb-4 text-sm text-muted-foreground">{t("בוחרים תחנת יצירה לסיום המסלול, מתוך מאגר התמונות של האתר.", "Choose a creative station from the site's image library to finish the trail.")}</p>
           <div className="grid grid-cols-3 gap-3">
             {CREATIVE_ACCESSORIES.map((acc) => (
               <button
@@ -446,7 +457,7 @@ export default function MotorTrail({ mode }) {
                   <img src={acc.image} alt="" className="max-h-full max-w-full object-contain" />
                 </div>
                 <span className="w-full bg-background/90 px-1 py-1.5 text-center text-[11px] font-semibold leading-tight text-blue-600">
-                  {acc.label}
+                  {t(acc.label, itemLabel(acc))}
                 </span>
               </button>
             ))}
@@ -457,9 +468,9 @@ export default function MotorTrail({ mode }) {
       <Dialog open={archiveOpen} onOpenChange={setArchiveOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Archive className="h-5 w-5" /> ארכיון מתקנים</DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><Archive className="h-5 w-5" />{" "}{t("ארכיון מתקנים", "Equipment Archive")}</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">כאן נשמרים המתקנים שהוסרת מבנק הקליניקה. אפשר להחזיר אותם למאגר בכל שלב.</p>
+          <p className="text-sm text-muted-foreground">{t("כאן נשמרים המתקנים שהוסרת מבנק הקליניקה. אפשר להחזיר אותם למאגר בכל שלב.", "Equipment removed from the clinic bank is stored here. You can return it at any time.")}</p>
           {removedEquipment.length > 0 ? (
             <>
               <div className="max-h-[55vh] overflow-y-auto py-2">
@@ -467,12 +478,12 @@ export default function MotorTrail({ mode }) {
                   {removedEquipment.map((it) => (
                     <div key={it.id} className="flex flex-col overflow-hidden rounded-2xl border border-border bg-cream">
                       <div className="flex aspect-square items-center justify-center p-3">
-                        <img src={it.image} alt={it.label} className="max-h-full max-w-full object-contain" />
+                        <img src={it.image} alt={t(it.label, itemLabel(it))} className="max-h-full max-w-full object-contain" />
                       </div>
                       <div className="border-t border-border bg-background p-2 text-center">
-                        <p className="mb-2 text-sm font-bold">{it.label}</p>
+                        <p className="mb-2 text-sm font-bold">{t(it.label, itemLabel(it))}</p>
                         <Button type="button" size="sm" variant="outline" onClick={() => restoreToBank(it.id)} className="w-full rounded-full">
-                          <Undo2 className="h-3.5 w-3.5" /> החזרה למאגר
+                          <Undo2 className="h-3.5 w-3.5" />{" "}{t("החזרה למאגר", "Return to Library")}
                         </Button>
                       </div>
                     </div>
@@ -480,14 +491,14 @@ export default function MotorTrail({ mode }) {
                 </div>
               </div>
               <Button type="button" variant="outline" onClick={restoreAllEquipment} className="w-full rounded-full">
-                <RotateCcw className="h-4 w-4" /> החזרת כל המתקנים למאגר
+                <RotateCcw className="h-4 w-4" />{" "}{t("החזרת כל המתקנים למאגר", "Return All Equipment to the Library")}
               </Button>
             </>
           ) : (
             <div className="rounded-3xl border border-dashed border-border p-10 text-center">
               <Archive className="mx-auto mb-3 h-9 w-9 text-muted-foreground/60" />
-              <p className="font-bold">הארכיון ריק</p>
-              <p className="mt-1 text-sm text-muted-foreground">מתקנים שתסירי מבנק הקליניקה יופיעו כאן.</p>
+              <p className="font-bold">{t("הארכיון ריק", "The Archive Is Empty")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("מתקנים שתסירי מבנק הקליניקה יופיעו כאן.", "Equipment removed from the clinic bank will appear here.")}</p>
             </div>
           )}
         </DialogContent>

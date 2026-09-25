@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:metadata": "node scripts/generate-illustration-manifest.mjs && node scripts/generate-sitemap.mjs",
+    "build:metadata": "node scripts/generate-sitemap.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

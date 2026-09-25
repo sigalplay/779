@@ -97,7 +97,7 @@ export const EXPERIMENT_EN = {
       "Secure it with tape and place a soft pom-pom inside.",
       "Pull the knot and release it upwards.",
     ],
-    science: "Pulling the balloon stores energy. Releasing it pushes the pom-pom forwards.",
+    science: "Pulling the balloon stores energy. Releasing it pushes the pom-pom forward.",
     warning: "Launch soft pom-poms only and never aim at anyone’s face.",
   },
   "flying-cup": {
@@ -127,7 +127,7 @@ export const EXPERIMENT_EN = {
       "Tape the balloon to the straw.",
       "Release the peg and watch the rocket race.",
     ],
-    science: "Air rushes backwards and pushes the balloon forwards along the string.",
+    science: "Air rushes backward and pushes the balloon forward along the string.",
   },
   "color-rain": {
     title: "Color Rain in a Glass",

@@ -1,3 +1,5 @@
+import { getLanguage } from "@/lib/language";
+
 const KEY = "boo_therapist_clinic_v1";
 
 const DEMO_PATIENTS = [
@@ -15,6 +17,22 @@ const DEMO_SESSIONS = [
   { id: "s-5", patientId: "p-1", date: "2026-08-11", time: "10:00", status: "completed", title: "טיפול 7", activities: ["seed-4"], summary: "עבדנו על תכנון רצף ותיאום שתי ידיים.", next: "להמשיך עם רצף של 3 שלבים" },
   { id: "s-6", patientId: "p-1", date: "2026-08-04", time: "10:00", status: "completed", title: "טיפול 6", activities: ["seed-4"], summary: "השתתפות טובה עם רמזים מילוליים.", next: "להפחית רמזים" },
 ];
+
+// The sample clients shown before anything is saved; English visitors see English samples.
+const DEMO_ENGLISH = {
+  names: { "p-1": "Emma", "p-2": "Ethan", "p-3": "Maya", "p-4": "Noah" },
+  notes: {
+    "s-5": { summary: "We worked on sequencing and two-handed coordination.", next: "Continue with a 3-step sequence" },
+    "s-6": { summary: "Good participation with verbal prompts.", next: "Reduce prompts" },
+  },
+};
+function demoData() {
+  const data = { patients: clone(DEMO_PATIENTS), sessions: clone(DEMO_SESSIONS) };
+  if (getLanguage() !== "en") return data;
+  data.patients = data.patients.map((patient) => ({ ...patient, name: DEMO_ENGLISH.names[patient.id] }));
+  data.sessions = data.sessions.map((session) => ({ ...session, ...(DEMO_ENGLISH.notes[session.id] || {}) }));
+  return data;
+}
 
 const clone = (v) => JSON.parse(JSON.stringify(v));
 const BACKUP_FORMAT = "boo-nesahek-clinic-backup";
@@ -47,7 +65,7 @@ async function backupKey(password, salt, usages) {
 function read() {
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return { patients: clone(DEMO_PATIENTS), sessions: clone(DEMO_SESSIONS) };
+    if (!raw) return demoData();
     const data = JSON.parse(raw);
     let migrated = false;
     data.patients = data.patients.map((patient, index) => {
@@ -72,7 +90,7 @@ function read() {
     if (migrated) localStorage.setItem(KEY, JSON.stringify(data));
     return data;
   } catch {
-    return { patients: clone(DEMO_PATIENTS), sessions: clone(DEMO_SESSIONS) };
+    return demoData();
   }
 }
 function write(data) {

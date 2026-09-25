@@ -6,8 +6,10 @@ import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { getProfile, signOut, isSignedIn } from "@/lib/storage";
 import { signOutCloud } from "@/lib/cloud-auth";
+import { useTranslator } from "@/lib/language";
 
 export default function Profile() {
+  const { t } = useTranslator();
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
 
@@ -22,7 +24,7 @@ export default function Profile() {
   async function handleSignOut() {
     await signOutCloud();
     signOut();
-    toast.success("התנתקת בהצלחה");
+    toast.success(t("התנתקת בהצלחה", "Signed out successfully."));
     navigate("/");
   }
 
@@ -30,7 +32,7 @@ export default function Profile() {
 
   return (
     <AppShell mode="therapist">
-      <h1 className="mb-6 font-display text-3xl font-black">פרופיל</h1>
+      <h1 className="mb-6 font-display text-3xl font-black">{t("פרופיל", "Profile")}</h1>
 
       <div className="mb-6 rounded-3xl border border-border/60 bg-card p-6">
         <div className="flex items-center gap-4">
@@ -40,12 +42,12 @@ export default function Profile() {
           <div>
             <div className="font-display text-lg font-bold">{profile.display_name}</div>
             <div className="text-sm text-muted-foreground">
-              {profile.email || "משתמש/ת מקומי/ת — הנתונים נשמרים בדפדפן הזה בלבד"}
+              {profile.email || t("משתמש/ת מקומי/ת — הנתונים נשמרים בדפדפן הזה בלבד", "Local user — data is stored in this browser only")}
             </div>
           </div>
         </div>
         <Button variant="outline" onClick={handleSignOut} className="mt-5 rounded-full">
-          <LogOut className="h-4 w-4" /> התנתקות
+          <LogOut className="h-4 w-4" />{" "}{t("התנתקות", "Sign out")}
         </Button>
       </div>
 

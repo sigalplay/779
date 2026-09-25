@@ -15,13 +15,13 @@ function genderize(text, gender) {
 }
 
 export const STORY_TEMPLATES = [
-  { id: "toilet", title: "נפרדים מהחיתול", emoji: "🚽", illustration: `${ILLUSTRATIONS}/toilet-cover-girl.webp`, description: "סיפור רגוע על מעבר לתחתונים, בקשת עזרה ופספוסים." },
-  { id: "sibling", title: "נולד לי אח או אחות", emoji: "👶", illustration: `${ILLUSTRATIONS}/sibling-cover-girl.webp`, description: "מתכוננים לתינוק חדש ולשינויים בבית." },
-  { id: "kindergarten", title: "אני מתחיל/ה גן חדש", emoji: "🧸", illustration: `${ILLUSTRATIONS}/kindergarten-cover-girl.png`, description: "היכרות עם הגן, הפרידה והחזרה הביתה." },
-  { id: "school", title: "אני מתחיל/ה בית ספר חדש", emoji: "🎒", illustration: `${ILLUSTRATIONS}/school-cover-girl.webp`, description: "מתכוננים לכיתה, לצוות ולשגרה החדשה." },
-  { id: "losing-game", title: "לפעמים מפסידים במשחק", emoji: "🎲", illustration: `${ILLUSTRATIONS}/losing-game/girl/cover.webp`, description: "מבינים מה מרגישים כשמפסידים ואילו אפשרויות יכולות לעזור.", personalized: false, style1Only: true },
-  { id: "not-getting-want", title: "כשלא מקבלים את מה שרוצים", emoji: "💭", illustration: `${ILLUSTRATIONS}/not-getting-want/girl/cover.webp`, description: "נותנים מקום לאכזבה ומכירים דרכים להתמודד איתה.", personalized: false, style1Only: true },
-  { id: "personal-space", title: "שומרים על מרחב אישי", emoji: "↔️", illustration: `${ILLUSTRATIONS}/personal-space/girl/cover.webp`, description: "לומדים לזהות מרחב אישי, לבקש רשות ולהקשיב לסימנים של האחר.", personalized: false, style1Only: true },
+  { id: "toilet", title: "נפרדים מהחיתול", emoji: "🚽", illustration: `${ILLUSTRATIONS}/toilet-cover-girl.webp`, description: "סיפור רגוע על מעבר לתחתונים, בקשת עזרה ופספוסים.", titleEn: "Saying Goodbye to Diapers", descriptionEn: "A calm story about moving to underwear, asking for help, and accidents." },
+  { id: "sibling", title: "נולד לי אח או אחות", emoji: "👶", illustration: `${ILLUSTRATIONS}/sibling-cover-girl.webp`, description: "מתכוננים לתינוק חדש ולשינויים בבית.", titleEn: "A New Baby in My Family", descriptionEn: "Preparing for a new baby and changes at home." },
+  { id: "kindergarten", title: "אני מתחיל/ה גן חדש", emoji: "🧸", illustration: `${ILLUSTRATIONS}/kindergarten-cover-girl.png`, description: "היכרות עם הגן, הפרידה והחזרה הביתה.", titleEn: "I Am Starting a New Preschool", descriptionEn: "Getting to know preschool, saying goodbye, and returning home." },
+  { id: "school", title: "אני מתחיל/ה בית ספר חדש", emoji: "🎒", illustration: `${ILLUSTRATIONS}/school-cover-girl.webp`, description: "מתכוננים לכיתה, לצוות ולשגרה החדשה.", titleEn: "I Am Starting a New School", descriptionEn: "Preparing for the classroom, staff, and new routine." },
+  { id: "losing-game", title: "לפעמים מפסידים במשחק", emoji: "🎲", illustration: `${ILLUSTRATIONS}/losing-game/girl/cover.webp`, description: "מבינים מה מרגישים כשמפסידים ואילו אפשרויות יכולות לעזור.", personalized: false, style1Only: true, titleEn: "Sometimes you lose the game", descriptionEn: "Understand how losing feels and which options can help." },
+  { id: "not-getting-want", title: "כשלא מקבלים את מה שרוצים", emoji: "💭", illustration: `${ILLUSTRATIONS}/not-getting-want/girl/cover.webp`, description: "נותנים מקום לאכזבה ומכירים דרכים להתמודד איתה.", personalized: false, style1Only: true, titleEn: "When you don’t get what you want", descriptionEn: "Make room for disappointment and learn ways to cope with it." },
+  { id: "personal-space", title: "שומרים על מרחב אישי", emoji: "↔️", illustration: `${ILLUSTRATIONS}/personal-space/girl/cover.webp`, description: "לומדים לזהות מרחב אישי, לבקש רשות ולהקשיב לסימנים של האחר.", personalized: false, style1Only: true, titleEn: "Respecting personal space", descriptionEn: "Learn to recognize personal space, ask permission, and read other people’s cues." },
 ];
 
 // סיפורים כלליים (לא מותאמים אישית): איור לכל עמוד לפי מגדר, בלי שם הילד ובלי החלפת פנים.
@@ -93,10 +93,10 @@ export function createTemplateStory(templateId, childName, gender = "girl", kind
     "personal-space": { title: "שומרים על מרחב אישי", pages: [["לכל אדם יש מרחב אישי סביב הגוף. זהו המרחק שבו נעים ובטוח לו להיות ליד אנשים אחרים.", "↔️"], ["המרחב שמתאים לאדם אחד לא תמיד מתאים לאחר. הוא יכול להשתנות לפי המקום, הפעילות וההיכרות.", "👫"], ["פנים שמתרחקות, גוף שנסוג, יד שמסמנת לעצור או המילים ‘לא’ ו‘די’ יכולים לומר שצריך יותר מרחק.", "✋"], ["כשמבחינים בסימן כזה, אפשר לעצור ולזוז מעט לאחור. כך נותנים מקום ומראים שהקשבנו.", "👣"], ["לפני חיבוק, מגע או לקיחת חפץ אישי אפשר לשאול. האדם האחר יכול להסכים או לבחור שלא.", "❓"], ["אפשר להציע דרך אחרת להיות יחד, כמו נפנוף, כיף או משחק זה לצד זה. שמירה על מרחב עוזרת לכולם להרגיש בטוחים.", "🙌"]] },
   };
   const englishTemplates = {
-    toilet: { title: `${name === "אני" ? "I" : name} Say Goodbye to Nappies`, pages: [
+    toilet: { title: `${name === "אני" ? "I" : name} Say Goodbye to Diapers`, pages: [
       [`${name === "אני" ? "I am" : `My name is ${name}. I am`} a growing child, and I am learning new things.`, "😊"],
       ["Now I am saying goodbye to diapers and wearing underwear.", "✨"], ["When I feel that I need to pee or poop, I can tell Mom, Dad, or another adult who helps me.", "🤝"],
-      ["I go to the toilet, pull down my trousers, and sit comfortably.", "🚽"], ["I can sit calmly and give my body time. An adult can wait nearby and help me.", "🙂"],
+      ["I go to the toilet, pull down my pants, and sit comfortably.", "🚽"], ["I can sit calmly and give my body time. An adult can wait nearby and help me.", "🙂"],
       ["Sometimes the wee or poo goes in the toilet, and sometimes it does not yet. My body is learning.", "🙂"], ["If I have an accident, it is okay. We clean up, change clothes, and carry on.", "😌"],
       ["After using the toilet, I wipe, flush, and wash my hands.", "🧼"], ["Then I can go back to playing. Each time, I learn a little more.", "🧸"],
     ]},

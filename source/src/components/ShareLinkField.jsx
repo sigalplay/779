@@ -1,22 +1,9 @@
-import { useEffect, useState } from "react";
 import { useTranslator } from "@/lib/language";
-
-const PHONE = "(max-width: 767px)";
-
-function usePhone() {
-  const [phone, setPhone] = useState(() => window.matchMedia(PHONE).matches);
-  useEffect(() => {
-    const query = window.matchMedia(PHONE);
-    const update = () => setPhone(query.matches);
-    query.addEventListener?.("change", update);
-    return () => query.removeEventListener?.("change", update);
-  }, []);
-  return phone;
-}
+import { PHONE_QUERY, useMediaQuery } from "@/lib/use-media-query";
 
 // Read-only field that shows a share link. On a phone it acts as a link: tapping it opens the board.
 export function ShareLinkField({ value, className }) {
-  const phone = usePhone();
+  const phone = useMediaQuery(PHONE_QUERY);
   const { t } = useTranslator();
   const openable = phone && /^https?:\/\//i.test(String(value || "").trim());
   const open = (event) => {

@@ -657,21 +657,22 @@ const PANTRY_EN = {
 };
 
 function AddToPlanButton({ id, mode }) {
+  const { t } = useTranslator();
   const [added, setAdded] = useState(false);
   if (mode !== "therapist") return null;
   return (
     <button
       type="button"
-      aria-label={added ? "נוסף לטיפול" : "הוסף לטיפול"}
+      aria-label={added ? t("נוסף לטיפול", "Added to session") : t("הוסף לטיפול", "Add to session")}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
         const res = addToDraftPlan("experiment", id);
         if (res.added) {
           setAdded(true);
-          toast.success("הניסוי נוסף לטיפול ✨");
+          toast.success(t("הניסוי נוסף לטיפול ✨", "Experiment added to the session ✨"));
         } else {
-          toast.info("הניסוי כבר בתוכנית הטיפול");
+          toast.info(t("הניסוי כבר בתוכנית הטיפול", "This experiment is already in the session plan."));
         }
       }}
       className={`absolute top-3 left-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border bg-background/90 backdrop-blur transition-all hover:scale-105 ${
@@ -739,25 +740,26 @@ function ExperimentPrintRow({ i, iconSrc, label }) {
 }
 
 function ExperimentPrintSheet({ exp, pick, expN, language }) {
+  const { t } = useTranslator();
   const label = (he, en) => language === "en" ? en : he;
   return (
     <div className="activity-print-sheet hidden print:block print:space-y-4 print:text-black">
       <div className="relative flex items-center justify-center gap-5 border-b-2 border-black pb-3">
-        <img src={brandLogo(language)} alt={label("בואו נשחק", "Let's Play")} className="print-sheet-brand absolute left-0 top-0 h-14 w-16 object-contain" />
+        <img src={brandLogo(language)} alt={label(t("בואו נשחק", "Let's Play"), "Let's Play")} className="print-sheet-brand absolute left-0 top-0 h-14 w-16 object-contain" />
         <img src={src(exp.id, "hero")} alt="" className="h-24 w-24 shrink-0 object-contain" />
         <h1 className="text-center text-4xl font-black">{pick(exp.title, expN.title)}</h1>
       </div>
 
       {exp.warning ? (
         <p className="text-lg leading-relaxed">
-          <strong>{label("בטיחות לפני הכול: ", "Safety first: ")}</strong>
+          <strong>{label(t("בטיחות לפני הכול: ", "Safety first: "), "Safety first: ")}</strong>
           {pick(exp.warning, expN.warning)}
         </p>
       ) : null}
 
       {exp.materials?.length ? (
         <div>
-          <div className="mb-1 text-xl font-bold">{label("כלים ומצרכים:", "Materials:")}</div>
+          <div className="mb-1 text-xl font-bold">{label(t("כלים ומצרכים:", "Tools and ingredients:"), "Materials:")}</div>
           <table className="w-full table-fixed border-collapse border border-black text-base">
             <tbody>
               {exp.materials.map((m, i) => (
@@ -770,7 +772,7 @@ function ExperimentPrintSheet({ exp, pick, expN, language }) {
 
       {exp.steps?.length ? (
         <div style={{ breakBefore: "page" }}>
-          <div className="mb-1 text-xl font-bold">{label("שלבים:", "Steps:")}</div>
+          <div className="mb-1 text-xl font-bold">{label(t("שלבים:", "Steps:"), "Steps:")}</div>
           <table className="w-full table-fixed border-collapse border border-black text-base">
             <tbody>
               {exp.steps.map((s, i) => (
@@ -780,7 +782,7 @@ function ExperimentPrintSheet({ exp, pick, expN, language }) {
           </table>
           {exp.science ? (
             <p className="mt-4 text-lg leading-relaxed">
-              <strong>{label("מה קורה כאן? ", "What's happening? ")}</strong>
+              <strong>{label(t("מה קורה כאן? ", "What's happening here? "), "What's happening? ")}</strong>
               {pick(exp.science, expN.science)}
             </p>
           ) : null}
@@ -788,7 +790,7 @@ function ExperimentPrintSheet({ exp, pick, expN, language }) {
       ) : null}
 
       <div className="mt-6 text-center text-xs text-muted-foreground/70">
-        {label("© בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.", "© Let's Play. All rights reserved. Content is for enrichment and practice only and does not replace diagnosis, assessment, professional advice or treatment.")}
+        {label(t("© בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.", "© Let’s Play. All rights reserved. The content here is for enrichment and practice only. It is not a diagnosis, personal therapeutic advice, or a substitute for evaluation, consultation, or treatment by a qualified professional."), "© Let's Play. All rights reserved. Content is for enrichment and practice only and does not replace diagnosis, assessment, professional advice or treatment.")}
       </div>
     </div>
   );
@@ -825,11 +827,11 @@ export default function TherapistExperiments({ mode = "therapist" }){
     return {e,req,missing};
   }).sort((a,b)=>a.missing.length-b.missing.length||a.req.length-b.req.length);
   return <AppShell mode={mode}>
-    <button onClick={()=>setPantryMode(false)} className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground"><ArrowRight className="h-4 w-4"/>חזרה לניסויים</button>
+    <button onClick={()=>setPantryMode(false)} className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground"><ArrowRight className="h-4 w-4"/>{t("חזרה לניסויים", "Back to experiments")}</button>
     <div className="mb-7">
-      <p className="flex items-center gap-2 font-bold text-sage"><Home className="h-5 w-5"/>מנוע חיפוש עצמאי</p>
-      <h1 className="font-display text-4xl font-black">מה יש לנו בבית?</h1>
-      <p className="mt-2 text-muted-foreground">סמנו מה יש לכם בבית, ונציג לכם את הניסויים שאפשר להכין עכשיו - מהקרוב ביותר להשלמה ועד הרחוק ביותר.</p>
+      <p className="flex items-center gap-2 font-bold text-sage"><Home className="h-5 w-5"/>{t("מנוע חיפוש עצמאי", "Find Activities")}</p>
+      <h1 className="font-display text-4xl font-black">{t("מה יש לנו בבית?", "What do we have at home?")}</h1>
+      <p className="mt-2 text-muted-foreground">{t("סמנו מה יש לכם בבית, ונציג לכם את הניסויים שאפשר להכין עכשיו - מהקרוב ביותר להשלמה ועד הרחוק ביותר.", "Select what you have at home and we will show experiments, starting with those closest to being ready.")}</p>
     </div>
     <div className="space-y-3">
       {PANTRY_CATEGORIES.map(cat=>{
@@ -839,7 +841,7 @@ export default function TherapistExperiments({ mode = "therapist" }){
           <button onClick={()=>setOpenCat(isOpen?null:cat.key)} className="flex w-full items-center justify-between p-4 text-right">
             <span className="flex items-center gap-2 font-display text-lg font-bold">
               <span aria-hidden>{cat.emoji}</span>{pantryLabel(cat.label)}
-              {selectedInCat>0&&<span className="rounded-full bg-sage/20 px-2 py-0.5 text-xs font-bold text-sage-foreground">{selectedInCat} נבחרו</span>}
+              {selectedInCat>0&&<span className="rounded-full bg-sage/20 px-2 py-0.5 text-xs font-bold text-sage-foreground">{selectedInCat}{" "}{t("נבחרו", "selected")}</span>}
             </span>
             {isOpen?<ChevronUp className="h-5 w-5 text-muted-foreground"/>:<ChevronDown className="h-5 w-5 text-muted-foreground"/>}
           </button>
@@ -850,12 +852,12 @@ export default function TherapistExperiments({ mode = "therapist" }){
       })}
     </div>
     <div className="mt-8">
-      <h2 className="mb-4 font-display text-2xl font-black">{haveItems.size>0?"מה אפשר להכין עם מה שיש לכם":"כל הניסויים"}</h2>
+      <h2 className="mb-4 font-display text-2xl font-black">{haveItems.size>0?t("מה אפשר להכין עם מה שיש לכם", "What can you make with what you have?"):t("כל הניסויים", "All experiments")}</h2>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 compact-catalog-grid-v95">
         {pantryResults.map(({e,missing})=><div key={e.id} className="relative overflow-hidden rounded-3xl border bg-card transition hover:-translate-y-1 hover:shadow-lg compact-catalog-card-v95">
           <AddToPlanButton id={e.id} mode={mode}/>
           <button onClick={()=>{openExperiment(e);setPantryMode(false)}} className="block w-full text-right">
-          <div className="aspect-square bg-white p-3"><img src={src(e.id,"hero")} className="h-full w-full object-contain" alt={`תמונה של הניסוי ${e.title}`} title={`${e.title} — ניסוי לילדים מבואו נשחק`} data-seo-name={`${e.title} ניסוי לילדים`}/></div>
+          <div className="aspect-square bg-white p-3"><img src={src(e.id,"hero")} className="h-full w-full object-contain" alt={t(`תמונה של הניסוי ${e.title}`, `${e.title} experiment`)} title={t(`${e.title} — ניסוי לילדים מבואו נשחק`, `${e.title} — a kids' experiment from Let's Play`)} data-seo-name={t(`${e.title} ניסוי לילדים`, `${e.title} kids' experiment`)}/></div>
           <div className="p-5">
             <h2 className="font-display text-xl font-black">{e.title}</h2>
             {missing.length===0?<p className="mt-2 flex items-center gap-1 text-sm font-bold text-sage-foreground"><CheckCircle2 className="h-4 w-4"/>{t("יש לכם הכל!","You have everything!")}</p>:<p className="mt-2 text-sm text-muted-foreground">{t("חסר:","Missing:")} {missing.map(pantryLabel).join(", ")}</p>}
@@ -869,7 +871,7 @@ export default function TherapistExperiments({ mode = "therapist" }){
  if(!exp)return <AppShell mode={mode}><div className="mb-7"><p className="flex items-center gap-2 font-bold text-sage"><FlaskConical className="h-5 w-5"/>{t("ניסויים","Kids’ Science Experiments")}</p><h1 className="font-display text-4xl font-black">{t("מעבדת הניסויים","Science Lab")}</h1><p className="mt-2 text-muted-foreground">{t("ניסויים ביתיים עם כלים פשוטים, תמונה לכל פריט ואיור נפרד לכל שלב.","Home experiments using simple materials, with a picture for every item and every step.")}</p></div><button onClick={()=>setPantryMode(true)} className="mb-7 flex w-full items-center gap-4 overflow-hidden rounded-3xl border-2 border-sage/40 bg-gradient-to-l from-sage/25 via-sky/15 to-transparent p-6 text-right transition hover:-translate-y-0.5 hover:shadow-lg"><div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-sage/30 text-sage-foreground"><Home className="h-7 w-7"/></div><div><h2 className="font-display text-2xl font-black md:text-3xl">{t("מה יש לנו בבית?","What do we have at home?")}</h2><p className="mt-1 text-sm text-muted-foreground md:text-base">{t("סמנו מה יש לכם בבית, ונבנה לכם רשימת ניסויים אפשרית - בלי לחפש עוד","Select what you have and we'll show you experiments you can make.")}</p></div></button><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 compact-catalog-grid-v95">{cmsExperiments.map(e=>{const d=display(e);return <div key={e.id} className="relative overflow-hidden rounded-3xl border bg-card transition hover:-translate-y-1 hover:shadow-lg compact-catalog-card-v95"><AddToPlanButton id={e.id} mode={mode}/><button onClick={()=>openExperiment(e)} className="block w-full text-right"><div className="aspect-square bg-white p-3"><img src={src(e.id,"hero")} className="h-full w-full object-contain" alt={t(`תמונה של הניסוי ${e.title}`,`Illustration for the ${d.title} experiment`)} title={t(`${e.title} — ניסוי לילדים מבואו נשחק`,`${d.title} — a Let's Play science experiment for children`)} data-seo-name={t(`${e.title} ניסוי לילדים`,`${d.title} science experiment for children`)}/></div><div className="p-5"><h2 className="font-display text-xl font-black">{d.title}</h2><p className="mt-2 text-sm text-muted-foreground"><Clock className="ml-1 inline h-4 w-4"/>{d.time}</p>{d.warning&&<p className="mt-2 flex items-center gap-1 text-xs font-bold text-orange-700"><ShieldAlert className="h-4 w-4"/>{t("נדרש ליווי מבוגר","Adult supervision required")}</p>}</div></button></div>})}</div></AppShell>;
  const shown=display(exp);
  const allItems=shown.materials.map((text,i)=>({text,i}));
- const item=(x)=>{const isExpanded=expandedMaterial===x.i; return <div key={x.i} className={`flex items-center gap-2 rounded-2xl border p-2 transition-all duration-300 ${isExpanded?"flex-col justify-center py-4 text-center shadow-md":""} ${done[`m${x.i}`]?"border-sage/60 bg-sage/10":"border-border/60 bg-background"}`}><Checkbox checked={!!done[`m${x.i}`]} onCheckedChange={()=>tick(`m${x.i}`)}/><button type="button" onClick={()=>setExpandedMaterial(current=>current===x.i?null:x.i)} aria-label={`${isExpanded?"הקטנת":"הגדלת"} ${x.text}`} className="flex cursor-zoom-in items-center gap-2"><img src={materialSrc(exp,x.i)} className={`${isExpanded?"h-36 w-36 md:h-44 md:w-44":"h-14 w-14"} shrink-0 rounded-xl bg-white object-contain transition-all duration-300`} alt={x.text}/><span className={`text-lg leading-relaxed md:text-xl ${done[`m${x.i}`]?"text-muted-foreground line-through":""} ${handwriting?"font-handwriting":""}`}>{pick(x.text,expN.materials?.[x.i])}</span></button></div>};
+ const item=(x)=>{const isExpanded=expandedMaterial===x.i; return <div key={x.i} className={`flex items-center gap-2 rounded-2xl border p-2 transition-all duration-300 ${isExpanded?"flex-col justify-center py-4 text-center shadow-md":""} ${done[`m${x.i}`]?"border-sage/60 bg-sage/10":"border-border/60 bg-background"}`}><Checkbox checked={!!done[`m${x.i}`]} onCheckedChange={()=>tick(`m${x.i}`)}/><button type="button" onClick={()=>setExpandedMaterial(current=>current===x.i?null:x.i)} aria-label={t(`${isExpanded?"הקטנת":"הגדלת"} ${x.text}`, `${isExpanded?"Reduce":"Enlarge"} ${x.text}`)} className="flex cursor-zoom-in items-center gap-2"><img src={materialSrc(exp,x.i)} className={`${isExpanded?"h-36 w-36 md:h-44 md:w-44":"h-14 w-14"} shrink-0 rounded-xl bg-white object-contain transition-all duration-300`} alt={x.text}/><span className={`text-lg leading-relaxed md:text-xl ${done[`m${x.i}`]?"text-muted-foreground line-through":""} ${handwriting?"font-handwriting":""}`}>{pick(x.text,expN.materials?.[x.i])}</span></button></div>};
  return (
   <AppShell mode={mode}>
    <button onClick={()=>{setExp(null);setSearchParams({});setExpandedStep(null)}} className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground">

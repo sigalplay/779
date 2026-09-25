@@ -52,7 +52,7 @@ const ACTIVITY_TITLES_EN = {
   "seed-60": "Colorful Haircut",
   "seed-61": "Water-Blaster Target Practice",
   "seed-62": "3D Hot-Air Balloon Craft",
-  "seed-63": "Playdough Campfire",
+  "seed-63": "Play Dough Campfire",
   "seed-64": "Finger Football",
   "seed-65": "Sticker Play and Practice",
   "seed-66": "Cut-and-Stick Sukkah Decorations",
@@ -102,11 +102,13 @@ const ACTIVITY_TITLES_EN = {
   "seed-112": "Pomegranate Seed Counting Craft",
 };
 
-ACTIVITY_TITLES_EN["seed-113"] = "Shark Teeth";
+ACTIVITY_TITLES_EN["seed-113"] = "Shark Teeth Play Dough Activity";
 
 ACTIVITY_TITLES_EN["seed-113"] = "Shark Teeth Play Dough Activity";
 
 const TERM_EN = {
+  "תפקודים ניהוליים": "Executive functions", "משחק משותף": "Social play", "יצירה": "Craft", "גמישות": "Flexibility", "קליניקה": "Clinic", "קשב למשימה": "Task attention", "תיאום עין-יד": "Hand–eye coordination",
+  "גן": "Preschool", "בית ספר": "School", "אחר": "Other", "עצמאית": "Private practice",
   "התנסות במאכלים": "Food exploration",
   "ידיים ועבודה עדינה": "Hands and fine motor skills",
   "תנועה וגוף": "Movement and body awareness",
@@ -179,7 +181,7 @@ const TERM_EN = {
   "מספריים": "Scissors",
   "חוטים, צמר וסרטים": "String, yarn, and ribbon",
   "מדבקות / נצנצים": "Stickers / glitter",
-  "פלסטלינה": "Playdough",
+  "פלסטלינה": "Play dough",
   "גירים": "Chalk",
   "מלח": "Salt",
   "סבון כלים": "Dish soap",
@@ -202,4 +204,11 @@ export function activityTitle(activity, language) {
 
 export function translatedTerm(value, language) {
   return language === "en" ? (TERM_EN[value] || value) : value;
+}
+
+// Sessions are numbered in Hebrew when they are created ("טיפול 3"); show them as "Session 3" in English.
+export function sessionTitle(title, language) {
+  if (language !== "en" || !title) return title;
+  const numbered = String(title).match(/^טיפול (\d+)$/);
+  return numbered ? `Session ${numbered[1]}` : translatedTerm(title, language);
 }

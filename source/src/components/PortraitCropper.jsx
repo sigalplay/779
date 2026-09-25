@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useTranslator } from "@/lib/language";
 
 const SIZE = 480;
 
@@ -14,6 +15,7 @@ function draw(ctx, image, scale, offset, clip = false) {
 }
 
 export function PortraitCropper({ source, roleLabel, onCancel, onConfirm }) {
+  const { t } = useTranslator();
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
   const dragRef = useRef(null);
@@ -56,10 +58,10 @@ export function PortraitCropper({ source, roleLabel, onCancel, onConfirm }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 p-4" role="dialog" aria-modal="true" aria-label={`חיתוך תמונת ${roleLabel}`}>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 p-4" role="dialog" aria-modal="true" aria-label={t(`חיתוך תמונת ${roleLabel}`, "Crop photo")}>
       <div className="w-full max-w-lg rounded-3xl bg-background p-5 shadow-2xl" dir="rtl">
-        <h2 className="font-display text-xl font-black">התאמת תמונת {roleLabel}</h2>
-        <p className="mb-4 mt-1 text-sm text-muted-foreground">הזיזו והקטינו את התמונה כך שכל הראש, השיער והצוואר יהיו בתוך העיגול.</p>
+        <h2 className="font-display text-xl font-black">{t(`התאמת תמונת ${roleLabel}`, "Adjust the photo")}</h2>
+        <p className="mb-4 mt-1 text-sm text-muted-foreground">{t("הזיזו והקטינו את התמונה כך שכל הראש, השיער והצוואר יהיו בתוך העיגול.", "Move and resize the photo so the whole head, hair, and neck fit inside the circle.")}</p>
         <div className="relative mx-auto aspect-square w-full max-w-[390px] touch-none overflow-hidden rounded-2xl bg-[#f3eee6]">
           <canvas
             ref={canvasRef}
@@ -74,13 +76,13 @@ export function PortraitCropper({ source, roleLabel, onCancel, onConfirm }) {
           <div className="pointer-events-none absolute inset-[3%_7%] rounded-[50%] border-4 border-dashed border-white shadow-[0_0_0_999px_rgba(0,0,0,.3)]" />
         </div>
         <label className="mt-4 block text-sm font-semibold">
-          גודל התמונה
+          {t("גודל התמונה", "Image size")}
           <input className="mt-2 w-full accent-primary" type="range" min="0.72" max="3.2" step="0.01" value={scale} onChange={(e) => setScale(Number(e.target.value))} />
         </label>
-        <p className="mt-1 text-xs text-muted-foreground">נשמרים שוליים קטנים אוטומטית, כדי שהשיער והצוואר לא ייחתכו בהטמעה.</p>
+        <p className="mt-1 text-xs text-muted-foreground">{t("נשמרים שוליים קטנים אוטומטית, כדי שהשיער והצוואר לא ייחתכו בהטמעה.", "A small margin is kept automatically so the hair and neck are not cropped.")}</p>
         <div className="mt-5 flex gap-2">
-          <Button type="button" onClick={finish} className="flex-1 rounded-full">אישור ותצוגה מקדימה</Button>
-          <Button type="button" onClick={onCancel} variant="outline" className="rounded-full">ביטול</Button>
+          <Button type="button" onClick={finish} className="flex-1 rounded-full">{t("אישור ותצוגה מקדימה", "Confirm and preview")}</Button>
+          <Button type="button" onClick={onCancel} variant="outline" className="rounded-full">{t("ביטול", "Cancel")}</Button>
         </div>
       </div>
     </div>

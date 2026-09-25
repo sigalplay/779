@@ -171,7 +171,7 @@ export default function HebrewCalendarGenerator() {
             <Button variant="outline" onClick={downloadCalendarFile}><Download className="h-4 w-4" /> {t("שמירה בגוגל", "Save to Google Calendar")}</Button>
             <Button onClick={printCalendar}><Printer className="h-4 w-4" /> {t("הדפסה", "Print")}</Button>
             {/* לוח החופשות של משרד החינוך קיים בעברית בלבד */}
-            {!english && <a href="/parent/school-holidays/" className="school-holidays-shortcut">לוח חופשות משרד החינוך</a>}
+            {!english && <a href="/parent/school-holidays/" className="school-holidays-shortcut">{t("לוח חופשות משרד החינוך", "Ministry of Education vacation calendar")}</a>}
           </div>
         </div>
 

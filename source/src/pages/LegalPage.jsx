@@ -183,7 +183,7 @@ export default function LegalPage({ type }) {
             {page.sections.map(([headingHe, headingEn, textHe, textEn]) => (
               <section key={headingHe}>
                 <h2 className="text-xl font-black">{t(headingHe, headingEn)}</h2>
-                <p className="mt-2 leading-7 text-foreground/85">{t(textHe, textEn)}</p>
+                <p className="mt-2 leading-7 text-foreground/85" data-nosnippet={/אבחון|diagnosis/.test(textHe + textEn) ? "" : undefined}>{t(textHe, textEn)}</p>
               </section>
             ))}
           </div>

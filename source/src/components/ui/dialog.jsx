@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslator } from "@/lib/language";
 
 const DialogContext = React.createContext(null);
 
@@ -26,6 +27,7 @@ export function DialogTrigger({ asChild, children }) {
 }
 
 export function DialogContent({ children, className, dir = "rtl" }) {
+  const { t } = useTranslator();
   const ctx = React.useContext(DialogContext);
 
   React.useEffect(() => {
@@ -61,7 +63,7 @@ export function DialogContent({ children, className, dir = "rtl" }) {
             <button
               type="button"
               onClick={() => ctx.setOpen(false)}
-              aria-label="סגור"
+              aria-label={t("סגור", "Close")}
               className="absolute left-4 top-4 rounded-full p-1 text-muted-foreground hover:bg-muted"
             >
               <X className="h-4 w-4" />

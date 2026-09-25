@@ -98,6 +98,7 @@ function edgeCell({ isFirstRow, isLastRow, isFirstCol, isLastCol }) {
 
 // משבצת בודדת בטבלה - ריקה (כפתור הוספה) או עם כרטיס. עיצוב טבלה נקי - בלי צבעים לפי יום.
 function Cell({ card, onAdd, onRemove, compact = false, kidsStyle = false, language = "he" }) {
+  const { t } = useTranslator();
   const heightClass = compact ? "h-14 sm:h-20" : "h-32 sm:h-20";
   if (!card) {
     return (
@@ -127,8 +128,8 @@ function Cell({ card, onAdd, onRemove, compact = false, kidsStyle = false, langu
           className={`absolute right-0.5 top-0.5 z-20 flex items-center justify-center rounded-full bg-sage/70 text-sage-foreground print:hidden ${
             compact ? "h-3 w-3 sm:h-4 sm:w-4" : "h-4 w-4"
           }`}
-          title="פעילות קבועה - חוזרת כל שבוע"
-          aria-label="פעילות קבועה"
+          title={t("פעילות קבועה - חוזרת כל שבוע", "Recurring activity — repeats every week")}
+          aria-label={t("פעילות קבועה", "Recurring activity")}
         >
           <Repeat className={compact ? "h-2 w-2 sm:h-2.5 sm:w-2.5" : "h-2.5 w-2.5"} />
         </span>
@@ -140,8 +141,8 @@ function Cell({ card, onAdd, onRemove, compact = false, kidsStyle = false, langu
           event.stopPropagation();
           onRemove();
         }}
-        aria-label={`מחיקת ${card.title || "הפעילות"}`}
-        title="מחיקת הפעילות"
+        aria-label={t(`מחיקת ${card.title || "הפעילות"}`, `Delete ${card.title || "activity"}`)}
+        title={t("מחיקת הפעילות", "Delete activity")}
         className={`absolute left-0.5 top-0.5 z-20 flex items-center justify-center rounded-full border border-coral/30 bg-white text-coral shadow-sm transition-colors hover:bg-coral/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral print:hidden ${
           compact ? "h-4 w-4 sm:left-1 sm:top-1 sm:h-7 sm:w-7" : "left-1 top-1 h-7 w-7"
         }`}
@@ -201,16 +202,16 @@ export default function WeeklyBoard({ mode }) {
   }
   function switchBoard(id) { setActiveWeeklyBoardId(id); setActiveBoardState(id); setRefreshTick((x) => x + 1); }
   function addBoard() {
-    if (boards.length >= weeklyBoardLimit()) { toast.info("במנוי החינמי אפשר לשמור לוח אחד. במנוי המלא אפשר ליצור לוחות ללא הגבלה."); navigate("/pricing"); return; }
-    const name = window.prompt("איך לקרוא ללוח החדש?", `לוח ${boards.length + 1}`); if (!name) return;
+    if (boards.length >= weeklyBoardLimit()) { toast.info(t("במנוי החינמי אפשר לשמור לוח אחד. במנוי המלא אפשר ליצור לוחות ללא הגבלה.", "The free plan includes one saved visual schedule. The full plan includes unlimited visual schedules.")); navigate("/pricing"); return; }
+    const name = window.prompt(t("איך לקרוא ללוח החדש?", "What should the new board be called?"), t(`לוח ${boards.length + 1}`, `Board ${boards.length + 1}`)); if (!name) return;
     createWeeklyBoard(name); reloadBoards();
   }
-  function renameBoard() { const name = window.prompt("שם חדש ללוח", activeBoard?.name || ""); if (!name) return; renameWeeklyBoard(activeBoardId, name); reloadBoards(); }
+  function renameBoard() { const name = window.prompt(t("שם חדש ללוח", "New board name"), activeBoard?.name || ""); if (!name) return; renameWeeklyBoard(activeBoardId, name); reloadBoards(); }
   function copyBoard() {
-    if (boards.length >= weeklyBoardLimit()) { toast.info("הגעת למספר הלוחות הכלול במנוי שלך."); navigate("/pricing"); return; }
-    duplicateWeeklyBoard(activeBoardId); reloadBoards(); toast.success("הלוח שוכפל");
+    if (boards.length >= weeklyBoardLimit()) { toast.info(t("הגעת למספר הלוחות הכלול במנוי שלך.", "You have reached the number of boards included in your plan.")); navigate("/pricing"); return; }
+    duplicateWeeklyBoard(activeBoardId); reloadBoards(); toast.success(t("הלוח שוכפל", "Board duplicated."));
   }
-  function removeBoard() { if (!window.confirm(`למחוק את „${activeBoard?.name}”?`)) return; if (!deleteWeeklyBoard(activeBoardId)) return; reloadBoards(); }
+  function removeBoard() { if (!window.confirm(t(`למחוק את „${activeBoard?.name}”?`, `Delete "${activeBoard?.name}"?`))) return; if (!deleteWeeklyBoard(activeBoardId)) return; reloadBoards(); }
 
   const settings = useMemo(() => getWeeklyBoardSettings(), [refreshTick]);
   const boardCategories = settings.boardStyle === "kids" ? KIDS_WEEKLY_BOARD_CATEGORIES : WEEKLY_BOARD_CATEGORIES;
@@ -256,7 +257,7 @@ export default function WeeklyBoard({ mode }) {
     setWeekAnchor(parsed.days[0].date);
     setViewMode("week");
     window.history.replaceState({}, "", window.location.pathname);
-    toast.success("הלוח השבועי שקיבלת נשמר במכשיר הזה 📅");
+    toast.success(t("הלוח השבועי שקיבלת נשמר במכשיר הזה 📅", "The weekly visual schedule was saved on this device 📅"));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -440,21 +441,21 @@ export default function WeeklyBoard({ mode }) {
         <h1 className="font-display text-3xl font-black md:text-4xl">{t("לוח התארגנות שבועי", "Weekly Visual Schedule")}</h1>
         <section className="mt-4 rounded-2xl border bg-card p-3">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-bold">הלוחות שלי</span>
+            <span className="font-bold">{t("הלוחות שלי", "My boards")}</span>
             <select value={activeBoardId} onChange={(e) => switchBoard(e.target.value)} className="min-w-44 rounded-full border bg-background px-3 py-2 text-sm font-bold">
               {boards.map((board) => <option key={board.id} value={board.id}>{displayBoardName(board.name)}</option>)}
             </select>
             <span className="text-xs text-muted-foreground">{Number.isFinite(weeklyBoardLimit()) ? `${boards.length}/${weeklyBoardLimit()}` : t(`${boards.length} לוחות`, `${boards.length} boards`)}</span>
-            <Button size="sm" variant="outline" className="rounded-full" onClick={addBoard}><Plus className="h-4 w-4"/> לוח חדש</Button>
-            <Button size="sm" variant="ghost" className="rounded-full" onClick={renameBoard}><Pencil className="h-4 w-4"/> שינוי שם</Button>
-            <Button size="sm" variant="ghost" className="rounded-full" onClick={copyBoard}><Files className="h-4 w-4"/> שכפול</Button>
-            {boards.length > 1 && <Button size="sm" variant="ghost" className="rounded-full text-coral" onClick={removeBoard}><Trash2 className="h-4 w-4"/> מחיקה</Button>}
+            <Button size="sm" variant="outline" className="rounded-full" onClick={addBoard}><Plus className="h-4 w-4"/>{" "}{t("לוח חדש", "New board")}</Button>
+            <Button size="sm" variant="ghost" className="rounded-full" onClick={renameBoard}><Pencil className="h-4 w-4"/>{" "}{t("שינוי שם", "Rename")}</Button>
+            <Button size="sm" variant="ghost" className="rounded-full" onClick={copyBoard}><Files className="h-4 w-4"/>{" "}{t("שכפול", "Duplicate")}</Button>
+            {boards.length > 1 && <Button size="sm" variant="ghost" className="rounded-full text-coral" onClick={removeBoard}><Trash2 className="h-4 w-4"/>{" "}{t("מחיקה", "Delete")}</Button>}
           </div>
         </section>
       </div>
 
       <div className="weekly-board-print-header hidden items-center justify-between print:flex">
-        <img src="/boo-nesahek-logo.png" alt="בואו נשחק" className="weekly-board-print-logo object-contain" />
+        <img src="/boo-nesahek-logo.png" alt={t("בואו נשחק", "Let's Play")} className="weekly-board-print-logo object-contain" />
         <div className="text-center">
           <h1 className="font-display text-xl font-black">{displayBoardName(activeBoard?.name)}</h1>
           <p className="text-sm font-bold">{t("לוח התארגנות שבועי", "Weekly Visual Schedule")} · {formatWeekRangeLabel(weekDates, language)}</p>
@@ -468,7 +469,7 @@ export default function WeeklyBoard({ mode }) {
           <button
             type="button"
             onClick={() => goToWeek(-7)}
-            aria-label="שבוע קודם"
+            aria-label={t("שבוע קודם", "Previous week")}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-card hover:bg-muted"
           >
             <ChevronRight className="h-4 w-4" />
@@ -476,13 +477,13 @@ export default function WeeklyBoard({ mode }) {
           <div className="text-center">
             <div className="font-display text-lg font-black">{formatWeekRangeLabel(weekDates, language)}</div>
             <button type="button" onClick={goToToday} className="text-xs font-bold text-sage underline underline-offset-2">
-              חזרה להיום
+              {t("חזרה להיום", "Back to today")}
             </button>
           </div>
           <button
             type="button"
             onClick={() => goToWeek(7)}
-            aria-label="שבוע הבא"
+            aria-label={t("שבוע הבא", "Next week")}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-card hover:bg-muted"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -497,7 +498,7 @@ export default function WeeklyBoard({ mode }) {
               viewMode === "week" ? "bg-foreground text-background" : "text-muted-foreground"
             }`}
           >
-            <CalendarDays className="h-3.5 w-3.5" /> תצוגה שבועית
+            <CalendarDays className="h-3.5 w-3.5" />{" "}{t("תצוגה שבועית", "Weekly view")}
           </button>
           <button
             type="button"
@@ -506,20 +507,20 @@ export default function WeeklyBoard({ mode }) {
               viewMode === "day" ? "bg-foreground text-background" : "text-muted-foreground"
             }`}
           >
-            <ListTree className="h-3.5 w-3.5" /> יום בודד
+            <ListTree className="h-3.5 w-3.5" />{" "}{t("יום בודד", "Single day")}
           </button>
         </div>
 
         {totalCards > 0 && (
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="ghost" size="sm" onClick={resetWeek} className="rounded-full text-muted-foreground">
-              <RotateCcw className="h-3.5 w-3.5" /> איפוס השבוע הזה
+              <RotateCcw className="h-3.5 w-3.5" />{" "}{t("איפוס השבוע הזה", "Reset this week")}
             </Button>
             <Button variant="outline" onClick={() => setShareOpen(true)} className="rounded-full">
-              <Share2 className="h-4 w-4" /> שיתוף למכשיר אחר
+              <Share2 className="h-4 w-4" />{" "}{t("שיתוף למכשיר אחר", "Share with another device")}
             </Button>
             <Button onClick={() => window.print()} className="rounded-full">
-              <Printer className="h-4 w-4" /> הדפסה
+              <Printer className="h-4 w-4" />{" "}{t("הדפסה", "Print")}
             </Button>
           </div>
         )}
@@ -710,11 +711,11 @@ export default function WeeklyBoard({ mode }) {
 
       <div className="mt-3 flex items-center justify-center gap-2 print:hidden">
         <Button variant="outline" size="sm" onClick={addRow} className="rounded-full">
-          <Plus className="h-3.5 w-3.5" /> הוספת משבצת
+          <Plus className="h-3.5 w-3.5" />{" "}{t("הוספת משבצת", "Add slot")}
         </Button>
         {settings.rowCount > 1 && (
           <Button variant="ghost" size="sm" onClick={removeRow} className="rounded-full text-muted-foreground">
-            <Minus className="h-3.5 w-3.5" /> הסרת משבצת
+            <Minus className="h-3.5 w-3.5" />{" "}{t("הסרת משבצת", "Remove slot")}
           </Button>
         )}
       </div>
@@ -724,17 +725,17 @@ export default function WeeklyBoard({ mode }) {
       <Dialog open={!!removeTarget} onOpenChange={(open) => !open && setRemoveTarget(null)}>
         <DialogContent className="max-h-[96vh] max-w-5xl p-5 md:p-6">
           <DialogHeader>
-            <DialogTitle>מחיקת פעילות קבועה</DialogTitle>
+            <DialogTitle>{t("מחיקת פעילות קבועה", "Delete recurring activity")}</DialogTitle>
           </DialogHeader>
           <p className="mb-4 text-sm text-muted-foreground">
-            הפעילות הזו קבועה וחוזרת כל שבוע. איך למחוק אותה?
+            {t("הפעילות הזו קבועה וחוזרת כל שבוע. איך למחוק אותה?", "This activity repeats every week. How would you like to delete it?")}
           </p>
           <div className="space-y-2">
             <Button onClick={removeRecurringForThisWeekOnly} variant="outline" className="w-full rounded-full">
-              מחיקה רק לשבוע הזה
+              {t("מחיקה רק לשבוע הזה", "Delete for this week only")}
             </Button>
             <Button onClick={removeRecurringEverywhere} variant="destructive" className="w-full rounded-full">
-              מחיקת הפעילות (מכל השבועות)
+              {t("מחיקת הפעילות (מכל השבועות)", "Delete activity from every week")}
             </Button>
           </div>
         </DialogContent>
@@ -895,22 +896,21 @@ export default function WeeklyBoard({ mode }) {
             <DialogTitle>{t("שיתוף הלוח", "Share board")} - {formatWeekRangeLabel(weekDates, language)}</DialogTitle>
           </DialogHeader>
           <p className="mb-4 text-sm text-muted-foreground">
-            שלחו את הקישור הזה למכשיר אחר, או תנו למישהו לסרוק את קוד ה-QR - הוא יפתח את הלוח השבועי הזה, בדיוק כמו שקבעתם,
-            כולל התמונות שהעליתם.
+            {t("שלחו את הקישור הזה למכשיר אחר, או תנו למישהו לסרוק את קוד ה-QR - הוא יפתח את הלוח השבועי הזה, בדיוק כמו שקבעתם, כולל התמונות שהעליתם.", "Send this link to another device or scan the QR code to open this weekly visual schedule exactly as arranged, including uploaded photos.")}
           </p>
 
           {shareCompressing ? (
-            <p className="mb-4 text-center text-sm text-muted-foreground">מכינות את התמונות לקישור...</p>
+            <p className="mb-4 text-center text-sm text-muted-foreground">{t("מכינות את התמונות לקישור...", "Preparing photos for the link...")}</p>
           ) : shareDowngraded ? (
             <p className="mb-4 rounded-xl border border-butter/60 bg-butter/20 p-2 text-center text-xs text-foreground/80">
-              יש הרבה תמונות בשבוע הזה, אז הקישור יצא ארוך מדי - הן יוצגו שם כאייקון 📷 במקום התמונה עצמה, כדי שהקישור עדיין יעבוד.
+              {t("יש הרבה תמונות בשבוע הזה, אז הקישור יצא ארוך מדי - הן יוצגו שם כאייקון 📷 במקום התמונה עצמה, כדי שהקישור עדיין יעבוד.", "This week contains many photos, so the link became too long. They will appear as a 📷 icon so the link can still work.")}
             </p>
           ) : null}
 
           <div className="mb-4 flex justify-center">
             <img
               src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(shareUrlToShow)}`}
-              alt="קוד QR לשיתוף הלוח השבועי"
+              alt={t("קוד QR לשיתוף הלוח השבועי", "QR code for sharing the weekly visual schedule")}
               width={180}
               height={180}
               className="rounded-2xl border border-border/60 bg-white p-2"
@@ -920,7 +920,7 @@ export default function WeeklyBoard({ mode }) {
             <ShareLinkField value={shareUrlToShow} className="flex-1 bg-transparent px-2 text-sm text-muted-foreground sm:text-xs" />
             <Button type="button" size="sm" variant="ghost" onClick={copyShareLink} className="shrink-0 rounded-full" disabled={shareCompressing}>
               {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-              {copied ? "הועתק" : "העתקה"}
+              {copied ? t("הועתק", "Copied") : t("העתקה", "Copy")}
             </Button>
           </div>
         </DialogContent>

@@ -34,7 +34,7 @@ export function ActivityCard({ activity, index = 0, mode, returnPath, returnLabe
     }
     const res = toggleFavorite(activity.id, null);
     setSaved(res.favored);
-    toast.success(res.favored ? t("נשמר במועדפים ❤️", "Saved to favourites ❤️") : t("הוסר מהמועדפים", "Removed from favourites"));
+    toast.success(res.favored ? t("נשמר במועדפים ❤️", "Saved to favorites ❤️") : t("הוסר מהמועדפים", "Removed from favorites"));
   }
 
   function handleAddToPlan(e) {
@@ -64,7 +64,7 @@ export function ActivityCard({ activity, index = 0, mode, returnPath, returnLabe
     >
       <button
         type="button"
-        aria-label={saved ? t("הסר ממועדפים", "Remove from favourites") : t("שמור למועדפים", "Save to favourites")}
+        aria-label={saved ? t("הסר ממועדפים", "Remove from favorites") : t("שמור למועדפים", "Save to favorites")}
         aria-pressed={saved}
         onClick={handleSave}
         className={cn(
@@ -116,7 +116,7 @@ export function ActivityCard({ activity, index = 0, mode, returnPath, returnLabe
             {ageRangeLabel(activity, language)}
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1">
-            <Clock className="h-3 w-3" /> {getActivityDurationShortLabel(activity)}
+            <Clock className="h-3 w-3" /> {getActivityDurationShortLabel(activity, language)}
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-warm px-2.5 py-1 text-foreground/80">
             <Layers className="h-3 w-3" /> {language === "en" ? ({ easy: "Easy", medium: "Moderate", hard: "Advanced" }[activity.difficulty] ?? activity.difficulty) : (DIFFICULTY_LABEL[activity.difficulty] ?? activity.difficulty)}

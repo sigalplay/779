@@ -21,6 +21,7 @@ export const EVENING_ROUTINE_STEPS = [
     id: "dinner",
     labelGirl: "אני אוכלת ארוחת ערב",
     labelBoy: "אני אוכל ארוחת ערב",
+    labelEn: "I eat dinner",
     images: {
       "boy-red": "/icon-bank/morning-routine/boy-breakfast.webp",
       "girl-red": "/icon-bank/morning-routine/girls/brown-breakfast.webp",
@@ -40,6 +41,7 @@ export const EVENING_ROUTINE_STEPS = [
     id: "tidy",
     labelGirl: "אני מסדרת את המשחקים",
     labelBoy: "אני מסדר את המשחקים",
+    labelEn: "I tidy my toys",
     images: {
       "boy-red": "/icon-bank/evening-routine/boys/red/tidy.png",
       "girl-red": "/icon-bank/evening-routine/girls/red/tidy.png",
@@ -59,6 +61,7 @@ export const EVENING_ROUTINE_STEPS = [
     id: "bath",
     labelGirl: "אני מתרחצת",
     labelBoy: "אני מתרחץ",
+    labelEn: "I take a bath",
     images: {
       "boy-asian": "/icon-bank/evening-routine/boys/asian/bath.png",
       "girl-asian": "/icon-bank/evening-routine/girls/asian/bath.png",
@@ -78,6 +81,7 @@ export const EVENING_ROUTINE_STEPS = [
     id: "pajamas",
     labelGirl: "אני לובשת פיג׳מה",
     labelBoy: "אני לובש פיג׳מה",
+    labelEn: "I put on my pajamas",
     images: {
       "boy-red": "/icon-bank/evening-routine/boys/red/pajamas.png",
       "girl-red": "/icon-bank/evening-routine/girls/red/pajamas.png",
@@ -97,6 +101,7 @@ export const EVENING_ROUTINE_STEPS = [
     id: "teeth",
     labelGirl: "אני מצחצחת שיניים",
     labelBoy: "אני מצחצח שיניים",
+    labelEn: "I brush my teeth",
     images: {
       "boy-asian": "/icon-bank/morning-routine/boys/asian/teeth.png",
       "girl-asian": "/icon-bank/morning-routine/girls/asian/teeth.png",
@@ -116,6 +121,7 @@ export const EVENING_ROUTINE_STEPS = [
     id: "toilet",
     labelGirl: "אני הולכת לשירותים",
     labelBoy: "אני הולך לשירותים",
+    labelEn: "I go to the bathroom",
     images: {
       "boy-asian": "/icon-bank/morning-routine/boys/asian/toilet.png",
       "girl-asian": "/icon-bank/morning-routine/girls/asian/toilet.png",
@@ -135,6 +141,7 @@ export const EVENING_ROUTINE_STEPS = [
     id: "diaper",
     labelGirl: "אני מחליפה חיתול",
     labelBoy: "אני מחליף חיתול",
+    labelEn: "I change my diaper",
     images: {
       "boy-asian": "/icon-bank/morning-routine/boys/asian/diaper.png",
       "girl-asian": "/icon-bank/morning-routine/girls/asian/diaper.png",
@@ -154,6 +161,7 @@ export const EVENING_ROUTINE_STEPS = [
     id: "bed",
     labelGirl: "אני נכנסת למיטה",
     labelBoy: "אני נכנס למיטה",
+    labelEn: "I get into bed",
     images: {
       "boy-asian": "/icon-bank/evening-routine/boys/asian/bed.png",
       "girl-asian": "/icon-bank/evening-routine/girls/asian/bed.png",
@@ -173,12 +181,12 @@ export const EVENING_ROUTINE_STEPS = [
 
 export { CHARACTERS, charactersForGender, imageForStep, labelForStep };
 
-export function buildChildEveningRoutineUrl(gender, characterId, order) {
+export function buildChildEveningRoutineUrl(gender, characterId, order, language = "he") {
   const params = new URLSearchParams();
   params.set("g", gender);
   params.set("c", characterId);
   params.set("s", order.join(","));
-  return `${window.location.origin}/child/evening-routine?${params.toString()}`;
+  return `${window.location.origin}${language === "en" ? "/en" : ""}/child/evening-routine?${params.toString()}`;
 }
 
 export function parseChildEveningRoutineParams(searchParams) {

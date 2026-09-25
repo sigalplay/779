@@ -130,8 +130,8 @@ export default function TherapistBuild() {
 
   useEffect(() => {
     if (view === "session") return undefined;
-    document.body.classList.add("therapist-build-search-page", "activities-two-column-page");
-    return () => document.body.classList.remove("therapist-build-search-page", "activities-two-column-page");
+    document.body.classList.add("therapist-build-search-page", "activities-two-column-page", "therapist-search-mobile-page");
+    return () => document.body.classList.remove("therapist-build-search-page", "activities-two-column-page", "therapist-search-mobile-page");
   }, [view]);
 
   function toggleGoal(v) {
@@ -247,12 +247,12 @@ export default function TherapistBuild() {
     const alreadyInPlan = kind === "activity" ? planActivityIds.has(item.id) : kind === "recipe" ? planRecipeIds.has(item.id) : planExperimentIds.has(item.id);
     scrollToTreatmentPlan();
     if (alreadyInPlan) {
-      toast.info(kind === "activity" ? "הפעילות כבר בתוכנית" : kind === "recipe" ? "המתכון כבר בתוכנית" : "הניסוי כבר בתוכנית");
+      toast.info(kind === "activity" ? t("הפעילות כבר בתוכנית", "The activity is already in the plan") : kind === "recipe" ? t("המתכון כבר בתוכנית", "The recipe is already in the plan") : t("הניסוי כבר בתוכנית", "The experiment is already in the plan"));
       return;
     }
     setPlan((prev) => [...prev, { kind, id: item.id }]);
     if (!title) setTitle("מפגש טיפולי");
-    toast.success(kind === "activity" ? "נוספה לתוכנית הטיפול" : kind === "recipe" ? "המתכון נוסף לתוכנית" : "הניסוי נוסף לתוכנית");
+    toast.success(kind === "activity" ? t("נוספה לתוכנית הטיפול", "Added to the session plan") : kind === "recipe" ? t("המתכון נוסף לתוכנית", "Recipe added to the plan") : t("הניסוי נוסף לתוכנית", "Experiment added to the plan"));
   }
 
   function removeFromPlan(item) {
@@ -266,7 +266,7 @@ export default function TherapistBuild() {
     try {
       const image = await readPhotoFile(file, 700, 0.85);
       setPlan((prev) => [...prev, { kind: "photo", uid: `photo-${Date.now()}`, image, label: "תמונה" }]);
-      toast.success("התמונה נוספה לתכנית הטיפול");
+      toast.success(t("התמונה נוספה לתכנית הטיפול", "Photo added to the session plan."));
     } catch { /* unreadable image */ }
   }
 
@@ -283,7 +283,7 @@ export default function TherapistBuild() {
   function handleResetPlan() {
     if (!plan.length) return;
     setPlan([]);
-    toast.success("תוכנית הטיפול אופסה");
+    toast.success(t("תוכנית הטיפול אופסה", "Session plan cleared."));
   }
 
   function handleSave() {
@@ -292,7 +292,7 @@ export default function TherapistBuild() {
       return;
     }
     if (!plan.length) {
-      toast.error("התוכנית ריקה - הוסיפי לפחות פעילות אחת");
+      toast.error(t("התוכנית ריקה - הוסיפי לפחות פעילות אחת", "The plan is empty — add at least one activity."));
       return;
     }
     setSaving(true);
@@ -301,7 +301,7 @@ export default function TherapistBuild() {
       const params = { goals, durationMode, patientId: linkedPatient?.id || null, sessionId };
       const saved = editingPlanId ? updateTreatmentPlan(editingPlanId, planTitle, plan, params) : saveTreatmentPlan(planTitle, plan, params);
       if (!saved) {
-        toast.error("לא הצלחנו למצוא את התכנית לעדכון");
+        toast.error(t("לא הצלחנו למצוא את התכנית לעדכון", "We couldn't find the plan to update"));
         return;
       }
       if (!editingPlanId) {
@@ -311,7 +311,7 @@ export default function TherapistBuild() {
         setSearchParams(next, { replace: true });
       }
       if (sessionId) attachPlanToSession(sessionId, plan, { goals, durationMode, planId: saved.id });
-      toast.success(sessionId ? `התוכנית נשמרה לטיפול של ${linkedPatient?.name || "המטופל"}` : editingPlanId ? "התכנית עודכנה!" : "התכנית נשמרה!");
+      toast.success(sessionId ? t(`התוכנית נשמרה לטיפול של ${linkedPatient?.name || "המטופל"}`, `Plan saved to ${linkedPatient?.name ? `${linkedPatient.name}'s` : "the client's"} session`) : editingPlanId ? t("התכנית עודכנה!", "Plan updated!") : t("התכנית נשמרה!", "Plan saved!"));
     } finally {
       setSaving(false);
     }
@@ -346,7 +346,7 @@ export default function TherapistBuild() {
     if (!sessionId) return;
     attachPlanToSession(sessionId, plan, { goals, durationMode });
     completeClinicSession(sessionId);
-    toast.success("הטיפול הסתיים ונשמר ביומן");
+    toast.success(t("הטיפול הסתיים ונשמר ביומן", "Session completed and saved to the calendar."));
     navigate(`/therapist/patient/${linkedPatient?.id || linkedSession?.patientId}?session=${sessionId}`);
   }
 
@@ -394,7 +394,7 @@ export default function TherapistBuild() {
     <AppShell mode="therapist">
       <div className="mb-4">
         {/* The live site shows "לוח המפגש" as the Hebrew heading here as well. */}
-        <h1 className="font-display text-3xl font-black">{t("לוח המפגש", "Build a structured visual schedule for a session")}</h1>
+        <h1 className="font-display text-3xl font-black">{t("לוח המפגש", "Build a Structured Session Plan")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{t("בחרו תחום התפתחות וזמן, ותכננו מפגש מובנה.", "Choose a skill area and session length to find activities that support your therapy goals.")}</p>
         {linkedPatient && <p className="mt-1 font-bold text-sage-foreground">{t("עבור", "For")} {linkedPatient.name}{linkedSession ? ` · ${linkedSession.date} · ${linkedSession.time || t("שעה לא נקבעה", "Time not set")}` : ""}</p>}
       </div>
@@ -402,16 +402,16 @@ export default function TherapistBuild() {
       <TherapistPostureScissorsTips />
 
       <div className="grid gap-6 lg:grid-cols-[180px_1fr_320px]">
-        <div className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+        <div className="mobile-search-category-tabs flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
           <SideTabBtn active={mainTab === "search"} onClick={() => setMainTab("search")}>{t("מנוע חיפוש", "Find Activities")}</SideTabBtn>
-          <SideTabBtn active={mainTab === "all"} onClick={() => setMainTab("all")}>כל הפעילויות</SideTabBtn>
-          <SideTabBtn active={mainTab === "creative"} onClick={() => setMainTab("creative")}>🎨 פעילויות יצירה</SideTabBtn>
-          <SideTabBtn active={mainTab === "game-making"} onClick={() => setMainTab("game-making")}>🧩 הכנת משחקים</SideTabBtn>
-          <SideTabBtn active={mainTab === "sensory"} onClick={() => setMainTab("sensory")}>🌈 פעילויות סנסוריות</SideTabBtn>
-          <SideTabBtn active={mainTab === "movement"} onClick={() => setMainTab("movement")}>🤸 פעילויות תנועה</SideTabBtn>
-          <SideTabBtn active={mainTab === "social"} onClick={() => setMainTab("social")}>🎉 משחקי חברה</SideTabBtn>
-          <SideTabBtn active={mainTab === "experiments"} onClick={() => setMainTab("experiments")}>ניסויים</SideTabBtn>
-          <SideTabBtn active={mainTab === "recipes"} onClick={() => setMainTab("recipes")}>מתכונים</SideTabBtn>
+          <SideTabBtn active={mainTab === "all"} onClick={() => setMainTab("all")}>{t("כל הפעילויות", "All activities")}</SideTabBtn>
+          <SideTabBtn active={mainTab === "creative"} onClick={() => setMainTab("creative")}>{t("🎨 פעילויות יצירה", "🎨 Creative activities")}</SideTabBtn>
+          <SideTabBtn active={mainTab === "game-making"} onClick={() => setMainTab("game-making")}>{t("🧩 הכנת משחקים", "🧩 Make-and-play games")}</SideTabBtn>
+          <SideTabBtn active={mainTab === "sensory"} onClick={() => setMainTab("sensory")}>{t("🌈 פעילויות סנסוריות", "🌈 Sensory activities")}</SideTabBtn>
+          <SideTabBtn active={mainTab === "movement"} onClick={() => setMainTab("movement")}>{t("🤸 פעילויות תנועה", "🤸 Movement activities")}</SideTabBtn>
+          <SideTabBtn active={mainTab === "social"} onClick={() => setMainTab("social")}>{t("🎉 משחקי חברה", "🎉 Social games")}</SideTabBtn>
+          <SideTabBtn active={mainTab === "experiments"} onClick={() => setMainTab("experiments")}>{t("ניסויים", "Kids’ Science Experiments")}</SideTabBtn>
+          <SideTabBtn active={mainTab === "recipes"} onClick={() => setMainTab("recipes")}>{t("מתכונים", "Kid-Friendly Recipes")}</SideTabBtn>
         </div>
 
         <div className="space-y-6">
@@ -432,7 +432,7 @@ export default function TherapistBuild() {
                 <Label className="mb-2 block">{t("משך הפעילות", "Activity Length")}</Label>
                 <div className="flex flex-wrap gap-2">
                   {DURATIONS.map((d) => (
-                    <button key={d.mode} onClick={() => { setDurationMode(durationMode === d.mode ? null : d.mode); setIndex(0); }} className={cn("rounded-full border px-4 py-1.5 text-sm", durationMode === d.mode ? "border-primary bg-primary text-primary-foreground" : "border-border")}>
+                    <button key={d.mode} onClick={() => { setDurationMode(durationMode === d.mode ? null : d.mode); setIndex(0); }} className={cn("search-filter-chip search-time-chip rounded-full border px-4 py-1.5 text-sm", durationMode === d.mode ? "border-primary bg-primary text-primary-foreground" : "border-border")}>
                       {translatedTerm(d.label, language)}
                     </button>
                   ))}
@@ -458,25 +458,25 @@ export default function TherapistBuild() {
             </div>
           ) : (
             <div className="rounded-3xl border border-dashed border-border p-10 text-center text-muted-foreground">
-              {contentType === "recipes" ? "כל המתכונים כבר בתוכנית." : contentType === "experiments" ? "כל הניסויים כבר בתוכנית." : "לא נמצאו פעילויות תואמות לסינון שבחרת. נסי גיל אחר, פחות מטרות, או משך זמן אחר."}
+              {contentType === "recipes" ? t("כל המתכונים כבר בתוכנית.", "All the recipes are already in the plan.") : contentType === "experiments" ? t("כל הניסויים כבר בתוכנית.", "All the experiments are already in the plan.") : t("לא נמצאו פעילויות תואמות לסינון שבחרת. נסי גיל אחר, פחות מטרות, או משך זמן אחר.", "No activities match your filters. Try a different age, fewer goals, or a different length.")}
             </div>
           ))}
 
           {mainTab === "all" ? (
             <div>
-              <p className="mb-3 text-sm text-muted-foreground">כל הפעילויות בבנק, בלי סינון - {therapistActivities.length} בסך הכל.</p>
+              <p className="mb-3 text-sm text-muted-foreground">{t("כל הפעילויות בבנק, בלי סינון -", "All activities in the library, without filtering —")}{" "}{therapistActivities.length}{" "}{t("בסך הכל.", "in total.")}</p>
               {cardSearch(activityTitles(therapistActivities), "all")}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">{activityCards(therapistActivities)}</div>
             </div>
           ) : mainTab === "creative" ? (
             <div>
               <div className="mb-6 inline-flex flex-wrap rounded-full bg-muted p-1">
-                <SmallTabBtn active={creativeMode === "browse"} onClick={() => setCreativeMode("browse")}>כל פעילויות היצירה</SmallTabBtn>
-                <SmallTabBtn active={creativeMode === "supplies"} onClick={() => setCreativeMode("supplies")}>לפי חומרי יצירה שיש לי</SmallTabBtn>
+                <SmallTabBtn active={creativeMode === "browse"} onClick={() => setCreativeMode("browse")}>{t("כל פעילויות היצירה", "All creative activities")}</SmallTabBtn>
+                <SmallTabBtn active={creativeMode === "supplies"} onClick={() => setCreativeMode("supplies")}>{t("לפי חומרי יצירה שיש לי", "By creative materials I have")}</SmallTabBtn>
               </div>
               <div className="relative mb-5">
                 <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input value={craftQuery} onChange={(event) => setCraftQuery(event.target.value)} placeholder="חיפוש יצירה לפי שם, חומר או מילת מפתח..." className="pr-9" />
+                <Input value={craftQuery} onChange={(event) => setCraftQuery(event.target.value)} placeholder={t("חיפוש יצירה לפי שם, חומר או מילת מפתח...", "Search for a craft by name, material, or keyword...")} className="pr-9" />
               </div>
               {creativeMode === "browse" ? (
                 searchedCreativeBrowseResults.length ? (
@@ -484,11 +484,11 @@ export default function TherapistBuild() {
                     {cardSearch(activityTitles(searchedCreativeBrowseResults), "creative")}
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">{activityCards(searchedCreativeBrowseResults)}</div>
                   </>
-                ) : <div className="rounded-3xl border border-dashed border-border p-10 text-center text-muted-foreground">לא נמצאו יצירות שמתאימות לחיפוש.</div>
+                ) : <div className="rounded-3xl border border-dashed border-border p-10 text-center text-muted-foreground">{t("לא נמצאו יצירות שמתאימות לחיפוש.", "No crafts match your search.")}</div>
               ) : (
                 <div>
                   <div className="mb-6 rounded-3xl border border-border/60 bg-background p-5">
-                    <p className="mb-3 text-sm text-muted-foreground">סמני את החומרים שיש לך בקליניקה או בבית, ונציג פעילויות יצירה - מהקרובה ביותר להכנה מיידית ועד הרחוקה יותר.</p>
+                    <p className="mb-3 text-sm text-muted-foreground">{t("סמני את החומרים שיש לך בקליניקה או בבית, ונציג פעילויות יצירה - מהקרובה ביותר להכנה מיידית ועד הרחוקה יותר.", "Select the materials you have in the clinic or at home and we will show the closest creative activities.")}</p>
                     <div className="flex flex-wrap gap-2">
                       {CRAFT_SUPPLIES.map((s) => (
                         <button key={s.key} onClick={() => toggleCraftItem(s.key)} className={cn("rounded-full border px-3 py-1.5 text-sm", craftHave.has(s.key) ? "border-primary bg-primary text-primary-foreground" : "border-border")}>{s.label}</button>
@@ -501,45 +501,45 @@ export default function TherapistBuild() {
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {searchedCraftResults.map(({ activity, missing }) => (
                           <div key={activity.id} className="relative" hidden={!nameVisible(activityTitle(activity, language))}>
-                            {craftHave.size > 0 ? <span className={cn("absolute -top-2 right-3 z-10 rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow-sm", missing.length === 0 ? "bg-sage text-sage-foreground" : "bg-butter text-foreground/80")}>{missing.length === 0 ? "יש לך הכל! ✓" : `חסר ${missing.length} פריטים`}</span> : null}
+                            {craftHave.size > 0 ? <span className={cn("absolute -top-2 right-3 z-10 rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow-sm", missing.length === 0 ? "bg-sage text-sage-foreground" : "bg-butter text-foreground/80")}>{missing.length === 0 ? t("יש לך הכל! ✓", "You have everything! ✓") : t(`חסר ${missing.length} פריטים`, `${missing.length} ${missing.length === 1 ? "item" : "items"} missing`)}</span> : null}
                             <ActivityCandidateCard activity={activity} addLabel={addLabel} boardMode={boardMode} onAdd={() => handleAdd(activity, "activity")} />
                           </div>
                         ))}
                       </div>
                     </>
-                  ) : <div className="rounded-3xl border border-dashed border-border p-10 text-center text-muted-foreground">לא מצאנו פעילויות יצירה מתאימות כרגע.</div>}
+                  ) : <div className="rounded-3xl border border-dashed border-border p-10 text-center text-muted-foreground">{t("לא מצאנו פעילויות יצירה מתאימות כרגע.", "No suitable creative activities were found.")}</div>}
                 </div>
               )}
             </div>
           ) : mainTab === "game-making" ? (
             <div>
-              <p className="mb-3 text-sm text-muted-foreground">פעילויות שבהן מכינים משחק שאפשר להמשיך לשחק בו.</p>
+              <p className="mb-3 text-sm text-muted-foreground">{t("פעילויות שבהן מכינים משחק שאפשר להמשיך לשחק בו.", "Activities for making a game that can be played again.")}</p>
               {cardSearch(activityTitles(gameMakingResults), "game-making")}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">{activityCards(gameMakingResults)}</div>
             </div>
           ) : mainTab === "sensory" ? (
             <div>
-              <p className="mb-3 text-sm text-muted-foreground">{sensoryResults.length} פעילויות סנסוריות.</p>
+              <p className="mb-3 text-sm text-muted-foreground">{sensoryResults.length}{" "}{t("פעילויות סנסוריות.", "sensory activities.")}</p>
               {cardSearch(activityTitles(sensoryResults), "sensory")}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">{activityCards(sensoryResults)}</div>
             </div>
           ) : mainTab === "movement" ? (
             <div>
-              <p className="mb-3 text-sm text-muted-foreground">{movementResults.length} פעילויות תנועה.</p>
+              <p className="mb-3 text-sm text-muted-foreground">{movementResults.length}{" "}{t("פעילויות תנועה.", "movement activities.")}</p>
               {cardSearch(activityTitles(movementResults), "movement")}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">{activityCards(movementResults)}</div>
             </div>
           ) : mainTab === "social" ? (
             <div>
-              <p className="mb-3 text-sm text-muted-foreground">משחקי חצר וחברה קלאסיים - {socialGamesResults.length} משחקים.</p>
+              <p className="mb-3 text-sm text-muted-foreground">{t("משחקי חצר וחברה קלאסיים -", "Classic outdoor and social games —")}{" "}{socialGamesResults.length}{" "}{t("משחקים.", "games.")}</p>
               {cardSearch(activityTitles(socialGamesResults), "social")}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">{activityCards(socialGamesResults)}</div>
             </div>
           ) : mainTab === "experiments" ? (
             <div>
               <div className="mb-6 inline-flex flex-wrap rounded-full bg-muted p-1">
-                <SmallTabBtn active={experimentsMode === "browse"} onClick={() => setExperimentsMode("browse")}>כל הניסויים</SmallTabBtn>
-                <SmallTabBtn active={experimentsMode === "pantry"} onClick={() => setExperimentsMode("pantry")}>לפי מה שיש לי בבית</SmallTabBtn>
+                <SmallTabBtn active={experimentsMode === "browse"} onClick={() => setExperimentsMode("browse")}>{t("כל הניסויים", "All experiments")}</SmallTabBtn>
+                <SmallTabBtn active={experimentsMode === "pantry"} onClick={() => setExperimentsMode("pantry")}>{t("לפי מה שיש לי בבית", "By what I have at home")}</SmallTabBtn>
               </div>
               {experimentsMode === "browse" ? (
                 <>
@@ -551,7 +551,7 @@ export default function TherapistBuild() {
               ) : (
                 <div>
                   <div className="mb-6 space-y-3 rounded-3xl border border-border/60 bg-background p-5">
-                    <p className="mb-1 text-sm text-muted-foreground">סמני מה יש בקליניקה או בבית, ונבנה רשימת ניסויים אפשרית.</p>
+                    <p className="mb-1 text-sm text-muted-foreground">{t("סמני מה יש בקליניקה או בבית, ונבנה רשימת ניסויים אפשרית.", "Select what you have in the clinic or at home and we will create a list of possible experiments.")}</p>
                     {PANTRY_CATEGORIES.map((cat) => (
                       <div key={cat.key}>
                         <div className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground"><span aria-hidden>{cat.emoji}</span>{cat.label}</div>
@@ -563,12 +563,12 @@ export default function TherapistBuild() {
                       </div>
                     ))}
                   </div>
-                  <h2 className="mb-3 font-display text-lg font-bold">{pantryHave.size > 0 ? "מה אפשר להכין עם מה שיש לך" : "כל הניסויים"}</h2>
+                  <h2 className="mb-3 font-display text-lg font-bold">{pantryHave.size > 0 ? t("מה אפשר להכין עם מה שיש לך", "What you can make with what you have") : t("כל הניסויים", "All experiments")}</h2>
                   {cardSearch(pantryResults.map((r) => r.e.title), "pantry")}
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {pantryResults.map(({ e, missing }) => (
                       <div key={e.id} className="relative" hidden={!nameVisible(e.title)}>
-                        {pantryHave.size > 0 ? <span className={cn("absolute -top-2 right-3 z-10 rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow-sm", missing.length === 0 ? "bg-sage text-sage-foreground" : "bg-butter text-foreground/80")}>{missing.length === 0 ? "יש לך הכל! ✓" : `חסר ${missing.length} פריטים`}</span> : null}
+                        {pantryHave.size > 0 ? <span className={cn("absolute -top-2 right-3 z-10 rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow-sm", missing.length === 0 ? "bg-sage text-sage-foreground" : "bg-butter text-foreground/80")}>{missing.length === 0 ? t("יש לך הכל! ✓", "You have everything! ✓") : t(`חסר ${missing.length} פריטים`, `${missing.length} ${missing.length === 1 ? "item" : "items"} missing`)}</span> : null}
                         <ExperimentCandidateCard item={e} addLabel={addLabel} boardMode={boardMode} onAdd={() => handleAdd(e, "experiment")} />
                       </div>
                     ))}
@@ -578,7 +578,7 @@ export default function TherapistBuild() {
             </div>
           ) : mainTab === "recipes" ? (
             <div>
-              <p className="mb-3 text-sm text-muted-foreground">כל המתכונים בבנק, בלי סינון - {RECIPES.length} בסך הכל.</p>
+              <p className="mb-3 text-sm text-muted-foreground">{t("כל המתכונים בבנק, בלי סינון -", "All recipes in the library, without filtering —")}{" "}{RECIPES.length}{" "}{t("בסך הכל.", "in total.")}</p>
               {cardSearch(RECIPES.map((r) => r.title), "recipes")}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">
                 {RECIPES.map((item) => <RecipeCandidateCard key={item.id} item={item} addLabel={addLabel} boardMode={boardMode} hidden={!nameVisible(item.title)} onAdd={() => handleAdd(item, "recipe")} />)}
@@ -590,21 +590,21 @@ export default function TherapistBuild() {
         {/* ---------- plan sidebar ---------- */}
         <aside data-treatment-plan-panel="" className="h-fit space-y-4 rounded-3xl border border-border/60 bg-card p-5 lg:sticky lg:top-6">
           <div>
-            <h2 className="font-display text-lg font-bold">תכנית הטיפול</h2>
-            <p className="text-sm text-muted-foreground">{plan.length} פריטים{totalMinutes ? ` · ${totalMinutes}+ דק' סה"כ` : ""}</p>
+            <h2 className="font-display text-lg font-bold">{t("תכנית הטיפול", "Session plan")}</h2>
+            <p className="text-sm text-muted-foreground">{plan.length}{" "}{t("פריטים", "items")}{totalMinutes ? t(` · ${totalMinutes}+ דק' סה"כ`, ` · ${totalMinutes}+ min total`) : ""}</p>
           </div>
           <Link to={`/therapist/motor-trail?returnTo=plan${existingMotorTrail ? `&edit=${existingMotorTrail.uid}` : ""}`} className="flex items-center gap-2 rounded-2xl border border-dashed border-sage/50 bg-sage/5 px-3 py-2.5 text-foreground transition-colors hover:bg-sage/10">
             <Route className="h-4 w-4 shrink-0 text-sage-foreground" />
-            <span className="flex-1 text-sm font-medium">{existingMotorTrail ? "עריכת מסלול מוטורי" : "הוספת מסלול מוטורי"}</span>
+            <span className="flex-1 text-sm font-medium">{existingMotorTrail ? t("עריכת מסלול מוטורי", "Edit the Obstacle Course") : t("הוספת מסלול מוטורי", "Add an obstacle course")}</span>
             <ExternalLink className="h-3.5 w-3.5 shrink-0 text-sage-foreground" />
           </Link>
           <label className="flex cursor-pointer items-center gap-2 rounded-2xl border border-dashed border-sage/50 bg-sage/5 px-3 py-2.5 text-foreground transition-colors hover:bg-sage/10">
             <Camera className="h-4 w-4 shrink-0 text-sage-foreground" />
-            <span className="flex-1 text-sm font-medium">צילום תמונה והוספה לתכנית</span>
+            <span className="flex-1 text-sm font-medium">{t("צילום תמונה והוספה לתכנית", "Add a Photo to the Plan")}</span>
             <input type="file" accept="image/*" capture="environment" onChange={handlePhotoCapture} className="hidden" />
           </label>
           {plan.length === 0 ? (
-            <p className="rounded-2xl bg-muted/50 p-4 text-sm text-muted-foreground">עדיין לא הוספת פעילויות. לחצי על "הוסף לתכנית הטיפול" כדי להתחיל.</p>
+            <p className="rounded-2xl bg-muted/50 p-4 text-sm text-muted-foreground">{t("עדיין לא הוספת פעילויות. לחצי על \"הוסף לתכנית הטיפול\" כדי להתחיל.", "No activities have been added yet. Select Add to Session Plan to begin.")}</p>
           ) : (
             <ul className="space-y-2">
               {plan.map((item, i) => {
@@ -631,7 +631,7 @@ export default function TherapistBuild() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium leading-snug">
-                        {item.kind === "activity" ? activityTitle(activity, language) ?? t("פעילות", "Activity") : item.kind === "photo" ? boardItemLabel(item, language) || "תמונה" : item.kind === "recipe" ? recipe?.title ?? "מתכון" : item.kind === "experiment" ? experiment?.title ?? "ניסוי" : "מסלול מוטורי"}
+                        {item.kind === "activity" ? activityTitle(activity, language) ?? t("פעילות", "Activity") : item.kind === "photo" ? boardItemLabel(item, language) || t("תמונה", "Photo") : item.kind === "recipe" ? recipe?.title ?? t("מתכון", "Recipe") : item.kind === "experiment" ? experiment?.title ?? t("ניסוי", "Experiment") : t("מסלול מוטורי", "Obstacle Course")}
                       </span>
                       {item.kind === "motor-trail" && item.equipment?.length > 0 && (
                         <div className="mt-1 flex flex-wrap gap-1">
@@ -648,9 +648,9 @@ export default function TherapistBuild() {
                   <li key={key} className="flex items-center gap-2 rounded-2xl border border-border/60 bg-background p-2">
                     {linkTo ? <Link to={linkTo} className="flex flex-1 items-center gap-2 hover:opacity-80">{inner}</Link> : <div className="flex flex-1 items-center gap-2">{inner}</div>}
                     <div className="flex shrink-0 items-center">
-                      <button type="button" onClick={() => moveItem(i, -1)} disabled={i === 0} aria-label="הזז למעלה" className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted disabled:opacity-30"><ChevronUp className="h-3.5 w-3.5" /></button>
-                      <button type="button" onClick={() => moveItem(i, 1)} disabled={i === plan.length - 1} aria-label="הזז למטה" className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted disabled:opacity-30"><ChevronDown className="h-3.5 w-3.5" /></button>
-                      <button type="button" onClick={() => removeFromPlan(item)} aria-label="הסר מהתוכנית" className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"><X className="h-4 w-4" /></button>
+                      <button type="button" onClick={() => moveItem(i, -1)} disabled={i === 0} aria-label={t("הזז למעלה", "Move up")} className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted disabled:opacity-30"><ChevronUp className="h-3.5 w-3.5" /></button>
+                      <button type="button" onClick={() => moveItem(i, 1)} disabled={i === plan.length - 1} aria-label={t("הזז למטה", "Move down")} className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted disabled:opacity-30"><ChevronDown className="h-3.5 w-3.5" /></button>
+                      <button type="button" onClick={() => removeFromPlan(item)} aria-label={t("הסר מהתוכנית", "Remove from Plan")} className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"><X className="h-4 w-4" /></button>
                     </div>
                   </li>
                 );
@@ -659,20 +659,20 @@ export default function TherapistBuild() {
           )}
           <div className="space-y-2 border-t border-border/60 pt-4">
             <Button onClick={startSession} disabled={!plan.length} className="w-full rounded-full bg-sage text-sage-foreground">
-              <Play className="h-4 w-4" /> {boardMode ? "הוסף למפגש" : sessionId ? "התחל טיפול" : "התחל מפגש"}
+              <Play className="h-4 w-4" /> {boardMode ? t("הוסף למפגש", "Add to session") : sessionId ? t("התחל טיפול", "Start Session") : t("התחל מפגש", "Start Session")}
             </Button>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="שם התוכנית" />
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("שם התוכנית", "Name Your Plan")} />
             <Button onClick={handleSave} disabled={saving || !plan.length} variant="outline" className="w-full rounded-full">
-              <Save className="h-4 w-4" /> {editingPlanId ? "עדכון תכנית" : "שמור תכנית"}
+              <Save className="h-4 w-4" /> {editingPlanId ? t("עדכון תכנית", "Update plan") : t("שמור תכנית", "Save Plan")}
             </Button>
             <Button variant="outline" onClick={() => window.print()} disabled={!plan.length} className="w-full rounded-full">
-              <Printer className="h-4 w-4" /> הדפס
+              <Printer className="h-4 w-4" />{" "}{t("הדפס", "Print")}
             </Button>
             <Link to="/therapist/plans" className="block">
-              <Button variant="outline" className="w-full rounded-full"><FolderOpen className="h-4 w-4" /> התוכניות השמורות שלי</Button>
+              <Button variant="outline" className="w-full rounded-full"><FolderOpen className="h-4 w-4" />{" "}{t("התוכניות השמורות שלי", "Saved Plans")}</Button>
             </Link>
             <Button variant="ghost" onClick={handleResetPlan} disabled={!plan.length} className="w-full rounded-full text-muted-foreground">
-              <RotateCcw className="h-4 w-4" /> איפוס תוכנית הטיפול
+              <RotateCcw className="h-4 w-4" />{" "}{t("איפוס תוכנית הטיפול", "Reset session plan")}
             </Button>
           </div>
         </aside>
@@ -1019,7 +1019,7 @@ function SuggestedActivityCard({ activity, language, t, addLabel, boardMode, hid
         </div>
         <div className="mt-auto flex flex-wrap items-center gap-2">
           <Button onClick={onAdd} size="sm" className="rounded-full bg-sage text-sage-foreground"><Plus className="h-3.5 w-3.5" /> {addLabel}</Button>
-          <Link to={`/activity/${activity.id}`} className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"><ExternalLink className="h-3 w-3" /> צפייה מלאה</Link>
+          <Link to={`/activity/${activity.id}`} className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"><ExternalLink className="h-3 w-3" />{" "}{t("צפייה מלאה", "View Details")}</Link>
         </div>
       </div>
     </div>
@@ -1052,6 +1052,7 @@ function ActivityCandidateCard({ activity, addLabel, boardMode, hidden, onAdd })
 }
 
 function ExperimentCandidateCard({ item, addLabel, boardMode, hidden, onAdd }) {
+  const { t } = useTranslator();
   return (
     <div className={cn("flex flex-col overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm", boardMode && "meeting-search-activity-card")} hidden={hidden}>
       <div className="flex h-40 items-center justify-center bg-white p-3"><img src={experimentHero(item.id)} alt="" className="max-h-full max-w-full object-contain" /></div>
@@ -1062,7 +1063,7 @@ function ExperimentCandidateCard({ item, addLabel, boardMode, hidden, onAdd }) {
         </div>
         <div className="mt-auto flex flex-wrap items-center gap-2">
           <Button onClick={onAdd} size="sm" className="rounded-full bg-sage text-sage-foreground"><Plus className="h-3.5 w-3.5" /> {addLabel}</Button>
-          <Link to={`/therapist/experiments?e=${item.id}`} className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"><ExternalLink className="h-3 w-3" /> צפייה מלאה</Link>
+          <Link to={`/therapist/experiments?e=${item.id}`} className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"><ExternalLink className="h-3 w-3" />{" "}{t("צפייה מלאה", "View Details")}</Link>
         </div>
       </div>
     </div>
@@ -1070,6 +1071,7 @@ function ExperimentCandidateCard({ item, addLabel, boardMode, hidden, onAdd }) {
 }
 
 function RecipeCandidateCard({ item, addLabel, boardMode, hidden, onAdd }) {
+  const { t } = useTranslator();
   return (
     <div className={cn("flex flex-col overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm", boardMode && "meeting-search-activity-card")} hidden={hidden}>
       <div className="flex h-40 items-center justify-center bg-white">
@@ -1083,7 +1085,7 @@ function RecipeCandidateCard({ item, addLabel, boardMode, hidden, onAdd }) {
         </div>
         <div className="mt-auto flex flex-wrap items-center gap-2">
           <Button onClick={onAdd} size="sm" className="rounded-full bg-sage text-sage-foreground"><Plus className="h-3.5 w-3.5" /> {addLabel}</Button>
-          <Link to={`/therapist/recipes?r=${item.id}`} className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"><ExternalLink className="h-3 w-3" /> צפייה מלאה</Link>
+          <Link to={`/therapist/recipes?r=${item.id}`} className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"><ExternalLink className="h-3 w-3" />{" "}{t("צפייה מלאה", "View Details")}</Link>
         </div>
       </div>
     </div>
@@ -1091,7 +1093,7 @@ function RecipeCandidateCard({ item, addLabel, boardMode, hidden, onAdd }) {
 }
 
 function SideTabBtn({ active, children, onClick }) {
-  return <button onClick={onClick} className={cn("shrink-0 whitespace-nowrap rounded-2xl border px-4 py-3 text-sm font-bold text-right transition-colors lg:whitespace-normal", active ? "border-primary bg-sage/20 text-foreground" : "border-border/60 bg-card text-muted-foreground hover:bg-muted")}>{children}</button>;
+  return <button onClick={onClick} className={cn("mobile-search-category-tab shrink-0 whitespace-nowrap rounded-2xl border px-4 py-3 text-sm font-bold text-right transition-colors lg:whitespace-normal", active ? "border-primary bg-sage/20 text-foreground" : "border-border/60 bg-card text-muted-foreground hover:bg-muted")}>{children}</button>;
 }
 
 function SmallTabBtn({ active, children, onClick }) {

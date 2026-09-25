@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Timer, Play, Pause, RotateCcw, X, Minus, Plus, GripVertical, Maximize2, Minimize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslator } from "@/lib/language";
 
 const PRESETS = [5, 10, 15, 20, 30, 45, 60];
 const RAINBOW = ["#e88ba5", "#efbc81", "#e0d884", "#a9cfaa", "#91bad1", "#b19acd"];
@@ -38,6 +39,7 @@ export function VisualSessionTimer({
   open: controlledOpen,
   onOpenChange,
 }) {
+  const { t } = useTranslator();
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : uncontrolledOpen;
@@ -155,27 +157,27 @@ export function VisualSessionTimer({
 
   return (
     <div className={cn("relative print:hidden", floating && (roundTrigger ? "fixed left-4 top-[calc(50%+8rem)] z-40" : "fixed bottom-5 left-5 z-50"))}>
-      {!hideTrigger && <button type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-label={text("פתיחת טיימר חזותי", "Open visual timer")} title={text("טיימר חזותי", "Visual timer")} className={cn("flex items-center justify-center border text-sm font-medium shadow-md transition-colors", roundTrigger ? "h-14 w-14 rounded-2xl p-1" : "gap-2 rounded-full px-4 py-2", open || running ? "border-[#a9cfaa] bg-[#edf6ef]" : "border-border bg-white hover:bg-muted")}>
+      {!hideTrigger && <button type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-label={text(t("פתיחת טיימר חזותי", "Open visual timer"), "Open visual timer")} title={text(t("טיימר חזותי", "Visual timer"), "Visual timer")} className={cn("flex items-center justify-center border text-sm font-medium shadow-md transition-colors", roundTrigger ? "h-14 w-14 rounded-2xl p-1" : "gap-2 rounded-full px-4 py-2", open || running ? "border-[#a9cfaa] bg-[#edf6ef]" : "border-border bg-white hover:bg-muted")}>
         <span className={cn("flex items-center justify-center rounded-full bg-gradient-to-br from-[#f6d9e2] via-[#e4efdc] to-[#d8eaf3]", roundTrigger ? "h-full w-full" : "h-7 w-7")}><Timer className={roundTrigger ? "h-7 w-7 text-[#52766a]" : "h-5 w-5"} /></span>
-        {!roundTrigger && <span>{text("טיימר חזותי", "Visual timer")}</span>}
+        {!roundTrigger && <span>{text(t("טיימר חזותי", "Visual timer"), "Visual timer")}</span>}
         {!roundTrigger && running && <span dir="ltr" className="font-semibold tabular-nums">{timeLabel}</span>}
       </button>}
 
       {open && (
-        <section ref={panelRef} dir={language === "en" ? "ltr" : "rtl"} style={{ left: position.x, top: position.y, width: panelWidth, height: minimized ? "auto" : panelHeight, minWidth: 280, minHeight: minimized ? 0 : 420, maxWidth: "calc(100vw - 16px)", maxHeight: "calc(100vh - 16px)", resize: minimized ? "none" : "both", overflow: minimized ? "hidden" : "auto" }} className="fixed z-[100] rounded-[24px] border border-border/70 bg-white p-4 shadow-2xl" aria-label={text("טיימר חזותי ללוח המפגש", "Visual session timer")}>
+        <section ref={panelRef} dir={language === "en" ? "ltr" : "rtl"} style={{ left: position.x, top: position.y, width: panelWidth, height: minimized ? "auto" : panelHeight, minWidth: 280, minHeight: minimized ? 0 : 420, maxWidth: "calc(100vw - 16px)", maxHeight: "calc(100vh - 16px)", resize: minimized ? "none" : "both", overflow: minimized ? "hidden" : "auto" }} className="fixed z-[100] rounded-[24px] border border-border/70 bg-white p-4 shadow-2xl" aria-label={text(t("טיימר חזותי ללוח המפגש", "Visual timer for the session schedule"), "Visual session timer")}>
           <div onPointerDown={beginDrag} className="flex cursor-move touch-none select-none items-center justify-between rounded-xl bg-muted/50 px-2 py-1">
-            <div className="flex items-center gap-2"><GripVertical className="h-5 w-5 text-muted-foreground" /><h2 className="font-display text-lg font-bold">{text("כמה זמן נשאר?", "How much time is left?")}</h2></div>
+            <div className="flex items-center gap-2"><GripVertical className="h-5 w-5 text-muted-foreground" /><h2 className="font-display text-lg font-bold">{text(t("כמה זמן נשאר?", "How much time is left?"), "How much time is left?")}</h2></div>
             <div className="flex items-center gap-1">
-              <button type="button" onClick={() => setMinimized((value) => !value)} aria-label={minimized ? "החזרת הטיימר" : "מזעור הטיימר"} title={minimized ? "החזרה" : "מזעור"} className="rounded-full p-2 text-muted-foreground hover:bg-white">{minimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}</button>
-              <button type="button" onClick={() => setOpen(false)} aria-label={text("סגירת הטיימר", "Close timer")} className="rounded-full p-2 text-muted-foreground hover:bg-white"><X className="h-4 w-4" /></button>
+              <button type="button" onClick={() => setMinimized((value) => !value)} aria-label={minimized ? t("החזרת הטיימר", "Restore timer") : t("מזעור הטיימר", "Minimize timer")} title={minimized ? t("החזרה", "Restore") : t("מזעור", "Minimize")} className="rounded-full p-2 text-muted-foreground hover:bg-white">{minimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}</button>
+              <button type="button" onClick={() => setOpen(false)} aria-label={text(t("סגירת הטיימר", "Close timer"), "Close timer")} className="rounded-full p-2 text-muted-foreground hover:bg-white"><X className="h-4 w-4" /></button>
             </div>
           </div>
 
           {!minimized && <>
-          <div className="mt-3 flex items-center gap-2 rounded-2xl bg-muted/60 p-2"><button type="button" onClick={() => resizePanel(panelWidth - 40)} aria-label="הקטנת הטיימר" className="rounded-full border bg-white p-1.5"><Minus className="h-4 w-4" /></button><input type="range" min="280" max="760" step="10" value={panelWidth} onChange={(event) => resizePanel(event.target.value)} aria-label="גודל הטיימר" className="min-w-0 flex-1 accent-[#a9cfaa]" /><button type="button" onClick={() => resizePanel(panelWidth + 40)} aria-label="הגדלת הטיימר" className="rounded-full border bg-white p-1.5"><Plus className="h-4 w-4" /></button></div>
+          <div className="mt-3 flex items-center gap-2 rounded-2xl bg-muted/60 p-2"><button type="button" onClick={() => resizePanel(panelWidth - 40)} aria-label={t("הקטנת הטיימר", "Reduce timer")} className="rounded-full border bg-white p-1.5"><Minus className="h-4 w-4" /></button><input type="range" min="280" max="760" step="10" value={panelWidth} onChange={(event) => resizePanel(event.target.value)} aria-label={t("גודל הטיימר", "Timer size")} className="min-w-0 flex-1 accent-[#a9cfaa]" /><button type="button" onClick={() => resizePanel(panelWidth + 40)} aria-label={t("הגדלת הטיימר", "Enlarge timer")} className="rounded-full border bg-white p-1.5"><Plus className="h-4 w-4" /></button></div>
 
           <div className="mx-auto mt-2 w-[min(100%,390px)]">
-            <svg viewBox="0 0 240 240" role="img" aria-label={`נותרו ${timeLabel}`} className="h-auto w-full">
+            <svg viewBox="0 0 240 240" role="img" aria-label={t(`נותרו ${timeLabel}`, `${timeLabel} left`)} className="h-auto w-full">
               <defs><clipPath id={clipId}><path d={sectorPath(fraction)} /></clipPath></defs>
               <circle cx="120" cy="120" r="112" fill="#f5f7f5" stroke="#d9e3df" strokeWidth="2" />
               <circle cx="120" cy="120" r="89" fill="#ffffff" />
@@ -194,9 +196,9 @@ export function VisualSessionTimer({
 
           <div dir="ltr" className="text-center text-3xl font-bold tabular-nums tracking-wide">{timeLabel}</div>
           <div className="mt-4 flex items-center justify-center gap-3">
-            <button type="button" onClick={() => selectMinutes(minutes - 1)} aria-label="הפחתת דקה" className="rounded-full border p-2 hover:bg-muted"><Minus className="h-4 w-4" /></button>
-            <span className="min-w-20 text-center text-sm font-medium">{minutes} {text("דקות", "minutes")}</span>
-            <button type="button" onClick={() => selectMinutes(minutes + 1)} aria-label="הוספת דקה" className="rounded-full border p-2 hover:bg-muted"><Plus className="h-4 w-4" /></button>
+            <button type="button" onClick={() => selectMinutes(minutes - 1)} aria-label={t("הפחתת דקה", "Subtract one minute")} className="rounded-full border p-2 hover:bg-muted"><Minus className="h-4 w-4" /></button>
+            <span className="min-w-20 text-center text-sm font-medium">{minutes} {text(t("דקות", "minutes"), "minutes")}</span>
+            <button type="button" onClick={() => selectMinutes(minutes + 1)} aria-label={t("הוספת דקה", "Add one minute")} className="rounded-full border p-2 hover:bg-muted"><Plus className="h-4 w-4" /></button>
           </div>
           <div className="mt-3 flex flex-wrap justify-center gap-1.5">
             {PRESETS.map((preset) => <button key={preset} type="button" onClick={() => selectMinutes(preset)} className={cn("rounded-full px-2.5 py-1 text-xs", minutes === preset ? "bg-[#dcece3] font-semibold" : "bg-muted/70 hover:bg-muted")}>{preset}</button>)}
@@ -204,11 +206,11 @@ export function VisualSessionTimer({
           <div className="mt-4 flex justify-center gap-2">
             <button type="button" onClick={toggleRunning} className="flex items-center gap-2 rounded-full bg-[#a9cfaa] px-5 py-2 text-sm font-semibold">
               {running ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-              {running ? text("השהיה", "Pause") : text("הפעלה", "Start")}
+              {running ? text(t("השהיה", "Pause"), "Pause") : text(t("הפעלה", "Play"), "Start")}
             </button>
-            <button type="button" onClick={() => selectMinutes(minutes)} className="flex items-center gap-2 rounded-full border px-4 py-2 text-sm"><RotateCcw className="h-4 w-4" />{text("איפוס", "Reset")}</button>
+            <button type="button" onClick={() => selectMinutes(minutes)} className="flex items-center gap-2 rounded-full border px-4 py-2 text-sm"><RotateCcw className="h-4 w-4" />{text(t("איפוס", "Reset"), "Reset")}</button>
           </div>
-          <div className="mt-3 text-center text-[11px] text-muted-foreground">{text("אפשר לגרור מהכותרת ולשנות גודל מהפינה", "Drag the title bar and resize from the corner")}</div>
+          <div className="mt-3 text-center text-[11px] text-muted-foreground">{text(t("אפשר לגרור מהכותרת ולשנות גודל מהפינה", "Drag the title bar to move the timer and use the corner to resize it."), "Drag the title bar and resize from the corner")}</div>
           </>}
         </section>
       )}

@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import { useImageSeo } from "@/lib/image-seo";
 import { SeoManager } from "@/components/SeoManager";
 import { ScrollToTop } from "@/components/ScrollToTop";
-import { useRuntimeEnglishLoader } from "@/lib/runtime-ui-loader";
 import Landing from "@/pages/Landing";
 import { AnalyticsConsent } from "@/components/AnalyticsConsent";
 import { setLanguage } from "@/lib/language";
@@ -118,7 +117,6 @@ function EnglishEntry() {
 
 export default function App() {
   useImageSeo();
-  useRuntimeEnglishLoader();
   return (
     <RouteErrorBoundary><BrowserRouter>
       <ScrollToTop />

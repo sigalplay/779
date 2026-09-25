@@ -27,16 +27,17 @@ export function ReportErrorButton() {
     setDetails("");
   };
 
+  // Below md the accessibility button sits at bottom-24, so this button goes above it (bottom-40).
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button
           type="button"
-          className="fixed bottom-24 left-4 z-40 flex min-h-11 items-center gap-2 rounded-full border border-coral/30 bg-white px-4 py-2 text-sm font-bold text-foreground shadow-lg transition hover:-translate-y-0.5 hover:border-coral/60 hover:shadow-xl md:bottom-6 print:hidden"
+          className="fixed bottom-40 left-3 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-coral/30 bg-white p-0 text-sm font-bold text-foreground shadow-lg transition hover:-translate-y-0.5 hover:border-coral/60 hover:shadow-xl sm:left-4 sm:w-auto sm:gap-2 sm:px-4 md:bottom-6 print:hidden"
           aria-label={isHebrew ? "דווח על טעות" : "Report an error"}
         >
           <MailWarning className="h-4 w-4 text-coral" />
-          <span>{isHebrew ? "דווח על טעות" : "Report an error"}</span>
+          <span className="hidden sm:inline">{isHebrew ? "דווח על טעות" : "Report an error"}</span>
         </button>
       </DialogTrigger>
       <DialogContent dir={isHebrew ? "rtl" : "ltr"}>

@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from "react";
+import { createContext, useContext, useMemo, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { RefreshCw, RotateCcw, Search } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DURATIONS, FUNCTIONAL_DIFFICULTIES, DIFFICULTY_GUIDANCE, ACTIVITY_GROUPS, expandGoals } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { useMediaQuery } from "@/lib/use-media-query";
 import { searchActivitiesSmart, markSeen, resetSeen, filterUnseen, allActivities, isSearchActive } from "@/lib/storage";
 import { CRAFT_SUPPLIES, matchByCraftSupplies } from "@/lib/craft-supplies";
 import { useSearchParams } from "react-router-dom";
@@ -16,7 +17,7 @@ import { activityTitle, translatedTerm } from "@/lib/content-translations";
 
 // טווחי גיל לסינון בחיפוש. אפשר לבחור כמה טווחים יחד.
 const AGE_RANGES = [
-  { label: "6–12 חודשים", min: 0.5, max: 1 },
+  { label: "6–12 חודשים", labelEn: "6–12 months", min: 0.5, max: 1 },
   { label: "2–3", min: 2, max: 3 },
   { label: "4–5", min: 4, max: 5 },
   { label: "6–7", min: 6, max: 7 },
@@ -120,7 +121,7 @@ export default function ParentPlay() {
 
       <div className="grid gap-3 lg:grid-cols-[200px_1fr]">
         {/* ---------- right-side tab menu ---------- */}
-        <div className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+        <div className="mobile-search-category-tabs flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
           <SideTabBtn active={mainTab === "search"} onClick={() => selectMainTab("search")}>
             {t("מנוע חיפוש", "Activity finder")}
           </SideTabBtn>
@@ -152,7 +153,7 @@ export default function ParentPlay() {
               <p className="mb-4 text-sm text-muted-foreground">
                 {t("בחרו גיל, תחום התפתחות וזמן, ונמצא רעיון מתאים. אפשר לבחור גם רק מסנן אחד.", "Choose an age, developmental area, and duration to find a suitable activity. You can also use just one filter.")}
               </p>
-              <Section title={t("1. גיל (אפשר לבחור כמה טווחים)", "1. Age (choose one or more ranges)")}>
+              <Section chipClass="search-age-chip" title={t("1. גיל (אפשר לבחור כמה טווחים)", "1. Age (choose one or more ranges)")}>
                 <div className="flex flex-wrap gap-2">
                   {AGE_RANGES.map((range) => (
                     <Chip
@@ -160,12 +161,12 @@ export default function ParentPlay() {
                       active={selectedAges.includes(range.label)}
                       onClick={() => setSelectedAges((prev) => prev.includes(range.label) ? prev.filter((label) => label !== range.label) : [...prev, range.label])}
                     >
-                      {t(`גיל ${range.label}`, `Ages ${range.label}`)}
+                      {t(`גיל ${range.label}`, `Ages ${range.labelEn || range.label}`)}
                     </Chip>
                   ))}
                 </div>
               </Section>
-              <Section title={t("2. תחום שתרצו לחזק (בחירה אחת)", "2. Developmental area (choose one)")}>
+              <Section chipClass="search-development-chip" title={t("2. תחום שתרצו לחזק (בחירה אחת)", "2. Developmental area (choose one)")}>
                 <div className="space-y-2">
                   {FUNCTIONAL_DIFFICULTIES.map((group) => (
                     <div key={group.category}>
@@ -200,7 +201,7 @@ export default function ParentPlay() {
                 </div>
               </Section>
 
-              <Section title={t("3. כמה זמן יש?", "3. How much time do you have?")}>
+              <Section chipClass="search-time-chip" title={t("3. כמה זמן יש?", "3. How much time do you have?")}>
                 <div className="flex flex-wrap gap-2">
                   {DURATIONS.map((d) => (
                     <Chip key={d.mode} active={maxDur === d.mode} onClick={() => setMaxDur(d.mode)}>
@@ -288,7 +289,7 @@ export default function ParentPlay() {
               <p className="mb-4 text-sm text-muted-foreground">{t(`כל הפעילויות בבנק, בלי סינון - ${parentActivities.length} בסך הכל.`, `All activities in the library, with no filters — ${parentActivities.length} in total.`)}</p>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {parentActivities.map((a, i) => (
-                  <ActivityCard key={a.id} activity={a} index={i} mode="parent" returnPath="/parent/play?tab=all" returnLabel="חזרה לכל הפעילויות" />
+                  <ActivityCard key={a.id} activity={a} index={i} mode="parent" returnPath="/parent/play?tab=all" returnLabel={t("חזרה לכל הפעילויות", "Back to all activities")} />
                 ))}
               </div>
             </div>
@@ -311,7 +312,7 @@ export default function ParentPlay() {
               {creativeMode === "browse" ? (
                 searchedCreativeBrowseResults.length ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {searchedCreativeBrowseResults.map((a, i) => (
-                    <ActivityCard key={a.id} activity={a} index={i} mode="parent" returnPath="/parent/play?tab=creative&creativeMode=browse" returnLabel="חזרה לפעילויות יצירה" />
+                    <ActivityCard key={a.id} activity={a} index={i} mode="parent" returnPath="/parent/play?tab=creative&creativeMode=browse" returnLabel={t("חזרה לפעילויות יצירה", "Back to craft activities")} />
                   ))}
                 </div> : <div className="rounded-3xl border border-dashed border-border p-8 text-center text-muted-foreground">{t("לא נמצאו יצירות שמתאימות לחיפוש.", "No crafts match your search.")}</div>
               ) : (
@@ -341,7 +342,7 @@ export default function ParentPlay() {
                               {missing.length === 0 ? t("יש לכם הכל! ✓", "You have everything! ✓") : t(`חסר ${missing.length} פריטים`, `${missing.length} item${missing.length === 1 ? "" : "s"} missing`)}
                             </span>
                           ) : null}
-                          <ActivityCard activity={activity} index={i} mode="parent" returnPath="/parent/play?tab=creative&creativeMode=supplies" returnLabel="חזרה לפעילויות יצירה" />
+                          <ActivityCard activity={activity} index={i} mode="parent" returnPath="/parent/play?tab=creative&creativeMode=supplies" returnLabel={t("חזרה לפעילויות יצירה", "Back to craft activities")} />
                         </div>
                       ))}
                     </div>
@@ -358,7 +359,7 @@ export default function ParentPlay() {
               <p className="mb-4 text-sm text-muted-foreground">{t(`${sensoryResults.length} פעילויות סנסוריות.`, `${sensoryResults.length} sensory activities.`)}</p>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {sensoryResults.map((a, i) => (
-                  <ActivityCard key={a.id} activity={a} index={i} mode="parent" returnPath="/parent/play?tab=sensory" returnLabel="חזרה לפעילויות סנסוריות" />
+                  <ActivityCard key={a.id} activity={a} index={i} mode="parent" returnPath="/parent/play?tab=sensory" returnLabel={t("חזרה לפעילויות סנסוריות", "Back to sensory activities")} />
                 ))}
               </div>
             </div>
@@ -367,7 +368,7 @@ export default function ParentPlay() {
               <p className="mb-4 text-sm text-muted-foreground">{t(`${movementResults.length} פעילויות תנועה.`, `${movementResults.length} movement activities.`)}</p>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {movementResults.map((a, i) => (
-                  <ActivityCard key={a.id} activity={a} index={i} mode="parent" returnPath="/parent/play?tab=movement" returnLabel="חזרה לפעילויות תנועה" />
+                  <ActivityCard key={a.id} activity={a} index={i} mode="parent" returnPath="/parent/play?tab=movement" returnLabel={t("חזרה לפעילויות תנועה", "Back to movement activities")} />
                 ))}
               </div>
             </div>
@@ -376,7 +377,7 @@ export default function ParentPlay() {
               <p className="mb-4 text-sm text-muted-foreground">{t(`משחקי חצר וחברה קלאסיים - ${socialGamesResults.length} משחקים.`, `Classic playground and social games — ${socialGamesResults.length} games.`)}</p>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {socialGamesResults.map((a, i) => (
-                  <ActivityCard key={a.id} activity={a} index={i} mode="parent" returnPath="/parent/play?tab=social" returnLabel="חזרה למשחקי חברה" />
+                  <ActivityCard key={a.id} activity={a} index={i} mode="parent" returnPath="/parent/play?tab=social" returnLabel={t("חזרה למשחקי חברה", "Back to social games")} />
                 ))}
               </div>
             </div>
@@ -388,24 +389,25 @@ export default function ParentPlay() {
 }
 
 function DifficultyTipButton({ points }) {
+  const { t } = useTranslator();
   const details = useRef(null);
   return (
     <div className="relative z-40 shrink-0 print:hidden">
       <details ref={details} className="group relative">
         <summary
-          aria-label="לפני שמתחילים: מה כדאי לדעת"
-          title="לפני שמתחילים: מה כדאי לדעת"
+          aria-label={t("לפני שמתחילים: מה כדאי לדעת", "Before you begin: what to know")}
+          title={t("לפני שמתחילים: מה כדאי לדעת", "Before you begin: what to know")}
           className="flex h-12 w-12 cursor-pointer list-none items-center justify-center rounded-full border-2 border-[#C89E18] bg-[#FFE47A] text-[26px] shadow-md transition-transform marker:content-none hover:scale-105 group-open:scale-105"
         >
           💡
         </summary>
         <div
           role="dialog"
-          aria-label="לפני שמתחילים: מה כדאי לדעת"
+          aria-label={t("לפני שמתחילים: מה כדאי לדעת", "Before you begin: what to know")}
           className="difficulty-tip-popover absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border-2 border-[#D9B64A] bg-[#FFFEF7] p-4 shadow-xl"
         >
-          <button type="button" className="difficulty-tip-close" aria-label="סגירת חלון ההסבר" onClick={() => details.current?.removeAttribute("open")}>×</button>
-          <h4 className="mb-2 font-display text-sm font-bold">לפני שמתחילים: מה כדאי לדעת</h4>
+          <button type="button" className="difficulty-tip-close" aria-label={t("סגירת חלון ההסבר", "Close explanation")} onClick={() => details.current?.removeAttribute("open")}>×</button>
+          <h4 className="mb-2 font-display text-sm font-bold">{t("לפני שמתחילים: מה כדאי לדעת", "Before you begin: what to know")}</h4>
           <ul className="space-y-1.5">
             {points.map((point, i) => (
               <li key={i} className="flex items-start gap-1.5 text-xs leading-relaxed text-foreground/90">
@@ -425,7 +427,7 @@ function SideTabBtn({ active, children, onClick }) {
     <button
       onClick={onClick}
       className={cn(
-        "shrink-0 whitespace-nowrap rounded-2xl border px-4 py-3 text-sm font-bold text-right transition-colors lg:whitespace-normal",
+        "mobile-search-category-tab shrink-0 whitespace-nowrap rounded-2xl border px-4 py-3 text-sm font-bold text-right transition-colors lg:whitespace-normal",
         active ? "border-primary bg-sage/20 text-foreground" : "border-border/60 bg-card text-muted-foreground hover:bg-muted",
       )}
     >
@@ -448,19 +450,43 @@ function TabBtn({ active, children, onClick }) {
   );
 }
 
-function Section({ title, children }) {
+// A group of search filters. On a narrow phone each group folds up under its title to keep the search short.
+function Section({ title, chipClass, children }) {
+  const phone = useMediaQuery("(max-width: 760px)");
+  const [open, setOpen] = useState(false);
+  const expanded = !phone || open;
+  const toggle = () => setOpen((value) => !value);
   return (
     <div className="mb-3">
-      <div className="mb-1 text-xs font-semibold text-muted-foreground">{title}</div>
-      {children}
+      {phone ? (
+        <div
+          role="button"
+          tabIndex={0}
+          aria-expanded={expanded}
+          onClick={toggle}
+          onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggle(); } }}
+          className="parent-filter-accordion-title mb-1 text-xs font-semibold text-muted-foreground"
+        >
+          {title}
+          <span className="parent-filter-accordion-arrow" aria-hidden="true">⌄</span>
+        </div>
+      ) : (
+        <div className="mb-1 text-xs font-semibold text-muted-foreground">{title}</div>
+      )}
+      <div className={phone ? "parent-filter-accordion-content" : undefined} hidden={!expanded}>
+        <ChipClassContext.Provider value={chipClass}>{children}</ChipClassContext.Provider>
+      </div>
     </div>
   );
 }
+const ChipClassContext = createContext("");
 function Chip({ active, children, onClick }) {
+  const chipClass = useContext(ChipClassContext);
   return (
     <button
       onClick={onClick}
       className={cn(
+        chipClass && `search-filter-chip ${chipClass}`,
         "inline-flex min-h-9 items-center justify-center gap-1 rounded-full border px-3 py-1 text-[13px] font-medium leading-tight transition-colors",
         active ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background hover:bg-muted",
       )}

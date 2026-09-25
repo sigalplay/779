@@ -1,14 +1,14 @@
 const EN = {
   "seed-1": {
     description: "Grate colored chalk, mix it with salt, and fill a clear bottle with colorful layers to create a striking pattern.",
-    materials: ["Colored chalk", "Funnel", "Salt", "Grater", "Bowls", "Clear bottle", "Teaspoon", "Playdough"],
+    materials: ["Colored chalk", "Funnel", "Salt", "Grater", "Bowls", "Clear bottle", "Teaspoon", "Play dough"],
     preparation: "Prepare a separate bowl for each color and cover the table with newspaper to make cleaning easier.",
     steps: [
       "Grate colored chalk into a bowl.",
       "Add salt to the bowl and mix.",
       "Prepare several colors of colored salt.",
       "Fill the bottle with layers of colored salt.",
-      "Secure the cap with playdough.",
+      "Secure the cap with play dough.",
     ],
     adaptations: "Use softer chalk, crush it by hand inside a bag with a rolling pin, or let the child prepare one color while an adult prepares the rest.",
     extensions: "Create more complex patterns, such as hills or diagonal lines, by tilting the bottle at different angles.",
@@ -72,7 +72,7 @@ const EN = {
       "Sort the contents into bowls by color or size.",
       "Find small ‘treasures’ that were hidden in the tray beforehand.",
     ],
-    adaptations: "For children who are sensitive to touch, begin with a spoon or scoop. Allow brief contact and move gradually towards direct touch according to the child’s comfort.",
+    adaptations: "For children who are sensitive to touch, begin with a spoon or scoop. Allow brief contact and move gradually toward direct touch according to the child’s comfort.",
     extensions: "Hide small letters or numbers in the tray for the child to find.",
   },
   "seed-10": {
@@ -92,11 +92,11 @@ const EN = {
     description: "Copy animal movements around the house to release energy and practice motor planning.",
     materials: [],
     steps: [
-      "Frog jumps — crouch low, place both hands on the floor, and jump forwards with both feet together.",
+      "Frog jumps — crouch low, place both hands on the floor, and jump forward with both feet together.",
       "Bear walk — move on hands and feet while keeping the knees off the floor.",
-      "Snake crawl — lie on the tummy and move forwards using the body and arms.",
+      "Snake crawl — lie on the tummy and move forward using the body and arms.",
       "Crab walk — sit down, place the hands behind the body, lift the hips, and move on hands and feet.",
-      "Duck walk — stay in a low squat and move forwards with small steps.",
+      "Duck walk — stay in a low squat and move forward with small steps.",
     ],
     adaptations: "Use shorter distances for younger children or add rest breaks.",
     extensions: "Add a gentle timed challenge or make the animal sounds while moving.",
@@ -211,7 +211,7 @@ const EN = {
       "Optional final round: add facial features and hair to finish the character.",
     ],
     adaptations: "Use only two obstacles and add one body part after each obstacle rather than after a full round.",
-    extensions: "Add crawling under a chair or walking backwards, or time each round and try to improve.",
+    extensions: "Add crawling under a chair or walking backward, or time each round and try to improve.",
   },
   "seed-35": {
     description: "Add a simple drawing rule to any turn-taking board game you already have at home.",
@@ -519,7 +519,7 @@ const EN = {
     steps: [
       "Decorate the bottles with stickers.",
       "Arrange the bottles together like bowling pins.",
-      "Stand behind the line and roll the ball towards them.",
+      "Stand behind the line and roll the ball toward them.",
       "Count how many bottles fell.",
       "Set them up again and try to improve the score.",
     ],
@@ -545,7 +545,7 @@ const EN = {
     preparation: "Choose a safe open space and prepare one red and one green sheet.",
     steps: [
       "Stand at one end of the room with your back to the children, who wait at the other end.",
-      "Say ‘Green light!’ and raise the green sheet. The children move towards you.",
+      "Say ‘Green light!’ and raise the green sheet. The children move toward you.",
       "Say ‘Red light!’, raise the red sheet, and turn around. Everyone must freeze.",
     ],
     adaptations: "Begin with only the green and red cues, without distracting words.",
@@ -561,7 +561,7 @@ const EN = {
       "Practice letters, smoothing the lentils after each attempt.",
       "If the child wishes, write their name one letter at a time.",
     ],
-    adaptations: "For touch sensitivity, begin with a small brush and move gradually towards direct touch.",
+    adaptations: "For touch sensitivity, begin with a small brush and move gradually toward direct touch.",
     extensions: "Hide small objects in the lentils for a visual search before writing.",
   },
   "seed-79": {
@@ -763,7 +763,7 @@ const EN = {
     steps: [
       "Choose the caller.",
       "Everyone waits at the starting line while the caller stands ahead with their back turned.",
-      "The caller says, ‘One, two, three — freeze!’ while the players move forwards.",
+      "The caller says, ‘One, two, three — freeze!’ while the players move forward.",
       "When the caller turns around, everyone freezes. Anyone seen moving returns to the start.",
       "The first player to reach and touch the caller wins and becomes the next caller.",
     ],
@@ -961,7 +961,7 @@ const EN = {
     materials: ["Printed ice-popsicle sheet", "Colored pencils or markers", "Stickers", "Scissors", "Popsicle sticks", "Glue"],
     preparation: "Print the template and arrange the craft materials.",
     steps: ["Color the ice pops.", "Add stickers.", "Cut around each ice popsicle.", "Glue on a popsicle stick."],
-    attachmentLabels: ["Ice lollies to color and cut — PDF"],
+    attachmentLabels: ["Popsicles to color and cut — PDF"],
     adaptations: "Pre-cut the shape, use large stickers, or offer a broad coloring area.",
     extensions: "Make several imaginary flavours and play ice-popsicle shop.",
   },
@@ -969,7 +969,7 @@ const EN = {
     description: "Hide a phone playing music or a musical toy and follow the sound to find it.",
     materials: ["Phone playing music or musical toy"],
     preparation: "",
-    flow_text: "Play music on a phone or musical toy, hide it safely, and invite the child to listen, move towards the sound, and discover where it is hidden.",
+    flow_text: "Play music on a phone or musical toy, hide it safely, and invite the child to listen, move toward the sound, and discover where it is hidden.",
     adaptations: "Keep the object visible or use ‘warmer’ and ‘colder’ clues according to distance.",
     extensions: "Hide several sound-making objects and ask the child to find a particular one.",
   },
@@ -1025,20 +1025,20 @@ const EN = {
     extensions: "Have the child count the teeth, compare the two sides, create a repeating pattern, or use tweezers to remove and replace the teeth.",
   },
   "seed-108": {
-    description: "Use a flashlight to reveal illustrations hidden inside paper jars.",
+    description: "Shine a flashlight behind the paper jars to reveal the hidden pictures.",
     materials: ["Picture Sheet", "Jar Template", "Glue", "Scissors", "Flashlight"],
     preparation: "Print the jar template and picture sheet.",
     steps: [
       "Glue the jar template on top of the picture sheet, making sure the boxes line up.",
       "Cut out each jar separately.",
-      "Shine a flashlight beneath the jar to reveal the hidden picture.",
+      "Hold a flashlight behind each jar to reveal the hidden picture.",
     ],
     tips: [
       { boldPrefix: "School readiness:", text: "Use letters or numbers as the hidden pictures." },
     ],
     attachmentLabels: ["Printable colorful animal sheet", "Printable empty jar sheet"],
     adaptations: "Prepare the jars in advance and use fewer of them.",
-    extensions: "Use the jars to practice letters and numbers.",
+    extensions: "Ask the child to name each hidden letter or number, match it to another card, or find it in a word.",
   },
   "seed-109": {
     description: "Hide colors inside a white paper-towel worm, spray it with water, and watch it expand and reveal the colors.",
@@ -1056,17 +1056,17 @@ const EN = {
     extensions: "Try different color arrangements and predict how they will look when wet.",
   },
   "seed-110": {
-    description: "Make a flat paper-towel flower, add water to the center, and watch the colors spread towards the tips of the petals.",
-    materials: ["Paper towel", "Pencil", "Scissors", "Water-based markers", "Plate", "Water", "Dropper"],
+    description: "Make a flat paper-towel flower, add water to the center, and watch the colors spread toward the tips of the petals.",
+    materials: ["Paper towel", "Pencil", "Scissors", "Water-based markers", "Plate", "Small Cup of Water", "Dropper"],
     preparation: "Set out a dry plate, a small cup of water, and a dropper.",
     steps: [
       "Draw a large flower with wide petals on a paper towel.",
       "Cut around the outline of the flower.",
-      "Color a ring around the center.",
+      "Use the markers to color a thick ring around the center of the flower.",
       "Lay the flower flat on a dry plate.",
-      "Drop water into the center and watch the colors travel to the petal tips.",
+      "Use the dropper to add a few drops of water to the center. Watch the colors spread toward the tips of the petals.",
     ],
-    adaptations: "Prepare a pre-cut flower for the child to color and add water to.",
+    adaptations: "Provide a pre-cut flower for the child to color and add water to.",
     extensions: "Make flowers in different sizes and predict which flower’s colors will reach the petal tips first.",
   },
   "seed-111": {
@@ -1212,8 +1212,8 @@ const EN = {
     extensions: "Gradually increase the distance, or keep score based on the number of hits.",
   },
   "seed-63": {
-    description: "A sensory series of mini-tasks around a campfire theme, using playdough, skewers, aluminum foil, and matches.",
-    materials: ["Playdough", "Wooden skewers", "Aluminum foil", "Matches (with adult supervision)", "Disposable plate"],
+    description: "A sensory series of mini-tasks around a campfire theme, using play dough, skewers, aluminum foil, and matches.",
+    materials: ["Play dough", "Wooden skewers", "Aluminum foil", "Matches (with adult supervision)", "Disposable plate"],
     preparation: "Arrange all the materials on a disposable plate before starting the activity.",
     steps: [
       "Roll playdough into balls (\"campfire stones\").",

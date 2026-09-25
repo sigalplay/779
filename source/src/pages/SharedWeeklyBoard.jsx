@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { Printer, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { parseWeeklyBoardShareParams } from "@/lib/storage";
+import { useTranslator } from "@/lib/language";
 
 const DAY_LABELS = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
 const MONTH_LABELS = [
@@ -34,6 +35,7 @@ function edgeCell({ isFirstRow, isLastRow, isFirstCol, isLastCol }) {
 }
 
 export default function SharedWeeklyBoard() {
+  const { t } = useTranslator();
   const [searchParams] = useSearchParams();
   const parsed = useMemo(() => parseWeeklyBoardShareParams(searchParams), [searchParams]);
 
@@ -47,7 +49,7 @@ export default function SharedWeeklyBoard() {
   if (!parsed) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-cream p-6 text-center" dir="rtl">
-        <p className="text-lg text-muted-foreground">הקישור הזה לא תקין. בקשו קישור חדש ללוח השבועי.</p>
+        <p className="text-lg text-muted-foreground">{t("הקישור הזה לא תקין. בקשו קישור חדש ללוח השבועי.", "This link is invalid. Please ask for a new weekly-board link.")}</p>
       </div>
     );
   }
@@ -63,20 +65,20 @@ export default function SharedWeeklyBoard() {
       <div className="shared-weekly-board-page mx-auto max-w-5xl px-4 py-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 print:hidden">
           <div className="flex items-center gap-2">
-            <img src="/boo-nesahek-logo.png" alt="בואו נשחק" className="h-14 w-14 rounded-xl object-contain" />
+            <img src="/boo-nesahek-logo.png" alt={t("בואו נשחק", "Let's Play")} className="h-14 w-14 rounded-xl object-contain" />
             <CalendarDays className="h-6 w-6 text-sage-foreground" />
             <div>
-              <h1 className="font-display text-2xl font-black md:text-3xl">הלוח השבועי שלנו</h1>
+              <h1 className="font-display text-2xl font-black md:text-3xl">{t("הלוח השבועי שלנו", "Our weekly visual schedule")}</h1>
               <p className="text-sm text-muted-foreground">{formatWeekRangeLabel(days)}</p>
             </div>
           </div>
           <Button onClick={() => window.print()} className="rounded-full">
-            <Printer className="h-4 w-4" /> הדפסה
+            <Printer className="h-4 w-4" />{" "}{t("הדפסה", "Print")}
           </Button>
         </div>
 
         <h1 className="shared-weekly-board-title mb-4 hidden text-center font-display text-xl font-bold print:block">
-          הלוח השבועי שלנו - {formatWeekRangeLabel(days)}
+          {t("הלוח השבועי שלנו -", "Our weekly visual schedule —")}{" "}{formatWeekRangeLabel(days)}
         </h1>
 
         <div className="shared-weekly-board-table overflow-x-auto bg-white print:overflow-visible" style={{ "--weekly-row-height": `${printRowHeightMm}mm` }}>
@@ -92,7 +94,7 @@ export default function SharedWeeklyBoard() {
                       isLastCol: false,
                     })}`}
                   >
-                    שעה
+                    {t("שעה", "Time")}
                   </th>
                 )}
                 {days.map((day, i) => (
@@ -186,13 +188,13 @@ export default function SharedWeeklyBoard() {
         </div>
 
         <a href="/" className="mx-auto mt-6 block max-w-md rounded-2xl border border-rose/30 bg-rose/20 px-4 py-3 text-center font-bold text-foreground transition hover:bg-rose/30 print:hidden">
-          צור לוח משלך — בואו נשחק
+          {t("צור לוח משלך — בואו נשחק", "Create your own visual schedule — Let's Play")}
         </a>
         <div className="shared-weekly-board-logo hidden items-center justify-start print:flex">
-          <img src="/boo-nesahek-logo.png" alt="בואו נשחק" className="h-11 w-auto object-contain" />
+          <img src="/boo-nesahek-logo.png" alt={t("בואו נשחק", "Let's Play")} className="h-11 w-auto object-contain" />
         </div>
         <p className="shared-weekly-board-legal hidden print:block">
-          © בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.
+          {t("© בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.", "© Let’s Play. All rights reserved. The content here is for enrichment and practice only. It is not a diagnosis, personal therapeutic advice, or a substitute for evaluation, consultation, or treatment by a qualified professional.")}
         </p>
       </div>
     </div>

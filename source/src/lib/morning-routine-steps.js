@@ -55,6 +55,7 @@ export const MORNING_ROUTINE_STEPS = [
     id: "wake",
     labelGirl: "אני קמה מהמיטה",
     labelBoy: "אני קם מהמיטה",
+    labelEn: "I get out of bed",
     images: {
       "boy-asian": "/icon-bank/morning-routine/boys/asian/wake.png",
       "girl-asian": "/icon-bank/morning-routine/girls/asian/wake.png",
@@ -74,6 +75,7 @@ export const MORNING_ROUTINE_STEPS = [
     id: "diaper",
     labelGirl: "אני מחליפה חיתול",
     labelBoy: "אני מחליף חיתול",
+    labelEn: "I change my diaper",
     images: {
       "boy-asian": "/icon-bank/morning-routine/boys/asian/diaper.png",
       "girl-asian": "/icon-bank/morning-routine/girls/asian/diaper.png",
@@ -93,6 +95,7 @@ export const MORNING_ROUTINE_STEPS = [
     id: "wash-face",
     labelGirl: "אני שוטפת פנים",
     labelBoy: "אני שוטף פנים",
+    labelEn: "I wash my face",
     images: {
       "boy-asian": "/icon-bank/morning-routine/boys/asian/wash-face.png",
       "girl-asian": "/icon-bank/morning-routine/girls/asian/wash-face.png",
@@ -112,6 +115,7 @@ export const MORNING_ROUTINE_STEPS = [
     id: "teeth",
     labelGirl: "אני מצחצחת שיניים",
     labelBoy: "אני מצחצח שיניים",
+    labelEn: "I brush my teeth",
     images: {
       "boy-asian": "/icon-bank/morning-routine/boys/asian/teeth.png",
       "girl-asian": "/icon-bank/morning-routine/girls/asian/teeth.png",
@@ -131,6 +135,7 @@ export const MORNING_ROUTINE_STEPS = [
     id: "hair",
     labelGirl: "אני מסדרת את השיער",
     labelBoy: "אני מסדר את השיער",
+    labelEn: "I do my hair",
     images: {
       "boy-red": "/icon-bank/morning-routine/boys/red/hair.png",
       "girl-red": "/icon-bank/morning-routine/girls/red/hair.png",
@@ -150,6 +155,7 @@ export const MORNING_ROUTINE_STEPS = [
     id: "dressed",
     labelGirl: "אני מתלבשת",
     labelBoy: "אני מתלבש",
+    labelEn: "I get dressed",
     images: {
       "boy-red": "/icon-bank/morning-routine/boy-dressed.webp",
       "girl-red": "/icon-bank/morning-routine/girls/brown-dressed.webp",
@@ -169,6 +175,7 @@ export const MORNING_ROUTINE_STEPS = [
     id: "shoes",
     labelGirl: "אני נועלת נעליים",
     labelBoy: "אני נועל נעליים",
+    labelEn: "I put on my shoes",
     images: {
       "boy-red": "/icon-bank/morning-routine/boy-shoes.webp",
       "girl-red": "/icon-bank/morning-routine/girls/brown-shoes.webp",
@@ -188,6 +195,7 @@ export const MORNING_ROUTINE_STEPS = [
     id: "breakfast",
     labelGirl: "אני אוכלת ארוחת בוקר",
     labelBoy: "אני אוכל ארוחת בוקר",
+    labelEn: "I eat breakfast",
     images: {
       "boy-red": "/icon-bank/morning-routine/boy-breakfast.webp",
       "girl-red": "/icon-bank/morning-routine/girls/brown-breakfast.webp",
@@ -207,6 +215,7 @@ export const MORNING_ROUTINE_STEPS = [
     id: "toilet",
     labelGirl: "אני הולכת לשירותים",
     labelBoy: "אני הולך לשירותים",
+    labelEn: "I go to the bathroom",
     images: {
       "boy-asian": "/icon-bank/morning-routine/boys/asian/toilet.png",
       "girl-asian": "/icon-bank/morning-routine/girls/asian/toilet.png",
@@ -226,6 +235,7 @@ export const MORNING_ROUTINE_STEPS = [
     id: "leave-house",
     labelGirl: "אני יוצאת מהבית",
     labelBoy: "אני יוצא מהבית",
+    labelEn: "I leave home",
     images: {
       "boy-asian": "/icon-bank/morning-routine/boys/asian/leave-house.png",
       "girl-asian": "/icon-bank/morning-routine/girls/asian/leave-house.png",
@@ -243,7 +253,8 @@ export const MORNING_ROUTINE_STEPS = [
   },
 ];
 
-export function labelForStep(step, gender) {
+export function labelForStep(step, gender, language = "he") {
+  if (language === "en") return step.labelEn;
   return gender === "girl" ? step.labelGirl : step.labelBoy;
 }
 
@@ -252,12 +263,12 @@ export function imageForStep(step, characterId) {
 }
 
 /** Builds the shareable child-view URL for a given gender + character + ordered list of step ids. */
-export function buildChildRoutineUrl(gender, characterId, order) {
+export function buildChildRoutineUrl(gender, characterId, order, language = "he") {
   const params = new URLSearchParams();
   params.set("g", gender);
   params.set("c", characterId);
   params.set("s", order.join(","));
-  return `${window.location.origin}/child/morning-routine?${params.toString()}`;
+  return `${window.location.origin}${language === "en" ? "/en" : ""}/child/morning-routine?${params.toString()}`;
 }
 
 /** Parses gender + character + ordered step list from URL search params. Returns [] for steps if invalid/missing. */

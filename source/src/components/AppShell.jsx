@@ -34,19 +34,19 @@ const MENU_GROUPS = [
     title: ["מטפלים", "Therapists"],
     links: [
       ["/therapist/build?tab=search", "בניית מפגש טיפולי", "Build a therapy session"],
-      ["/therapist/diary", "יומן מטפל", "Therapist calendar"],
+      ["/therapist/diary", "יומן מטפל", "Therapist Calendar"],
       ["/therapist/plans", "התכניות השמורות שלי", "Saved Plans"],
-      ["/therapist/motor-trail", "מסלול מוטורי", "Obstacle course"],
+      ["/therapist/motor-trail", "מסלול מוטורי", "Obstacle Course Builder"],
     ],
   },
   {
     className: "menu-more-tools",
     title: ["כלים נוספים", "More tools"],
     links: [
-      ["/parent/daily-routine/", "לוח התארגנות יומי", "Daily routine board"],
-      ["/parent/morning-routine", "לוח התארגנות בוקר", "Morning routine board"],
-      ["/parent/evening-routine", "לוח התארגנות ערב", "Evening routine board"],
-      ["/parent/weekly-board", "לוח התארגנות שבועי", "Weekly routine board"],
+      ["/parent/daily-routine/", "לוח התארגנות יומי", "Daily routine visual schedule"],
+      ["/parent/morning-routine", "לוח התארגנות בוקר", "Morning routine visual schedule"],
+      ["/parent/evening-routine", "לוח התארגנות ערב", "Evening routine visual schedule"],
+      ["/parent/weekly-board", "לוח התארגנות שבועי", "Weekly routine visual schedule"],
       ["/parent/social-stories", "סיפורים חברתיים", "Social stories"],
       ["/parent/hebrew-calendar", "יצירת לוח שנה", "Create a calendar"],
       ["/parent/recipes", "מתכונים", "Kid-Friendly Recipes"],
@@ -75,6 +75,22 @@ function NavLink({ to, className, children, ...rest }) {
   if (isStandalonePage(to)) return <a href={standaloneHref(to, language)} className={className} {...rest}>{children}</a>;
   return <Link to={to} className={className} {...rest}>{children}</Link>;
 }
+
+function quickNavContext({ pathname, search }) {
+  const params = new URLSearchParams(search);
+  const detailPage = pathname.startsWith("/activity/") || pathname.startsWith("/board-game/");
+  if (pathname.startsWith("/therapist/") || (detailPage && (params.get("mode") === "therapist" || (params.get("returnPath") || "").startsWith("/therapist/")))) return "therapist";
+  if (pathname.startsWith("/parent/") || (detailPage && params.get("mode") === "parent")) return "parent";
+  return "home";
+}
+
+function QuickIcon({ className, strokeWidth = 1.8, children }) {
+  return <svg aria-hidden="true" viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">{children}</svg>;
+}
+const QuickHomeIcon = (props) => <QuickIcon {...props}><path d="m3 11 9-8 9 8" /><path d="M5 10v10h14V10M9 20v-6h6v6" /></QuickIcon>;
+const QuickSearchIcon = (props) => <QuickIcon {...props}><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></QuickIcon>;
+const QuickActivitiesIcon = (props) => <QuickIcon {...props}><rect x="3" y="3" width="7" height="7" rx="2" /><rect x="14" y="3" width="7" height="7" rx="2" /><rect x="3" y="14" width="7" height="7" rx="2" /><rect x="14" y="14" width="7" height="7" rx="2" /></QuickIcon>;
+const QuickFavoritesIcon = (props) => <QuickIcon {...props}><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" /></QuickIcon>;
 
 export function AppShell({ mode = "parent", children, pageClassName, fullScreen = false }) {
   const location = useLocation();
@@ -120,9 +136,18 @@ export function AppShell({ mode = "parent", children, pageClassName, fullScreen 
 
   const isActive = (href) => location.pathname === href || (href !== "/" && location.pathname.startsWith(`${href}/`));
   const allActivitiesPath = mode === "therapist" ? "/therapist/all" : "/parent/all";
+  // Phone bottom bar: in the parents' area it leads to the search and the full activity list;
+  // elsewhere to activities and favorites. Pages opened from the therapist area keep their own links.
+  const context = quickNavContext(location);
+  const quickLinks = context === "parent"
+    ? [["/", t("בית", "Home"), QuickHomeIcon], ["/parent/play", t("מנוע חיפוש", "Search"), QuickSearchIcon], ["/parent/all", t("כל הפעילויות", "All activities"), QuickActivitiesIcon]]
+    : context === "therapist"
+      ? [["/", t("בית", "Home"), House], [allActivitiesPath, t("פעילויות", "Activities"), LayoutGrid], ["/favorites", t("מועדפים", "Favorites"), Heart]]
+      : [["/", t("בית", "Home"), QuickHomeIcon], ["/parent/all", t("פעילויות", "Activities"), QuickActivitiesIcon], ["/favorites", t("מועדפים", "Favorites"), QuickFavoritesIcon]];
+  const quickIconProps = context === "therapist" ? {} : { strokeWidth: 1.8 };
   const accountPath = signedIn ? "/profile" : "/auth?mode=login";
   const switchLanguage = () => changeLanguage(language === "he" ? "en" : "he");
-  const languageLabel = language === "en" ? "עברית" : "English";
+  const languageLabel = language === "en" ? "Hebrew" : "English";
 
   const params = new URLSearchParams(location.search);
   const patientBoard = params.get("patientBoard");
@@ -133,7 +158,7 @@ export function AppShell({ mode = "parent", children, pageClassName, fullScreen 
     ? [
         ["/", t("בית", "Home")],
         ["/therapist/build?view=session", t("לוח מובנה", "Session board"), false],
-        ["/therapist/diary", t("יומן", "Diary"), false],
+        ["/therapist/diary", t("יומן", "Calendar"), false],
         ["/therapist/build?tab=search", t("מנוע חיפוש", "Search"), false],
         ["/therapist/my-patients/", t("המטופלים שלי", "My clients"), false],
         ["/favorites", t("מועדפים", "Favorites")],
@@ -182,13 +207,13 @@ export function AppShell({ mode = "parent", children, pageClassName, fullScreen 
             <div className="flex shrink-0 items-center gap-2">
               <div className="hidden rounded-full border bg-white p-0.5 sm:flex" aria-label={t("בחירת שפה", "Choose language")}>
                 <button type="button" className={cn("rounded-full px-2 py-1 text-xs", language === "he" ? "bg-foreground text-background" : "text-muted-foreground")} onClick={() => changeLanguage("he")}>
-                  עברית
+                  {t("עברית", "Hebrew")}
                 </button>
                 <button type="button" className={cn("rounded-full px-2 py-1 text-xs", language === "en" ? "bg-foreground text-background" : "text-muted-foreground")} onClick={() => changeLanguage("en")}>
                   English
                 </button>
               </div>
-              <button type="button" className="language-switch-compact sm:hidden" onClick={switchLanguage} aria-label={language === "en" ? "מעבר לעברית" : "Switch to English"}>
+              <button type="button" className="language-switch-compact sm:hidden" onClick={switchLanguage} aria-label={language === "en" ? "Switch to Hebrew" : "מעבר לאנגלית"}>
                 <GlobeIcon />
                 <span>{languageLabel}</span>
               </button>
@@ -212,7 +237,7 @@ export function AppShell({ mode = "parent", children, pageClassName, fullScreen 
           {menuOpen && (
             <div id="site-navigation-menu" className="absolute inset-x-0 top-full max-h-[calc(100vh-4.5rem)] overflow-y-auto border-y border-border bg-white shadow-xl" dir={language === "en" ? "ltr" : "rtl"}>
               <div className="language-switch-menu-row">
-                <button type="button" className="language-switch-menu" onClick={switchLanguage} aria-label={language === "en" ? "מעבר לעברית" : "Switch to English"}>
+                <button type="button" className="language-switch-menu" onClick={switchLanguage} aria-label={language === "en" ? "Switch to Hebrew" : "מעבר לאנגלית"}>
                   <GlobeIcon />
                   <span>{languageLabel}</span>
                 </button>
@@ -250,25 +275,21 @@ export function AppShell({ mode = "parent", children, pageClassName, fullScreen 
 
       {!fullScreen && <SiteFooter />}
       <div className="global-print-legal" dir="rtl">
-        © בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.
+        {t("© בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.", "© Let’s Play. All rights reserved. The content here is for enrichment and practice only. It is not a diagnosis, personal therapeutic advice, or a substitute for evaluation, consultation, or treatment by a qualified professional.")}
       </div>
       <AccessibilityMenu />
 
       {!fullScreen && !therapistArea && (
         <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-cream/95 backdrop-blur md:hidden print:hidden" aria-label={t("ניווט מהיר", "Quick navigation")}>
           <div className="mx-auto grid max-w-lg grid-cols-5 px-2 py-2">
-            {[
-              ["/", t("בית", "Home"), House],
-              [allActivitiesPath, t("פעילויות", "Activities"), LayoutGrid],
-              ["/favorites", t("מועדפים", "Favorites"), Heart],
-              ["/about", t("אודות", "About"), Info],
-            ].map(([href, label, Icon]) => (
+            {[...quickLinks, ["/about", t("אודות", "About"), Info]].map(([href, label, Icon]) => (
               <Link
                 key={href}
                 to={href}
+                aria-current={isActive(href) ? "page" : undefined}
                 className={cn("flex flex-col items-center gap-0.5 rounded-xl py-1.5 text-[11px] font-semibold", isActive(href) ? "text-primary" : "text-muted-foreground")}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className="h-5 w-5" {...quickIconProps} />
                 {label}
               </Link>
             ))}
@@ -277,7 +298,7 @@ export function AppShell({ mode = "parent", children, pageClassName, fullScreen 
               onClick={() => setMenuOpen((open) => !open)}
               className={cn("flex flex-col items-center gap-0.5 rounded-xl py-1.5 text-[11px] font-semibold", menuOpen ? "text-primary" : "text-muted-foreground")}
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-5 w-5" {...quickIconProps} />
               {t("תפריט", "Menu")}
             </button>
           </div>
@@ -308,7 +329,7 @@ function TherapistWorkflowNav({ path, view, patientSuffix, onMenu }) {
     ["search", `/therapist/build?tab=search&boardMode=1${patientSuffix}`, t("מנוע חיפוש", "Search"), <><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></>],
     ["board", `/therapist/build?view=session${patientSuffix}`, t("לוח המפגש", "Session board"), <><rect x="4" y="3" width="16" height="18" rx="3" /><path d="M8 8h8M8 12h8M8 16h5" /></>],
     ["patients", "/therapist/my-patients/", t("המטופלים שלי", "My clients"), <><circle cx="9" cy="8" r="3" /><circle cx="17" cy="9" r="2.5" /><path d="M3.5 20c.4-4 2.2-6 5.5-6s5.1 2 5.5 6M14 15c3.7-.7 5.8 1 6.5 4" /></>],
-    ["diary", "/therapist/diary", t("יומן", "Diary"), <><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M7 3v4M17 3v4M3 10h18M8 14h3M13 14h3M8 17h3" /></>],
+    ["diary", "/therapist/diary", t("יומן", "Calendar"), <><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M7 3v4M17 3v4M3 10h18M8 14h3M13 14h3M8 17h3" /></>],
   ];
   return (
     <nav className="therapist-mobile-workflow-nav print:hidden" aria-label={t("ניווט מהיר באזור המטפלות", "Quick therapist navigation")}>
@@ -373,6 +394,7 @@ function SiteFooter() {
 }
 
 function AccessibilityMenu() {
+  const { t } = useTranslator();
   const [open, setOpen] = useState(false);
   const [largeText, setLargeText] = useState(false);
   const [highContrast, setHighContrast] = useState(false);
@@ -394,24 +416,24 @@ function AccessibilityMenu() {
   }
 
   return (
-    <div className="accessibility-button fixed bottom-24 left-3 z-[70] md:bottom-5 print:hidden" dir="rtl">
+    <div className="accessibility-button fixed bottom-24 left-3 z-[70] print:hidden" dir="rtl">
       {open && (
         <div className="mb-2 grid min-w-48 gap-1 rounded-2xl border bg-white p-2 shadow-xl">
           <button type="button" onClick={toggleLargeText} className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold hover:bg-muted">
-            <Type className="h-4 w-4" /> טקסט גדול
+            <Type className="h-4 w-4" />{" "}{t("טקסט גדול", "Large text")}
           </button>
           <button type="button" onClick={toggleHighContrast} className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold hover:bg-muted">
-            <Contrast className="h-4 w-4" /> ניגודיות גבוהה
+            <Contrast className="h-4 w-4" />{" "}{t("ניגודיות גבוהה", "High contrast")}
           </button>
           <button type="button" onClick={reset} className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold hover:bg-muted">
-            <RotateCcw className="h-4 w-4" /> איפוס נגישות
+            <RotateCcw className="h-4 w-4" />{" "}{t("איפוס נגישות", "Reset accessibility")}
           </button>
         </div>
       )}
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        aria-label="אפשרויות נגישות"
+        aria-label={t("אפשרויות נגישות", "Accessibility options")}
         aria-expanded={open}
         className="grid h-12 w-12 place-items-center rounded-full border-2 border-primary bg-white text-primary-foreground shadow-lg"
       >

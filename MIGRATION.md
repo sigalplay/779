@@ -47,25 +47,25 @@ Status: `done` = behavior is in source, `todo` = not yet, `drop` = intentionally
 
 | Patch | Status | Notes |
 |---|---|---|
-| mobile-tools-v4.js / .css | todo | Menu layout, home cleanup, therapist shortcuts, print delay |
+| mobile-tools-v4.js / .css | done | CSS imported; menu, home order, About copy, age labels, print delay, holidays link, tip-dialog classes are in the components. Therapist quick menu, top links and phone shortcuts: drop (never showed on live, the therapist header replaced them) |
 | v92-board-and-search.js / .css | partial | Name search on /parent/all and /therapist/all and compact catalog cards: done. Board dates and search in the builder: stage 4 |
 | tip-close-fix.js, print-calendar-and-tip-fix.css | done | Tip close button in ParentPlay; phone style for the holidays link in mobile-tools-v4.css; print margins come from the print CSS (inline @page rules that live overrode were removed) |
-| mobile-guidance-cards-v1.css | todo | |
+| mobile-guidance-cards-v1.css | done | Imported in main.jsx |
 | calendar-qa-v27.js / .css, mobile-calendar-compact-v1.css | done | "Day passed" is built into the shared calendar page |
 | calendar-multi-photo-v1.js / .css, calendar-english-complete-v1.js | done | Built into the calendar components |
-| mobile-context-nav-v1.js, mobile-search-filters-v1.js / .css | todo | |
+| mobile-context-nav-v1.js, mobile-search-filters-v1.js / .css | done | Phone bottom bar per area in AppShell; folding filter groups and compact chips in ParentPlay/TherapistBuild. On live these only worked after arriving from the home page; now they always work |
 | mobile-share-links-v1.js | done | Standalone pages: `standalone-page.js`. React boards: `components/ShareLinkField.jsx` (on live the patch did not take effect in the React share dialogs) |
 | adl-sequence-reorder-v2.js | drop | Loaded only on the React home page, where nothing matches it; the ADL page has its own move buttons |
-| v36-targeted-fixes.css | todo | |
+| v36-targeted-fixes.css | done | Imported in main.jsx |
 | therapist-session-board, board-drawing, board-signs, board-games, cloud-board, board-search-bridge | done | Built into `pages/TherapistBuild.jsx` and `components/session-board/` |
 | therapist-area-header-v1.js | done | Header links, phone bar and heading were already in AppShell; "לוח המפגש" heading and search-page class in the builder |
 | therapist-tabs-v1.js / .css | done | Redirects in App routes; the tab row only lives on the standalone tools page |
 | therapist-free-board-v1.js / .css, therapist-board-fullscreen/activity CSS | drop | Only loaded by /therapist/board/, which always redirected to the treatment board |
 | patients-site-header-v1, therapist-patients-v1, patients-mobile-workflow-v1 | done | Moved next to /therapist/my-patients/ (patients.js, patients.css) |
 | therapist-tools-v1.css | done | Moved next to /therapist/tools/ (tools.css) |
-| english-content-v9, english-approved-v1, american-english-v1, us-english-polish-v2 | todo | Move all translations into source |
-| language-switch-v1.js, english-route-boot-v93.js, english-ltr-v1/v2.css | todo | |
-| google-snippet-guard-v1.js | todo | |
+| english-content-v9, english-approved-v1, american-english-v1, us-english-polish-v2, runtime-ui-en | done | Every screen now has its English written next to the Hebrew (`t("עברית", "English")`). The page-rewriting translators are gone (`lib/runtime-ui-en.js` deleted) |
+| language-switch-v1.js, english-route-boot-v93.js, english-ltr-v1/v2.css | done | Switch buttons in AppShell, /en routes in App.jsx, english-ltr CSS imported |
+| google-snippet-guard-v1.js | done | `data-nosnippet` on the disclaimer paragraph of the legal page |
 | CipherGenerator-v99.js | done | Hand-edited compiled chunk, now in `pages/CipherGenerator.jsx` |
 | home-*.js, sequence-direction-controls-v1.js, index-v99.js, activities-data-v97.js | drop | Not loaded by any page |
 
@@ -83,8 +83,8 @@ files (checked: pixel-identical without them). Their only shared helper is
 `public/standalone-page.js` (print delay for iPhone, tap-to-open share link on phones).
 The game builder's script and styles moved next to the page (`generator.js`, `generator.css`).
 In English mode, menu links to these pages now go to the `/en/` copy (live sent them to the Hebrew page).
-| /therapist/board/, /therapist/tools/, /therapist/my-patients/ | todo |
-| English versions under /en/ | todo |
+| /therapist/board/, /therapist/tools/, /therapist/my-patients/ | done |
+| English versions under /en/ | done (React pages translate themselves; standalone pages have /en/ copies) |
 | ~250 SEO pages (activity/*, board-game/*, en/*) | todo |
 
 ## How to check parity locally
@@ -143,3 +143,20 @@ mode" sign-ins were removed; accounts are email + password only, as on live.
 Sign-in screens: same flow and texts as live, with a new layout (brand panel on desktop, clearer
 fields with show-password, a live "8 characters" check, errors shown next to the form).
 The password label reads "סיסמה" with a separate "לפחות 8 תווים" check instead of one combined label.
+
+## English (stage 6)
+
+- No Hebrew is left on English pages (checked with a crawler over 35 English pages, phone and desktop).
+- Wording follows the live English site. Where live had no English (toasts, dialogs, error messages,
+  some labels) I wrote it; those strings are listed in `ENGLISH-NEW.md` for review.
+- Sample clients in the therapist calendar get English names in English (Emma, Ethan, Maya, Noah).
+- Page titles of activities, games, recipes and experiments are English in English mode (live showed Hebrew).
+- Links for the child's phone (morning/evening boards) open in English when made in English.
+- Removed unused code: pages/Home.jsx, pages/Pricing.jsx, components/ActivityGenerator.jsx and
+  the libraries only they used (not reachable from any route on live either).
+
+Fixed live bugs (for review):
+- On phones the "report a mistake" button sat exactly under the accessibility button and could not be tapped. It now sits above it.
+- On desktop pages that load the newer CSS, the accessibility button covered the "report a mistake" button. It is now above it, as on the other pages.
+- The phone bottom bar and search filters depended on which page you entered from; now always the same.
+- "Build a Visual Schedule for a Therapy Session" overflowed the phone screen in English; now "Plan a Therapy Session" (same as the home page).

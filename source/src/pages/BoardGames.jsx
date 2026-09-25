@@ -12,10 +12,10 @@ export default function BoardGames({ mode = "therapist" }) {
     <AppShell mode={mode}>
       <div className="mb-6 flex items-center gap-2 text-sage">
         <Dices className="h-5 w-5" />
-        <span className="text-sm font-bold">משחקי קופסא</span>
+        <span className="text-sm font-bold">{t("משחקי קופסא", "Board games")}</span>
       </div>
-      <h1 className="mb-1 font-display text-3xl font-black md:text-4xl">משחקי קופסא</h1>
-      <p className="mb-6 text-muted-foreground">משחקים קלאסיים עם אביזרים, שלבים, וטיפים להקלה ולהקשיה - בדיוק כמו הפעילויות.</p>
+      <h1 className="mb-1 font-display text-3xl font-black md:text-4xl">{t("משחקי קופסא", "Board games")}</h1>
+      <p className="mb-6 text-muted-foreground">{t("משחקים קלאסיים עם אביזרים, שלבים, וטיפים להקלה ולהקשיה - בדיוק כמו הפעילויות.", "Classic games with pieces, steps, and ideas for making play easier or more challenging.")}</p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {BOARD_GAMES.map((original) => { const g = display(original); return (

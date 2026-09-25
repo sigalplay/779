@@ -107,7 +107,7 @@ function useMaterialsChecklist(gameId) {
 }
 
 export default function BoardGameDetail() {
-  const { language } = useTranslator();
+  const { language, t } = useTranslator();
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const mode = searchParams.get("mode") === "parent" ? "parent" : "therapist";
@@ -130,7 +130,7 @@ export default function BoardGameDetail() {
     }
     const res = toggleFavorite(`board-game-${game.id}`);
     setSaved(res.favored);
-    toast.success(res.favored ? "נשמר למועדפים" : "הוסר מהמועדפים");
+    toast.success(res.favored ? t("נשמר למועדפים", "Saved to favorites") : t("הוסר מהמועדפים", "Removed from favorites"));
   }
 
   async function share() {
@@ -143,7 +143,7 @@ export default function BoardGameDetail() {
       }
     } else {
       await navigator.clipboard.writeText(url);
-      toast.success("קישור הועתק");
+      toast.success(t("קישור הועתק", "Link copied."));
     }
   }
 
@@ -151,10 +151,10 @@ export default function BoardGameDetail() {
     return (
       <AppShell mode={mode}>
         <div className="py-20 text-center text-muted-foreground">
-          המשחק לא נמצא.
+          {t("המשחק לא נמצא.", "Game not found.")}
           <div className="mt-4">
             <Link to="/therapist/board-games" className="text-primary underline">
-              חזרה למשחקי קופסא
+              {t("חזרה למשחקי קופסא", "Back to board games")}
             </Link>
           </div>
         </div>
@@ -171,7 +171,7 @@ export default function BoardGameDetail() {
           to="/therapist/board-games"
           className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
         >
-          <ArrowRight className="h-4 w-4" /> חזרה למשחקי קופסא
+          <ArrowRight className="h-4 w-4" />{" "}{t("חזרה למשחקי קופסא", "Back to board games")}
         </Link>
 
         <motion.div
@@ -191,7 +191,7 @@ export default function BoardGameDetail() {
         <header className="rounded-3xl bg-gradient-to-br from-sage/20 to-sky/30 p-6 md:p-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <div className="text-sm text-muted-foreground">משחק קופסא</div>
+              <div className="text-sm text-muted-foreground">{t("משחק קופסא", "Board game")}</div>
               <h1 className="mt-1 font-display text-3xl font-black md:text-4xl">{pick(g.title, g.titleN)}</h1>
               {g.short_description && (
                 <p className="mt-2 max-w-2xl text-muted-foreground">{pick(g.short_description, g.short_descriptionN)}</p>
@@ -211,13 +211,13 @@ export default function BoardGameDetail() {
           </div>
           <div className="mt-4 flex flex-wrap gap-2 text-sm">
             <Pill>
-              גיל {g.age_min}–{g.age_max}
+              {t("גיל", "Age")}{" "}{g.age_min}–{g.age_max}
             </Pill>
             <Pill>
-              <Clock className="h-3.5 w-3.5" /> {g.duration_min} דק'
+              <Clock className="h-3.5 w-3.5" /> {g.duration_min}{" "}{t("דק'", "min")}
             </Pill>
             <span className="inline-flex items-center gap-1 rounded-full bg-warm px-3 py-1 text-foreground/80">
-              <Layers className="h-3.5 w-3.5" /> {g.difficulty === "easy" ? "קל" : g.difficulty === "medium" ? "בינוני" : "מתקדם"}
+              <Layers className="h-3.5 w-3.5" /> {g.difficulty === "easy" ? t("קל", "Easy") : g.difficulty === "medium" ? t("בינוני", "Medium") : t("מתקדם", "Advanced")}
             </span>
             {language === "he" && <button
               type="button"
@@ -227,13 +227,13 @@ export default function BoardGameDetail() {
                 nikud.on ? "bg-sage text-sage-foreground" : "bg-white/80 hover:bg-white"
               }`}
             >
-              אָ ניקוד {nikud.on ? "פעיל" : "כבוי"}
+              {t("אָ ניקוד", "Vowel marks")}{" "}{nikud.on ? t("פעיל", "On") : t("כבוי", "Off")}
             </button>}
           </div>
         </header>
 
         {(g.description || g.short_description) && (
-          <Section title="תיאור המשחק">
+          <Section title={t("תיאור המשחק", "Game description")}>
             <div className="flex items-start gap-3">
               <div
                 aria-hidden
@@ -250,11 +250,11 @@ export default function BoardGameDetail() {
 
         {g.steps?.length ? <StepsChecklist gameId={g.id} steps={g.steps} pick={pick} /> : null}
 
-        {g.adaptations && <Section title="הורדת רמת הקושי">{pick(g.adaptations, g.adaptationsN)}</Section>}
-        {g.extensions && <Section title="העלאת רמת הקושי / שדרוג">{pick(g.extensions, g.extensionsN)}</Section>}
+        {g.adaptations && <Section title={t("הורדת רמת הקושי", "Make It Easier")}>{pick(g.adaptations, g.adaptationsN)}</Section>}
+        {g.extensions && <Section title={t("העלאת רמת הקושי / שדרוג", "Make It More Challenging")}>{pick(g.extensions, g.extensionsN)}</Section>}
 
         {g.goals?.length || g.functions?.length || g.sensory_systems?.length ? (
-          <Section title="על מה עובד (מבחינה התפתחותית)">
+          <Section title={t("על מה עובד (מבחינה התפתחותית)", "Skills Practiced")}>
             <div className="space-y-3">
               {g.goals?.length ? <TagList items={g.goals} /> : null}
               {g.functions?.length ? <TagList items={g.functions} tone="sky" /> : null}
@@ -270,11 +270,11 @@ export default function BoardGameDetail() {
               onClick={() => setShowTags((v) => !v)}
               className="text-sm font-medium text-muted-foreground underline decoration-dotted underline-offset-4 hover:text-foreground"
             >
-              {showTags ? "הסתר תגיות" : "הצג תגיות"}
+              {showTags ? t("הסתר תגיות", "Hide Tags") : t("הצג תגיות", "Show Tags")}
             </button>
             {showTags ? (
-              <Section title="תגיות">
-                <TagList items={g.tags} />
+              <Section title={t("תגיות", "Tags")}>
+                <TagList items={g.tags.map((item) => translatedTerm(item, language))} />
               </Section>
             ) : null}
           </div>
@@ -297,6 +297,7 @@ function Pill({ children }) {
 }
 
 function StepsChecklist({ gameId, steps, pick }) {
+  const { t } = useTranslator();
   const { checked, toggle, reset, done, total } = useStepChecklist(gameId, steps.length);
   const progress = total > 0 ? Math.round((done / total) * 100) : 0;
   const [expandedStep, setExpandedStep] = useState(null);
@@ -304,14 +305,14 @@ function StepsChecklist({ gameId, steps, pick }) {
     <section className="rounded-3xl border border-border/60 bg-card p-5 md:p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-lg font-bold">איך משחקים</h2>
+          <h2 className="font-display text-lg font-bold">{t("איך משחקים", "How to Play")}</h2>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            סמני כל שלב לאחר ביצועו · לחצו על שלב כדי להגדיל · {done}/{total}
+            {t("סמני כל שלב לאחר ביצועו · לחצו על שלב כדי להגדיל ·", "Mark each completed step · Select a step to enlarge it ·")}{" "}{done}/{total}
           </p>
         </div>
         {done > 0 && (
           <Button variant="ghost" size="sm" onClick={reset} className="rounded-full text-muted-foreground">
-            <RotateCcw className="h-3.5 w-3.5" /> אפס
+            <RotateCcw className="h-3.5 w-3.5" />{" "}{t("אפס", "Reset")}
           </Button>
         )}
       </div>
@@ -338,7 +339,7 @@ function StepsChecklist({ gameId, steps, pick }) {
                   id={`bg-step-${s.n}`}
                   checked={isChecked}
                   onCheckedChange={() => toggle(s.n)}
-                  aria-label={`סימון שלב ${s.n} כהושלם`}
+                  aria-label={t(`סימון שלב ${s.n} כהושלם`, `Mark step ${s.n} as complete`)}
                   className="h-5 w-5 shrink-0 print:hidden"
                 />
                 <button
@@ -364,14 +365,15 @@ function StepsChecklist({ gameId, steps, pick }) {
 }
 
 function MaterialsChecklist({ gameId, materials, pick }) {
+  const { t } = useTranslator();
   const { checked, toggle } = useMaterialsChecklist(gameId);
   const done = materials.filter((_, i) => checked.has(i)).length;
   return (
     <section className="rounded-3xl border border-border/60 bg-card p-5 md:p-6">
       <div className="mb-4">
-        <h2 className="font-display text-lg font-bold">אביזרי המשחק</h2>
+        <h2 className="font-display text-lg font-bold">{t("אביזרי המשחק", "Game pieces")}</h2>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          סמני כל פריט שיש לך · {done}/{materials.length}
+          {t("סמני כל פריט שיש לך ·", "Tick every item you have ·")}{" "}{done}/{materials.length}
         </p>
       </div>
       <ol className="space-y-2">

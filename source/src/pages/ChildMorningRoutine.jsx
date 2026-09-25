@@ -3,8 +3,10 @@ import { useSearchParams } from "react-router-dom";
 import { RotateCcw, PartyPopper, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { labelForStep, parseChildRoutineParams, imageForStep } from "@/lib/morning-routine-steps";
+import { useTranslator } from "@/lib/language";
 
 export default function ChildMorningRoutine() {
+  const { t, language } = useTranslator();
   const [searchParams] = useSearchParams();
   const { gender, characterId, steps } = useMemo(() => parseChildRoutineParams(searchParams), [searchParams]);
 
@@ -42,7 +44,7 @@ export default function ChildMorningRoutine() {
   if (steps.length === 0) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-cream p-6 text-center" dir="rtl">
-        <p className="text-lg text-muted-foreground">הקישור הזה לא תקין. בקשו מההורה/המטפל קישור חדש ללוח ההתארגנות.</p>
+        <p className="text-lg text-muted-foreground">{t("הקישור הזה לא תקין. בקשו מההורה/המטפל קישור חדש ללוח ההתארגנות.", "This link is invalid. Please ask the parent or therapist for a new routine-board link.")}</p>
       </div>
     );
   }
@@ -54,15 +56,15 @@ export default function ChildMorningRoutine() {
       <div className="mx-auto max-w-md px-4 py-8">
         <div className="mb-6 text-center">
           <span className="text-5xl">🌞</span>
-          <h1 className="mt-2 font-display text-3xl font-black">הבוקר שלי</h1>
-          <p className="mt-1 text-sm text-muted-foreground">לחצו על כל שלב אחרי שסיימתם אותו</p>
+          <h1 className="mt-2 font-display text-3xl font-black">{t("הבוקר שלי", "My morning")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("לחצו על כל שלב אחרי שסיימתם אותו", "Select each step after you finish it.")}</p>
         </div>
 
         {allDone && (
           <div className="mb-5 flex flex-col items-center gap-3 rounded-3xl border border-sage/50 bg-sage/15 p-8 text-center">
             <PartyPopper className="h-12 w-12 text-sage-foreground" />
-            <p className="font-display text-2xl font-bold">כל הכבוד! סיימתם הכל 🎉</p>
-            <p className="text-sm text-muted-foreground">מוכנים ליום חדש!</p>
+            <p className="font-display text-2xl font-bold">{t("כל הכבוד! סיימתם הכל 🎉", "Great job! You finished everything 🎉")}</p>
+            <p className="text-sm text-muted-foreground">{t("מוכנים ליום חדש!", "Ready for a new day!")}</p>
           </div>
         )}
 
@@ -95,7 +97,7 @@ export default function ChildMorningRoutine() {
                         : "border-sky/25 bg-sky/10 text-blue-700"
                     }`}
                   >
-                    {labelForStep(s, gender)}
+                    {labelForStep(s, gender, language)}
                   </span>
                 </button>
               </li>
@@ -106,12 +108,12 @@ export default function ChildMorningRoutine() {
         {done.size > 0 && (
           <div className="mt-8 flex justify-center">
             <Button variant="ghost" onClick={resetAll} className="rounded-full text-muted-foreground">
-              <RotateCcw className="h-4 w-4" /> איפוס - התחלת בוקר חדש
+              <RotateCcw className="h-4 w-4" />{" "}{t("איפוס - התחלת בוקר חדש", "Reset — start a new morning")}
             </Button>
           </div>
         )}
         <a href="/" className="mt-8 block rounded-2xl border border-rose/30 bg-rose/20 px-4 py-3 text-center font-bold text-foreground transition hover:bg-rose/30">
-          צור לוח משלך — בואו נשחק
+          {t("צור לוח משלך — בואו נשחק", "Create your own visual schedule — Let's Play")}
         </a>
       </div>
     </div>

@@ -97,7 +97,7 @@ export function BoardToolbar({
       <a className="meeting-board-link" href={motorTrailHref}>
         <span className="meeting-action-icon" aria-hidden="true">＋</span>
         <span className="meeting-action-label-desktop">{t("הוספת מסלול מוטורי", "Add an obstacle course")}</span>
-        <span className="meeting-action-label-mobile">{t("מסלול מוטורי", "Obstacle course")}</span>
+        <span className="meeting-action-label-mobile">{t("מסלול מוטורי", "Obstacle Course Builder")}</span>
       </a>
 
       <div className="meeting-drawing-tools" data-drawing-tools="true">

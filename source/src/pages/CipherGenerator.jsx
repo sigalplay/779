@@ -193,12 +193,12 @@ export default function CipherGenerator({ mode = "therapist" }) {
           </div>
           {keyId === "roshHashanah" && (
             <p className="mb-4 rounded-2xl bg-amber-50 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
-              מפתח חגיגי עם תפוחים, דבש, דבורים, דגים, שיבולים, שופר וסמלי התחדשות. לכל אות נשמר סימן קבוע.
+              {t("מפתח חגיגי עם תפוחים, דבש, דבורים, דגים, שיבולים, שופר וסמלי התחדשות. לכל אות נשמר סימן קבוע.", "A festive key with apples, honey, bees, fish, wheat sheaves, a shofar, and symbols of renewal. Each letter keeps a fixed symbol.")}
             </p>
           )}
           {keyId === "sukkot" && (
             <p className="mb-4 rounded-2xl bg-emerald-50 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
-              מפתח חגיגי עם סוכה, ארבעת המינים, קישוטים, שרשראות, כוכבים, פירות ועלים. לכל אות נשמר סימן קבוע.
+              {t("מפתח חגיגי עם סוכה, ארבעת המינים, קישוטים, שרשראות, כוכבים, פירות ועלים. לכל אות נשמר סימן קבוע.", "A festive key with a sukkah, the Four Species, decorations, paper chains, stars, fruit, and leaves. Each letter keeps its own fixed symbol.")}
             </p>
           )}
           {isEnglish && ["christmas", "easter"].includes(activeKeyId) && (

@@ -12,11 +12,11 @@ const FILE_TERMS = {
   paper: ["נייר", "paper"], crepe: ["קרפ", "crepe"], cardboard: ["קרטון", "cardboard"],
   bread: ["לחם", "bread"], tortilla: ["טורטייה", "tortilla"], cheese: ["גבינה", "cheese"], olives: ["זיתים", "olives"], olive: ["זית", "olive"],
   flour: ["קמח", "flour"], sugar: ["סוכר", "sugar"], salt: ["מלח", "salt"], oil: ["שמן", "oil"], vinegar: ["חומץ", "vinegar"],
-  baking: ["אפייה", "baking"], soda: ["סודה", "soda"], food: ["מאכל", "food"], colouring: ["צבע מאכל", "food colouring"], color: ["צבע", "colour"],
+  baking: ["אפייה", "baking"], soda: ["סודה", "soda"], food: ["מאכל", "food"], colouring: ["צבע מאכל", "food coloring"], color: ["צבע", "color"],
   knife: ["סכין", "knife"], fork: ["מזלג", "fork"], bottle: ["בקבוק", "bottle"], bag: ["שקית", "bag"],
   candle: ["נר", "candle"], straw: ["קש", "straw"], string: ["חוט", "string"], tape: ["סרט הדבקה", "tape"],
   towel: ["מגבת", "towel"], hands: ["ידיים", "hands"], hand: ["יד", "hand"], socks: ["גרביים", "socks"], shoes: ["נעליים", "shoes"],
-  shirt: ["חולצה", "shirt"], trousers: ["מכנסיים", "trousers"], pants: ["מכנסיים", "trousers"], shower: ["מקלחת", "shower"],
+  shirt: ["חולצה", "shirt"], trousers: ["מכנסיים", "pants"], pants: ["מכנסיים", "pants"], shower: ["מקלחת", "shower"],
   logo: ["בואו נשחק", "Let's Play"],
 };
 

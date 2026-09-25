@@ -1,18 +1,23 @@
+import { useTranslator } from "@/lib/language";
 const CHARACTER_ASSETS = {
   girl: {
     body: "/icon-bank/social-stories/characters/girl-body.webp",
     head: "/icon-bank/social-stories/characters/girl-head.webp",
     label: "דמות בת",
+    labelEn: "Girl character",
   },
   boy: {
     body: "/icon-bank/social-stories/characters/boy-body.webp",
     head: "/icon-bank/social-stories/characters/boy-head.webp",
     label: "דמות בן",
+    labelEn: "Boy character",
   },
 };
 
 export function StoryCharacter({ photo, gender = "girl", size = 128, className = "" }) {
   const character = CHARACTER_ASSETS[gender] || CHARACTER_ASSETS.girl;
+  const { t } = useTranslator();
+  const label = t(character.label, character.labelEn);
   // כשיש תמונת פנים, מטשטשים את צוואר האיור כדי שהפנים יתחברו לגוף בצורה טבעית.
   const neckMask = gender === "boy"
     ? "radial-gradient(ellipse 48% 24% at 50% 7%, transparent 0 78%, rgba(0,0,0,.35) 90%, #000 100%)"
@@ -21,7 +26,7 @@ export function StoryCharacter({ photo, gender = "girl", size = 128, className =
     <div
       className={`shrink-0 ${className}`}
       style={{ width: size, height: size * 1.88 }}
-      aria-label={photo ? `${character.label} עם תמונת הילד/ה` : character.label}
+      aria-label={photo ? t(`${label} עם תמונת הילד/ה`, `${label} with the child's photo`) : label}
     >
       <div className="relative h-full w-full">
         <img
@@ -40,7 +45,7 @@ export function StoryCharacter({ photo, gender = "girl", size = 128, className =
         >
           <img
             src={photo || character.head}
-            alt={photo ? "תמונת הילד/ה" : ""}
+            alt={photo ? t("תמונת הילד/ה", "Child's photo") : ""}
             className={`h-full w-full ${photo ? "object-cover object-top" : "object-contain"}`}
           />
         </div>
@@ -88,6 +93,7 @@ const FACE_LAYOUTS = {
 };
 
 function IntegratedFaces({ layout, photos }) {
+  const { t } = useTranslator();
   const placements = FACE_LAYOUTS[layout];
   if (!placements) return null;
   return Object.entries(placements).map(([role, style]) => {
@@ -95,7 +101,7 @@ function IntegratedFaces({ layout, photos }) {
     if (!photo) return null;
     const { imageScale, imageY, ...placementStyle } = style;
     return (
-      <div key={role} className="pointer-events-none absolute z-10" style={placementStyle} aria-label={role === "mother" ? "פני האמא שהועלו" : "פני הילדה שהועלו"}>
+      <div key={role} className="pointer-events-none absolute z-10" style={placementStyle} aria-label={role === "mother" ? t("פני האמא שהועלו", "Uploaded face of the mother") : t("פני הילדה שהועלו", "Uploaded face of the child")}>
         <div
           className="absolute inset-0 overflow-hidden"
           style={{
@@ -168,6 +174,7 @@ export function StoryScene({ photo, facePhotos, faceLayout, faceBase, gender = "
 
 // wordless: מצב "ספר ללא מילים" — מסתיר את הטקסט (חוץ מהכריכה) ומשאיר שורות לכתיבה.
 export function StoryBookPage({ page, index, total, photo, facePhotos, gender = "girl", wordless = false, className = "" }) {
+  const { t } = useTranslator();
   const pageFacePhotos = page.faceLayout ? facePhotos : {};
   return (
     <article className={`social-story-page aspect-[210/297] bg-white p-[3.5%] text-foreground ${className}`} dir="rtl">
@@ -191,7 +198,7 @@ export function StoryBookPage({ page, index, total, photo, facePhotos, gender = 
           />
         </div>
         {wordless && !page.isCover && (
-          <div className="mb-[3%] space-y-[6%] px-[4%]" aria-label="מקום לכתיבת הסיפור">
+          <div className="mb-[3%] space-y-[6%] px-[4%]" aria-label={t("מקום לכתיבת הסיפור", "Space to write the story")}>
             {[0, 1, 2].map((line) => <div key={line} className="border-b border-[#7889a6]/60" />)}
           </div>
         )}

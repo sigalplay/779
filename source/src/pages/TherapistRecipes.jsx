@@ -1864,21 +1864,22 @@ function useRecipeChecklist(recipeId, total) {
 }
 
 function AddToPlanButton({ kind, id, mode, className = "" }) {
+  const { t } = useTranslator();
   const [added, setAdded] = useState(false);
   if (mode !== "therapist") return null;
   return (
     <button
       type="button"
-      aria-label={added ? "נוסף לטיפול" : "הוסף לטיפול"}
+      aria-label={added ? t("נוסף לטיפול", "Added to session") : t("הוסף לטיפול", "Add to session")}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
         const res = addToDraftPlan(kind, id);
         if (res.added) {
           setAdded(true);
-          toast.success(kind === "recipe" ? "המתכון נוסף לטיפול ✨" : "הניסוי נוסף לטיפול ✨");
+          toast.success(kind === "recipe" ? t("המתכון נוסף לטיפול ✨", "Recipe added to the session ✨") : t("הניסוי נוסף לטיפול ✨", "Experiment added to the session ✨"));
         } else {
-          toast.info(kind === "recipe" ? "המתכון כבר בתוכנית הטיפול" : "הניסוי כבר בתוכנית הטיפול");
+          toast.info(kind === "recipe" ? t("המתכון כבר בתוכנית הטיפול", "This recipe is already in the session plan.") : t("הניסוי כבר בתוכנית הטיפול", "This experiment is already in the session plan."));
         }
       }}
       className={`absolute top-3 left-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border bg-background/90 backdrop-blur transition-all hover:scale-105 ${
@@ -2004,6 +2005,7 @@ function PrintRow({ i, icon, label, isLast }) {
 }
 
 function RecipePrintSheet({ recipe, pick, language }) {
+  const { t } = useTranslator();
   const label = (he, en) => language === "en" ? en : he;
   const iconFor = (item) =>
     item.img ? (
@@ -2019,7 +2021,7 @@ function RecipePrintSheet({ recipe, pick, language }) {
   return (
     <div className="activity-print-sheet hidden print:block print:space-y-4 print:text-black">
       <div className="relative flex items-center justify-center gap-5 border-b-2 border-black pb-3">
-        <img src={brandLogo(language)} alt={label("בואו נשחק", "Let's Play")} className="print-sheet-brand absolute left-0 top-0 h-14 w-16 object-contain" />
+        <img src={brandLogo(language)} alt={label(t("בואו נשחק", "Let's Play"), "Let's Play")} className="print-sheet-brand absolute left-0 top-0 h-14 w-16 object-contain" />
         {recipe.cover ? (
           <img src={recipe.cover} alt="" className="h-24 w-24 shrink-0 object-contain" />
         ) : recipe.coverIcon ? (
@@ -2035,7 +2037,7 @@ function RecipePrintSheet({ recipe, pick, language }) {
       {recipe.ingredients?.length ? (
         <div>
           <div className="mb-1 text-xl font-bold">
-            {label("מצרכים:", "Ingredients:")} <span className="text-base font-normal">({recipe.amountLabel})</span>
+            {label(t("מצרכים:", "Ingredients:"), "Ingredients:")} <span className="text-base font-normal">({recipe.amountLabel})</span>
           </div>
           <table className="w-full table-fixed border-collapse border border-black text-base">
             <tbody>
@@ -2049,7 +2051,7 @@ function RecipePrintSheet({ recipe, pick, language }) {
 
       {recipe.tools?.length ? (
         <div>
-          <div className="mb-1 text-xl font-bold">{label("כלים:", "Tools:")}</div>
+          <div className="mb-1 text-xl font-bold">{label(t("כלים:", "Tools:"), "Tools:")}</div>
           <table className="w-full table-fixed border-collapse border border-black text-base">
             <tbody>
               {recipe.tools.map((it, i) => (
@@ -2062,7 +2064,7 @@ function RecipePrintSheet({ recipe, pick, language }) {
 
       {recipe.steps?.length ? (
         <div style={{ breakBefore: "page" }}>
-          <div className="mb-1 text-xl font-bold">{label("שלבים:", "Steps:")}</div>
+          <div className="mb-1 text-xl font-bold">{label(t("שלבים:", "Steps:"), "Steps:")}</div>
           <table className="w-full table-fixed border-collapse border border-black text-base">
             <tbody>
               {recipe.steps.map((s, i) => (
@@ -2074,7 +2076,7 @@ function RecipePrintSheet({ recipe, pick, language }) {
       ) : null}
 
       <div className="mt-6 text-center text-xs text-muted-foreground/70">
-        {label("© בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.", "© Let's Play. All rights reserved. Content is for enrichment and practice only and does not replace diagnosis, assessment, professional advice or treatment.")}
+        {label(t("© בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.", "© Let’s Play. All rights reserved. The content here is for enrichment and practice only. It is not a diagnosis, personal therapeutic advice, or a substitute for evaluation, consultation, or treatment by a qualified professional."), "© Let's Play. All rights reserved. Content is for enrichment and practice only and does not replace diagnosis, assessment, professional advice or treatment.")}
       </div>
     </div>
   );
@@ -2304,6 +2306,7 @@ function RecipeDetail({ recipe, mode, onBack }) {
 }
 
 function IconChip({ item, label, checked, onToggle, expanded, onExpand, hwClass = "" }) {
+  const { t } = useTranslator();
   return (
     <div
       role="button"
@@ -2325,7 +2328,7 @@ function IconChip({ item, label, checked, onToggle, expanded, onExpand, hwClass 
         <Checkbox
           checked={!!checked}
           onCheckedChange={() => onToggle?.()}
-          aria-label={`סימון ${label ?? item.text}`}
+          aria-label={t(`סימון ${label ?? item.text}`, `Check off ${label ?? item.text}`)}
           className="h-5 w-5"
         />
       </span>
@@ -2335,7 +2338,7 @@ function IconChip({ item, label, checked, onToggle, expanded, onExpand, hwClass 
           e.stopPropagation();
           onExpand?.();
         }}
-        aria-label={`${expanded ? "הקטנת" : "הגדלת"} ${label ?? item.text}`}
+        aria-label={t(`${expanded ? "הקטנת" : "הגדלת"} ${label ?? item.text}`, `${expanded ? "Reduce" : "Enlarge"} ${label ?? item.text}`)}
         className={`flex shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted transition-all duration-300 ${
           expanded ? "h-28 w-28 cursor-zoom-out md:h-32 md:w-32" : "h-16 w-16 cursor-zoom-in"
         }`}
@@ -2356,7 +2359,7 @@ function IconChip({ item, label, checked, onToggle, expanded, onExpand, hwClass 
             e.stopPropagation();
             onExpand?.();
           }}
-          aria-label={`סגירת ההגדלה של ${label ?? item.text}`}
+          aria-label={t(`סגירת ההגדלה של ${label ?? item.text}`, `Close enlarged ${label ?? item.text}`)}
           className="absolute left-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-foreground shadow-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky"
         >
           <X className="h-4 w-4" />

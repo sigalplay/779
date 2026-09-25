@@ -282,7 +282,7 @@ export default function ActivityDetail() {
               {ageRangeLabel(a, language)}
             </Pill>
             <Pill>
-              <Clock className="h-3.5 w-3.5" /> {language === "en" ? `${a.duration_min} minutes` : getActivityDurationLabel(a)}
+              <Clock className="h-3.5 w-3.5" /> {getActivityDurationLabel(a, language)}
             </Pill>
             <span className="inline-flex items-center gap-1 rounded-full bg-warm px-3 py-1 text-foreground/80">
               <Layers className="h-3.5 w-3.5" /> {language === "en" ? (a.difficulty === "easy" ? "Easy" : a.difficulty === "medium" ? "Moderate" : "Advanced") : (a.difficulty === "easy" ? "קל" : a.difficulty === "medium" ? "בינוני" : "מתקדם")}
@@ -295,7 +295,7 @@ export default function ActivityDetail() {
                 nikud.on ? "bg-sage text-sage-foreground" : "bg-white/80 hover:bg-white"
               }`}
             >
-              אָ ניקוד {nikud.on ? "פעיל" : "כבוי"}
+              {t("אָ ניקוד", "Vowel marks")}{" "}{nikud.on ? "פעיל" : "כבוי"}
             </button> : null}
             {language === "he" ? <button
               type="button"
@@ -315,7 +315,7 @@ export default function ActivityDetail() {
                 showIllustrations ? "bg-sage text-sage-foreground" : "bg-white/80 hover:bg-white"
               }`}
             >
-              🖼️ איורי ציוד ושלבים {showIllustrations ? "מוצגים" : "מוסתרים"}
+              {t("🖼️ איורי ציוד ושלבים", "🖼️ Illustrations")}{" "}{showIllustrations ? t("מוצגים", "On") : t("מוסתרים", "Off")}
             </button>
           </div>
         </header>
@@ -484,6 +484,7 @@ function PrintCellIcon({ src, srcs, Icon, size = "large" }) {
 }
 
 function PrintSheet({ activity: a, activityId, pick, language, title, description, materials, steps, preparation, flowText, adaptations, extensions, tips }) {
+  const { t } = useTranslator();
   const customMaterials = ACTIVITY_ICON_SETS[activityId]?.materials;
   const customSteps = ACTIVITY_ICON_SETS[activityId]?.steps;
 
@@ -519,21 +520,21 @@ function PrintSheet({ activity: a, activityId, pick, language, title, descriptio
   return (
     <div className="activity-print-sheet hidden print:block print:space-y-4 print:text-black">
       <div className="activity-print-hero relative flex items-center justify-center gap-5 rounded-3xl border border-border/60 bg-gradient-to-br from-sage/20 to-sky/30 p-5">
-        <img src={brandLogo(language)} alt={label("בואו נשחק", "Let's Play")} className="print-sheet-brand absolute left-0 top-0 h-14 w-16 object-contain" />
+        <img src={brandLogo(language)} alt={label(t("בואו נשחק", "Let's Play"), "Let's Play")} className="print-sheet-brand absolute left-0 top-0 h-14 w-16 object-contain" />
         {hero ? <img src={hero} alt="" className="h-28 w-28 shrink-0 rounded-2xl bg-white/80 object-contain p-2" /> : null}
         <h1 className="text-center text-4xl font-black">{title}</h1>
       </div>
 
       {description ? (
         <div className="activity-print-card rounded-3xl border border-border/60 bg-card p-4">
-          <h2 className="mb-2 text-xl font-bold">{label("תיאור המשימה", "About This Activity")}</h2>
+          <h2 className="mb-2 text-xl font-bold">{label(t("תיאור המשימה", "Task description"), "About This Activity")}</h2>
           <p className="text-lg leading-relaxed">{description}</p>
         </div>
       ) : null}
 
       {a.materials?.length ? (
         <div className="activity-print-card rounded-3xl border border-border/60 bg-card p-4">
-          <div className="mb-3 text-xl font-bold">{label("ציוד נדרש", "Materials")}</div>
+          <div className="mb-3 text-xl font-bold">{label(t("ציוד נדרש", "Equipment needed"), "Materials")}</div>
           <div className="grid grid-cols-2 gap-2">
             {a.materials.map((m, i) => (
               <div key={i} className="activity-print-item flex min-w-0 items-center gap-3 rounded-2xl border border-black/60 bg-white p-2.5">
@@ -554,7 +555,7 @@ function PrintSheet({ activity: a, activityId, pick, language, title, descriptio
       {a.preparation ? (
         <div className="activity-print-card rounded-3xl border border-border/60 bg-card p-4">
           <p className="text-lg leading-relaxed">
-            <strong>{label("הכנה מוקדמת: ", "Preparation: ")}</strong>
+            <strong>{label(t("הכנה מוקדמת: ", "Preparation: "), "Preparation: ")}</strong>
             {preparation}
           </p>
         </div>
@@ -562,7 +563,7 @@ function PrintSheet({ activity: a, activityId, pick, language, title, descriptio
 
       {a.steps?.length ? (
         <div className="activity-print-card rounded-3xl border border-border/60 bg-card p-4">
-          <div className="mb-3 text-xl font-bold">{ideasList ? label("רעיונות לשקיות", "Sensory bag ideas") : label("מהלך הפעילות", "How to Play")}</div>
+          <div className="mb-3 text-xl font-bold">{ideasList ? label(t("רעיונות לשקיות", "Bag ideas"), "Sensory bag ideas") : label(t("מהלך הפעילות", "How to Play"), "How to Play")}</div>
           <div className="space-y-2.5">
             {steps.map((step) => (
               <div key={step.n} className="activity-print-item flex items-center gap-3 rounded-2xl border border-black/60 bg-white p-3">
@@ -584,7 +585,7 @@ function PrintSheet({ activity: a, activityId, pick, language, title, descriptio
         <div className="text-lg leading-relaxed" style={{ breakBefore: "page" }}>
           {ACTIVITY_ICON_SETS[activityId]?.flow ? <img src={ACTIVITY_ICON_SETS[activityId].flow} alt="" className="mx-auto mb-4 h-56 w-full object-contain" /> : null}
           <p>
-            <strong>{label("מהלך הפעילות: ", "How to play: ")}</strong>
+            <strong>{label(t("מהלך הפעילות: ", "How to play: "), "How to play: ")}</strong>
             {flowText}
           </p>
         </div>
@@ -592,7 +593,7 @@ function PrintSheet({ activity: a, activityId, pick, language, title, descriptio
 
       {tips?.length ? (
         <div>
-          <div className="mb-1 text-xl font-bold">דגשים:</div>
+          <div className="mb-1 text-xl font-bold">{t("דגשים:", "Tips:")}</div>
           <ul className="space-y-1 text-lg">
             {tips.map((tip, i) => (
               <li key={i}>⭐ {tip.boldPrefix ? <strong>{tip.boldPrefix} </strong> : null}{tip.text}</li>
@@ -602,19 +603,19 @@ function PrintSheet({ activity: a, activityId, pick, language, title, descriptio
       ) : null}
       {a.adaptations ? (
         <p className="text-lg leading-relaxed">
-          <strong>{label("הורדת רמת הקושי: ", "Make it easier: ")}</strong>
+          <strong>{label(t("הורדת רמת הקושי: ", "Make it easier: "), "Make it easier: ")}</strong>
           {adaptations}
         </p>
       ) : null}
       {a.extensions ? (
         <p className="text-lg leading-relaxed">
-          <strong>{label("העלאת רמת הקושי / שדרוג: ", "Add a challenge: ")}</strong>
+          <strong>{label(t("העלאת רמת הקושי / שדרוג: ", "Make it harder / level up: "), "Add a challenge: ")}</strong>
           {extensions}
         </p>
       ) : null}
 
       <div className="mt-6 text-center text-xs text-muted-foreground/70">
-        {label("© בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.", "© Let's Play. All rights reserved. Content is for enrichment and practice only and does not replace diagnosis, assessment, professional advice or treatment.")}
+        {label(t("© בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.", "© Let’s Play. All rights reserved. The content here is for enrichment and practice only. It is not a diagnosis, personal therapeutic advice, or a substitute for evaluation, consultation, or treatment by a qualified professional."), "© Let's Play. All rights reserved. Content is for enrichment and practice only and does not replace diagnosis, assessment, professional advice or treatment.")}
       </div>
     </div>
   );
