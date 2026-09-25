@@ -1,10 +1,11 @@
 // Accounts (Supabase Auth): email + password, email confirmation, password recovery.
 // Same requests and the same saved session as the live site, so existing sign-ins keep working.
 
-// The live site's project. The key is the public (publishable) key, safe to ship in the page.
-// A build can point elsewhere with VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY.
-const DEFAULT_SUPABASE_URL = "https://qcklptudfclzvddjarkw.supabase.co";
-const DEFAULT_SUPABASE_KEY = "sb_publishable_8Bp_l_qcOxT2A67Sw2T35A_aVCvWh8H";
+// The site's own Supabase project (tables: supabase/schema.sql). The key is the public (publishable)
+// key, safe to ship in the page. A build can point elsewhere with VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY.
+// Also set in public/therapist/my-patients/patients.js.
+const DEFAULT_SUPABASE_URL = "https://xoyaymlmnsmhuaxnkdqh.supabase.co";
+const DEFAULT_SUPABASE_KEY = "sb_publishable_FjXUtCvY96sSzeTs_0LFOQ_bxp2_mKb";
 export const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, "");
 export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_KEY;
 // Links in confirmation and recovery emails always point to the public site.
