@@ -31,7 +31,7 @@ export function PencilGripPostureGuide({ language = "he" }) {
   return (
     <div className="grid grid-cols-2 gap-3 pt-2 sm:grid-cols-3 lg:grid-cols-5">
       {POSTURE_POINTS.map((p) => (
-        <div key={p.image} className="flex min-h-48 flex-col items-center justify-start gap-3 rounded-3xl border border-sage/30 bg-sage/10 p-4 text-center">
+        <div key={p.image} className="flex flex-col items-center justify-start gap-3 rounded-3xl border border-sage/30 bg-sage/10 p-4 text-center">
           <div className="h-32 w-full shrink-0 overflow-hidden rounded-2xl bg-white p-1">
             <img src={p.image} alt="" className="h-full w-full object-contain" />
           </div>
