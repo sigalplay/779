@@ -33,8 +33,6 @@
 .board-photo-preview-card button{min-height:42px;padding:8px 15px;border:1px solid #d9d0c5;border-radius:13px;background:#fff;color:#40362f;font:700 13px Rubik,Arial,sans-serif;cursor:pointer}
 .board-photo-preview-card [data-confirm-photo]{border-color:#8bc4a7;background:#cfead9;color:#264d3a}
 
-section[aria-label="טיימר חזותי ללוח המפגש"]{transform:scale(.8)!important;transform-origin:top left!important}
-
 @media(max-width:760px){
   .meeting-board-date-navigation{grid-template-columns:1fr 1.2fr 1fr;align-items:stretch;gap:6px;padding:8px;border-radius:15px}
   .meeting-board-date-navigation>[data-previous-board]{grid-column:1}
@@ -47,8 +45,6 @@ section[aria-label="טיימר חזותי ללוח המפגש"]{transform:scale(
   .meeting-current-date>strong{font-size:13px}
   .meeting-current-date>span{font-size:10.5px}
   .meeting-board-date-navigation select,.meeting-board-date-navigation>.meeting-copy-board{min-height:38px;padding:5px 6px;font-size:10.5px}
-
-  section[aria-label="טיימר חזותי ללוח המפגש"]{transform:scale(.55)!important;transform-origin:top left!important}
 
   .activities-two-column-page .activity-card-grid-v92{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
   .activities-two-column-page .activity-card-grid-v92>*{min-width:0!important}
