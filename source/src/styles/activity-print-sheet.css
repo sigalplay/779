@@ -1,6 +1,12 @@
-/* Printed activity page (PrintSheet in pages/ActivityDetail.jsx): title with the main picture and a
-   link back to the site, then materials and steps as a plain table — tick box, picture, numbered
-   text — and the copyright line. Black lines on white, nothing else. */
+/* Printed activity page (PrintSheet): title with the main picture and a link back to the site, then
+   the lists as a plain table — tick box, picture, numbered text — and the copyright line.
+   Black lines on white, nothing else.
+
+   Sizes are relative to the width of the sheet (container query units), not in mm or pt. A computer
+   lays the printed page out at the paper's width, but a phone lays it out at the width of its own
+   screen and then enlarges it to fit the paper — so fixed sizes came out about twice as big and a
+   one-page activity took two pages. With sizes relative to the sheet, the page is the same everywhere.
+   --mm is one millimetre and --pt one point when the sheet is the 186mm wide printable area of A4. */
 @media print {
   /* The sheet uses the "activity-page" page margins. Every box around it gets the same page name,
      otherwise the browser starts a new sheet of paper before and after it (blank first/last page). */
@@ -14,8 +20,13 @@
   }
 
   .activity-print-sheet {
+    container-type: inline-size;
     color: #000;
     font-family: Rubik, Arial, sans-serif;
+  }
+  .activity-print-sheet * {
+    --mm: calc(100cqw / 186);
+    --pt: calc(100cqw / 186 * 0.3528);
   }
   .print-sheet-frame {
     width: 100%;
@@ -33,43 +44,43 @@
   .print-sheet-head {
     display: flex;
     align-items: center;
-    gap: 6mm;
-    margin-bottom: 4mm;
-    padding-bottom: 3mm;
-    border-bottom: 0.4mm solid #000;
+    gap: calc(6 * var(--mm));
+    margin-bottom: calc(4 * var(--mm));
+    padding-bottom: calc(3 * var(--mm));
+    border-bottom: calc(0.4 * var(--mm)) solid #000;
     break-inside: avoid;
   }
   .print-sheet-hero {
-    width: 26mm;
-    height: 26mm;
+    width: calc(26 * var(--mm));
+    height: calc(26 * var(--mm));
     flex-shrink: 0;
     object-fit: contain;
   }
   .print-sheet-title {
-    margin: 0 0 2mm;
-    font-size: 24pt;
+    margin: 0 0 calc(2 * var(--mm));
+    font-size: calc(24 * var(--pt));
     font-weight: 900;
     line-height: 1.15;
   }
   .print-sheet-link {
     color: #1f5f8b !important;
-    font-size: 10pt;
+    font-size: calc(10 * var(--pt));
     text-decoration: underline;
   }
   .print-sheet-logo {
-    width: 18mm;
-    height: 14mm;
+    width: calc(18 * var(--mm));
+    height: calc(14 * var(--mm));
     flex-shrink: 0;
     align-self: flex-start;
     object-fit: contain;
   }
 
   .print-sheet-section {
-    margin-bottom: 4mm;
+    margin-bottom: calc(4 * var(--mm));
   }
   .print-sheet-heading {
-    margin: 0 0 2mm;
-    font-size: 15pt;
+    margin: 0 0 calc(2 * var(--mm));
+    font-size: calc(15 * var(--pt));
     font-weight: 800;
     break-after: avoid;
     page-break-after: avoid;
@@ -85,82 +96,82 @@
     page-break-inside: avoid;
   }
   .print-sheet-table td {
-    padding: 1mm 2mm;
-    border: 0.3mm solid #000;
+    padding: var(--mm) calc(2 * var(--mm));
+    border: calc(0.3 * var(--mm)) solid #000;
     vertical-align: middle;
   }
   .print-sheet-col-check {
-    width: 12mm;
+    width: calc(12 * 100% / 186);
   }
   .print-sheet-col-image {
-    width: 23mm;
+    width: calc(23 * 100% / 186);
   }
   .print-sheet-check span {
     display: block;
-    width: 6mm;
-    height: 6mm;
+    width: calc(6 * var(--mm));
+    height: calc(6 * var(--mm));
     margin: auto;
-    border: 0.5mm solid #000;
-    border-radius: 1mm;
+    border: calc(0.5 * var(--mm)) solid #000;
+    border-radius: var(--mm);
   }
   .print-sheet-image {
-    height: 19mm;
+    height: calc(19 * var(--mm));
     text-align: center;
   }
   .print-sheet-image img {
     display: block;
-    width: 17mm !important;
-    height: 17mm !important;
+    width: calc(17 * var(--mm)) !important;
+    height: calc(17 * var(--mm)) !important;
     margin: auto;
     object-fit: contain;
   }
   /* A step with several pictures shows them side by side. */
   .print-sheet-image .flex {
     flex-wrap: nowrap !important;
-    gap: 1mm !important;
+    gap: var(--mm) !important;
   }
   .print-sheet-image .flex:has(img + img) img {
-    width: 11mm !important;
-    height: 11mm !important;
+    width: calc(11 * var(--mm)) !important;
+    height: calc(11 * var(--mm)) !important;
   }
   .print-sheet-image svg {
-    width: 14mm;
-    height: 14mm;
+    width: calc(14 * var(--mm));
+    height: calc(14 * var(--mm));
     margin: auto;
   }
   .print-sheet-text {
-    font-size: 12.5pt;
+    font-size: calc(12.5 * var(--pt));
     line-height: 1.45;
   }
   .print-sheet-number {
-    margin-inline-end: 1mm;
+    margin-inline-end: var(--mm);
   }
 
   .print-sheet-note {
-    margin: 0 0 5mm;
-    font-size: 12pt;
+    margin: 0 0 calc(5 * var(--mm));
+    font-size: calc(12 * var(--pt));
     line-height: 1.5;
   }
   .print-sheet-flow {
     display: block;
     max-width: 100%;
-    max-height: 60mm;
-    margin: 0 auto 3mm;
+    max-height: calc(60 * var(--mm));
+    margin: 0 auto calc(3 * var(--mm));
     object-fit: contain;
   }
 
   .print-sheet-footer {
-    margin-top: 4mm;
-    padding-top: 2mm;
-    border-top: 0.3mm solid #999;
+    margin-top: calc(4 * var(--mm));
+    padding-top: calc(2 * var(--mm));
+    border-top: calc(0.3 * var(--mm)) solid #999;
     color: #444;
-    font-size: 8pt;
+    font-size: calc(8 * var(--pt));
     line-height: 1.4;
     text-align: center;
     break-inside: avoid;
   }
   .print-sheet-footer p {
-    margin: 0 0 1mm;
+    margin: 0 0 var(--mm);
   }
   .print-sheet-footer a {
     color: #1f5f8b !important;
