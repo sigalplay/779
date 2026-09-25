@@ -10,6 +10,7 @@ import { BoardDateNavigation } from "@/components/session-board/BoardDateNavigat
 import { BoardToolbar } from "@/components/session-board/BoardToolbar";
 import { BoardCanvas } from "@/components/session-board/BoardCanvas";
 import { BoardPhotoPreview } from "@/components/session-board/BoardPhotoPreview";
+import { BoardFullscreenTools } from "@/components/session-board/BoardFullscreenTools";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -881,6 +882,12 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
     return () => { document.removeEventListener("fullscreenchange", onChange); document.removeEventListener("keydown", onKey); };
   }, []);
 
+  const pen = { enabled: penEnabled, setEnabled: setPenEnabled, tool: penTool, setTool: setPenTool, color: penColor, setColor: setPenColor, width: penWidth, setWidth: setPenWidth, status: drawingStatus, onClear: clearDrawing };
+  function openTimer() {
+    setPenEnabled(false);
+    setTimerOpen(true);
+  }
+
   const heading = linkedPatient ? t(`הטיפול של ${linkedPatient.name}`, `${linkedPatient.name}'s session`) : t("לוח המפגש", "Session board");
 
   return (
@@ -891,7 +898,6 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
           <p className="mt-1 text-muted-foreground">{t("בחרי פעילות כדי להתחיל בה. אפשר לחזור ללוח בכל רגע.", "Choose an activity to begin. You can return to the board at any time.")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <VisualSessionTimer language={language} open={timerOpen} onOpenChange={setTimerOpen} hideTrigger />
           {sessionId && <Button onClick={onFinishSession} className="rounded-full bg-foreground text-background"><Save className="h-4 w-4" /> {t("סיום טיפול", "Finish session")}</Button>}
         </div>
       </div>
@@ -911,10 +917,10 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
         onUseGuestBoard={() => navigate("/therapist/build?view=session&guest=1")}
         addActivityHref={`/therapist/build?tab=search&boardMode=1${patientSuffix}`}
         motorTrailHref={`/therapist/motor-trail?returnTo=session${patientSuffix}`}
-        pen={{ enabled: penEnabled, setEnabled: setPenEnabled, tool: penTool, setTool: setPenTool, color: penColor, setColor: setPenColor, width: penWidth, setWidth: setPenWidth, status: drawingStatus, onClear: clearDrawing }}
+        pen={pen}
         onAddSign={addSign}
         onAddGame={addGame}
-        onOpenTimer={() => { setPenEnabled(false); setTimerOpen(true); }}
+        onOpenTimer={openTimer}
         onPickPhoto={() => photoInputRef.current?.click()}
         fullscreen={fullscreen}
         onToggleFullscreen={toggleFullscreen}
@@ -986,6 +992,11 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
           );
         })}
         <button type="button" className="meeting-fullscreen-exit" data-exit-board-fullscreen="true" aria-label={t("יציאה ממסך מלא", "Exit full screen")} title={t("יציאה ממסך מלא", "Exit full screen")} onClick={exitFullscreen}>×</button>
+        {/* Inside the board so the timer and the full-screen tools stay visible in full screen. */}
+        <div className="meeting-board-overlay">
+          <VisualSessionTimer language={language} open={timerOpen} onOpenChange={setTimerOpen} hideTrigger />
+          {fullscreen && <BoardFullscreenTools language={language} pen={pen} onOpenTimer={openTimer} onAddSign={addSign} />}
+        </div>
         <BoardCanvas boardRef={boardRef} strokes={strokes} onStrokesChange={updateStrokes} enabled={penEnabled} tool={penTool} color={penColor} width={penWidth} language={language} />
       </ol>
 

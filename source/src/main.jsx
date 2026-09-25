@@ -13,6 +13,7 @@ import "./styles/therapist-session-board-v1.css";
 import "./styles/therapist-board-signs-v93.css";
 import "./styles/therapist-board-games-v1.css";
 import "./styles/v92-board-and-search.css";
+import "./styles/therapist-board-fullscreen-tools.css";
 import "./styles/mobile-search-filters-v1.css";
 import "./styles/calendar-qa-v27.css";
 import "./styles/mobile-calendar-compact-v1.css";
