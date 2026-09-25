@@ -26,23 +26,18 @@ const POSTURE_POINTS = [
   },
 ];
 
-// One card per point with the picture and the title. On phones each card is a
-// compact row (small picture beside the text) so all five fit on about one screen.
-// The class names avoid "grid", "h-40" and "gap-3": the phone guidance-dialog styles resize those.
+// Same cards as the cutting tips: picture and title, two per row on phones.
 export function PencilGripPostureGuide({ language = "he" }) {
   return (
-    <div className="space-y-3">
-      <p className="text-sm text-muted-foreground md:text-base">{language === "en" ? "A stable sitting position before writing or drawing" : "ישיבה נכונה לפני שכותבים או מציירים"}</p>
-      <div className="flex flex-col gap-2.5 sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-5">
-        {POSTURE_POINTS.map((p) => (
-          <div key={p.image} className="flex items-center gap-2.5 overflow-hidden rounded-2xl border border-border/60 bg-cream p-2 sm:flex-col sm:items-stretch sm:gap-0 sm:rounded-3xl sm:p-0">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1 sm:h-[10rem] sm:w-full sm:rounded-none">
-              <img src={p.image} alt="" className="h-full w-full object-contain" />
-            </div>
-            <h3 className="min-w-0 flex-1 text-sm font-bold leading-snug text-blue-600 sm:px-3 sm:py-3 sm:text-center sm:text-base">{language === "en" ? p.titleEn : p.title}</h3>
+    <div className="grid grid-cols-2 gap-3 pt-2 sm:grid-cols-3 lg:grid-cols-5">
+      {POSTURE_POINTS.map((p) => (
+        <div key={p.image} className="flex min-h-48 flex-col items-center justify-start gap-3 rounded-3xl border border-sage/30 bg-sage/10 p-4 text-center">
+          <div className="h-32 w-full shrink-0 overflow-hidden rounded-2xl bg-white p-1">
+            <img src={p.image} alt="" className="h-full w-full object-contain" />
           </div>
-        ))}
-      </div>
+          <span className="text-sm font-semibold leading-snug text-foreground md:text-base">{language === "en" ? p.titleEn : p.title}</span>
+        </div>
+      ))}
     </div>
   );
 }
