@@ -55,8 +55,9 @@
 /* therapist-patients-v1.js */
 (() => {
   "use strict";
-  const URL = "https://qcklptudfclzvddjarkw.supabase.co";
-  const KEY = "sb_publishable_8Bp_l_qcOxT2A67Sw2T35A_aVCvWh8H";
+  // Same project as src/lib/cloud-auth.js.
+  const URL = "https://xoyaymlmnsmhuaxnkdqh.supabase.co";
+  const KEY = "sb_publishable_FjXUtCvY96sSzeTs_0LFOQ_bxp2_mKb";
   const signedOut = document.querySelector("#signedOut");
   const signedIn = document.querySelector("#signedIn");
   const list = document.querySelector("#patientsList");
