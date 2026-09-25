@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Disallow: /therapist/
+Disallow: /en/therapist/
+Disallow: /profile
+Disallow: /en/profile
+Disallow: /auth
+Disallow: /en/auth
+Disallow: /favorites
+Disallow: /en/favorites
+Disallow: /child/
+Disallow: /en/child/
+Disallow: /shared/
+Disallow: /en/shared/
+
+Sitemap: https://letsplayot.com/sitemap.xml

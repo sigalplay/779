@@ -1,0 +1,956 @@
+import { useState, useEffect } from "react";
+import { useBodyClass } from "@/lib/use-body-class";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { ArrowRight, Clock, FlaskConical, RotateCcw, ShieldAlert, Home, ChevronDown, ChevronUp, CheckCircle2, ListPlus, Check } from "lucide-react";
+import { toast } from "sonner";
+import { AppShell } from "@/components/AppShell";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { addToDraftPlan } from "@/lib/storage";
+import { useCmsCollection } from "@/lib/cms-content";
+import { brandLogo, useTranslator } from "@/lib/language";
+import { EXPERIMENT_EN } from "@/lib/experiment-content-en";
+import { imageAlt, shortLabel } from "@/lib/image-seo";
+
+const ROOT = "/icon-bank/manual/experiments";
+export const EXPERIMENTS = [
+  {
+    id: "lava-lamp",
+    title: "מנורת לבה",
+    time: "10 דקות",
+    materials: [
+      "בקבוק פלסטיק שקוף או כלי שקוף וגבוה",
+      "כפית סודה לשתייה",
+      "שמן צמחי",
+      "¼ כוס חומץ",
+      "2 טיפות צבע מאכל",
+      "כוס קטנה",
+      "כפית",
+    ],
+    science: "החומץ והסודה לשתייה יוצרים גז. הבועות עולות דרך השמן, משתחררות, והנוזל הצבעוני שוקע שוב.",
+    warning: "משאירים את הבקבוק או הכלי פתוח במשך כל התגובה. אסור לסגור אותו בזמן שהחומץ והסודה לשתייה מגיבים, משום שהגז עלול להצטבר וליצור לחץ.",
+    steps: [
+      "הניחו את הבקבוק או הכלי פתוח על משטח יציב ושפכו לתוכו כפית סודה לשתייה.",
+      "מלאו את הבקבוק או הכלי בשמן כמעט עד הסוף והשאירו אותו פתוח.",
+      "שפכו את החומץ לכוס הקטנה.",
+      "הוסיפו צבע מאכל וערבבו.",
+      "שפכו בעדינות את החומץ הצבעוני לתוך השמן, בלי לסגור את הבקבוק.",
+      "השאירו את הבקבוק פתוח וצפו בבועות הלבה שעולות ויורדות.",
+    ],
+    stepImages: [1, 2, 3, 4, 5, 6],
+  },
+  {
+    id: "vacuum-lift",
+    title: "קסם הרִיק",
+    time: "10 דקות",
+    materials: ["מגש מתכת או צלחת", "נייר סופג", "מעט מים", "נר קטן", "כוס זכוכית", "מצית ארוך"],
+    science: "כשהלהבה נכבית האוויר בכוס מתקרר והלחץ בתוכה יורד. לחץ האוויר שמחוץ לכוס מצמיד אותה למגש.",
+    warning: "הדלקת הנר והרמת הכוס ייעשו בהשגחת מבוגר. עובדים על מגש מתכת או צלחת ובמרחק מחומרים דליקים.",
+    steps: [
+      "קפלו נייר סופג, הרטיבו אותו והניחו במרכז המגש.",
+      "הניחו את הנר במרכז הנייר.",
+      "הדליקו את הנר.",
+      "הפכו את הכוס מעל הנר ולחצו בעדינות.",
+      "המתינו כמה שניות לאחר שהלהבה כבתה.",
+      "הרימו את הכוס וראו כיצד המגש עולה איתה.",
+    ],
+    stepImages: [1, 2, 3, 4, 5, 6],
+  },
+  {
+    id: "strawberry-balloon",
+    title: "התות המתנפח",
+    time: "15 דקות",
+    materials: ["בלון שקוף", "שקית אוכל קטנה", "3–4 כפות חומץ", "2 כפיות סודה לשתייה", "צבע מאכל אדום", "טוש שחור"],
+    science: "במפגש בין החומץ לסודה נוצר גז שתופס מקום ומנפח את הבלון.",
+    warning: "מבוגר משגיח לאורך כל הניסוי. מרחיקים את הבלון מהפנים ועוצרים אם הוא מתנפח מאוד.",
+    steps: [
+      "מלאו את השקית בחומץ ובצבע מאכל וקשרו היטב.",
+      "ציירו על הבלון נקודות של תות.",
+      "הכניסו את השקית הסגורה לתוך הבלון.",
+      "הוסיפו סודה לשתייה לבלון וקשרו היטב.",
+      "מִעכו בעדינות את השקית הפנימית בלבד וצפו בבלון מתנפח.",
+    ],
+    stepImages: [1, 2, 3, 4, 6],
+  },
+  {
+    id: "walking-rainbow",
+    title: "קשת מטיילת",
+    time: "15–30 דקות",
+    materials: ["2 כוסות", "מים", "נייר סופג", "טושים על בסיס מים"],
+    science: "המים נעים בין סיבי הנייר בזכות נימיות וסוחפים איתם את צבעי הטושים.",
+    warning: undefined,
+    steps: [
+      "מלאו שתי כוסות מים.",
+      "קפלו את הנייר הסופג למלבן ארוך.",
+      "צבעו פסי קשת בשני הקצוות.",
+      "הכניסו קצה אחד לכל כוס.",
+      "המתינו וצפו בצבעים מטיילים ונפגשים.",
+    ],
+    stepImages: [1, 2, 4, 5, 6],
+  },
+  {
+    id: "foam-worm",
+    title: "תולעת קצף צבעונית",
+    time: "15 דקות",
+    materials: ["בקבוק פלסטיק קטן", "מספריים", "מגבון", "גומייה", "צבעי מאכל", "צלחת", "מים", "סבון כלים"],
+    science: "האוויר עובר דרך החורים הזעירים שבמגבון ויוצר המון בועות סבון צמודות.",
+    warning: "מבוגר גוזר את הבקבוק. נושפים החוצה בלבד ואין לשאוף דרך הבקבוק.",
+    steps: [
+      "גזרו או חתכו בקבוק באמצע.",
+      "כסו את הצד הגזור במגבון והדקו באמצעות גומייה.",
+      "טפטפו פסי צבע מאכל על המגבון.",
+      "ערבבו מים ומעט סבון וטבלו את קצה הבד.",
+      "נשפו בעדינות דרך הפייה וצפו בתולעת הקצף.",
+    ],
+    stepImages: [1, 3, 4, 5, 6],
+  },
+  {
+    id: "pom-launcher",
+    title: "משגר הפונפונים",
+    time: "15 דקות",
+    materials: ["כוס נייר", "בלון", "פונפונים רכים", "מספריים", "סלוטייפ", "טושים"],
+    science: "משיכת הבלון אוגרת אנרגיה, וכשמשחררים היא דוחפת את הפונפון קדימה.",
+    warning: "משגרים רק פונפונים רכים ולעולם לא מכוונים לפנים.",
+    steps: [
+      "קשטו את הכוס בטושים.",
+      "גזרו את תחתית הכוס.",
+      "קשרו את פיית הבלון. גזרו את החלק המעוגל הרחב (את החלק עם הקשר שומרים).",
+      "מתחו את הצד הגזור של הבלון סביב הפתח הגזור בכוס, כך שהקשר נשאר חופשי בחוץ.",
+      "חזקו בסלוטייפ והכניסו פונפון רך.",
+      "משכו את הקשר ושחררו כלפי מעלה.",
+    ],
+    stepImages: [1, 2, 3, 4, 5, 6],
+  },
+  {
+    id: "flying-cup",
+    title: "הכדור הפורח המעופף",
+    time: "15 דקות",
+    materials: ["כוס נייר", "בלון", "מספריים", "מקל ארטיק", "טושים"],
+    science: "האוויר היוצא נדחף מטה ובתגובה דוחף את הבלון והכוס מעלה.",
+    warning: "יצירת החריץ וגזירת הכוס ייעשו בהשגחת מבוגר. מפנים חפצים שבירים.",
+    steps: [
+      "קשטו את כוס הנייר.",
+      "צרו חריץ בתחתית הכוס.",
+      "גזרו פסים מהשפה העליונה של הכוס כלפי מטה.",
+      "דחפו את הבלון דרך החריץ.",
+      "נפחו את הבלון כשפייתו מחוץ לכוס.",
+      "שחררו בשטח פתוח וצפו בו ממריא.",
+    ],
+    stepImages: [1, 2, 3, 4, 5, 6],
+  },
+  {
+    id: "balloon-rocket",
+    title: "טיל הבלון",
+    time: "15 דקות",
+    materials: ["בלון", "קש", "חוט", "אטב כביסה", "סלוטייפ", "טוש", "2 כיסאות"],
+    science: "האוויר יוצא לאחור ובתגובה דוחף את הבלון קדימה לאורך החוט.",
+    warning: undefined,
+    steps: [
+      "השחילו את החוט דרך הקש.",
+      "קשרו חוט מתוח בין שני כיסאות.",
+      "נפחו את הבלון בלי לקשור.",
+      "סובבו את הפייה וסגרו באטב.",
+      "הדביקו את הבלון לקש בסלוטייפ.",
+      "שחררו את האטב וצפו בטיל דוהר.",
+    ],
+    stepImages: [1, 2, 3, 4, 5, 6],
+  },
+  {
+    id: "color-rain",
+    title: "גשם צבעוני בכוס",
+    time: "10 דקות",
+    materials: ["2 כוסות שקופות", "מים", "שמן צמחי", "צבעי מאכל", "מזלג"],
+    science: "צבע המאכל אינו מתמוסס בשמן. הטיפות שוקעות אל המים ומתפזרות כמו גשם.",
+    warning: undefined,
+    steps: [
+      "מלאו כוס גבוהה במים.",
+      "מזגו מעט שמן לכוס השנייה.",
+      "טפטפו לשמן כמה צבעי מאכל.",
+      "ערבבו בעדינות במזלג.",
+      "מזגו את השמן הצבעוני מעל המים.",
+      "צפו בטיפות שוקעות כמו גשם צבעוני.",
+    ],
+    stepImages: [1, 2, 3, 4, 5, 6],
+  },
+  {
+    id: "cup-volcano",
+    title: "הר הגעש שמתפרץ",
+    time: "20 דקות",
+    materials: [
+      "כוס קרטון חד פעמית",
+      "מגש להנחת הכוס",
+      "2 כפות סודה לשתייה",
+      "רבע כוס חומץ",
+      "כמה טיפות צבע מאכל אדום או כתום",
+      "כפית סבון כלים",
+      "כפית",
+      "כוס קטנה למדידת החומץ",
+    ],
+    science: "החומץ (חומצי) והסודה לשתייה (בסיסית) מגיבים זה עם זה ויוצרים גז פחמן דו-חמצני. הגז נלכד בנוזל הסבוני ודוחף אותו החוצה כמו לבה גועשת.",
+    warning: "משתמשים בכוס קרטון על גבי מגש שאפשר לנקות בקלות, לא בבקבוק סגור. עדיף לבצע את הניסוי בחוץ או מעל כיור.",
+    steps: [
+      "מניחים את כוס הקרטון על המגש.",
+      "מכניסים לכוס 2 כפות סודה לשתייה.",
+      "מוסיפים לכוס כמה טיפות צבע מאכל וכפית סבון כלים.",
+      "מודדים רבע כוס חומץ בכוס הקטנה.",
+      "שופכים בבת אחת את החומץ לתוך הכוס וצופים בהתפרצות.",
+    ],
+    stepImages: [1, 2, 3, 4, 5],
+  },
+  {
+    id: "magic-milk",
+    title: "החלב המכושף (צבעים רוקדים)",
+    time: "10 דקות",
+    materials: ["צלחת שטוחה", "חלב (עדיף 3% שומן ומעלה)", "צבעי מאכל שונים", "סבון כלים", "מקלון אוזניים"],
+    science: "הצבעים 'מתפוצצים', נעים ורוקדים בתוך החלב מעצמם במשך דקות ארוכות ויוצרים צורות מגניבות. הסבון מפרק את מולקולות השומן בחלב ומוריד את מתח הפנים, מה שגורם לצבעים לנדוד במהירות.",
+    warning: undefined,
+    steps: [
+      "שופכים חלב לצלחת עד לכיסוי התחתית.",
+      "מטפטפים כמה טיפות של צבעי מאכל שונים במרכז הצלחת.",
+      "טובלים את מקלון האוזניים בסבון כלים ונוגעים איתו בעדינות במרכז טיפות הצבע.",
+    ],
+    stepImages: [1, 2, 3],
+  },
+  {
+    id: "ice-crack-magic",
+    title: "הקרח הנשבר בקסם",
+    time: "10 דקות",
+    materials: [
+      "קערית",
+      "מים",
+      "צבע מאכל (מומלץ כחול, לדמות ים או אגם קפוא)",
+      "אבקת טלק (או אבקה לתינוקות / קורנפלור)",
+      "מעט סבון כלים נוזלי",
+      "מקלון אוזניים",
+    ],
+    science: "האבקה צפה על המים בזכות מתח פנים - קרום דק ובלתי נראה שנוצר בין מולקולות המים. הסבון שובר את מתח הפנים במקום המגע, המים נמלטים משם במהירות ומושכים איתם את האבקה, וכך נוצר אפקט הסדיקה.",
+    warning: undefined,
+    steps: [
+      "שפכו מים לתוך הקערית עד שיכסו את התחתית.",
+      "הוסיפו כמה טיפות צבע מאכל כחול וערבבו היטב עד שהמים נצבעים.",
+      "פזרו אבקת טלק על פני כל שטח המים, כך שתיווצר שכבה דקה ויבשה שצפה עליהם.",
+      "טבלו את קצה מקלון האוזניים בסבון הכלים.",
+      "טבלו את המקלון בקערה וצפו ב'קסם' - אבקת הטלק בורחת לצדדים ויוצרת סדקים שנראים כמו שבירה של קרח דק.",
+    ],
+    stepImages: [1, 2, 3, 4, 5],
+  },
+  {
+    id: "magic-glue-branches",
+    title: "ענפי הצבע הקסומים",
+    time: "10 דקות",
+    materials: ["צלחת שטוחה או תחתית של תבנית", "דבק פלסטי נוזלי לבן", "צבעי מאכל", "קיסם אוזניים", "מעט סבון כלים בקערית קטנה"],
+    science: "הסבון שובר את מתח הפנים של הדבק בדיוק בנקודת המגע, והצבע 'בורח' משם במהירות לכל הכיוונים ויוצר תבנית ענפים מסועפת. כשהדבק מתייבש לגמרי, הצורה נשארת קפואה במקום כתמונה קבועה.",
+    warning: undefined,
+    steps: [
+      "מטפטפים ומכסים את תחתית הצלחת בשכבה עבה של דבק לבן.",
+      "מטפטפים 2-3 טיפות של צבע מאכל במרכז הדבק, בלי לערבב.",
+      "טובלים את קצה קיסם האוזניים בסבון הכלים, ונוגעים בעדינות בדיוק במרכז טיפת הצבע.",
+      "צופים איך הצבע בורח לכל הצדדים ויוצר ציור של ענפים וקווים קסומים.",
+      "אפשר להשאיר את הצלחת לייבוש מלא בצד ליום-יומיים, ולקבל בסוף תמונה צבעונית שאפשר לשמור.",
+    ],
+    stepImages: [1, 2, 3, 4, 5],
+  },
+  {
+    id: "honey-hexagons",
+    title: "משושי הדבש",
+    time: "10 דקות",
+    materials: ["דבש", "צלחת – עדיף שקופה", "כוס מים"],
+    science: "הדבש צמיג וצפוף יותר מהמים, ולכן הוא נע לאט ונשאר בתחילה בתחתית הצלחת. כשמנענעים את הצלחת, ההבדלים בצמיגות, בצפיפות ובמתח הפנים יכולים ליצור בדבש רכסים ודפוסים זמניים. לפעמים הם מזכירים משושים, אך צורת הדפוס עשויה להשתנות מניסוי לניסוי.",
+    warning: "הדפוס עשוי להיראות שונה בכל פעם, והוא אינו בדיקה לאיכות או לטוהר הדבש.",
+    steps: [
+      "מזגו מעט דבש על הצלחת ותנו לו להתפזר.",
+      "מזגו מעט מים על הדבש.",
+      "נענעו בזהירות את הצלחת.",
+      "המשיכו לנענע בזהירות וראו כיצד נוצרים דפוסים שלפעמים מזכירים משושים.",
+    ],
+    stepImages: [1, 2, 3, 4],
+  },
+];
+
+const DATA_N = {
+  "lava-lamp": {
+    title: "מְנוֹרַת לָבָה",
+    materials: [
+      "בַּקְבּוּק פְּלַסְטִיק שָׁקוּף אוֹ כְּלִי שָׁקוּף וְגָבוֹהַּ",
+      "כַּפִּית סוֹדָה לִשְׁתִיָּה",
+      "שֶׁמֶן צִמְחִי",
+      "¼ כּוֹס חֹמֶץ",
+      "2 טִפּוֹת צֶבַע מַאֲכָל",
+      "כּוֹס קְטַנָּה",
+      "כַּפִּית",
+    ],
+    steps: [
+      "הַנִּיחוּ אֶת הַבַּקְבּוּק אוֹ הַכְּלִי פָּתוּחַ עַל מִשְׁטָח יַצִּיב וְשִׁפְכוּ לְתוֹכוֹ כַּפִּית סוֹדָה לִשְׁתִיָּה.",
+      "מַלְאוּ אֶת הַבַּקְבּוּק אוֹ הַכְּלִי בַּשֶּׁמֶן כִּמְעַט עַד הַסּוֹף וְהַשְׁאִירוּ אוֹתוֹ פָּתוּחַ.",
+      "שִׁפְכוּ אֶת הַחֹמֶץ לַכּוֹס הַקְּטַנָּה.",
+      "הוֹסִיפוּ צֶבַע מַאֲכָל וְעַרְבְּבוּ.",
+      "שִׁפְכוּ בַּעֲדִינוּת אֶת הַחֹמֶץ הַצִּבְעוֹנִי לְתוֹךְ הַשֶּׁמֶן, בְּלִי לִסְגֹּר אֶת הַבַּקְבּוּק.",
+      "הַשְׁאִירוּ אֶת הַבַּקְבּוּק פָּתוּחַ וְצִפּוּ בְּבוּעוֹת הַלָּבָה שֶׁעוֹלוֹת וְיוֹרְדוֹת.",
+    ],
+    science: "הַחֹמֶץ וְהַסּוֹדָה לִשְׁתִיָּה יוֹצְרִים גָּז. הַבּוּעוֹת עוֹלוֹת דֶּרֶךְ הַשֶּׁמֶן, מִשְׁתַּחְרְרוֹת, וְהַנּוֹזֵל הַצִּבְעוֹנִי שׁוֹקֵעַ שׁוּב.",
+    warning: "מַשְׁאִירִים אֶת הַבַּקְבּוּק אוֹ הַכְּלִי פָּתוּחַ בְּמֶשֶׁךְ כָּל הַתְּגוּבָה. אָסוּר לִסְגֹּר אוֹתוֹ בִּזְמַן שֶׁהַחֹמֶץ וְהַסּוֹדָה לִשְׁתִיָּה מְגִיבִים, מִשּׁוּם שֶׁהַגָּז עָלוּל לְהִצְטַבֵּר וְלִיצֹר לַחַץ.",
+  },
+  "vacuum-lift": {
+    title: "קֶסֶם הָרִיק",
+    materials: ["מַגָּשׁ מַתֶּכֶת אוֹ צַלַּחַת", "נְיָר סוֹפֵג", "מְעַט מַיִם", "נֵר קָטָן", "כּוֹס זְכוּכִית", "מַצִּית אָרֹךְ"],
+    steps: [
+      "קִפְלוּ נְיָר סוֹפֵג, הַרְטִיבוּ אוֹתוֹ וְהַנִּיחוּ בְּמֶרְכַּז הַמַּגָּשׁ.",
+      "הַנִּיחוּ אֶת הַנֵּר בְּמֶרְכַּז הַנְּיָר.",
+      "הַדְלִיקוּ אֶת הַנֵּר.",
+      "הִפְכוּ אֶת הַכּוֹס מֵעַל הַנֵּר וְלַחֲצוּ בַּעֲדִינוּת.",
+      "הַמְתִּינוּ כַּמָּה שְׁנִיּוֹת לְאַחַר שֶׁהַלֶּהָבָה כָּבְתָה.",
+      "הָרִימוּ אֶת הַכּוֹס וּרְאוּ כֵּיצַד הַמַּגָּשׁ עוֹלֶה אִתָּהּ.",
+    ],
+    science: "כְּשֶׁהַלֶּהָבָה נִכְבֵּית הָאֲוִיר בַּכּוֹס מִתְקָרֵר וְהַלַּחַץ בְּתוֹכָהּ יוֹרֵד. לַחַץ הָאֲוִיר שֶׁמִּחוּץ לַכּוֹס מַצְמִיד אוֹתָהּ לַמַּגָּשׁ.",
+    warning: "הָאֵשׁ וְהַהֲרָמָה הֵן לְמְבֻגָּר בִּלְבַד. עוֹבְדִים עַל מַגָּשׁ מַתֶּכֶת וּבְמֶרְחָק מֵחֳמָרִים דְּלִיקִים.",
+  },
+  "strawberry-balloon": {
+    title: "הַתּוּת הַמִּתְנַפֵּחַ",
+    materials: [
+      "בָּלוֹן שָׁקוּף",
+      "שַׂקִּית אֹכֶל קְטַנָּה",
+      "3–4 כַּפּוֹת חֹמֶץ",
+      "2 כַּפִּיּוֹת סוֹדָה לִשְׁתִיָּה",
+      "צֶבַע מַאֲכָל אָדֹם",
+      "טוּשׁ שָׁחֹר",
+    ],
+    steps: [
+      "מַלְאוּ אֶת הַשַּׂקִּית בַּחֹמֶץ וּבְצֶבַע מַאֲכָל וְקִשְׁרוּ הֵיטֵב.",
+      "צַיְּרוּ עַל הַבָּלוֹן נְקֻדּוֹת שֶׁל תּוּת.",
+      "הַכְנִיסוּ אֶת הַשַּׂקִּית הַסְּגוּרָה לְתוֹךְ הַבָּלוֹן.",
+      "הוֹסִיפוּ סוֹדָה לִשְׁתִיָּה לַבָּלוֹן וְקִשְׁרוּ הֵיטֵב.",
+      "מִעֲכוּ בַּעֲדִינוּת אֶת הַשַּׂקִּית הַפְּנִימִית בִּלְבַד וְצִפּוּ בַּבָּלוֹן מִתְנַפֵּחַ.",
+    ],
+    science: "בְּמִפְגָּשׁ בֵּין הַחֹמֶץ לַסּוֹדָה נוֹצָר גָּז שֶׁתּוֹפֵס מָקוֹם וּמְנַפֵּחַ אֶת הַבָּלוֹן.",
+    warning: "מְבֻגָּר מַשְׁגִּיחַ לְאֹרֶךְ כָּל הַנִּסּוּי. מַרְחִיקִים אֶת הַבָּלוֹן מֵהַפָּנִים וְעוֹצְרִים אִם הוּא מִתְנַפֵּחַ מְאוֹד.",
+  },
+  "walking-rainbow": {
+    title: "קֶשֶׁת מְטַיֶּלֶת",
+    materials: ["2 כּוֹסוֹת", "מַיִם", "נְיָר סוֹפֵג", "טוּשִׁים עַל בְּסִיס מַיִם"],
+    steps: [
+      "מַלְאוּ שְׁתֵּי כּוֹסוֹת מַיִם.",
+      "קִפְלוּ אֶת הַנְּיָר הַסּוֹפֵג לְמַלְבֵּן אָרֹךְ.",
+      "צִבְעוּ פַּסֵּי קֶשֶׁת בִּשְׁנֵי הַקְּצָווֹת.",
+      "הַכְנִיסוּ קָצֶה אֶחָד לְכָל כּוֹס.",
+      "הַמְתִּינוּ וְצִפּוּ בַּצְּבָעִים מְטַיְּלִים וְנִפְגָּשִׁים.",
+    ],
+    science: "הַמַּיִם נָעִים בֵּין סִיבֵי הַנְּיָר בִּזְכוּת נִימִיּוּת וְסוֹחֲפִים אִתָּם אֶת צִבְעֵי הַטּוּשִׁים.",
+    warning: "",
+  },
+  "foam-worm": {
+    title: "תּוֹלַעַת קֶצֶף צִבְעוֹנִית",
+    materials: [
+      "בַּקְבּוּק פְּלַסְטִיק קָטָן",
+      "מִסְפָּרַיִם",
+      "מַגְבוֹן",
+      "גֻּמִּיָּה",
+      "צִבְעֵי מַאֲכָל",
+      "צַלַּחַת",
+      "מַיִם",
+      "סַבּוֹן כֵּלִים",
+    ],
+    steps: [
+      "מְבֻגָּר יִגְזֹר אֶת הַבַּקְבּוּק בָּאֶמְצַע.",
+      "כַּסּוּ אֶת הַצַּד הַגָּזוּר בְּמַגְבּוֹן וְהַדְקוּ בְּאֶמְצָעוּת גֻּמִּיָּה.",
+      "טַפְטְפוּ פַּסֵּי צֶבַע מַאֲכָל עַל הַמַּגְבּוֹן.",
+      "עַרְבְּבוּ מַיִם וּמְעַט סַבּוֹן וְטִבְלוּ אֶת קְצֵה הַבַּד.",
+      "נִשְׁפוּ בַּעֲדִינוּת דֶּרֶךְ הַפִּיָּה וְצִפּוּ בְּתוֹלַעַת הַקֶּצֶף.",
+    ],
+    science: "הָאֲוִיר עוֹבֵר דֶּרֶךְ הַחוֹרִים הַזְּעִירִים שֶׁבַּמַּגְבּוֹן וְיוֹצֵר הָמוֹן בּוּעוֹת סַבּוֹן צְמוּדוֹת.",
+    warning: "מְבֻגָּר גּוֹזֵר אֶת הַבַּקְבּוּק. נוֹשְׁפִים הַחוּצָה בִּלְבַד וְאֵין לִשְׁאֹף דֶּרֶךְ הַבַּקְבּוּק.",
+  },
+  "pom-launcher": {
+    title: "מְשַׁגֵּר הַפּוֹמְפּוֹנִים",
+    materials: ["כּוֹס נְיָר", "בָּלוֹן", "פּוֹמְפּוֹנִים רַכִּים", "מִסְפָּרַיִם", "סֶלוֹטֵייְפ", "טוּשִׁים"],
+    steps: [
+      "קִשְּׁטוּ אֶת הַכּוֹס בְּטוּשִׁים.",
+      "גִּזְרוּ אֶת תַּחְתִּית הַכּוֹס.",
+      "קִשְׁרוּ אֶת פִּיַּת הַבָּלוֹן. גִּזְרוּ אֶת הַחֵלֶק הַמְּעֻגָּל הָרָחָב (אֶת הַחֵלֶק עִם הַקֶּשֶׁר שׁוֹמְרִים).",
+      "מָתְחוּ אֶת הַצַּד הַגָּזוּר שֶׁל הַבָּלוֹן סָבִיב הַפֶּתַח הַגָּזוּר בַּכּוֹס, כָּךְ שֶׁהַקֶּשֶׁר נִשְׁאָר חָפְשִׁי בַּחוּץ.",
+      "חִזְּקוּ בְּסֶלוֹטֵייְפ וְהַכְנִיסוּ פּוֹמְפּוֹן רַךְ.",
+      "מִשְׁכוּ אֶת הַקֶּשֶׁר וְשַׁחְרְרוּ כְּלַפֵּי מַעְלָה.",
+    ],
+    science: "מְשִׁיכַת הַבָּלוֹן אוֹגֶרֶת אֶנֶרְגְּיָה, וּכְשֶׁמְּשַׁחְרְרִים הִיא דּוֹחֶפֶת אֶת הַפּוֹמְפּוֹן קָדִימָה.",
+    warning: "מְשַׁגְּרִים רַק פּוֹמְפּוֹנִים רַכִּים וּלְעוֹלָם לֹא מְכַוְּנִים לַפָּנִים.",
+  },
+  "flying-cup": {
+    title: "הַכַּדּוּר הַפּוֹרֵחַ הַמְּעוֹפֵף",
+    materials: ["כּוֹס נְיָר", "בָּלוֹן", "מִסְפָּרַיִם", "מַקֵּל אַרְטִיק", "טוּשִׁים"],
+    steps: [
+      "קִשְּׁטוּ אֶת כּוֹס הַנְּיָר.",
+      "צְרוּ חָרִיץ בְּתַחְתִּית הַכּוֹס.",
+      "גִּזְרוּ פַּסִּים מִשְּׂפַת הַכּוֹס הָעֶלְיוֹנָה כְּלַפֵּי מַטָּה.",
+      "דַּחֲפוּ אֶת הַבָּלוֹן דֶּרֶךְ הֶחָרִיץ.",
+      "נַפְּחוּ אֶת הַבָּלוֹן כְּשֶׁפִּיָּתוֹ מִחוּץ לַכּוֹס.",
+      "שַׁחְרְרוּ בְּשֶׁטַח פָּתוּחַ וְצִפּוּ בּוֹ מַמְרִיא.",
+    ],
+    science: "הָאֲוִיר הַיּוֹצֵא נִדְחָף מַטָּה וּבִתְגוּבָה דּוֹחֵף אֶת הַבָּלוֹן וְהַכּוֹס מַעְלָה.",
+    warning: "מְבֻגָּר יוֹצֵר אֶת הֶחָרִיץ וְגוֹזֵר אֶת הַכּוֹס. מְפַנִּים חֲפָצִים שְׁבִירִים.",
+  },
+  "balloon-rocket": {
+    title: "טִיל הַבָּלוֹן",
+    materials: ["בָּלוֹן", "קַשׁ", "חוּט", "אֶטֶב כְּבִיסָה", "סֶלוֹטֵייְפ", "טוּשׁ", "2 כִּסְאוֹת"],
+    steps: [
+      "הַשְׁחִילוּ אֶת הַחוּט דֶּרֶךְ הַקַּשׁ.",
+      "קִשְׁרוּ חוּט מָתוּחַ בֵּין שְׁנֵי כִּסְאוֹת.",
+      "נַפְּחוּ אֶת הַבָּלוֹן בְּלִי לִקְשֹׁר.",
+      "סוֹבְבוּ אֶת הַפִּיָּה וְסִגְרוּ בָּאֶטֶב.",
+      "הַדְבִּיקוּ אֶת הַבָּלוֹן לַקַּשׁ בְּסֶלוֹטֵייְפ.",
+      "שַׁחְרְרוּ אֶת הָאֶטֶב וְצִפּוּ בַּטִּיל דּוֹהֵר.",
+    ],
+    science: "הָאֲוִיר יוֹצֵא לְאָחוֹר וּבִתְגוּבָה דּוֹחֵף אֶת הַבָּלוֹן קָדִימָה לְאֹרֶךְ הַחוּט.",
+    warning: "",
+  },
+  "color-rain": {
+    title: "גֶּשֶׁם צִבְעוֹנִי בַּכּוֹס",
+    materials: ["2 כּוֹסוֹת שְׁקוּפוֹת", "מַיִם", "שֶׁמֶן צִמְחִי", "צִבְעֵי מַאֲכָל", "מַזְלֵג"],
+    steps: [
+      "מַלְאוּ כּוֹס גְּבוֹהָה בְּמַיִם.",
+      "מִזְגוּ מְעַט שֶׁמֶן לַכּוֹס הַשְּׁנִיָּה.",
+      "טַפְטְפוּ לַשֶּׁמֶן כַּמָּה צִבְעֵי מַאֲכָל.",
+      "עַרְבְּבוּ בַּעֲדִינוּת בְּמַזְלֵג.",
+      "מִזְגוּ אֶת הַשֶּׁמֶן הַצִּבְעוֹנִי מֵעַל הַמַּיִם.",
+      "צִפּוּ בְּטִפּוֹת שׁוֹקְעוֹת כְּמוֹ גֶּשֶׁם צִבְעוֹנִי.",
+    ],
+    science: "צֶבַע הַמַּאֲכָל אֵינוֹ מִתְמוֹסֵס בַּשֶּׁמֶן. הַטִּפּוֹת שׁוֹקְעוֹת אֶל הַמַּיִם וּמִתְפַּזְּרוֹת כְּמוֹ גֶּשֶׁם.",
+    warning: "",
+  },
+  "cup-volcano": {
+    title: "הַר הַגַּעַשׁ שֶׁמִּתְפָּרֵץ",
+    materials: [
+      "כּוֹס קַרְטוֹן חַד פַּעֲמִית",
+      "מַגָּשׁ לְהַנָּחַת הַכּוֹס",
+      "2 כַּפּוֹת סוֹדָה לִשְׁתִיָּה",
+      "רֶבַע כּוֹס חֹמֶץ",
+      "כַּמָּה טִפּוֹת צֶבַע מַאֲכָל אָדֹם אוֹ כָּתֹם",
+      "כַּפִּית סַבּוֹן כֵּלִים",
+      "כַּפִּית",
+      "כּוֹס קְטַנָּה לִמְדִידַת הַחֹמֶץ",
+    ],
+    steps: [
+      "מַנִּיחִים אֶת כּוֹס הַקַּרְטוֹן עַל הַמַּגָּשׁ.",
+      "מַכְנִיסִים לַכּוֹס 2 כַּפּוֹת סוֹדָה לִשְׁתִיָּה.",
+      "מוֹסִיפִים לַכּוֹס כַּמָּה טִפּוֹת צֶבַע מַאֲכָל וְכַפִּית סַבּוֹן כֵּלִים.",
+      "מוֹדְדִים רֶבַע כּוֹס חֹמֶץ בַּכּוֹס הַקְּטַנָּה.",
+      "שׁוֹפְכִים בְּבַת אַחַת אֶת הַחֹמֶץ לְתוֹךְ הַכּוֹס וְצוֹפִים בַּהִתְפָּרְצוּת.",
+    ],
+    science: "הַחֹמֶץ (חֻמְצִי) וְהַסּוֹדָה לִשְׁתִיָּה (בְּסִיסִית) מְגִיבִים זֶה עִם זֶה וְיוֹצְרִים גָּז פַּחְמָן דּוּ-חֻמְצָנִי. הַגָּז נִלְכָּד בַּנּוֹזֵל הַסַּבּוֹנִי וְדוֹחֵף אוֹתוֹ הַחוּצָה כְּמוֹ לָבָה גּוֹעֶשֶׁת.",
+    warning: "מִשְׁתַּמְּשִׁים בְּכוֹס קַרְטוֹן עַל גַּבֵּי מַגָּשׁ שֶׁאֶפְשָׁר לְנַקּוֹת בְּקַלּוּת, לֹא בְּבַקְבּוּק סָגוּר. עָדִיף לְבַצֵּעַ אֶת הַנִּסּוּי בַּחוּץ אוֹ מֵעַל כִּיּוֹר.",
+  },
+  "magic-milk": {
+    title: "הֶחָלָב הַמְּכֻשָּׁף (צְבָעִים רוֹקְדִים)",
+    materials: [
+      "צַלַּחַת שְׁטוּחָה",
+      "חָלָב (עָדִיף 3% שֻׁמָּן וּמַעְלָה)",
+      "צִבְעֵי מַאֲכָל שׁוֹנִים",
+      "סַבּוֹן כֵּלִים",
+      "מַקְלוֹן אָזְנַיִם",
+    ],
+    steps: [
+      "שׁוֹפְכִים חָלָב לַצַּלַּחַת עַד לְכִסּוּי הַתַּחְתִּית.",
+      "מְטַפְטְפִים כַּמָּה טִפּוֹת שֶׁל צִבְעֵי מַאֲכָל שׁוֹנִים בְּמֶרְכַּז הַצַּלַּחַת.",
+      "טוֹבְלִים אֶת מַקְלוֹן הָאָזְנַיִם בְּסַבּוֹן כֵּלִים וְנוֹגְעִים אִתּוֹ בַּעֲדִינוּת בְּמֶרְכַּז טִפּוֹת הַצֶּבַע.",
+    ],
+    science: "הַצְּבָעִים 'מִתְפּוֹצְצִים', נָעִים וְרוֹקְדִים בְּתוֹךְ הֶחָלָב מֵעַצְמָם בְּמֶשֶׁךְ דַּקּוֹת אֲרֻכּוֹת וְיוֹצְרִים צוּרוֹת מַגְנִיבוֹת. הַסַּבּוֹן מְפָרֵק אֶת מוֹלֶקוּלוֹת הַשֻּׁמָּן בֶּחָלָב וּמוֹרִיד אֶת מֶתַח הַפָּנִים, מַה שֶּׁגּוֹרֵם לַצְּבָעִים לִנְדֹּד בִּמְהִירוּת.",
+    warning: "",
+  },
+  "ice-crack-magic": {
+    title: "הַקֶּרַח הַנִּשְׁבָּר בְּקֶסֶם",
+    materials: [
+      "קְעָרִית",
+      "מַיִם",
+      "צֶבַע מַאֲכָל (מוּמְלָץ כָּחֹל, לְדַמּוֹת יָם אוֹ אֲגַם קָפוּא)",
+      "אַבְקַת טַלְק (אוֹ אַבְקָה לְתִינוֹקוֹת / קוֹרְנְפְלוֹר)",
+      "מְעַט סַבּוֹן כֵּלִים נוֹזְלִי",
+      "מַקְלוֹן אָזְנַיִם",
+    ],
+    steps: [
+      "שִׁפְכוּ מַיִם לְתוֹךְ הַקְּעָרִית עַד שֶׁיְּכַסּוּ אֶת הַתַּחְתִּית.",
+      "הוֹסִיפוּ כַּמָּה טִפּוֹת צֶבַע מַאֲכָל כָּחֹל וְעַרְבְּבוּ הֵיטֵב עַד שֶׁהַמַּיִם נִצְבָּעִים.",
+      "פִּזְרוּ אַבְקַת טַלְק עַל פְּנֵי כָּל שֶׁטַח הַמַּיִם, כָּךְ שֶׁתִּוָּצֵר שִׁכְבָה דַּקָּה וִיבֵשָׁה שֶׁצָּפָה עֲלֵיהֶם.",
+      "טִבְלוּ אֶת קְצֵה מַקְלוֹן הָאָזְנַיִם בְּסַבּוֹן הַכֵּלִים.",
+      "טִבְלוּ אֶת הַמַּקְלוֹן בַּקְּעָרָה וְצִפּוּ בְּ'קֶסֶם' - אַבְקַת הַטַּלְק בּוֹרַחַת לַצְּדָדִים וְיוֹצֶרֶת סְדָקִים שֶׁנִּרְאִים כְּמוֹ שְׁבִירָה שֶׁל קֶרַח דַּק.",
+    ],
+    science: "הָאַבְקָה צָפָה עַל הַמַּיִם בִּזְכוּת מֶתַח פָּנִים - קְרוּם דַּק וּבִלְתִּי נִרְאֶה שֶׁנּוֹצָר בֵּין מוֹלֶקוּלוֹת הַמַּיִם. הַסַּבּוֹן שׁוֹבֵר אֶת מֶתַח הַפָּנִים בִּמְקוֹם הַמַּגָּע, הַמַּיִם נִמְלָטִים מִשָּׁם בִּמְהִירוּת וּמוֹשְׁכִים אִתָּם אֶת הָאַבְקָה, וְכָךְ נוֹצָר אֶפֶקְט הַסְּדִיקָה.",
+    warning: "",
+  },
+  "magic-glue-branches": {
+    title: "עַנְפֵי הַצֶּבַע הַקְּסוּמִים",
+    materials: [
+      "צַלַּחַת שְׁטוּחָה אוֹ תַּחְתִּית שֶׁל תַּבְנִית",
+      "דֶּבֶק פְּלַסְטִי נוֹזְלִי לָבָן",
+      "צִבְעֵי מַאֲכָל",
+      "קֵיסָם אָזְנַיִם",
+      "מְעַט סַבּוֹן כֵּלִים בִּקְעָרִית קְטַנָּה",
+    ],
+    steps: [
+      "מְטַפְטְפִים וּמְכַסִּים אֶת תַּחְתִּית הַצַּלַּחַת בְּשִׁכְבָה עֲבָה שֶׁל דֶּבֶק לָבָן.",
+      "מְטַפְטְפִים 2-3 טִפּוֹת שֶׁל צֶבַע מַאֲכָל בְּמֶרְכַּז הַדֶּבֶק, בְּלִי לְעַרְבֵּב.",
+      "טוֹבְלִים אֶת קְצֵה קֵיסָם הָאָזְנַיִם בְּסַבּוֹן הַכֵּלִים, וְנוֹגְעִים בַּעֲדִינוּת בְּדִיּוּק בְּמֶרְכַּז טִפַּת הַצֶּבַע.",
+      "צוֹפִים אֵיךְ הַצֶּבַע בּוֹרֵחַ לְכָל הַצְּדָדִים וְיוֹצֵר צִיּוּר שֶׁל עֲנָפִים וְקַוִּים קְסוּמִים.",
+      "אֶפְשָׁר לְהַשְׁאִיר אֶת הַצַּלַּחַת לְיִבּוּשׁ מָלֵא בְּצַד לְיוֹם-יוֹמַיִם, וּלְקַבֵּל בַּסּוֹף תְּמוּנָה צִבְעוֹנִית שֶׁאֶפְשָׁר לִשְׁמֹר.",
+    ],
+    science: "הַסַּבּוֹן שׁוֹבֵר אֶת מֶתַח הַפָּנִים שֶׁל הַדֶּבֶק בְּדִיּוּק בִּנְקֻדַּת הַמַּגָּע, וְהַצֶּבַע 'בּוֹרֵחַ' מִשָּׁם בִּמְהִירוּת לְכָל הַכִּוּוּנִים וְיוֹצֵר תַּבְנִית עֲנָפִים מְסֹעֶפֶת. כְּשֶׁהַדֶּבֶק מִתְיַבֵּשׁ לְגַמְרֵי, הַצּוּרָה נִשְׁאֶרֶת קְפוּאָה בִּמְקוֹם כִּתְמוּנָה קְבוּעָה.",
+    warning: "",
+  },
+  "honey-hexagons": {
+    title: "מְשֻׁשֵּׁי הַדְּבַשׁ",
+    materials: ["דְּבַשׁ", "צַלַּחַת – עָדִיף שְׁקוּפָה", "כּוֹס מַיִם"],
+    steps: [
+      "מִזְגוּ מְעַט דְּבַשׁ עַל הַצַּלַּחַת וּתְנוּ לוֹ לְהִתְפַּזֵּר.",
+      "מִזְגוּ מְעַט מַיִם עַל הַדְּבַשׁ.",
+      "נַעֲנְעוּ בִּזְהִירוּת אֶת הַצַּלַּחַת.",
+      "הַמְשִׁיכוּ לְנַעְנֵעַ בִּזְהִירוּת וּרְאוּ כֵּיצַד נוֹצָרִים דְּפוּסִים שֶׁלִּפְעָמִים מַזְכִּירִים מְשֻׁשִּׁים.",
+    ],
+    science: "הַדְּבַשׁ צָמִיג וְצָפוּף יוֹתֵר מֵהַמַּיִם, וְלָכֵן הוּא נָע לְאַט וְנִשְׁאָר בַּתְּחִלָּה בְּתַחְתִּית הַצַּלַּחַת. כְּשֶׁמְּנַעֲנְעִים אֶת הַצַּלַּחַת, הַהֶבְדֵּלִים בַּצְּמִיגוּת, בַּצְּפִיפוּת וּבְמֶתַח הַפָּנִים יְכוֹלִים לִיצֹר בַּדְּבַשׁ רְכָסִים וּדְפוּסִים זְמַנִּיִּים. לִפְעָמִים הֵם מַזְכִּירִים מְשֻׁשִּׁים, אַךְ צוּרַת הַדְּפוּס עֲשׂוּיָה לְהִשְׁתַּנּוֹת מִנִּסּוּי לְנִסּוּי.",
+    warning: "הַדְּפוּס עָשׂוּי לְהֵרָאוֹת שׁוֹנֶה בְּכָל פַּעַם, וְהוּא אֵינוֹ בְּדִיקָה לְאֵיכוּת אוֹ לְטֹהַר הַדְּבַשׁ.",
+  },
+};
+
+const src=(id,type,n)=>{
+  if(id === "lava-lamp" && type === "hero") return `${ROOT}/lava-lamp-hero-open.webp`;
+  if(id === "flying-cup" && type === "hero") return `${ROOT}/flying-cup-step-6.webp`;
+  return `${ROOT}/${id}-${type}${n?`-${n}`:""}.webp`;
+};
+export const experimentHero = (id) => src(id, "hero");
+
+const NEW_EXPERIMENT_MATERIALS = {
+  "cup-volcano": [
+    `${ROOT}/pom-launcher-material-1.webp`,
+    "/icon-bank/sensory-new/seed-4-independent/material-tray.webp",
+    `${ROOT}/lava-lamp-material-2.webp`,
+    `${ROOT}/lava-lamp-material-4.webp`,
+    `${ROOT}/lava-lamp-material-5.webp`,
+    "/icon-bank/embedded-v358/seed-84/material-soap.webp",
+    `${ROOT}/lava-lamp-material-7.webp`,
+    `${ROOT}/lava-lamp-material-6.webp`,
+  ],
+  "magic-milk": [
+    "/icon-bank/crafts-new/seed-63-independent/material-plate.webp",
+    `${ROOT}/magic-milk-material-milk-v2.webp`,
+    `${ROOT}/lava-lamp-material-5.webp`,
+    "/icon-bank/embedded-v358/seed-84/material-soap.webp",
+    `${ROOT}/new-experiments-cotton-swabs.webp`,
+  ],
+  "ice-crack-magic": [
+    "/icon-bank/kitchen-toast-steps/bowl-2.webp",
+    "/icon-bank/shared-new/material-water-cup.webp",
+    `${ROOT}/lava-lamp-material-5.webp`,
+    "/icon-bank/embedded-v358/seed-84/material-cornstarch.webp",
+    "/icon-bank/embedded-v358/seed-84/material-soap.webp",
+    `${ROOT}/new-experiments-cotton-swabs.webp`,
+  ],
+  "magic-glue-branches": [
+    "/icon-bank/crafts-new/seed-63-independent/material-plate.webp",
+    "/icon-bank/embedded-v358/seed-82/material-glue.webp",
+    `${ROOT}/lava-lamp-material-5.webp`,
+    `${ROOT}/new-experiments-cotton-swabs.webp`,
+    "/icon-bank/embedded-v358/seed-84/material-soap.webp",
+  ],
+  "honey-hexagons": [
+    "/icon-bank/manual/fruit-popsicles/honey.webp",
+    "/icon-bank/crafts-new/seed-63-independent/material-plate.webp",
+    "/icon-bank/shared-new/material-water-cup.webp",
+  ],
+};
+
+const materialSrc = (exp, index) => NEW_EXPERIMENT_MATERIALS[exp.id]?.[index] || src(exp.id, "material", index + 1);
+const stepSrc = (exp, index) => {
+  if (exp.id === "flying-cup" && index === 2) return `${ROOT}/flying-cup-step-3-v5.webp`;
+  if (exp.id === "balloon-rocket" && index === 4) return `${ROOT}/balloon-rocket-step-5-v2.webp`;
+  if (exp.id === "magic-glue-branches" && index === 0) return `${ROOT}/magic-glue-branches-step-1-v2.webp`;
+  return src(exp.id, "step", exp.stepImages[index]);
+};
+
+const TOOLS = {
+  "lava-lamp":[0,5,6], "vacuum-lift":[0,4,5], "strawberry-balloon":[5],
+  "walking-rainbow":[0,3], "foam-worm":[0,1,5], "pom-launcher":[0,3,4,5],
+  "flying-cup":[0,2,3,4], "balloon-rocket":[1,2,3,4,5,6],
+  "color-rain":[0,4],
+};
+
+export const PANTRY_CATEGORIES = [
+  {
+    key: "kitchen",
+    label: "חומרי ניסוי",
+    emoji: "🧂",
+    items: ["חומץ", "סודה לשתייה", "שמן צמחי", "חלב", "סבון כלים", "אבקת טלק / קורנפלור"],
+  },
+  {
+    key: "colors",
+    label: "צבעים וכתיבה",
+    emoji: "🖍️",
+    items: ["צבעי מאכל", "טושים"],
+  },
+  {
+    key: "misc",
+    label: "חומרים ואביזרים כלליים",
+    emoji: "🧵",
+    items: [
+      "בלונים",
+      "קשים",
+      "חוט",
+      "אטב כביסה",
+      "סלוטייפ",
+      "מספריים",
+      "מקל ארטיק",
+      "מחורר",
+      "פונפונים רכים",
+      "דבק פלסטי נוזלי",
+    ],
+  },
+  {
+    key: "adult",
+    label: "בפיקוח מבוגר בלבד",
+    emoji: "⚠️",
+    items: ["נר קטן", "מצית ארוך", "מגש מתכת או צלחת"],
+  },
+];
+
+export const PANTRY_TAGS = {
+  "lava-lamp": ["בקבוק פלסטיק", "סודה לשתייה", "שמן צמחי", "חומץ", "צבעי מאכל", "כוסות (זכוכית/פלסטיק/נייר/קרטון)"],
+  "vacuum-lift": ["מגש מתכת או צלחת", "נייר סופג", "מים", "נר קטן", "כוסות (זכוכית/פלסטיק/נייר/קרטון)", "מצית ארוך"],
+  "strawberry-balloon": ["בלונים", "שקית ניילון", "חומץ", "סודה לשתייה", "צבעי מאכל", "טושים"],
+  "walking-rainbow": ["כוסות (זכוכית/פלסטיק/נייר/קרטון)", "מים", "נייר סופג", "טושים"],
+  "foam-worm": ["בקבוק פלסטיק", "מספריים", "מגבון לחות", "גומייה", "צבעי מאכל", "צלחת או קערית", "מים", "סבון כלים"],
+  "pom-launcher": ["כוסות (זכוכית/פלסטיק/נייר/קרטון)", "בלונים", "פונפונים רכים", "מספריים", "סלוטייפ", "טושים"],
+  "flying-cup": ["כוסות (זכוכית/פלסטיק/נייר/קרטון)", "בלונים", "מספריים", "מקל ארטיק", "טושים"],
+  "balloon-rocket": ["בלונים", "קשים", "חוט", "אטב כביסה", "סלוטייפ", "טושים", "2 כיסאות"],
+  "color-rain": ["כוסות (זכוכית/פלסטיק/נייר/קרטון)", "מים", "שמן צמחי", "צבעי מאכל", "מזלג"],
+  "cup-volcano": ["כוסות (זכוכית/פלסטיק/נייר/קרטון)", "מגש", "סודה לשתייה", "חומץ", "צבעי מאכל", "סבון כלים"],
+  "magic-milk": ["צלחת או קערית", "חלב", "צבעי מאכל", "סבון כלים", "מקלוני אוזניים"],
+  "ice-crack-magic": ["צלחת או קערית", "מים", "צבעי מאכל", "אבקת טלק / קורנפלור", "סבון כלים", "מקלוני אוזניים"],
+  "magic-glue-branches": ["צלחת או קערית", "דבק פלסטי נוזלי", "צבעי מאכל", "מקלוני אוזניים", "סבון כלים"],
+  "honey-hexagons": ["דבש", "צלחת או קערית", "מים"],
+};
+
+const COMMON_HOME_ITEMS = new Set(["מים", "מגבון לחות", "נייר סופג", "מזלג", "2 כיסאות", "גומייה", "דף לבן", "מקלוני אוזניים"]);
+Object.keys(PANTRY_TAGS).forEach((id) => {
+  PANTRY_TAGS[id] = PANTRY_TAGS[id].filter((item) => !COMMON_HOME_ITEMS.has(item) && !item.includes("כוס") && !item.includes("קער") && item !== "מגש" && !item.includes("בקבוק") && !item.includes("שקית"));
+});
+
+const PANTRY_EN = {
+  "חומרי ניסוי": "Experiment materials",
+  "צבעים וכתיבה": "Colors and drawing",
+  "חומרים ואביזרים כלליים": "General materials and accessories",
+  "בפיקוח מבוגר בלבד": "Adult supervision only",
+  "חומץ": "Vinegar",
+  "סודה לשתייה": "Baking soda",
+  "שמן צמחי": "Vegetable oil",
+  "חלב": "Milk",
+  "סבון כלים": "Dish soap",
+  "אבקת טלק / קורנפלור": "Talcum powder / cornstarch",
+  "צבעי מאכל": "Food coloring",
+  "טושים": "Markers",
+  "בלונים": "Balloons",
+  "קשים": "Drinking straws",
+  "חוט": "String",
+  "אטב כביסה": "Clothes peg",
+  "סלוטייפ": "Clear tape",
+  "מספריים": "Scissors",
+  "מקל ארטיק": "Popsicle stick",
+  "מחורר": "Hole punch",
+  "פונפונים רכים": "Soft pom-poms",
+  "דבק פלסטי נוזלי": "Liquid white glue",
+  "נר קטן": "Small candle",
+  "מצית ארוך": "Long lighter",
+  "מגש מתכת או צלחת": "Metal tray or plate",
+};
+
+function AddToPlanButton({ id, mode }) {
+  const { t } = useTranslator();
+  const [added, setAdded] = useState(false);
+  if (mode !== "therapist") return null;
+  return (
+    <button
+      type="button"
+      aria-label={added ? t("נוסף לטיפול", "Added to session") : t("הוסף לטיפול", "Add to session")}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const res = addToDraftPlan("experiment", id);
+        if (res.added) {
+          setAdded(true);
+          toast.success(t("הניסוי נוסף לטיפול ✨", "Experiment added to the session ✨"));
+        } else {
+          toast.info(t("הניסוי כבר בתוכנית הטיפול", "This experiment is already in the session plan."));
+        }
+      }}
+      className={`absolute top-3 left-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border bg-background/90 backdrop-blur transition-all hover:scale-105 ${
+        added ? "border-sage text-sage-foreground" : "border-border text-muted-foreground hover:text-primary"
+      }`}
+    >
+      {added ? <Check className="h-4 w-4" /> : <ListPlus className="h-4 w-4" />}
+    </button>
+  );
+}
+
+function HighlightableText({ text, stepKey, highlighted, onToggle }) {
+  if (!text) return null;
+  const words = text.split(/(\s+)/);
+  return (
+    <>
+      {words.map((word, i) => {
+        if (/^\s+$/.test(word)) return <span key={i}>{word}</span>;
+        if (!word) return null;
+        const key = `${stepKey}-${i}`;
+        const isOn = highlighted.has(key);
+        return (
+          <span
+            key={i}
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle(key);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggle(key);
+              }
+            }}
+            className={`cursor-pointer rounded px-0.5 transition-colors ${isOn ? "bg-butter text-foreground" : "hover:bg-sky/20"}`}
+          >
+            {word}
+          </span>
+        );
+      })}
+    </>
+  );
+}
+
+function ExperimentPrintRow({ i, iconSrc, label, altWhere }) {
+  return (
+    <tr>
+      <td style={i === 0 ? { width: "6%" } : undefined} className="border border-black p-1 text-center">
+        <span aria-hidden className="mx-auto block h-4 w-4 border-2 border-black" />
+      </td>
+      <td style={i === 0 ? { width: "8%" } : undefined} className="border border-black p-1 text-center">
+        {i + 1}
+      </td>
+      <td style={i === 0 ? { width: "16%" } : undefined} className="border border-black p-1">
+        <img src={iconSrc} alt={imageAlt(shortLabel(label), altWhere)} className="mx-auto h-14 w-14 object-contain" />
+      </td>
+      <td style={i === 0 ? { width: "70%" } : undefined} className="border border-black p-1">
+        {label}
+      </td>
+    </tr>
+  );
+}
+
+function ExperimentPrintSheet({ exp, pick, expN, language }) {
+  const { t } = useTranslator();
+  const label = (he, en) => language === "en" ? en : he;
+  const altWhere = imageAlt(pick(exp.title, expN.title), "experiment", language);
+  return (
+    <div className="activity-print-sheet hidden print:block print:space-y-4 print:text-black">
+      <div className="relative flex items-center justify-center gap-5 border-b-2 border-black pb-3">
+        <img src={brandLogo(language)} alt={label(t("בואו נשחק", "Let's Play"), "Let's Play")} className="print-sheet-brand absolute left-0 top-0 h-14 w-16 object-contain" />
+        <img src={src(exp.id, "hero")} alt={altWhere} className="h-24 w-24 shrink-0 object-contain" />
+        <h1 className="text-center text-4xl font-black">{pick(exp.title, expN.title)}</h1>
+      </div>
+
+      {exp.warning ? (
+        <p className="text-lg leading-relaxed">
+          <strong>{label(t("בטיחות לפני הכול: ", "Safety first: "), "Safety first: ")}</strong>
+          {pick(exp.warning, expN.warning)}
+        </p>
+      ) : null}
+
+      {exp.materials?.length ? (
+        <div>
+          <div className="mb-1 text-xl font-bold">{label(t("כלים ומצרכים:", "Tools and ingredients:"), "Materials:")}</div>
+          <table className="w-full table-fixed border-collapse border border-black text-base">
+            <tbody>
+              {exp.materials.map((m, i) => (
+                <ExperimentPrintRow altWhere={altWhere} key={i} i={i} iconSrc={materialSrc(exp, i)} label={pick(m, expN.materials?.[i])} />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+
+      {exp.steps?.length ? (
+        <div style={{ breakBefore: "page" }}>
+          <div className="mb-1 text-xl font-bold">{label(t("שלבים:", "Steps:"), "Steps:")}</div>
+          <table className="w-full table-fixed border-collapse border border-black text-base">
+            <tbody>
+              {exp.steps.map((s, i) => (
+                <ExperimentPrintRow altWhere={altWhere} key={i} i={i} iconSrc={stepSrc(exp, i)} label={pick(s, expN.steps?.[i])} />
+              ))}
+            </tbody>
+          </table>
+          {exp.science ? (
+            <p className="mt-4 text-lg leading-relaxed">
+              <strong>{label(t("מה קורה כאן? ", "What's happening here? "), "What's happening? ")}</strong>
+              {pick(exp.science, expN.science)}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
+      <div className="mt-6 text-center text-xs text-muted-foreground/70">
+        {label(t("© בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.", "© Let’s Play. All rights reserved. The content here is for enrichment and practice only. It is not a diagnosis, personal therapeutic advice, or a substitute for evaluation, consultation, or treatment by a qualified professional."), "© Let's Play. All rights reserved. Content is for enrichment and practice only and does not replace diagnosis, assessment, professional advice or treatment.")}
+      </div>
+    </div>
+  );
+}
+
+export default function TherapistExperiments({ mode = "therapist" }){
+ const {language,t}=useTranslator();
+ useBodyClass("compact-catalog-mobile-page");
+ const cmsExperiments=useCmsCollection("experiment", EXPERIMENTS);
+ const [searchParams]=useSearchParams();
+ const {experimentId}=useParams();
+ const navigate=useNavigate();
+ const listPath=mode==="parent"?"/parent/experiments":"/therapist/experiments";
+ const [exp,setExp]=useState(null); const [done,setDone]=useState({}); const [nikud,setNikud]=useState(false);
+ const [handwriting,setHandwriting]=useState(false);
+ const [highlightedWords,setHighlightedWords]=useState(()=>new Set());
+ const toggleWord=key=>setHighlightedWords(prev=>{const next=new Set(prev); next.has(key)?next.delete(key):next.add(key); return next;});
+ const [expandedStep,setExpandedStep]=useState(null);
+ const [expandedMaterial,setExpandedMaterial]=useState(null);
+ const [pantryMode,setPantryMode]=useState(false); const [haveItems,setHaveItems]=useState(new Set()); const [openCat,setOpenCat]=useState(null);
+ useEffect(()=>{
+  // Older links used ?e=<id>; they still open the experiment.
+  const eid=experimentId||searchParams.get("e");
+  if(eid){const found=cmsExperiments.find(d=>d.id===eid); if(found){setExp(found); setDone({}); setExpandedStep(null);}}
+  else setExp(null);
+ },[experimentId,searchParams,cmsExperiments]);
+ const tick=k=>setDone(v=>({...v,[k]:!v[k]})); const reset=()=>{setDone({});setExpandedStep(null);setExpandedMaterial(null);};
+ const pick=(t,tn)=>nikud&&tn?tn:t;
+ const expN=exp?(language==="en"?(EXPERIMENT_EN[exp.id]||{}):(DATA_N[exp.id]||{})):{};
+ const display=(e)=>language==="en"?{...e,...(EXPERIMENT_EN[e.id]||{})}:e;
+ const toggleItem=it=>setHaveItems(prev=>{const next=new Set(prev); next.has(it)?next.delete(it):next.add(it); return next;});
+ const pantryLabel=(value)=>language==="en"?(PANTRY_EN[value]||value):value;
+ if(pantryMode){
+  const pantryResults=cmsExperiments.map(e=>{
+    const req=PANTRY_TAGS[e.id]||[];
+    const missing=req.filter(t=>!haveItems.has(t));
+    return {e,req,missing};
+  }).sort((a,b)=>a.missing.length-b.missing.length||a.req.length-b.req.length);
+  return <AppShell mode={mode}>
+    <button onClick={()=>setPantryMode(false)} className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground"><ArrowRight className="h-4 w-4"/>{t("חזרה לניסויים", "Back to experiments")}</button>
+    <div className="mb-7">
+      <p className="flex items-center gap-2 font-bold text-sage"><Home className="h-5 w-5"/>{t("מנוע חיפוש עצמאי", "Find Activities")}</p>
+      <h1 className="font-display text-4xl font-black">{t("מה יש לנו בבית?", "What do we have at home?")}</h1>
+      <p className="mt-2 text-muted-foreground">{t("סמנו מה יש לכם בבית, ונציג לכם את הניסויים שאפשר להכין עכשיו - מהקרוב ביותר להשלמה ועד הרחוק ביותר.", "Select what you have at home and we will show experiments, starting with those closest to being ready.")}</p>
+    </div>
+    <div className="space-y-3">
+      {PANTRY_CATEGORIES.map(cat=>{
+        const selectedInCat=cat.items.filter(it=>haveItems.has(it)).length;
+        const isOpen=openCat===cat.key;
+        return <div key={cat.key} className="overflow-hidden rounded-3xl border bg-card">
+          <button onClick={()=>setOpenCat(isOpen?null:cat.key)} className="flex w-full items-center justify-between p-4 text-right">
+            <span className="flex items-center gap-2 font-display text-lg font-bold">
+              <span aria-hidden>{cat.emoji}</span>{pantryLabel(cat.label)}
+              {selectedInCat>0&&<span className="rounded-full bg-sage/20 px-2 py-0.5 text-xs font-bold text-sage-foreground">{selectedInCat}{" "}{t("נבחרו", "selected")}</span>}
+            </span>
+            {isOpen?<ChevronUp className="h-5 w-5 text-muted-foreground"/>:<ChevronDown className="h-5 w-5 text-muted-foreground"/>}
+          </button>
+          {isOpen&&<div className="grid gap-2 border-t border-border/60 p-4 sm:grid-cols-2 lg:grid-cols-3">
+            {cat.items.map(it=><label key={it} className={`flex cursor-pointer items-center gap-2 rounded-2xl border p-2 ${haveItems.has(it)?"border-sage/60 bg-sage/10":"border-border/60 bg-background"}`}><Checkbox checked={haveItems.has(it)} onCheckedChange={()=>toggleItem(it)}/><span className="text-sm">{pantryLabel(it)}</span></label>)}
+          </div>}
+        </div>;
+      })}
+    </div>
+    <div className="mt-8">
+      <h2 className="mb-4 font-display text-2xl font-black">{haveItems.size>0?t("מה אפשר להכין עם מה שיש לכם", "What can you make with what you have?"):t("כל הניסויים", "All experiments")}</h2>
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 compact-catalog-grid-v95">
+        {pantryResults.map(({e,missing})=><div key={e.id} className="relative overflow-hidden rounded-3xl border bg-card transition hover:-translate-y-1 hover:shadow-lg compact-catalog-card-v95">
+          <AddToPlanButton id={e.id} mode={mode}/>
+          <Link to={`${listPath}/${e.id}`} onClick={()=>{reset();setPantryMode(false)}} className="block w-full text-right">
+          <div className="aspect-square bg-white p-3"><img src={src(e.id,"hero")} className="h-full w-full object-contain" alt={imageAlt(t(e.title, display(e).title), "experiment", language)} title={imageAlt(t(e.title, display(e).title), "experiment", language)}/></div>
+          <div className="p-5">
+            <h2 className="font-display text-xl font-black">{e.title}</h2>
+            {missing.length===0?<p className="mt-2 flex items-center gap-1 text-sm font-bold text-sage-foreground"><CheckCircle2 className="h-4 w-4"/>{t("יש לכם הכל!","You have everything!")}</p>:<p className="mt-2 text-sm text-muted-foreground">{t("חסר:","Missing:")} {missing.map(pantryLabel).join(", ")}</p>}
+          </div>
+          </Link>
+        </div>)}
+      </div>
+    </div>
+  </AppShell>;
+ }
+ if(!exp)return <AppShell mode={mode}><div className="mb-7"><p className="flex items-center gap-2 font-bold text-sage"><FlaskConical className="h-5 w-5"/>{t("ניסויים","Kids’ Science Experiments")}</p><h1 className="font-display text-4xl font-black">{t("מעבדת הניסויים","Science Lab")}</h1><p className="mt-2 text-muted-foreground">{t("ניסויים ביתיים עם כלים פשוטים, תמונה לכל פריט ואיור נפרד לכל שלב.","Home experiments using simple materials, with a picture for every item and every step.")}</p></div><button onClick={()=>setPantryMode(true)} className="mb-7 flex w-full items-center gap-4 overflow-hidden rounded-3xl border-2 border-sage/40 bg-gradient-to-l from-sage/25 via-sky/15 to-transparent p-6 text-right transition hover:-translate-y-0.5 hover:shadow-lg"><div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-sage/30 text-sage-foreground"><Home className="h-7 w-7"/></div><div><h2 className="font-display text-2xl font-black md:text-3xl">{t("מה יש לנו בבית?","What do we have at home?")}</h2><p className="mt-1 text-sm text-muted-foreground md:text-base">{t("סמנו מה יש לכם בבית, ונבנה לכם רשימת ניסויים אפשרית - בלי לחפש עוד","Select what you have and we'll show you experiments you can make.")}</p></div></button><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 compact-catalog-grid-v95">{cmsExperiments.map(e=>{const d=display(e);return <div key={e.id} className="relative overflow-hidden rounded-3xl border bg-card transition hover:-translate-y-1 hover:shadow-lg compact-catalog-card-v95"><AddToPlanButton id={e.id} mode={mode}/><Link to={`${listPath}/${e.id}`} onClick={reset} className="block w-full text-right"><div className="aspect-square bg-white p-3"><img src={src(e.id,"hero")} className="h-full w-full object-contain" alt={imageAlt(t(e.title, d.title), "experiment", language)} title={imageAlt(t(e.title, d.title), "experiment", language)}/></div><div className="p-5"><h2 className="font-display text-xl font-black">{d.title}</h2><p className="mt-2 text-sm text-muted-foreground"><Clock className="ml-1 inline h-4 w-4"/>{d.time}</p>{d.warning&&<p className="mt-2 flex items-center gap-1 text-xs font-bold text-orange-700"><ShieldAlert className="h-4 w-4"/>{t("נדרש ליווי מבוגר","Adult supervision required")}</p>}</div></Link></div>})}</div></AppShell>;
+ const shown=display(exp);
+ const altWhere=imageAlt(t(exp.title,shown.title),"experiment",language);
+ const allItems=shown.materials.map((text,i)=>({text,i}));
+ const item=(x)=>{const isExpanded=expandedMaterial===x.i; return <div key={x.i} className={`flex items-center gap-2 rounded-2xl border p-2 transition-all duration-300 ${isExpanded?"flex-col justify-center py-4 text-center shadow-md":""} ${done[`m${x.i}`]?"border-sage/60 bg-sage/10":"border-border/60 bg-background"}`}><Checkbox checked={!!done[`m${x.i}`]} onCheckedChange={()=>tick(`m${x.i}`)}/><button type="button" onClick={()=>setExpandedMaterial(current=>current===x.i?null:x.i)} aria-label={t(`${isExpanded?"הקטנת":"הגדלת"} ${x.text}`, `${isExpanded?"Reduce":"Enlarge"} ${x.text}`)} className="flex cursor-zoom-in items-center gap-2"><img src={materialSrc(exp,x.i)} className={`${isExpanded?"h-36 w-36 md:h-44 md:w-44":"h-14 w-14"} shrink-0 rounded-xl bg-white object-contain transition-all duration-300`} alt={imageAlt(pick(x.text,expN.materials?.[x.i]),altWhere)}/><span className={`text-lg leading-relaxed md:text-xl ${done[`m${x.i}`]?"text-muted-foreground line-through":""} ${handwriting?"font-handwriting":""}`}>{pick(x.text,expN.materials?.[x.i])}</span></button></div>};
+ return (
+  <AppShell mode={mode}>
+   <button onClick={()=>{setExp(null);navigate(listPath);setExpandedStep(null)}} className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground">
+    <ArrowRight className="h-4 w-4"/>{t("חזרה לניסויים","Back to experiments")}
+   </button>
+   <div className="flex h-56 items-center justify-center overflow-hidden rounded-3xl border border-border/60 bg-white p-4 md:h-72 print:hidden">
+    <img src={src(exp.id,"hero")} className="h-full w-full object-contain" alt={altWhere} title={altWhere}/>
+   </div>
+   <h1 className={`mt-5 text-4xl font-black print:hidden ${handwriting?"font-handwriting":"font-display"}`}>{pick(shown.title,expN.title)}</h1>
+   <div className="mt-3 flex flex-wrap gap-2 print:hidden">
+    {language==="he"&&<button onClick={()=>setNikud(v=>!v)} className={`rounded-full px-3 py-1.5 font-bold ${nikud?"bg-sage text-sage-foreground":"bg-muted"}`}>אָ ניקוד {nikud?"פעיל":"כבוי"}</button>}
+    <button onClick={()=>window.print()} className="rounded-full px-3 py-1.5 font-bold bg-muted hover:bg-muted/70">🖶 {t("הדפסה / הורדה","Print / download")}</button>
+    {language==="he"&&<button onClick={()=>setHandwriting(v=>!v)} className={`rounded-full px-3 py-1.5 font-bold ${handwriting?"bg-sage text-sage-foreground":"bg-muted"}`}>✏️ כתב יד {handwriting?"פעיל":"כבוי"}</button>}
+    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1.5 text-muted-foreground"><Clock className="h-4 w-4"/>{shown.time}</span>
+   </div>
+   {shown.warning&&<div className={`mt-4 rounded-2xl border border-orange-200 bg-orange-50 p-3 text-base leading-relaxed text-orange-900 print:hidden ${handwriting?"font-handwriting":""}`}><b className="flex items-center gap-1"><ShieldAlert className="h-4 w-4"/>{t("בטיחות לפני הכול","Safety first")}</b><p>{pick(shown.warning,expN.warning)}</p></div>}
+   <section className="mt-5 rounded-3xl border bg-card p-4 print:hidden">
+    <h2 className="mb-3 font-display text-xl font-bold">{language==="en"?"Materials":nikud?"כֵּלִים וּמַצְרָכִים":"כלים ומצרכים"} · {allItems.filter(x=>done[`m${x.i}`]).length}/{allItems.length}</h2>
+    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{allItems.map(item)}</div>
+   </section>
+   <section className="mt-4 rounded-3xl border bg-card p-3 md:p-4 print:hidden">
+    <div className="mb-2 flex items-center justify-between">
+     <div>
+      <h2 className="font-display text-xl font-bold">{language==="en"?"Experiment steps":nikud?"שְׁלַבֵּי הַנִּסּוּי":"שלבי הניסוי"}</h2>
+      <p className="text-sm text-muted-foreground">{t("לחצו על שלב כדי להגדיל · לחצו על מילה כדי לסמן אותה","Select a step to enlarge it · Select a word to highlight it")} · {Object.keys(done).filter(k=>k.startsWith("s")&&done[k]).length}/{shown.steps.length}</p>
+     </div>
+     <Button variant="ghost" size="sm" onClick={reset}><RotateCcw className="h-4 w-4"/>{t("איפוס","Reset")}</Button>
+    </div>
+    <ol className="grid grid-cols-1 gap-1.5 print:gap-1">
+     {shown.steps.map((s,i)=>{
+      const isExpanded=expandedStep===i;
+      const isChecked=!!done[`s${i}`];
+      return (
+       <li
+        key={s}
+        className={`relative flex items-center gap-2 rounded-xl border p-1.5 transition-all duration-300 print:scale-100 print:gap-1 print:rounded-lg print:p-0.5 print:shadow-none ${
+         isExpanded?"z-10 scale-[1.02] border-sky/80 bg-sky/10 shadow-lg":isChecked?"border-sage/60 bg-sage/10":"bg-background"
+        }`}
+       >
+        <Checkbox
+         checked={isChecked}
+         onCheckedChange={()=>tick(`s${i}`)}
+          aria-label={t(`סימון שלב ${i+1} כהושלם`,`Mark step ${i+1} as complete`)}
+         className="h-5 w-5 shrink-0 print:hidden"
+        />
+        <button
+         type="button"
+         onClick={()=>setExpandedStep(current=>current===i?null:i)}
+         aria-pressed={isExpanded}
+         className={`flex min-w-0 flex-1 cursor-zoom-in items-center gap-2 text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky ${
+          isExpanded?"flex-col sm:flex-row":""
+         }`}
+        >
+         <img
+          src={stepSrc(exp,i)}
+          className={`aspect-square shrink-0 rounded-lg border border-border/40 bg-white object-contain transition-all duration-300 print:h-12 print:w-12 print:rounded-md ${
+           isExpanded?"h-40 w-40 md:h-52 md:w-52":"h-[78px] w-[78px] sm:h-[88px] sm:w-[88px]"
+          }`}
+          alt={imageAlt(shortLabel(pick(s,expN.steps?.[i])),altWhere)}
+          title={imageAlt(shortLabel(pick(s,expN.steps?.[i])),altWhere)}
+         />
+         <span className={`min-w-0 flex-1 leading-relaxed transition-all duration-300 print:text-[11px] print:leading-3 ${isExpanded?"text-xl md:text-2xl":"text-lg md:text-xl"} ${isChecked?"text-muted-foreground line-through":""} ${handwriting?"font-handwriting":""}`}>
+          <b className="ml-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-sage/70 text-[11px] text-sage-foreground print:h-4 print:w-4 print:text-[9px]">{i+1}</b>
+          <HighlightableText text={pick(s,expN.steps?.[i])} stepKey={i} highlighted={highlightedWords} onToggle={toggleWord} />
+         </span>
+        </button>
+       </li>
+      );
+     })}
+    </ol>
+   </section>
+   <div className={`mt-4 rounded-2xl bg-sage/10 p-4 print:hidden ${handwriting?"font-handwriting":""}`}><b>{language==="en"?"What's happening?":nikud?"מָה קוֹרֶה כָּאן?":"מה קורה כאן?"}</b><p className="mt-1 text-lg leading-relaxed md:text-xl">{pick(shown.science,expN.science)}</p></div>
+   <ExperimentPrintSheet exp={shown} pick={pick} expN={expN} language={language} />
+  </AppShell>
+ );
+}

@@ -1,0 +1,60 @@
+html[lang="en"],
+html[lang="en"] body,
+html[lang="en"] #root {
+  direction: ltr !important;
+}
+
+html[lang="en"] .text-right {
+  text-align: left !important;
+}
+
+html[lang="en"] [dir="rtl"]:not(input):not(textarea) {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+html[lang="en"] ol,
+html[lang="en"] ul,
+html[lang="en"] section,
+html[lang="en"] article {
+  direction: ltr;
+}
+
+html[lang="en"] input,
+html[lang="en"] textarea,
+html[lang="en"] select {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+html[lang="en"] .activity-print-item {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+/*
+ * Activity checklists are rendered by the shared Hebrew/English component.
+ * Some builds leave an RTL direction on an inner wrapper, which makes the
+ * checkbox and illustration start on the right even though the page is
+ * English. Keep this override scoped to English activity pages so other
+ * controls and the Hebrew site are untouched.
+ */
+html[lang="en"] body.english-activity-page ol > li > div.flex.items-center.gap-3 {
+  direction: ltr !important;
+  flex-direction: row !important;
+  text-align: left !important;
+}
+
+html[lang="en"] body.english-activity-page ol > li > div.flex.items-center.gap-3 > button {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+html[lang="en"] body.english-activity-page ol > li > div.flex.items-center.gap-3 > button:not(.flex-col) {
+  flex-direction: row !important;
+}
+
+html[lang="en"] body.english-activity-page ol > li > div.flex.items-center.gap-3 > button > span {
+  direction: ltr !important;
+  text-align: left !important;
+}

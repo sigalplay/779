@@ -1,0 +1,172 @@
+/* Phone-only editor compaction. The calendar preview itself is intentionally untouched. */
+@media screen and (max-width: 639px) {
+  .calendar-builder > div:first-child {
+    margin-bottom: 10px !important;
+    gap: 7px !important;
+  }
+
+  .calendar-builder > div:first-child h1 {
+    gap: 5px !important;
+    font-size: 20px !important;
+    line-height: 1.15 !important;
+  }
+
+  .calendar-builder > div:first-child h1 svg {
+    width: 19px !important;
+    height: 19px !important;
+  }
+
+  .calendar-builder > div:first-child p {
+    margin-top: 3px !important;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+  }
+
+  .calendar-builder > div:first-child > div:last-child {
+    display: grid !important;
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px !important;
+  }
+
+  .calendar-builder > div:first-child button {
+    min-height: 30px !important;
+    height: 30px !important;
+    padding: 4px 6px !important;
+    gap: 3px !important;
+    border-radius: 999px !important;
+    font-size: 10px !important;
+    line-height: 1 !important;
+    white-space: nowrap;
+  }
+
+  .calendar-builder > div:first-child button svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+
+  .calendar-builder > .grid {
+    gap: 10px !important;
+  }
+
+  .calendar-builder > .grid > aside {
+    padding: 11px !important;
+    border-radius: 20px !important;
+  }
+
+  .calendar-builder > .grid > aside > * + * {
+    margin-top: 8px !important;
+  }
+
+  .calendar-builder > .grid > aside label,
+  .calendar-builder > .grid > aside legend,
+  .calendar-builder > .grid > aside p {
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+  }
+
+  .calendar-builder > .grid > aside h2,
+  .calendar-builder > .grid > aside h3,
+  .calendar-builder > .grid > aside h4 {
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+  }
+
+  .calendar-builder > .grid > aside input,
+  .calendar-builder > .grid > aside select,
+  .calendar-builder > .grid > aside textarea {
+    min-height: 30px !important;
+    height: 30px !important;
+    margin-top: 4px !important;
+    padding: 4px 7px !important;
+    border-radius: 10px !important;
+    font-size: 11px !important;
+    line-height: 1.1 !important;
+  }
+
+  .calendar-builder > .grid > aside button {
+    min-height: 29px !important;
+    height: 29px !important;
+    padding: 4px 7px !important;
+    gap: 3px !important;
+    border-radius: 10px !important;
+    font-size: 10px !important;
+    line-height: 1 !important;
+  }
+
+  .calendar-builder > .grid > aside svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+
+  .calendar-builder > .grid > aside fieldset {
+    gap: 4px !important;
+  }
+
+  .calendar-builder > .grid > aside fieldset > * + * {
+    margin-top: 4px !important;
+  }
+
+  .calendar-builder > .grid > aside fieldset label {
+    min-height: 28px !important;
+    padding: 4px 7px !important;
+    border-radius: 10px !important;
+  }
+
+  .calendar-builder > .grid > aside input[type="checkbox"],
+  .calendar-builder > .grid > aside input[type="radio"] {
+    width: 14px !important;
+    height: 14px !important;
+    min-height: 14px !important;
+    margin-top: 0 !important;
+    padding: 0 !important;
+  }
+
+  .calendar-builder > .grid > aside .border-t {
+    padding-top: 7px !important;
+  }
+
+  .calendar-builder > .grid > aside .mt-2 {
+    margin-top: 4px !important;
+  }
+
+  .calendar-builder > .grid > aside .mt-3,
+  .calendar-builder > .grid > aside .mt-4 {
+    margin-top: 6px !important;
+  }
+
+  .calendar-builder > .grid > aside .gap-2,
+  .calendar-builder > .grid > aside .gap-3 {
+    gap: 5px !important;
+  }
+
+  .calendar-builder > .grid > aside .p-3,
+  .calendar-builder > .grid > aside .p-4 {
+    padding: 7px !important;
+  }
+
+  /* Only the month switcher is compacted. The next sibling, .calendar-preview-frame, is not targeted. */
+  .calendar-builder > .grid > section > div:first-child:not(.calendar-preview-frame) {
+    margin-bottom: 6px !important;
+    padding: 4px !important;
+    border-radius: 12px !important;
+  }
+
+  .calendar-builder > .grid > section > div:first-child:not(.calendar-preview-frame) button {
+    min-height: 27px !important;
+    height: 27px !important;
+    padding: 3px 7px !important;
+    border-radius: 999px !important;
+    font-size: 10px !important;
+  }
+
+  .calendar-builder > .grid > section > div:first-child:not(.calendar-preview-frame) svg {
+    width: 13px !important;
+    height: 13px !important;
+  }
+
+  .calendar-builder > .grid > section > div:first-child:not(.calendar-preview-frame) > div {
+    gap: 3px !important;
+    padding-block: 2px !important;
+  }
+}

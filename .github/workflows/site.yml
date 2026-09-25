@@ -1,0 +1,63 @@
+# Builds the site from source/ on every push, and publishes it to GitHub Pages from main.
+#
+# Publishing is off until two switches are set on purpose:
+#   1. Settings → Pages → Source: "GitHub Actions"
+#   2. Settings → Secrets and variables → Actions → Variables: PAGES_FROM_ACTIONS = true
+# Until then the live site keeps being served from the files in main, and this workflow only
+# checks that the site builds.
+name: Site
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: source
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: source/package-lock.json
+
+      - run: npm ci --no-audit --no-fund
+
+      # vite build, then every public page is saved as ready HTML (scripts/prerender.mjs),
+      # with sitemap.xml and 404.html. Uses the Chrome that the runner already has.
+      - run: npm run build
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: source/dist
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.PAGES_FROM_ACTIONS == 'true'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
