@@ -65,13 +65,6 @@
       src="https://static.cloudflareinsights.com/beacon.min.js"
       data-cf-beacon='{"token":"076cb1e00db44c5c8f0690585fec558a"}'>
     </script>
-      <link rel="stylesheet" href="/assets/calendar-qa-v27.css">
-    <script defer src="/assets/calendar-qa-v27.js"></script>
-  <link rel="stylesheet" href="/assets/mobile-tools-v4.css?v=96">
-  <script defer src="/assets/mobile-tools-v4.js"></script>
-  <script defer src="/assets/mobile-share-links-v1.js?v=97"></script>
-  <link rel="stylesheet" href="/assets/v92-board-and-search.css?v=96">
-  <link rel="stylesheet" href="/assets/mobile-guidance-cards-v1.css?v=92">
 </head>
 <body><header><a class="back" href="/">חזרה לבית</a><img src="/boo-nesahek-logo.png" alt="בואו נשחק"></header>
 <main><h1 class="page-title"><span class="screen-title">לוח התארגנות לילדים</span><span class="print-title">לוח התארגנות יומי</span></h1><p class="intro">הכינו לוח התארגנות לילדים בהתאמה אישית ובחינם. בחרו את הפעולות המתאימות לילד או לילדה, סדרו אותן לפי רצף היום והדפיסו לוח חזותי ברור ונוח לשימוש. הלוח מתאים להתארגנות בבית, בגן ובקליניקה.</p>
@@ -143,5 +136,5 @@ function encodeBoard(){const data=selected.map(x=>[x.custom?'':taskImage(x.img),
 function boardLink(){const q=new URLSearchParams;q.set('d',encodeBoard());q.set('t',title.value||'לוח ההתארגנות היומי שלי');return `${location.origin}/child/daily-routine/?${q}`}
 function printBoard(size){document.body.classList.toggle('print-large',size==='large');window.print()}
 title.oninput=e=>boardTitle.textContent=e.target.value||'לוח ההתארגנות היומי שלי';addCustom.onclick=()=>{const v=customText.value.trim();if(v){selected.push({img:'',label:v,custom:true});customText.value='';render()}};clear.onclick=()=>{selected=[];render()};share.onclick=()=>{if(!selected.length)return;const url=boardLink();shareUrl.value=url;shareQr.src=`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(url)}`;shareOverlay.classList.add('open')};shareClose.onclick=()=>shareOverlay.classList.remove('open');shareOverlay.onclick=e=>{if(e.target===shareOverlay)shareOverlay.classList.remove('open')};copyLink.onclick=async()=>{try{await navigator.clipboard.writeText(shareUrl.value);copyLink.textContent='הועתק';setTimeout(()=>copyLink.textContent='העתקה',2000)}catch{shareUrl.select()}};buildChoices();render();
-</script><script defer src="/assets/english-content-v9.js"></script><script defer src="/assets/american-english-v1.js"></script>  <script defer src="/assets/v92-board-and-search.js?v=96"></script>
+</script><script defer src="/standalone-page.js"></script>
 </body></html>
