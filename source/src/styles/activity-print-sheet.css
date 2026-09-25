@@ -1,0 +1,168 @@
+/* Printed activity page (PrintSheet in pages/ActivityDetail.jsx): title with the main picture and a
+   link back to the site, then materials and steps as a plain table — tick box, picture, numbered
+   text — and the copyright line. Black lines on white, nothing else. */
+@media print {
+  /* The sheet uses the "activity-page" page margins. Every box around it gets the same page name,
+     otherwise the browser starts a new sheet of paper before and after it (blank first/last page). */
+  html:has(.activity-print-sheet),
+  html:has(.activity-print-sheet) body,
+  html:has(.activity-print-sheet) :has(.activity-print-sheet) {
+    page: activity-page;
+    min-height: 0 !important;
+    padding-bottom: 0 !important;
+    background: #fff !important;
+  }
+
+  .activity-print-sheet {
+    color: #000;
+    font-family: Rubik, Arial, sans-serif;
+  }
+  .print-sheet-frame {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .print-sheet-frame > tbody > tr > td,
+  .print-sheet-frame > tfoot > tr > td {
+    padding: 0;
+    border: 0;
+  }
+  .print-sheet-frame > tfoot {
+    display: table-footer-group;
+  }
+
+  .print-sheet-head {
+    display: flex;
+    align-items: center;
+    gap: 6mm;
+    margin-bottom: 4mm;
+    padding-bottom: 3mm;
+    border-bottom: 0.4mm solid #000;
+    break-inside: avoid;
+  }
+  .print-sheet-hero {
+    width: 26mm;
+    height: 26mm;
+    flex-shrink: 0;
+    object-fit: contain;
+  }
+  .print-sheet-title {
+    margin: 0 0 2mm;
+    font-size: 24pt;
+    font-weight: 900;
+    line-height: 1.15;
+  }
+  .print-sheet-link {
+    color: #1f5f8b !important;
+    font-size: 10pt;
+    text-decoration: underline;
+  }
+  .print-sheet-logo {
+    width: 18mm;
+    height: 14mm;
+    flex-shrink: 0;
+    align-self: flex-start;
+    object-fit: contain;
+  }
+
+  .print-sheet-section {
+    margin-bottom: 4mm;
+  }
+  .print-sheet-heading {
+    margin: 0 0 2mm;
+    font-size: 15pt;
+    font-weight: 800;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .print-sheet-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  .print-sheet-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .print-sheet-table td {
+    padding: 1mm 2mm;
+    border: 0.3mm solid #000;
+    vertical-align: middle;
+  }
+  .print-sheet-col-check {
+    width: 12mm;
+  }
+  .print-sheet-col-image {
+    width: 23mm;
+  }
+  .print-sheet-check span {
+    display: block;
+    width: 6mm;
+    height: 6mm;
+    margin: auto;
+    border: 0.5mm solid #000;
+    border-radius: 1mm;
+  }
+  .print-sheet-image {
+    height: 19mm;
+    text-align: center;
+  }
+  .print-sheet-image img {
+    display: block;
+    width: 17mm !important;
+    height: 17mm !important;
+    margin: auto;
+    object-fit: contain;
+  }
+  /* A step with several pictures shows them side by side. */
+  .print-sheet-image .flex {
+    flex-wrap: nowrap !important;
+    gap: 1mm !important;
+  }
+  .print-sheet-image .flex:has(img + img) img {
+    width: 11mm !important;
+    height: 11mm !important;
+  }
+  .print-sheet-image svg {
+    width: 14mm;
+    height: 14mm;
+    margin: auto;
+  }
+  .print-sheet-text {
+    font-size: 12.5pt;
+    line-height: 1.45;
+  }
+  .print-sheet-number {
+    margin-inline-end: 1mm;
+  }
+
+  .print-sheet-note {
+    margin: 0 0 5mm;
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+  .print-sheet-flow {
+    display: block;
+    max-width: 100%;
+    max-height: 60mm;
+    margin: 0 auto 3mm;
+    object-fit: contain;
+  }
+
+  .print-sheet-footer {
+    margin-top: 4mm;
+    padding-top: 2mm;
+    border-top: 0.3mm solid #999;
+    color: #444;
+    font-size: 8pt;
+    line-height: 1.4;
+    text-align: center;
+    break-inside: avoid;
+  }
+  .print-sheet-footer p {
+    margin: 0 0 1mm;
+  }
+  .print-sheet-footer a {
+    color: #1f5f8b !important;
+  }
+}

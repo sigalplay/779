@@ -456,7 +456,8 @@ export const ACTIVITY_ICON_SETS = {
   "seed-52": {
     hero: "/icon-bank/movement-new/seed-52-freeze-dance/hero.webp",
     materials: {
-      "מוזיקה (טלפון/רמקול)": "/icon-bank/movement-new/seed-52-freeze-dance/material-music-device.webp",
+      // The freeze-dance music picture is an empty (fully transparent) file; this is the same device from seed-30.
+      "מוזיקה (טלפון/רמקול)": "/icon-bank/social-new/seed-30-illustrated/material-music-device.webp",
     },
     steps: {
       1: "/icon-bank/movement-new/seed-52-freeze-dance/step-1.webp",
