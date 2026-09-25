@@ -79,13 +79,9 @@ export function TherapistPostureScissorsTips({ language: languageProp, openPanel
                   <img src={tip.image} alt="" className="h-full w-full object-contain" />
                 </div>
                 <span className="text-sm font-semibold leading-snug text-foreground md:text-base">{language === "en" ? tip.titleEn : tip.title}</span>
-                {tip.text && <p className="text-xs leading-snug text-muted-foreground md:text-sm">{language === "en" ? tip.textEn : tip.text}</p>}
               </div>
             ))}
           </div>
-          <p className="mt-4 rounded-2xl bg-sage/10 px-4 py-3 text-center text-sm font-semibold">
-            {text(t("לא חייבים לצבוע בדיוק בתוך הקווים — העיקר לתרגל וליהנות.", "No need to stay exactly inside the lines — the point is to practice and have fun."), "No need to stay exactly inside the lines — the point is to practice and have fun.")}
-          </p>
       </TipPanel>
 
       <TipPanel label={text(t("דגשים לישיבה נכונה", "Tips for good sitting posture"), "Tips for good sitting posture")} open={openPanel === "posture"} onClose={() => setOpenPanel(null)}>
