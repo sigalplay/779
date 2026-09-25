@@ -16,11 +16,11 @@ import { bankMaterialIcon, bankStepIcon } from "@/lib/icon-bank";
 import { TagList } from "@/components/TagList";
 import { TherapistPostureScissorsTips } from "@/components/TherapistPostureScissorsTips";
 import { VisualSessionTimer } from "@/components/VisualSessionTimer";
-import { brandLogo, useTranslator } from "@/lib/language";
+import { useTranslator } from "@/lib/language";
 import { activityTitle, translatedTerm } from "@/lib/content-translations";
 import { activityEnglishContent } from "@/lib/activity-content-en";
 import { activityContext, imageAlt, shortLabel } from "@/lib/image-seo";
-import { pageUrl } from "@/lib/seo";
+import { PrintSheet, PrintTable } from "@/components/PrintSheet";
 
 const NIKUD_KEY = "activity:nikud";
 const HANDWRITING_KEY = "activity:handwriting";
@@ -324,7 +324,7 @@ export default function ActivityDetail() {
           </div>
         </header>
 
-        <PrintSheet altWhere={altWhere} activity={a} activityId={id} pick={pick} language={language} title={title} materials={materials} steps={steps} preparation={preparation} flowText={flowText} />
+        <ActivityPrintSheet altWhere={altWhere} activity={a} activityId={id} pick={pick} language={language} title={title} materials={materials} steps={steps} preparation={preparation} flowText={flowText} />
 
         {(a.description || a.short_description) && (
           <section className="rounded-3xl border border-border/60 bg-card p-5 md:p-6 print:hidden">
@@ -487,7 +487,7 @@ function PrintCellIcon({ src, srcs, Icon, size = "large", alt = "" }) {
   return null;
 }
 
-function PrintSheet({ altWhere, activity: a, activityId, pick, language, title, materials, steps, preparation, flowText }) {
+function ActivityPrintSheet({ altWhere, activity: a, activityId, pick, language, title, materials, steps, preparation, flowText }) {
   const customMaterials = ACTIVITY_ICON_SETS[activityId]?.materials;
   const customSteps = ACTIVITY_ICON_SETS[activityId]?.steps;
 
@@ -519,42 +519,9 @@ function PrintSheet({ altWhere, activity: a, activityId, pick, language, title, 
   const label = (he, en) => language === "en" ? en : he;
   // בפעילות "מסלול שקיות תחושה" השלבים הם רעיונות לשקיות, לא רצף פעולות.
   const ideasList = activityId === "seed-116";
-  // The printed page (and a PDF sent on WhatsApp) links back to this activity on the site.
-  const siteUrl = pageUrl(`/activity/${activityId}`, language);
-  const siteUrlText = siteUrl.replace(/^https:\/\//, "").replace(/\/$/, "");
 
-  // The copyright line and the link sit in the table footer, which the browser repeats at the bottom
-  // of every printed page, so a long activity never ends with the footer alone on a new page.
   return (
-    <div className="activity-print-sheet hidden print:block print:text-black">
-      <table className="print-sheet-frame">
-        <tfoot>
-          <tr>
-            <td>
-              <div className="print-sheet-footer">
-                <p>
-                  {label(
-                    "© בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.",
-                    "© Let's Play. All rights reserved. The content here is for enrichment and practice only. It is not a diagnosis, personal therapeutic advice, or a substitute for evaluation, consultation, or treatment by a qualified professional.",
-                  )}
-                </p>
-                <a href={siteUrl}><bdi dir="ltr">{siteUrlText}</bdi></a>
-              </div>
-            </td>
-          </tr>
-        </tfoot>
-        <tbody>
-          <tr>
-            <td>
-      <div className="print-sheet-head">
-        {hero ? <img src={hero} alt={altWhere} className="print-sheet-hero" /> : null}
-        <div className="min-w-0 flex-1">
-          <h1 className="print-sheet-title">{title}</h1>
-          <a href={siteUrl} className="print-sheet-link">{label("לפעילות באתר: ", "Open on the site: ")}<bdi dir="ltr">{siteUrlText}</bdi></a>
-        </div>
-        <img src={brandLogo(language)} alt={label("בואו נשחק", "Let's Play")} className="print-sheet-logo" />
-      </div>
-
+    <PrintSheet language={language} title={title} hero={hero} heroAlt={altWhere} path={`/activity/${activityId}`}>
       {a.materials?.length ? (
         <PrintTable
           heading={label("ציוד נדרש", "Materials")}
@@ -586,37 +553,7 @@ function PrintSheet({ altWhere, activity: a, activityId, pick, language, title, 
           <p className="print-sheet-note">{flowText}</p>
         </section>
       ) : null}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-// One printed list (materials or steps) in the layout of a simple table:
-// a tick box, the picture, and the numbered text.
-function PrintTable({ heading, rows }) {
-  return (
-    <section className="print-sheet-section">
-      <h2 className="print-sheet-heading">{heading}</h2>
-      <table className="print-sheet-table">
-        <colgroup>
-          <col className="print-sheet-col-check" />
-          <col className="print-sheet-col-image" />
-          <col />
-        </colgroup>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.key}>
-              <td className="print-sheet-check"><span aria-hidden /></td>
-              <td className="print-sheet-image">{row.image}</td>
-              <td className="print-sheet-text"><strong className="print-sheet-number">{row.number}.</strong> {row.text}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
+    </PrintSheet>
   );
 }
 
