@@ -8,7 +8,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { addToDraftPlan } from "@/lib/storage";
 import { useCmsCollection } from "@/lib/cms-content";
-import { brandLogo, useTranslator } from "@/lib/language";
+import { useTranslator } from "@/lib/language";
+import { PrintSheet, PrintTable } from "@/components/PrintSheet";
 import { EXPERIMENT_EN } from "@/lib/experiment-content-en";
 import { imageAlt, shortLabel } from "@/lib/image-seo";
 
@@ -721,80 +722,23 @@ function HighlightableText({ text, stepKey, highlighted, onToggle }) {
   );
 }
 
-function ExperimentPrintRow({ i, iconSrc, label, altWhere }) {
-  return (
-    <tr>
-      <td style={i === 0 ? { width: "6%" } : undefined} className="border border-black p-1 text-center">
-        <span aria-hidden className="mx-auto block h-4 w-4 border-2 border-black" />
-      </td>
-      <td style={i === 0 ? { width: "8%" } : undefined} className="border border-black p-1 text-center">
-        {i + 1}
-      </td>
-      <td style={i === 0 ? { width: "16%" } : undefined} className="border border-black p-1">
-        <img src={iconSrc} alt={imageAlt(shortLabel(label), altWhere)} className="mx-auto h-14 w-14 object-contain" />
-      </td>
-      <td style={i === 0 ? { width: "70%" } : undefined} className="border border-black p-1">
-        {label}
-      </td>
-    </tr>
-  );
-}
-
 function ExperimentPrintSheet({ exp, pick, expN, language }) {
-  const { t } = useTranslator();
   const label = (he, en) => language === "en" ? en : he;
-  const altWhere = imageAlt(pick(exp.title, expN.title), "experiment", language);
+  const title = pick(exp.title, expN.title);
+  const altWhere = imageAlt(title, "experiment", language);
+  const rows = (items, texts, imageFor) => items.map((item, i) => {
+    const text = pick(item, texts?.[i]);
+    return { key: i, number: i + 1, text, image: <img src={imageFor(exp, i)} alt={imageAlt(shortLabel(text), altWhere)} /> };
+  });
   return (
-    <div className="activity-print-sheet hidden print:block print:space-y-4 print:text-black">
-      <div className="relative flex items-center justify-center gap-5 border-b-2 border-black pb-3">
-        <img src={brandLogo(language)} alt={label(t("בואו נשחק", "Let's Play"), "Let's Play")} className="print-sheet-brand absolute left-0 top-0 h-14 w-16 object-contain" />
-        <img src={src(exp.id, "hero")} alt={altWhere} className="h-24 w-24 shrink-0 object-contain" />
-        <h1 className="text-center text-4xl font-black">{pick(exp.title, expN.title)}</h1>
-      </div>
-
+    <PrintSheet language={language} title={title} hero={src(exp.id, "hero")} heroAlt={altWhere} path={`/parent/experiments/${exp.id}`}>
+      {/* The safety note stays on the printed page: it says what must never be done during the experiment. */}
       {exp.warning ? (
-        <p className="text-lg leading-relaxed">
-          <strong>{label(t("בטיחות לפני הכול: ", "Safety first: "), "Safety first: ")}</strong>
-          {pick(exp.warning, expN.warning)}
-        </p>
+        <p className="print-sheet-note"><strong>{label("בטיחות לפני הכול: ", "Safety first: ")}</strong>{pick(exp.warning, expN.warning)}</p>
       ) : null}
-
-      {exp.materials?.length ? (
-        <div>
-          <div className="mb-1 text-xl font-bold">{label(t("כלים ומצרכים:", "Tools and ingredients:"), "Materials:")}</div>
-          <table className="w-full table-fixed border-collapse border border-black text-base">
-            <tbody>
-              {exp.materials.map((m, i) => (
-                <ExperimentPrintRow altWhere={altWhere} key={i} i={i} iconSrc={materialSrc(exp, i)} label={pick(m, expN.materials?.[i])} />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : null}
-
-      {exp.steps?.length ? (
-        <div style={{ breakBefore: "page" }}>
-          <div className="mb-1 text-xl font-bold">{label(t("שלבים:", "Steps:"), "Steps:")}</div>
-          <table className="w-full table-fixed border-collapse border border-black text-base">
-            <tbody>
-              {exp.steps.map((s, i) => (
-                <ExperimentPrintRow altWhere={altWhere} key={i} i={i} iconSrc={stepSrc(exp, i)} label={pick(s, expN.steps?.[i])} />
-              ))}
-            </tbody>
-          </table>
-          {exp.science ? (
-            <p className="mt-4 text-lg leading-relaxed">
-              <strong>{label(t("מה קורה כאן? ", "What's happening here? "), "What's happening? ")}</strong>
-              {pick(exp.science, expN.science)}
-            </p>
-          ) : null}
-        </div>
-      ) : null}
-
-      <div className="mt-6 text-center text-xs text-muted-foreground/70">
-        {label(t("© בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.", "© Let’s Play. All rights reserved. The content here is for enrichment and practice only. It is not a diagnosis, personal therapeutic advice, or a substitute for evaluation, consultation, or treatment by a qualified professional."), "© Let's Play. All rights reserved. Content is for enrichment and practice only and does not replace diagnosis, assessment, professional advice or treatment.")}
-      </div>
-    </div>
+      <PrintTable heading={label("כלים ומצרכים", "Materials")} rows={rows(exp.materials || [], expN.materials, materialSrc)} />
+      <PrintTable heading={label("שלבי הניסוי", "Steps")} rows={rows(exp.steps || [], expN.steps, stepSrc)} />
+    </PrintSheet>
   );
 }
 
@@ -880,7 +824,7 @@ export default function TherapistExperiments({ mode = "therapist" }){
  const item=(x)=>{const isExpanded=expandedMaterial===x.i; return <div key={x.i} className={`flex items-center gap-2 rounded-2xl border p-2 transition-all duration-300 ${isExpanded?"flex-col justify-center py-4 text-center shadow-md":""} ${done[`m${x.i}`]?"border-sage/60 bg-sage/10":"border-border/60 bg-background"}`}><Checkbox checked={!!done[`m${x.i}`]} onCheckedChange={()=>tick(`m${x.i}`)}/><button type="button" onClick={()=>setExpandedMaterial(current=>current===x.i?null:x.i)} aria-label={t(`${isExpanded?"הקטנת":"הגדלת"} ${x.text}`, `${isExpanded?"Reduce":"Enlarge"} ${x.text}`)} className="flex cursor-zoom-in items-center gap-2"><img src={materialSrc(exp,x.i)} className={`${isExpanded?"h-36 w-36 md:h-44 md:w-44":"h-14 w-14"} shrink-0 rounded-xl bg-white object-contain transition-all duration-300`} alt={imageAlt(pick(x.text,expN.materials?.[x.i]),altWhere)}/><span className={`text-lg leading-relaxed md:text-xl ${done[`m${x.i}`]?"text-muted-foreground line-through":""} ${handwriting?"font-handwriting":""}`}>{pick(x.text,expN.materials?.[x.i])}</span></button></div>};
  return (
   <AppShell mode={mode}>
-   <button onClick={()=>{setExp(null);navigate(listPath);setExpandedStep(null)}} className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground">
+   <button onClick={()=>{setExp(null);navigate(listPath);setExpandedStep(null)}} className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground print:hidden">
     <ArrowRight className="h-4 w-4"/>{t("חזרה לניסויים","Back to experiments")}
    </button>
    <div className="flex h-56 items-center justify-center overflow-hidden rounded-3xl border border-border/60 bg-white p-4 md:h-72 print:hidden">

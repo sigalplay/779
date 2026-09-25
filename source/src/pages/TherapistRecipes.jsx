@@ -8,7 +8,8 @@ import { TherapistPostureScissorsTips } from "@/components/TherapistPostureSciss
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { addToDraftPlan } from "@/lib/storage";
-import { brandLogo, useTranslator } from "@/lib/language";
+import { useTranslator } from "@/lib/language";
+import { PrintSheet, PrintTable } from "@/components/PrintSheet";
 import { RECIPE_EN } from "@/lib/recipe-content-en";
 import { useCmsCollection } from "@/lib/cms-content";
 import { imageAlt, shortLabel } from "@/lib/image-seo";
@@ -1990,101 +1991,26 @@ function HighlightableText({ text, stepKey, highlighted, onToggle }) {
   );
 }
 
-function PrintRow({ i, icon, label, isLast }) {
-  return (
-    <tr>
-      <td style={i === 0 ? { width: "6%" } : undefined} className="border border-black p-1 text-center">
-        <span aria-hidden className="mx-auto block h-4 w-4 border-2 border-black" />
-      </td>
-      <td style={i === 0 ? { width: "8%" } : undefined} className="border border-black p-1 text-center">
-        {i + 1}
-      </td>
-      <td style={i === 0 ? { width: "16%" } : undefined} className="border border-black p-1">
-        {icon}
-      </td>
-      <td style={i === 0 ? { width: "70%" } : undefined} className="border border-black p-1">
-        {label}
-      </td>
-    </tr>
-  );
-}
-
 function RecipePrintSheet({ recipe, pick, language }) {
-  const { t } = useTranslator();
   const label = (he, en) => language === "en" ? en : he;
+  const title = pick(recipe.title, recipe.titleN);
   const altWhere = imageAlt(recipe.title, "recipe", language);
   const iconFor = (item) =>
     item.img ? (
-      <img src={item.img} alt={imageAlt(shortLabel(pick(item.text, item.textN)), altWhere)} className="mx-auto h-14 w-14 object-contain" />
+      <img src={item.img} alt={imageAlt(shortLabel(pick(item.text, item.textN)), altWhere)} />
     ) : item.icon ? (
-      <div className="mx-auto h-9 w-9">
-        <item.icon />
-      </div>
+      <item.icon />
     ) : (
-      <span className="mx-auto block text-3xl leading-none">{item.emoji}</span>
+      <span className="text-3xl leading-none">{item.emoji}</span>
     );
+  const rows = (items) => items.map((item, i) => ({ key: item.n ?? i, number: i + 1, text: pick(item.text, item.textN), image: iconFor(item) }));
 
   return (
-    <div className="activity-print-sheet hidden print:block print:space-y-4 print:text-black">
-      <div className="relative flex items-center justify-center gap-5 border-b-2 border-black pb-3">
-        <img src={brandLogo(language)} alt={label(t("בואו נשחק", "Let's Play"), "Let's Play")} className="print-sheet-brand absolute left-0 top-0 h-14 w-16 object-contain" />
-        {recipe.cover ? (
-          <img src={recipe.cover} alt={altWhere} className="h-24 w-24 shrink-0 object-contain" />
-        ) : recipe.coverIcon ? (
-          <div className="h-24 w-24 shrink-0">
-            <recipe.coverIcon />
-          </div>
-        ) : (
-          <span className="text-6xl">{recipe.coverEmoji}</span>
-        )}
-        <h1 className="text-center text-4xl font-black">{pick(recipe.title, recipe.titleN)}</h1>
-      </div>
-
-      {recipe.ingredients?.length ? (
-        <div>
-          <div className="mb-1 text-xl font-bold">
-            {label(t("מצרכים:", "Ingredients:"), "Ingredients:")} <span className="text-base font-normal">({recipe.amountLabel})</span>
-          </div>
-          <table className="w-full table-fixed border-collapse border border-black text-base">
-            <tbody>
-              {recipe.ingredients.map((it, i) => (
-                <PrintRow key={i} i={i} icon={iconFor(it)} label={pick(it.text, it.textN)} />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : null}
-
-      {recipe.tools?.length ? (
-        <div>
-          <div className="mb-1 text-xl font-bold">{label(t("כלים:", "Tools:"), "Tools:")}</div>
-          <table className="w-full table-fixed border-collapse border border-black text-base">
-            <tbody>
-              {recipe.tools.map((it, i) => (
-                <PrintRow key={i} i={i} icon={iconFor(it)} label={pick(it.text, it.textN)} />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : null}
-
-      {recipe.steps?.length ? (
-        <div style={{ breakBefore: "page" }}>
-          <div className="mb-1 text-xl font-bold">{label(t("שלבים:", "Steps:"), "Steps:")}</div>
-          <table className="w-full table-fixed border-collapse border border-black text-base">
-            <tbody>
-              {recipe.steps.map((s, i) => (
-                <PrintRow key={s.n} i={i} icon={iconFor(s)} label={pick(s.text, s.textN)} />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : null}
-
-      <div className="mt-6 text-center text-xs text-muted-foreground/70">
-        {label(t("© בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.", "© Let’s Play. All rights reserved. The content here is for enrichment and practice only. It is not a diagnosis, personal therapeutic advice, or a substitute for evaluation, consultation, or treatment by a qualified professional."), "© Let's Play. All rights reserved. Content is for enrichment and practice only and does not replace diagnosis, assessment, professional advice or treatment.")}
-      </div>
-    </div>
+    <PrintSheet language={language} title={title} hero={recipe.cover} heroAlt={altWhere} path={`/parent/recipes/${recipe.id}`}>
+      <PrintTable heading={`${label("מצרכים", "Ingredients")}${recipe.amountLabel ? ` (${recipe.amountLabel})` : ""}`} rows={rows(recipe.ingredients || [])} />
+      <PrintTable heading={label("כלים", "Tools")} rows={rows(recipe.tools || [])} />
+      <PrintTable heading={label("שלבי ההכנה", "Steps")} rows={rows(recipe.steps || [])} />
+    </PrintSheet>
   );
 }
 
@@ -2118,7 +2044,7 @@ function RecipeDetail({ recipe, mode, onBack }) {
   return (
     <AppShell mode={mode}>
       {language === "he" ? <TherapistPostureScissorsTips showScissors={false} /> : null}
-      <button onClick={onBack} className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      <button onClick={onBack} className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground print:hidden">
         <ArrowLeft className="h-4 w-4" /> {t("חזרה למתכונים", "Back to recipes")}
       </button>
 
