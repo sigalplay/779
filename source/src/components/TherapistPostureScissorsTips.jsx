@@ -33,11 +33,11 @@ function TipPanel({ label, open, onClose, children }) {
           type="button"
           onClick={onClose}
           aria-label={t("סגירה", "Close")}
-          className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/80"
+          className="absolute end-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/80"
         >
           <X className="h-4 w-4" />
         </button>
-        <h2 className="mb-4 mt-1 pr-1 font-display text-2xl font-black">{label}</h2>
+        <h2 className="mb-4 mt-1 pe-10 font-display text-2xl font-black">{label}</h2>
         <div>{children}</div>
       </div>
     </>
