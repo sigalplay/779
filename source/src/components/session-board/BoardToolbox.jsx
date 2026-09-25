@@ -1,15 +1,22 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Hand, Pencil, Timer } from "lucide-react";
 import { TherapistPostureScissorsTips } from "@/components/TherapistPostureScissorsTips";
 import { PenBar } from "@/components/toolbox/PenBar";
 import { Toolbox, tipTools } from "@/components/toolbox/Toolbox";
 import { VISUAL_SIGNS, localizedLabel } from "@/lib/session-board-tools";
 
-// The toolbox on the session board. It sits inside the board, so it stays available in full screen,
-// where the tool row is hidden. Its timer and pen are the board's own, and signs are added to the board.
-export function BoardToolbox({ language, fullscreen, pen, onOpenTimer, onAddSign }) {
+// The toolbox on the session board in full screen, where the tool row is hidden (outside full screen
+// the tool row already has every tool). It sits inside the board so it stays visible in full screen.
+// Its timer and pen are the board's own, and signs are added to the board.
+export function BoardToolbox({ language, pen, onOpenTimer, onAddSign }) {
   const t = (he, en) => (language === "en" ? en : he);
   const [tipPanel, setTipPanel] = useState(null);
+
+  // While a tip window is open, hide the full-screen exit button so its × is not confused with the window's.
+  useEffect(() => {
+    document.body.classList.toggle("board-tip-open", Boolean(tipPanel));
+    return () => document.body.classList.remove("board-tip-open");
+  }, [tipPanel]);
 
   const tools = [
     { id: "timer", color: "#bcdcf2", icon: <Timer />, label: t("טיימר", "Timer"), onSelect: onOpenTimer },
@@ -32,16 +39,8 @@ export function BoardToolbox({ language, fullscreen, pen, onOpenTimer, onAddSign
 
   return (
     <>
-      <Toolbox
-        language={language}
-        tools={tools}
-        storageKey={fullscreen ? "boo_board_tools_position" : "boo_page_tools_position"}
-        placement={fullscreen ? "bottom" : "middle"}
-        hidden={Boolean(tipPanel)}
-        key={fullscreen ? "fullscreen" : "page"}
-      />
-      {/* Outside full screen the tool row has its own pen controls. */}
-      {fullscreen && pen.enabled && <PenBar language={language} pen={pen} />}
+      <Toolbox language={language} tools={tools} storageKey="boo_board_tools_position" placement="bottom" hidden={Boolean(tipPanel)} />
+      {pen.enabled && <PenBar language={language} pen={pen} />}
       <TherapistPostureScissorsTips language={language} openPanel={tipPanel} onOpenPanelChange={setTipPanel} />
     </>
   );

@@ -33,11 +33,11 @@ function TipPanel({ label, open, onClose, children }) {
           type="button"
           onClick={onClose}
           aria-label={t("סגירה", "Close")}
-          className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/80"
+          className="absolute end-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/80"
         >
           <X className="h-4 w-4" />
         </button>
-        <h2 className="mb-4 mt-1 pr-1 font-display text-2xl font-black">{label}</h2>
+        <h2 className="mb-4 mt-1 pe-10 font-display text-2xl font-black">{label}</h2>
         <div>{children}</div>
       </div>
     </>
@@ -72,22 +72,16 @@ export function TherapistPostureScissorsTips({ language: languageProp, openPanel
       </TipPanel>
 
       <TipPanel label={text(t("דגשים לצביעה", "Coloring tips"), "Coloring tips")} open={openPanel === "coloring"} onClose={() => setOpenPanel(null)}>
-          <div className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 pt-2 sm:grid-cols-3 lg:grid-cols-5">
             {COLORING_TIP_CARDS.map((tip, i) => (
-              <div key={i} className="flex flex-col overflow-hidden rounded-3xl border border-border/60 bg-cream">
-                <div className="flex h-48 w-full items-center justify-center overflow-hidden bg-white p-1">
+              <div key={i} className="flex flex-col items-center justify-start gap-3 rounded-3xl border border-sage/30 bg-sage/10 p-4 text-center">
+                <div className="h-32 w-full shrink-0 overflow-hidden rounded-2xl bg-white p-1">
                   <img src={tip.image} alt="" className="h-full w-full object-contain" />
                 </div>
-                <div className="flex flex-1 flex-col gap-2 px-4 py-3 text-center">
-                  <h3 className="font-bold leading-snug text-blue-600">{language === "en" ? tip.titleEn : tip.title}</h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{language === "en" ? tip.textEn : tip.text}</p>
-                </div>
+                <span className="text-sm font-semibold leading-snug text-foreground md:text-base">{language === "en" ? tip.titleEn : tip.title}</span>
               </div>
             ))}
           </div>
-          <p className="mt-4 rounded-2xl bg-sage/10 px-4 py-3 text-center text-sm font-semibold">
-            {text(t("לא חייבים להישאר בדיוק בתוך הקווים — המטרה היא לתרגל וליהנות.", "You don't have to stay exactly within the lines — the goal is to practice and have fun."), "Staying perfectly inside the lines is not required — the goal is to practice and enjoy.")}
-          </p>
       </TipPanel>
 
       <TipPanel label={text(t("דגשים לישיבה נכונה", "Tips for good sitting posture"), "Tips for good sitting posture")} open={openPanel === "posture"} onClose={() => setOpenPanel(null)}>
