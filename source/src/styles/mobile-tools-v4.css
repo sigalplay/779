@@ -107,11 +107,6 @@
   .therapist-mobile-shortcuts .shortcut-trail { background: #e8eefb; }
   .therapist-mobile-shortcuts .shortcut-build-plan { background: #f7efcf; }
 
-  /* The hide control must also remain available on iPad-sized screens. */
-  button[aria-label="הסתרת סמלי העזר"],
-  button[aria-label="הצגת סמלי העזר"] { display: flex !important; }
-  button[aria-label="הצגת סמלי העזר"][aria-expanded="false"] + div { display: none !important; }
-
   /* Give guidance popups a viewport-sized host. Some mobile browsers otherwise
      calculate the fixed dialog against the narrow icon rail. */
   .guidance-dialog-host {

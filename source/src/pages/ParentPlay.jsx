@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { RefreshCw, RotateCcw, Search } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { ActivityCard } from "@/components/ActivityCard";
-import { TherapistPostureScissorsTips } from "@/components/TherapistPostureScissorsTips";
+import { PageToolbox } from "@/components/toolbox/PageToolbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DURATIONS, FUNCTIONAL_DIFFICULTIES, DIFFICULTY_GUIDANCE, ACTIVITY_GROUPS, expandGoals } from "@/lib/constants";
@@ -117,7 +117,7 @@ export default function ParentPlay() {
         <h1 className="font-display text-2xl font-black md:text-3xl">{t("במה נשחק היום?", "What should we play today?")}</h1>
       </div>
 
-      {language === "he" ? <TherapistPostureScissorsTips /> : null}
+      <PageToolbox />
 
       <div className="grid gap-3 lg:grid-cols-[200px_1fr]">
         {/* ---------- right-side tab menu ---------- */}

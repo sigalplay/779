@@ -1,33 +1,10 @@
-import { cn } from "@/lib/utils";
-import { useEffect, useRef, useState } from "react";
-import { Eye, EyeOff, X } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { X } from "lucide-react";
 import { useTranslator } from "@/lib/language";
 import { PencilGripPostureGuide } from "@/lib/pencil-grip-posture";
 import { SCISSOR_TIP_CARDS } from "@/lib/scissors-tips";
 import { WritingGuidelinesGuide } from "@/components/WritingGuidelinesGuide";
 import { COLORING_TIP_CARDS } from "@/lib/coloring-tips";
-
-function TipButton({ icon, emoji, label, open, onToggle }) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      aria-expanded={open}
-      onClick={onToggle}
-      className={`flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border/60 bg-white p-1 shadow-md transition-colors ${
-        open ? "border-sage bg-sage/20" : "hover:bg-muted"
-      }`}
-    >
-      {icon ? (
-        <img src={icon} alt="" aria-hidden="true" className="h-full w-full object-contain" />
-      ) : (
-        <span aria-hidden="true" className="text-3xl leading-none">
-          {emoji}
-        </span>
-      )}
-    </button>
-  );
-}
 
 function TipPanel({ label, open, onClose, children }) {
   const { t } = useTranslator();
@@ -67,89 +44,16 @@ function TipPanel({ label, open, onClose, children }) {
   );
 }
 
-export function TherapistPostureScissorsTips({
-  children = null,
-  showScissors = true,
-  hideTriggers = false,
-  language: languageProp,
-  openPanel: controlledOpenPanel,
-  onOpenPanelChange,
-}) {
+// The four guidance windows (sitting, cutting, writing, coloring). They are opened from the toolbox
+// (components/toolbox), which passes the open window in `openPanel`.
+export function TherapistPostureScissorsTips({ language: languageProp, openPanel, onOpenPanelChange }) {
   const { language: currentLanguage, t } = useTranslator();
   const language = languageProp || currentLanguage;
-  // On phones the icons can be hidden; the choice is remembered on this device.
-  const [iconsHidden, setIconsHidden] = useState(() => {
-    try { return localStorage.getItem("boo_mobile_tip_icons_hidden") === "1"; } catch { return false; }
-  });
-  useEffect(() => {
-    try { localStorage.setItem("boo_mobile_tip_icons_hidden", iconsHidden ? "1" : "0"); } catch { /* storage blocked */ }
-  }, [iconsHidden]);
-  const [uncontrolledOpenPanel, setUncontrolledOpenPanel] = useState(null);
-  const isControlled = controlledOpenPanel !== undefined;
-  const openPanel = isControlled ? controlledOpenPanel : uncontrolledOpenPanel;
-  const setOpenPanel = (next) => {
-    if (!isControlled) setUncontrolledOpenPanel(next);
-    onOpenPanelChange?.(next);
-  };
   const text = (hebrew, english) => language === "en" ? english : hebrew;
+  const setOpenPanel = (next) => onOpenPanelChange?.(next);
 
-  function toggle(panel) {
-    setOpenPanel(openPanel === panel ? null : panel);
-  }
-
-  // While a tip is open, the icon rail becomes a full-screen host so phones center the tip on the screen.
   return (
-    <div className={hideTriggers ? "print:hidden" : cn("fixed left-4 top-[calc(50%-4rem)] z-40 flex flex-col gap-3 print:hidden", openPanel && "guidance-dialog-host")}>
-      {!hideTriggers && (
-        <button
-          type="button"
-          onClick={() => { setIconsHidden((value) => !value); setOpenPanel(null); }}
-          aria-label={iconsHidden ? text(t("הצגת סמלי העזר", "Show helper icons"), "Show the support icons") : text(t("הסתרת סמלי העזר", "Hide the support icons"), "Hide the support icons")}
-          aria-expanded={!iconsHidden}
-          title={iconsHidden ? text(t("הצגת סמלי העזר", "Show helper icons"), "Show the support icons") : text(t("הסתרת סמלי העזר", "Hide the support icons"), "Hide the support icons")}
-          className="flex h-11 w-11 items-center justify-center self-center rounded-full border border-border/60 bg-white text-muted-foreground shadow-md md:hidden"
-        >
-          {iconsHidden ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
-        </button>
-      )}
-      <div className={iconsHidden ? "hidden md:contents" : "contents"}>
-      {!hideTriggers && (
-      <div className="relative">
-        <TipButton
-          icon="/icon-bank/ui/posture-chair.webp"
-          label={text(t("דגשים לישיבה נכונה", "Tips for good sitting posture"), "Tips for good sitting posture")}
-          open={openPanel === "posture"}
-          onToggle={() => toggle("posture")}
-        />
-      </div>)}
-
-      {!hideTriggers && showScissors ? <div className="relative">
-        <TipButton
-          icon="/icon-bank/ui/cutting-scissors.webp"
-          label={text(t("דגשים לגזירה נכונה", "Tips for cutting correctly"), "Tips for cutting correctly")}
-          open={openPanel === "scissors"}
-          onToggle={() => toggle("scissors")}
-        />
-      </div> : null}
-
-      {!hideTriggers && <div className="relative">
-        <TipButton
-          icon="/icon-bank/guidance/writing/notebook-pencil.png"
-          label={text(t("דגשים לכתיבה", "Handwriting tips"), "Handwriting tips")}
-          open={openPanel === "writing"}
-          onToggle={() => toggle("writing")}
-        />
-      </div>}
-
-      {!hideTriggers && <div className="relative">
-        <TipButton
-          icon="/icon-bank/guidance/coloring/1-relaxed-grip.webp"
-          label={text(t("דגשים לצביעה", "Coloring tips"), "Coloring tips")}
-          open={openPanel === "coloring"}
-          onToggle={() => toggle("coloring")}
-        />
-      </div>}
-
+    <div className="print:hidden">
       <TipPanel label={text(t("דגשים לגזירה נכונה", "Tips for cutting correctly"), "Tips for cutting correctly")} open={openPanel === "scissors"} onClose={() => setOpenPanel(null)}>
         <div className="grid grid-cols-2 gap-3 pt-2 sm:grid-cols-3 lg:grid-cols-5">
           {SCISSOR_TIP_CARDS.map((tip, i) => (
@@ -189,9 +93,6 @@ export function TherapistPostureScissorsTips({
       <TipPanel label={text(t("דגשים לישיבה נכונה", "Tips for good sitting posture"), "Tips for good sitting posture")} open={openPanel === "posture"} onClose={() => setOpenPanel(null)}>
         <PencilGripPostureGuide language={language} />
       </TipPanel>
-
-      {children}
-      </div>
     </div>
   );
 }
