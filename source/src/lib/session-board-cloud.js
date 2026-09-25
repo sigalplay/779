@@ -47,3 +47,27 @@ export async function savePatientBoard(patientId, boardDate, items, drawingData 
     body: JSON.stringify(body),
   });
 }
+
+// Signed in to the cloud (needed for client boards).
+export function hasCloudSession() {
+  const session = getCloudSession();
+  return Boolean(isCloudAuthConfigured() && session?.access_token && session?.user?.id);
+}
+
+export async function listPatients() {
+  const session = authenticatedSession();
+  return cloudRequest("/rest/v1/therapist_patients?select=id,display_name,updated_at&order=updated_at.desc", { token: session.access_token });
+}
+
+export async function addPatient(displayName) {
+  const session = authenticatedSession();
+  const rows = await cloudRequest("/rest/v1/therapist_patients", {
+    method: "POST",
+    token: session.access_token,
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify({ user_id: session.user.id, display_name: displayName }),
+  });
+  const id = rows?.[0]?.id;
+  if (!id) throw new Error("missing-patient");
+  return id;
+}

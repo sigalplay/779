@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, Shuffle, Clock, X, Save, ExternalLink, Route, Play, ArrowRight, ChevronUp, ChevronDown, Printer, FolderOpen, RotateCcw, Camera, ChefHat, FlaskConical, Check, Search } from "lucide-react";
+import { Camera, Check, ChevronDown, ChevronUp, Clock, ExternalLink, FlaskConical, FolderOpen, Play, Plus, Printer, RotateCcw, Route, Save, Search, Shuffle, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { TherapistPostureScissorsTips } from "@/components/TherapistPostureScissorsTips";
 import { VisualSessionTimer } from "@/components/VisualSessionTimer";
-import { FullscreenBoardTools } from "@/components/FullscreenBoardTools";
-import { SessionBoardDrawing } from "@/components/SessionBoardDrawing";
-import { SessionBoardDateNavigation } from "@/components/SessionBoardDateNavigation";
-import { SessionBoardActions } from "@/components/SessionBoardActions";
+import { ActivityNameSearch, matchesName } from "@/components/ActivityNameSearch";
+import { BoardDateNavigation } from "@/components/session-board/BoardDateNavigation";
+import { BoardToolbar } from "@/components/session-board/BoardToolbar";
+import { BoardCanvas } from "@/components/session-board/BoardCanvas";
+import { BoardPhotoPreview } from "@/components/session-board/BoardPhotoPreview";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,14 +26,19 @@ import { CRAFT_SUPPLIES, matchByCraftSupplies } from "@/lib/craft-supplies";
 import { attachPlanToSession, completeClinicSession, getPatient, getSession, startClinicSession } from "@/lib/therapist-clinic";
 import { activityTitle, translatedTerm } from "@/lib/content-translations";
 import { useTranslator } from "@/lib/language";
-import { localizedSignLabel, renderVisualSign } from "@/lib/session-board-tools";
+import { findBoardGame, findSign, localizedLabel, readPhotoFile, renderSignCard } from "@/lib/session-board-tools";
 import { getGuestBoard, getGuestBoardDrawing, guestBoardDates, normalizeBoardDate, saveGuestBoard, saveGuestBoardDrawing } from "@/lib/session-board-storage";
-import { listPatientBoardDates, loadPatientBoard, savePatientBoard } from "@/lib/session-board-cloud";
+import { hasCloudSession, listPatientBoardDates, loadPatientBoard, savePatientBoard } from "@/lib/session-board-cloud";
+
+const ACTIVE_PATIENT_KEY = "boo_active_cloud_patient";
+const GUEST_BACKUP_KEY = "boo_guest_board_backup";
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const GAME_MAKING_ACTIVITY_IDS = ["seed-100", "seed-50", "seed-47", "seed-73", "seed-10", "seed-64"];
+const THERAPIST_TABS = new Set(["search", "all", "creative", "game-making", "sensory", "movement", "social", "experiments", "recipes"]);
 
 function scoreActivity(activity, expandedGoals) {
   return expandedGoals.filter((g) => activity.goals?.includes(g)).length;
 }
-
 function motorTrailItem(id, planItem) {
   return MOTOR_TRAIL_ITEMS.find((it) => it.id === id) ?? planItem?.customItems?.find((it) => it.id === id);
 }
@@ -42,121 +48,73 @@ function getRecipe(id) {
 function getExperiment(id) {
   return EXPERIMENTS.find((e) => e.id === id) ?? null;
 }
+function readJson(key, fallback) {
+  try { const value = JSON.parse(localStorage.getItem(key) || "null"); return value ?? fallback; } catch { return fallback; }
+}
+function readActivePatient() {
+  return readJson(ACTIVE_PATIENT_KEY, null);
+}
+function patientDrawingKey(patientId, date) {
+  return `boo_board_drawing_patient_${patientId}_${date}`;
+}
 
-const GAME_MAKING_ACTIVITY_IDS = ["seed-100", "seed-50", "seed-47", "seed-73", "seed-10", "seed-64"];
+// Opening the guest (no-client) board of a date. A saved board for that date wins; without a
+// date in the address, the last guest board from before a client board was opened is restored.
+function openGuestBoard(date, hasDateParam) {
+  localStorage.removeItem(ACTIVE_PATIENT_KEY);
+  const saved = getGuestBoard(date);
+  if (saved) return saved;
+  const backup = localStorage.getItem(GUEST_BACKUP_KEY);
+  const items = backup !== null && !hasDateParam ? readJson(GUEST_BACKUP_KEY, []) : getDraftPlan();
+  const list = Array.isArray(items) ? items : [];
+  saveGuestBoard(date, list);
+  return list;
+}
 
 export default function TherapistBuild() {
-  const { language, changeLanguage, t } = useTranslator();
+  const { language, t } = useTranslator();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const view = searchParams.get("view") === "session" ? "session" : "plan";
   const sessionId = searchParams.get("session");
   const patientId = searchParams.get("patient");
   const requestedPlanId = searchParams.get("plan");
+  const boardMode = searchParams.get("boardMode") === "1";
   const patientBoardId = searchParams.get("patientBoard");
-  const currentBoardDate = normalizeBoardDate(searchParams.get("boardDate"));
+  const hasDateParam = DATE_PATTERN.test(searchParams.get("boardDate") || "");
+  const boardDate = normalizeBoardDate(searchParams.get("boardDate"));
   const linkedSession = sessionId ? getSession(sessionId) : null;
   const linkedPatient = getPatient(patientId || linkedSession?.patientId);
   const loadedTreatmentPlan = requestedPlanId ? getTreatmentPlan(requestedPlanId) : null;
 
+  // A client board that was already loaded into the draft (coming back from the search page).
+  const activePatient = readActivePatient();
+  const patientBoardInDraft = Boolean(patientBoardId && searchParams.get("cloudBoardReady") === "1" && activePatient?.id === patientBoardId);
+
   const [goals, setGoals] = useState(() => linkedSession?.treatmentGoals || loadedTreatmentPlan?.params?.goals || linkedPatient?.goals || []);
-  const [contentType, setContentType] = useState("activities"); // "activities" | "recipes" | "experiments"
-  const [durationMode, setDurationMode] = useState(() => loadedTreatmentPlan?.params?.durationMode || null); // null | "max" | "min"
+  const [contentType] = useState("activities");
+  const [durationMode, setDurationMode] = useState(() => loadedTreatmentPlan?.params?.durationMode || null);
   const [index, setIndex] = useState(0);
   const [plan, setPlan] = useState(() => {
-    const fallback = linkedSession?.treatmentPlanItems || linkedSession?.activities?.map((id) => ({ kind: "activity", id })) || loadedTreatmentPlan?.items || getDraftPlan();
-    if (view !== "session" || patientBoardId) return fallback;
-    const savedBoard = getGuestBoard(currentBoardDate);
-    return savedBoard ?? (searchParams.has("boardDate") ? [] : fallback);
+    if (view === "session" && !patientBoardId) return openGuestBoard(boardDate, hasDateParam);
+    if (view === "session" && patientBoardId && !patientBoardInDraft) return [];
+    return linkedSession?.treatmentPlanItems || linkedSession?.activities?.map((id) => ({ kind: "activity", id })) || loadedTreatmentPlan?.items || getDraftPlan();
   });
   const [title, setTitle] = useState(() => linkedSession?.title || loadedTreatmentPlan?.title || "");
   const [editingPlanId, setEditingPlanId] = useState(() => loadedTreatmentPlan?.id || null);
   const [saving, setSaving] = useState(false);
-  const [activeSessionItem, setActiveSessionItem] = useState(null); // index into plan, while "entered"
-  const [craftMode, setCraftMode] = useState(false);
   const [craftHave, setCraftHave] = useState(new Set());
   const [craftQuery, setCraftQuery] = useState("");
-  const therapistTabs = new Set(["search", "all", "creative", "game-making", "sensory", "movement", "social", "experiments", "recipes"]);
-  const [mainTab, setMainTab] = useState(therapistTabs.has(searchParams.get("tab")) ? searchParams.get("tab") : "search");
+  const [mainTab, setMainTab] = useState(THERAPIST_TABS.has(searchParams.get("tab")) ? searchParams.get("tab") : "search");
   const [creativeMode, setCreativeMode] = useState(searchParams.get("creativeMode") === "supplies" ? "supplies" : "browse");
-  const [experimentsMode, setExperimentsMode] = useState("browse"); // "browse" | "pantry"
+  const [experimentsMode, setExperimentsMode] = useState("browse");
   const [pantryHave, setPantryHave] = useState(new Set());
-  const [sessionGuide, setSessionGuide] = useState(null);
-  const [sessionTimerOpen, setSessionTimerOpen] = useState(false);
-  const [sessionPenActive, setSessionPenActive] = useState(false);
-  const [sessionDrawing, setSessionDrawing] = useState(() => patientBoardId ? [] : getGuestBoardDrawing(currentBoardDate));
-  const [sessionFullscreen, setSessionFullscreen] = useState(false);
-  const sessionPresentationRef = useRef(null);
-  const loadedBoardDateRef = useRef(currentBoardDate);
-  const cloudBoardReadyRef = useRef(false);
-  const skipCloudSaveRef = useRef(false);
-  const cloudSaveTimerRef = useRef(null);
-  const [cloudBoardLoading, setCloudBoardLoading] = useState(false);
-  const [cloudBoardStatus, setCloudBoardStatus] = useState(null);
-  const [cloudPatient, setCloudPatient] = useState(null);
-  const [cloudBoardDates, setCloudBoardDates] = useState([]);
+  const [nameQuery, setNameQuery] = useState("");
 
   useEffect(() => {
     setDraftPlan(plan);
-    if (view === "session" && !patientBoardId) saveGuestBoard(loadedBoardDateRef.current, plan);
   }, [plan]);
-
-  useEffect(() => {
-    if (view !== "session" || patientBoardId || loadedBoardDateRef.current === currentBoardDate) return;
-    loadedBoardDateRef.current = currentBoardDate;
-    setPlan(getGuestBoard(currentBoardDate) ?? []);
-    setSessionDrawing(getGuestBoardDrawing(currentBoardDate));
-    setSessionGuide(null);
-    setSessionTimerOpen(false);
-    setSessionPenActive(false);
-  }, [currentBoardDate, patientBoardId, view]);
-
-  useEffect(() => {
-    if (view !== "session" || !patientBoardId) {
-      cloudBoardReadyRef.current = false;
-      return undefined;
-    }
-    let cancelled = false;
-    cloudBoardReadyRef.current = false;
-    setCloudBoardLoading(true);
-    setCloudBoardStatus("loading");
-    Promise.all([loadPatientBoard(patientBoardId, currentBoardDate), listPatientBoardDates(patientBoardId)])
-      .then(([board, dates]) => {
-        if (cancelled) return;
-        loadedBoardDateRef.current = currentBoardDate;
-        skipCloudSaveRef.current = true;
-        setPlan(board.items);
-        setSessionDrawing(board.drawingData);
-        setCloudPatient(board.patient);
-        setCloudBoardDates([...new Set([...dates, currentBoardDate])].sort());
-        localStorage.setItem("boo_active_cloud_patient", JSON.stringify(board.patient));
-        setCloudBoardStatus("saved");
-        cloudBoardReadyRef.current = true;
-      })
-      .catch(() => {
-        if (!cancelled) setCloudBoardStatus("error");
-      })
-      .finally(() => {
-        if (!cancelled) setCloudBoardLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, [currentBoardDate, patientBoardId, view]);
-
-  useEffect(() => {
-    if (view !== "session" || !patientBoardId || !cloudBoardReadyRef.current) return undefined;
-    if (skipCloudSaveRef.current) {
-      skipCloudSaveRef.current = false;
-      return undefined;
-    }
-    window.clearTimeout(cloudSaveTimerRef.current);
-    setCloudBoardStatus("saving");
-    cloudSaveTimerRef.current = window.setTimeout(() => {
-      savePatientBoard(patientBoardId, currentBoardDate, plan)
-        .then(() => setCloudBoardStatus("saved"))
-        .catch(() => setCloudBoardStatus("error"));
-    }, 350);
-    return () => window.clearTimeout(cloudSaveTimerRef.current);
-  }, [currentBoardDate, patientBoardId, plan, view]);
 
   useEffect(() => {
     if (view === "session") return;
@@ -167,13 +125,14 @@ export default function TherapistBuild() {
     if (next.toString() !== searchParams.toString()) setSearchParams(next, { replace: true });
   }, [mainTab, creativeMode, view]);
 
+  // The search box by name starts empty for every list.
+  useEffect(() => { setNameQuery(""); }, [mainTab, creativeMode, experimentsMode]);
+
   useEffect(() => {
-    const onFullscreenChange = () => {
-      if (!document.fullscreenElement) setSessionFullscreen(false);
-    };
-    document.addEventListener("fullscreenchange", onFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
-  }, []);
+    if (view === "session") return undefined;
+    document.body.classList.add("therapist-build-search-page", "activities-two-column-page");
+    return () => document.body.classList.remove("therapist-build-search-page", "activities-two-column-page");
+  }, [view]);
 
   function toggleGoal(v) {
     setGoals((prev) => (prev.includes(v) ? prev.filter((g) => g !== v) : [...prev, v]));
@@ -184,13 +143,9 @@ export default function TherapistBuild() {
     if (contentType === "recipes") return RECIPES;
     if (contentType === "experiments") return EXPERIMENTS;
     const pool = allActivities().filter((a) => isSearchActive(a) && (a.audience === "therapist" || a.audience === "both"));
-    const filtered = durationMode
-      ? pool.filter((a) => (durationMode === "max" ? a.duration_min <= 15 : a.duration_min >= 15))
-      : pool;
+    const filtered = durationMode ? pool.filter((a) => (durationMode === "max" ? a.duration_min <= 15 : a.duration_min >= 15)) : pool;
     const expandedGoals = goals.length ? expandGoals(goals) : [];
-    const matching = expandedGoals.length
-      ? filtered.filter((activity) => scoreActivity(activity, expandedGoals) > 0)
-      : filtered;
+    const matching = expandedGoals.length ? filtered.filter((activity) => scoreActivity(activity, expandedGoals) > 0) : filtered;
     return [...matching].sort((a, b) => {
       const dateDiff = newestActivitiesFirst(a, b);
       if (dateDiff !== 0) return dateDiff;
@@ -200,94 +155,98 @@ export default function TherapistBuild() {
     });
   }, [goals, durationMode, contentType]);
 
-  const planActivityIds = useMemo(
-    () => new Set(plan.filter((p) => p.kind === "activity").map((p) => p.id)),
-    [plan],
-  );
+  const planActivityIds = useMemo(() => new Set(plan.filter((p) => p.kind === "activity").map((p) => p.id)), [plan]);
   const planRecipeIds = useMemo(() => new Set(plan.filter((p) => p.kind === "recipe").map((p) => p.id)), [plan]);
   const planExperimentIds = useMemo(() => new Set(plan.filter((p) => p.kind === "experiment").map((p) => p.id)), [plan]);
   const existingMotorTrail = useMemo(() => plan.find((p) => p.kind === "motor-trail"), [plan]);
 
-  const craftActivities = useMemo(
+  const creativeActivities = useMemo(
     () => allActivities().filter((a) => isSearchActive(a) && (a.audience === "therapist" || a.audience === "both") && a.tags?.includes("יצירה")),
     [],
   );
-  const craftResults = useMemo(() => matchByCraftSupplies(craftActivities, craftHave), [craftActivities, craftHave]);
+  const craftResults = useMemo(() => matchByCraftSupplies(creativeActivities, craftHave), [creativeActivities, craftHave]);
   const matchesCraftQuery = (activity) => {
-    const term = craftQuery.trim().toLowerCase();
-    if (!term) return true;
+    const query = craftQuery.trim().toLowerCase();
+    if (!query) return true;
     return [activity.title, activityTitle(activity, "en"), activity.short_description, activity.description, ...(activity.materials || []), ...(activity.tags || [])]
-      .filter(Boolean).some((value) => String(value).toLowerCase().includes(term));
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(query));
   };
   const searchedCraftResults = useMemo(() => craftResults.filter(({ activity }) => matchesCraftQuery(activity)), [craftResults, craftQuery]);
   function toggleCraftItem(key) {
     setCraftHave((prev) => {
       const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   }
 
-  const therapistActivities = useMemo(
-    () => allActivities().filter((a) => isSearchActive(a) && (a.audience === "therapist" || a.audience === "both")),
-    [],
-  );
-  function domainFilter(slug) {
-    const group = ACTIVITY_GROUPS[slug];
+  const therapistActivities = useMemo(() => allActivities().filter((a) => isSearchActive(a) && (a.audience === "therapist" || a.audience === "both")), []);
+  function activitiesForGroup(groupKey) {
+    const group = ACTIVITY_GROUPS[groupKey];
     if (!group) return [];
     const related = new Set(expandGoals(group.categories));
     return therapistActivities.filter((a) => [a.categories, a.goals, a.functions, a.tags].some((list) => list?.some((value) => related.has(value))));
   }
-  const sensoryResults = useMemo(() => domainFilter("sensory"), [therapistActivities]);
-  const movementResults = useMemo(() => domainFilter("movement"), [therapistActivities]);
-  const creativeBrowseResults = useMemo(() => domainFilter("creative"), [therapistActivities]);
+  const sensoryResults = useMemo(() => activitiesForGroup("sensory"), [therapistActivities]);
+  const movementResults = useMemo(() => activitiesForGroup("movement"), [therapistActivities]);
+  const creativeBrowseResults = useMemo(() => activitiesForGroup("creative"), [therapistActivities]);
   const searchedCreativeBrowseResults = useMemo(() => creativeBrowseResults.filter(matchesCraftQuery), [creativeBrowseResults, craftQuery]);
-  const gameMakingResults = useMemo(
-    () => GAME_MAKING_ACTIVITY_IDS.map((id) => therapistActivities.find((activity) => activity.id === id)).filter(Boolean),
-    [therapistActivities],
-  );
+  const gameMakingResults = useMemo(() => GAME_MAKING_ACTIVITY_IDS.map((id) => therapistActivities.find((a) => a.id === id)).filter(Boolean), [therapistActivities]);
   const socialGamesResults = useMemo(() => therapistActivities.filter((a) => a.tags?.includes("משחקי חברה")), [therapistActivities]);
 
   const pantryResults = useMemo(() => {
     return EXPERIMENTS.map((e) => {
-      const req = PANTRY_TAGS[e.id] || [];
-      const missing = req.filter((t) => !pantryHave.has(t));
+      const need = PANTRY_TAGS[e.id] || [];
+      const missing = need.filter((item) => !pantryHave.has(item));
       return { e, missing };
     }).sort((a, b) => a.missing.length - b.missing.length);
   }, [pantryHave]);
   function togglePantryItem(item) {
     setPantryHave((prev) => {
       const next = new Set(prev);
-      next.has(item) ? next.delete(item) : next.add(item);
+      if (next.has(item)) next.delete(item);
+      else next.add(item);
       return next;
     });
   }
 
-  const availableCandidates = useMemo(() => {
-    if (contentType === "recipes") return candidates.filter((c) => !planRecipeIds.has(c.id));
-    if (contentType === "experiments") return candidates.filter((c) => !planExperimentIds.has(c.id));
-    return candidates.filter((c) => !planActivityIds.has(c.id));
+  const remaining = useMemo(() => {
+    if (contentType === "recipes") return candidates.filter((r) => !planRecipeIds.has(r.id));
+    if (contentType === "experiments") return candidates.filter((e) => !planExperimentIds.has(e.id));
+    return candidates.filter((a) => !planActivityIds.has(a.id));
   }, [candidates, planActivityIds, planRecipeIds, planExperimentIds, contentType]);
+
   const displayed = useMemo(() => {
-    if (availableCandidates.length === 0) return [];
-    const count = Math.min(3, availableCandidates.length);
-    const picked = [];
-    for (let i = 0; i < count; i++) {
-      picked.push(availableCandidates[(index + i) % availableCandidates.length]);
-    }
-    return [...new Map(picked.map((a) => [a.id, a])).values()];
-  }, [availableCandidates, index]);
+    if (remaining.length === 0) return [];
+    const count = Math.min(3, remaining.length);
+    const list = [];
+    for (let i = 0; i < count; i++) list.push(remaining[(index + i) % remaining.length]);
+    return [...new Map(list.map((item) => [item.id, item])).values()];
+  }, [remaining, index]);
 
   function goToNext() {
-    if (availableCandidates.length === 0) return;
-    setIndex((i) => (i + 3) % availableCandidates.length);
+    if (remaining.length === 0) return;
+    setIndex((i) => (i + 3) % remaining.length);
+  }
+
+  // On a phone, after adding from the search page for the session board, show the plan panel.
+  function scrollToTreatmentPlan() {
+    if (!boardMode || !window.matchMedia("(max-width: 760px)").matches) return;
+    window.setTimeout(() => {
+      const panel = document.querySelector("[data-treatment-plan-panel]");
+      if (!panel) return;
+      panel.style.scrollMarginTop = "76px";
+      panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 120);
   }
 
   function handleAdd(item, kind = "activity") {
     if (!item) return;
-    const already =
-      kind === "activity" ? planActivityIds.has(item.id) : kind === "recipe" ? planRecipeIds.has(item.id) : planExperimentIds.has(item.id);
-    if (already) {
+    const alreadyInPlan = kind === "activity" ? planActivityIds.has(item.id) : kind === "recipe" ? planRecipeIds.has(item.id) : planExperimentIds.has(item.id);
+    scrollToTreatmentPlan();
+    if (alreadyInPlan) {
       toast.info(kind === "activity" ? "הפעילות כבר בתוכנית" : kind === "recipe" ? "המתכון כבר בתוכנית" : "הניסוי כבר בתוכנית");
       return;
     }
@@ -296,49 +255,27 @@ export default function TherapistBuild() {
     toast.success(kind === "activity" ? "נוספה לתוכנית הטיפול" : kind === "recipe" ? "המתכון נוסף לתוכנית" : "הניסוי נוסף לתוכנית");
   }
 
-  function handleRemove(item) {
-    setPlan((prev) =>
-      prev.filter((p) => {
-        if (item.kind === "activity" || item.kind === "recipe" || item.kind === "experiment") {
-          return !(p.kind === item.kind && p.id === item.id);
-        }
-        return p.uid !== item.uid; // motor-trail, photo, etc.
-      }),
-    );
+  function removeFromPlan(item) {
+    setPlan((prev) => prev.filter((p) => (item.kind === "activity" || item.kind === "recipe" || item.kind === "experiment" ? !(p.kind === item.kind && p.id === item.id) : p.uid !== item.uid)));
   }
 
-  function handlePhotoCapture(e) {
+  async function handlePhotoCapture(e) {
     const file = e.target.files?.[0];
-    e.target.value = ""; // allow capturing the same photo again later
+    e.target.value = "";
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const maxSize = 700;
-        const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-        const photo = { kind: "photo", uid: `photo-${Date.now()}`, image: dataUrl, label: t("תמונה", "Photo") };
-        const nextPlan = [...plan, photo];
-        replaceSessionPlan(nextPlan);
-        toast.success(t("התמונה נוספה ללוח המפגש", "The photo was added to the session board"));
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
+    try {
+      const image = await readPhotoFile(file, 700, 0.85);
+      setPlan((prev) => [...prev, { kind: "photo", uid: `photo-${Date.now()}`, image, label: "תמונה" }]);
+      toast.success("התמונה נוספה לתכנית הטיפול");
+    } catch { /* unreadable image */ }
   }
 
-  function moveItem(index, dir) {
+  function moveItem(itemIndex, dir) {
     setPlan((prev) => {
       const next = [...prev];
-      const target = index + dir;
+      const target = itemIndex + dir;
       if (target < 0 || target >= next.length) return prev;
-      [next[index], next[target]] = [next[target], next[index]];
+      [next[itemIndex], next[target]] = [next[target], next[itemIndex]];
       return next;
     });
   }
@@ -351,7 +288,7 @@ export default function TherapistBuild() {
 
   function handleSave() {
     if (!isSignedIn()) {
-      toast.error("יש להתחבר כדי לשמור את התוכנית");
+      navigate(`/auth?intent=plan&redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
       return;
     }
     if (!plan.length) {
@@ -361,34 +298,42 @@ export default function TherapistBuild() {
     setSaving(true);
     try {
       const planTitle = title || "מפגש טיפולי";
-      const planParams = { goals, durationMode, patientId: linkedPatient?.id || null, sessionId };
-      const savedPlan = editingPlanId
-        ? updateTreatmentPlan(editingPlanId, planTitle, plan, planParams)
-        : saveTreatmentPlan(planTitle, plan, planParams);
-      if (!savedPlan) {
+      const params = { goals, durationMode, patientId: linkedPatient?.id || null, sessionId };
+      const saved = editingPlanId ? updateTreatmentPlan(editingPlanId, planTitle, plan, params) : saveTreatmentPlan(planTitle, plan, params);
+      if (!saved) {
         toast.error("לא הצלחנו למצוא את התכנית לעדכון");
         return;
       }
       if (!editingPlanId) {
-        setEditingPlanId(savedPlan.id);
+        setEditingPlanId(saved.id);
         const next = new URLSearchParams(searchParams);
-        next.set("plan", savedPlan.id);
+        next.set("plan", saved.id);
         setSearchParams(next, { replace: true });
       }
-      if (sessionId) attachPlanToSession(sessionId, plan, { goals, durationMode, planId: savedPlan.id });
-      toast.success(
-        sessionId
-          ? `התוכנית נשמרה לטיפול של ${linkedPatient?.name || "המטופל"}`
-          : editingPlanId
-            ? "התכנית עודכנה!"
-            : "התכנית נשמרה!",
-      );
+      if (sessionId) attachPlanToSession(sessionId, plan, { goals, durationMode, planId: saved.id });
+      toast.success(sessionId ? `התוכנית נשמרה לטיפול של ${linkedPatient?.name || "המטופל"}` : editingPlanId ? "התכנית עודכנה!" : "התכנית נשמרה!");
     } finally {
       setSaving(false);
     }
   }
 
+  // "Start session" opens the board. On the search page for the session board it becomes
+  // "Add to session" and returns to the board of the same client and date.
   function startSession() {
+    if (boardMode) {
+      if (!patientBoardId && hasDateParam) saveGuestBoard(boardDate, plan);
+      const next = new URLSearchParams({ view: "session" });
+      if (hasDateParam) next.set("boardDate", boardDate);
+      if (patientBoardId) {
+        next.set("patientBoard", patientBoardId);
+        next.set("cloudBoardReady", "1");
+      } else {
+        next.set("guest", "1");
+      }
+      navigate(`/therapist/build?${next.toString()}`);
+      window.scrollTo(0, 0);
+      return;
+    }
     if (sessionId) startClinicSession(sessionId);
     const next = new URLSearchParams();
     next.set("view", "session");
@@ -396,18 +341,9 @@ export default function TherapistBuild() {
     if (linkedPatient?.id) next.set("patient", linkedPatient.id);
     setSearchParams(next);
   }
-  function endSession() {
-    setActiveSessionItem(null);
-    setSessionFullscreen(false);
-    if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => null);
-    const next = new URLSearchParams();
-    next.set("tab", "search");
-    if (sessionId) next.set("session", sessionId);
-    if (linkedPatient?.id) next.set("patient", linkedPatient.id);
-    setSearchParams(next);
-  }
+
   function finishSession() {
-    if (!sessionId) return endSession();
+    if (!sessionId) return;
     attachPlanToSession(sessionId, plan, { goals, durationMode });
     completeClinicSession(sessionId);
     toast.success("הטיפול הסתיים ונשמר ביומן");
@@ -415,687 +351,225 @@ export default function TherapistBuild() {
   }
 
   function toggleSessionItemCompleted(itemIndex) {
-    const nextPlan = plan.map((item, index) =>
-      index === itemIndex ? { ...item, completed: !item.completed } : item,
-    );
+    const nextPlan = plan.map((item, i) => (i === itemIndex ? { ...item, completed: !item.completed } : item));
     setPlan(nextPlan);
     if (sessionId) attachPlanToSession(sessionId, nextPlan, { goals, durationMode });
   }
 
-  function replaceSessionPlan(nextPlan) {
-    setPlan(nextPlan);
-    if (sessionId) attachPlanToSession(sessionId, nextPlan, { goals, durationMode });
-  }
+  const totalMinutes = plan.reduce((sum, p) => (p.kind === "activity" ? sum + (getActivity(p.id)?.duration_min ?? 0) : sum), 0);
 
-  function moveSessionItem(itemIndex, direction) {
-    const target = itemIndex + direction;
-    if (target < 0 || target >= plan.length) return;
-    const nextPlan = [...plan];
-    [nextPlan[itemIndex], nextPlan[target]] = [nextPlan[target], nextPlan[itemIndex]];
-    replaceSessionPlan(nextPlan);
-  }
-
-  function removeSessionItem(itemIndex) {
-    replaceSessionPlan(plan.filter((_, index) => index !== itemIndex));
-  }
-
-  function navigateBoard(date) {
-    const nextDate = normalizeBoardDate(date);
-    if (!patientBoardId) {
-      saveGuestBoard(currentBoardDate, plan);
-      loadedBoardDateRef.current = nextDate;
-      setPlan(getGuestBoard(nextDate) ?? []);
-      setSessionDrawing(getGuestBoardDrawing(nextDate));
-    }
-    const next = new URLSearchParams(searchParams);
-    next.set("view", "session");
-    next.set("boardDate", nextDate);
-    next.delete("planning");
-    setSearchParams(next);
-  }
-
-  async function copyGuestBoard(nextDate) {
-    if (patientBoardId) {
-      await savePatientBoard(patientBoardId, nextDate, plan, sessionDrawing);
-      setCloudBoardDates((dates) => [...new Set([...dates, nextDate])].sort());
-    } else {
-      saveGuestBoard(currentBoardDate, plan);
-      saveGuestBoard(nextDate, plan);
-      saveGuestBoardDrawing(nextDate, sessionDrawing);
-    }
-    navigateBoard(nextDate);
-    toast.success(t("הלוח שוכפל לשבוע הבא", "The board was copied to next week"));
-  }
-
-  function updateSessionDrawing(nextDrawing) {
-    setSessionDrawing(nextDrawing);
-    if (!patientBoardId) {
-      saveGuestBoardDrawing(currentBoardDate, nextDrawing);
-      return;
-    }
-    setCloudBoardStatus("saving");
-    savePatientBoard(patientBoardId, currentBoardDate, plan, nextDrawing)
-      .then(() => setCloudBoardStatus("saved"))
-      .catch(() => setCloudBoardStatus("error"));
-  }
-
-  async function addVisualSignToSession(sign) {
-    try {
-      const image = await renderVisualSign(sign, language);
-      const signItem = {
-        kind: "photo",
-        uid: `sign-${sign.id}-${Date.now()}`,
-        image,
-        label: localizedSignLabel(sign, language),
-        visualSign: sign.id,
-      };
-      const nextPlan = [...plan, signItem];
-      setPlan(nextPlan);
-      if (sessionId) attachPlanToSession(sessionId, nextPlan, { goals, durationMode });
-      toast.success(t("הסימן נוסף ללוח", "The sign was added to the board"));
-    } catch {
-      toast.error(t("לא הצלחנו להוסיף את הסימן", "We could not add the sign"));
-    }
-  }
-
-  async function toggleSessionFullscreen() {
-    if (sessionFullscreen) {
-      if (document.fullscreenElement && document.exitFullscreen) {
-        await document.exitFullscreen().catch(() => null);
-      }
-      setSessionFullscreen(false);
-      return;
-    }
-    const element = sessionPresentationRef.current;
-    if (element?.requestFullscreen) {
-      await element.requestFullscreen().catch(() => null);
-    }
-    setSessionFullscreen(true);
-  }
-
-  const totalMinutes = plan.reduce((sum, p) => {
-    if (p.kind === "activity") return sum + (getActivity(p.id)?.duration_min ?? 0);
-    return sum;
-  }, 0);
-
-  // ---------- Session (full-board) view ----------
   if (view === "session") {
-    const returnQuery = new URLSearchParams({ view: "session", boardDate: currentBoardDate });
-    if (sessionId) returnQuery.set("session", sessionId);
-    if (linkedPatient?.id) returnQuery.set("patient", linkedPatient.id);
-    if (patientBoardId) returnQuery.set("patientBoard", patientBoardId);
-    const returnPath = `/therapist/build?${returnQuery.toString()}`;
-    const addActivityQuery = new URLSearchParams({ tab: "search", returnTo: "session", returnPath });
-    if (sessionId) addActivityQuery.set("session", sessionId);
-    if (linkedPatient?.id) addActivityQuery.set("patient", linkedPatient.id);
-    if (patientBoardId) addActivityQuery.set("patientBoard", patientBoardId);
-    addActivityQuery.set("boardDate", currentBoardDate);
-    const motorTrailQuery = new URLSearchParams({ returnTo: "session", returnPath });
-
     return (
-      <AppShell mode="therapist" fullScreen>
-        <div ref={sessionPresentationRef} dir={language === "en" ? "ltr" : "rtl"} className={cn("session-board-presentation", sessionFullscreen && "is-fullscreen")}>
-        {sessionFullscreen && <button
-          type="button"
-          onClick={toggleSessionFullscreen}
-          aria-label={t("יציאה ממסך מלא", "Exit full screen")}
-          title={t("יציאה ממסך מלא", "Exit full screen")}
-          className={cn("session-fullscreen-close fixed top-3 z-[95] flex h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-white/95 shadow-lg backdrop-blur hover:bg-muted", language === "en" ? "right-3" : "left-3")}
-        >
-          <X className="h-6 w-6" />
-        </button>}
-        <SessionBoardDateNavigation date={currentBoardDate} language={language} savedDates={patientBoardId ? cloudBoardDates : guestBoardDates(currentBoardDate)} onNavigate={navigateBoard} onCopy={copyGuestBoard} />
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="font-display text-3xl font-black">{linkedPatient || cloudPatient ? t(`הטיפול של ${(linkedPatient || cloudPatient).name}`, `${(linkedPatient || cloudPatient).name}'s session`) : t("לוח המפגש", "Session board")}</h1>
-            <p className="mt-1 text-muted-foreground">{t("בחרי פעילות כדי להתחיל בה. אפשר לחזור ללוח בכל רגע.", "Choose an activity to begin. You can return to the board at any time.")}</p>
-            {patientBoardId && <p role="status" className={cn("mt-1 text-xs font-semibold", cloudBoardStatus === "error" ? "text-red-700" : "text-sage-foreground")}>{cloudBoardStatus === "loading" ? t("טוענת את הלוח…", "Loading board…") : cloudBoardStatus === "saving" ? t("שומרת בענן…", "Saving to cloud…") : cloudBoardStatus === "error" ? t("השמירה בענן נכשלה", "Cloud save failed") : t("נשמר בענן", "Saved to cloud")}</p>}
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex rounded-full border bg-white/90 p-0.5" aria-label={t("בחירת שפה", "Choose language")}>
-              <button type="button" className={cn("rounded-full px-3 py-1.5 text-xs", language === "he" ? "bg-foreground text-background" : "text-muted-foreground")} onClick={() => changeLanguage("he")}>עברית</button>
-              <button type="button" className={cn("rounded-full px-3 py-1.5 text-xs", language === "en" ? "bg-foreground text-background" : "text-muted-foreground")} onClick={() => changeLanguage("en")}>English</button>
-            </div>
-            <VisualSessionTimer language={language} open={sessionTimerOpen} onOpenChange={setSessionTimerOpen} hideTrigger />
-            <Button variant="outline" onClick={endSession} className="rounded-full">
-              <ArrowRight className="h-4 w-4" /> {t("חזרה לעריכת התוכנית", "Back to plan editing")}
-            </Button>
-            {sessionId && <Button onClick={finishSession} className="rounded-full bg-foreground text-background"><Save className="h-4 w-4" /> {t("סיום טיפול", "Finish session")}</Button>}
-          </div>
-        </div>
-
-        <SessionBoardActions
-          language={language}
-          addActivityHref={`/therapist/build?${addActivityQuery.toString()}`}
-          motorTrailHref={`/therapist/motor-trail?${motorTrailQuery.toString()}`}
-          onPhotoFile={handlePhotoCapture}
-          fullscreenActive={sessionFullscreen}
-          onToggleFullscreen={toggleSessionFullscreen}
-        />
-
-        <TherapistPostureScissorsTips language={language} hideTriggers openPanel={sessionGuide} onOpenPanelChange={setSessionGuide} />
-        <FullscreenBoardTools
-          language={language}
-          penActive={sessionPenActive}
-          onGuide={(guide) => { setSessionPenActive(false); setSessionGuide(guide); }}
-          onTimer={() => { setSessionPenActive(false); setSessionTimerOpen(true); }}
-          onPen={() => { setSessionTimerOpen(false); setSessionPenActive((value) => !value); }}
-          onAddSign={addVisualSignToSession}
-        />
-
-        <div className="relative">
-        <SessionBoardDrawing active={sessionPenActive} onActiveChange={setSessionPenActive} language={language} drawingData={sessionDrawing} onDrawingChange={updateSessionDrawing} />
-        {cloudBoardLoading ? <div className="rounded-3xl border border-border/60 bg-card p-10 text-center font-bold text-muted-foreground">{t("טוענת את לוח המטופל…", "Loading the client board…")}</div> : <ol className="space-y-3">
-          {plan.map((item, i) => {
-            const activity = item.kind === "activity" ? getActivity(item.id) : null;
-            const recipe = item.kind === "recipe" ? getRecipe(item.id) : null;
-            const experiment = item.kind === "experiment" ? getExperiment(item.id) : null;
-            const hero =
-              item.kind === "activity"
-                ? activityHero(item.id) || activity?.hero_image || (activity?.ai_generated ? "/icon-bank/manual/pencil-2.webp" : null)
-                : item.kind === "photo"
-                  ? item.image
-                  : item.kind === "recipe"
-                    ? recipe?.cover ?? null
-                    : item.kind === "experiment"
-                      ? experimentHero(item.id)
-                      : MOTOR_TRAIL_HERO;
-            const title2 =
-              item.kind === "activity"
-                ? activityTitle(activity, language) ?? t("פעילות", "Activity")
-                : item.kind === "photo"
-                  ? item.label || t("תמונה", "Image")
-                  : item.kind === "recipe"
-                    ? recipe?.title ?? t("מתכון", "Recipe")
-                    : item.kind === "experiment"
-                      ? experiment?.title ?? t("ניסוי", "Experiment")
-                      : t("מסלול מוטורי", "Motor trail");
-            const linkTo =
-              item.kind === "activity"
-                ? `/activity/${item.id}?${new URLSearchParams({ mode: "therapist", returnTo: "session", returnPath }).toString()}`
-                : item.kind === "motor-trail"
-                  ? `/therapist/motor-trail?${new URLSearchParams({ returnTo: "session", returnPath, edit: item.uid }).toString()}`
-                  : item.kind === "recipe"
-                    ? `/therapist/recipes?r=${item.id}`
-                    : item.kind === "experiment"
-                      ? `/therapist/experiments?e=${item.id}`
-                      : null;
-            const rowInner = (
-              <>
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sage/30 text-sm font-bold">
-                  {i + 1}
-                </span>
-                <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 sm:h-40 sm:w-40">
-                  {hero ? (
-                    <img
-                      src={hero}
-                      alt=""
-                      className={`max-h-full max-w-full drop-shadow-md ${item.kind === "photo" ? "h-full w-full object-cover" : "object-contain"}`}
-                    />
-                  ) : item.kind === "motor-trail" ? (
-                    <Route className="h-8 w-8 text-muted-foreground" />
-                  ) : item.kind === "recipe" ? (
-                    recipe?.coverIcon ? <recipe.coverIcon /> : <span className="text-4xl">{recipe?.coverEmoji ?? "🍳"}</span>
-                  ) : item.kind === "experiment" ? (
-                    <FlaskConical className="h-8 w-8 text-muted-foreground" />
-                  ) : (
-                    <span className="text-4xl">{activity ? activityEmoji(activity) : "✨"}</span>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-display text-base font-bold leading-snug">{title2}</h3>
-                  {item.kind === "motor-trail" && (
-                    <p className="mt-1 truncate text-xs text-muted-foreground">
-                      {item.equipment.map((eid) => motorTrailItem(eid, item)?.label).filter(Boolean).join(" · ")}
-                    </p>
-                  )}
-                </div>
-              </>
-            );
-            return (
-              <li
-                key={item.kind === "activity" || item.kind === "recipe" || item.kind === "experiment" ? `${item.kind}-${item.id}` : item.uid}
-                className={cn(
-                  "group relative overflow-hidden rounded-3xl border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md",
-                  item.completed ? "border-[#b7d8bd] bg-[#edf7ee]" : "border-border/60 bg-card",
-                )}
-              >
-                <div className="flex items-center gap-3 p-3">
-                  <div className="z-20 flex shrink-0 flex-col gap-1" aria-label={t("שינוי סדר הפעילות", "Change activity order")}>
-                    <button type="button" onClick={() => moveSessionItem(i, -1)} disabled={i === 0} aria-label={t("העלאת הפעילות למעלה", "Move activity up")} className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-muted-foreground shadow-sm hover:bg-muted disabled:opacity-30 sm:h-9 sm:w-9"><ChevronUp className="h-4 w-4" /></button>
-                    <button type="button" onClick={() => moveSessionItem(i, 1)} disabled={i === plan.length - 1} aria-label={t("הורדת הפעילות למטה", "Move activity down")} className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-muted-foreground shadow-sm hover:bg-muted disabled:opacity-30 sm:h-9 sm:w-9"><ChevronDown className="h-4 w-4" /></button>
-                    <button type="button" onClick={() => removeSessionItem(i)} aria-label={t("מחיקת הפעילות מלוח המפגש", "Remove activity from the session board")} className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-muted-foreground shadow-sm hover:bg-red-50 hover:text-red-700 sm:h-9 sm:w-9"><X className="h-4 w-4" /></button>
-                  </div>
-                  <button
-                    type="button"
-                    aria-pressed={Boolean(item.completed)}
-                    aria-label={item.completed ? t(`ביטול סימון ${title2} כפעילות שבוצעה`, `Mark ${title2} as not completed`) : t(`סימון ${title2} כפעילות שבוצעה`, `Mark ${title2} as completed`)}
-                    title={item.completed ? t("סומן כבוצע", "Completed") : t("סימון כבוצע", "Mark completed")}
-                    onClick={() => toggleSessionItemCompleted(i)}
-                    className={cn(
-                      "z-20 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border-2 bg-white shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage sm:h-9 sm:w-9",
-                      item.completed
-                        ? "border-[#7fb58a] bg-[#a9cfaa] text-[#234f35]"
-                        : "border-border text-transparent hover:border-[#9bc4a3] hover:bg-[#f3faf4]",
-                    )}
-                  >
-                    <Check className="h-5 w-5" strokeWidth={3} />
-                  </button>
-                  {linkTo ? (
-                  <Link to={linkTo} className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
-                    {rowInner}
-                  </Link>
-                ) : (
-                  <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
-                    {rowInner}
-                  </div>
-                )}
-                </div>
-              </li>
-            );
-          })}
-        </ol>}
-        </div>
-        </div>
-      </AppShell>
+      <SessionBoard
+        plan={plan}
+        setPlan={setPlan}
+        language={language}
+        t={t}
+        sessionId={sessionId}
+        linkedPatient={linkedPatient}
+        patientBoardId={patientBoardId}
+        patientBoardInDraft={patientBoardInDraft}
+        boardDate={boardDate}
+        hasDateParam={hasDateParam}
+        searchParams={searchParams}
+        onToggleCompleted={toggleSessionItemCompleted}
+        onFinishSession={finishSession}
+      />
     );
   }
 
   // ---------- Plan-building view ----------
+  const addLabel = boardMode ? t("הוסף למפגש", "Add to Session Plan") : t("הוסף לתכנית", "Add to Session Plan");
+  // Search by activity name above each list (hides the cards whose name does not match).
+  const nameVisible = (name) => matchesName(name, nameQuery);
+  const cardSearch = (titles, placement) => (titles.length > 0
+    ? <ActivityNameSearch key={placement} value={nameQuery} onChange={setNameQuery} shown={titles.filter(nameVisible).length} />
+    : null);
+  const activityTitles = (list) => list.map((activity) => activityTitle(activity, language));
+  const activityCards = (list) => list.map((activity) => (
+    <ActivityCandidateCard key={activity.id} activity={activity} addLabel={addLabel} boardMode={boardMode} hidden={!nameVisible(activityTitle(activity, language))} onAdd={() => handleAdd(activity, "activity")} />
+  ));
+
   return (
     <AppShell mode="therapist">
       <div className="mb-4">
-        <h1 className="font-display text-3xl font-black">{t("בנה לוח למפגש טיפולי", "Build a Therapy Session Board")}</h1>
+        {/* The live site shows "לוח המפגש" as the Hebrew heading here as well. */}
+        <h1 className="font-display text-3xl font-black">{t("לוח המפגש", "Build a structured visual schedule for a session")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t("בחרו תחום התפתחות וזמן, ותכננו מפגש מובנה.", "Choose a skill area and session length to find activities that support your therapy goals.")}</p>
         {linkedPatient && <p className="mt-1 font-bold text-sage-foreground">{t("עבור", "For")} {linkedPatient.name}{linkedSession ? ` · ${linkedSession.date} · ${linkedSession.time || t("שעה לא נקבעה", "Time not set")}` : ""}</p>}
       </div>
 
       <TherapistPostureScissorsTips />
 
       <div className="grid gap-6 lg:grid-cols-[180px_1fr_320px]">
-        {/* ---------- right-side tab menu ---------- */}
         <div className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
-          <SideTabBtn active={mainTab === "search"} onClick={() => setMainTab("search")}>
-            {t("מנוע חיפוש", "Activity search")}
-          </SideTabBtn>
-          <SideTabBtn active={mainTab === "all"} onClick={() => setMainTab("all")}>
-            כל הפעילויות
-          </SideTabBtn>
-          <SideTabBtn active={mainTab === "creative"} onClick={() => setMainTab("creative")}>
-            🎨 פעילויות יצירה
-          </SideTabBtn>
-          <SideTabBtn active={mainTab === "game-making"} onClick={() => setMainTab("game-making")}>
-            🧩 הכנת משחקים
-          </SideTabBtn>
-          <SideTabBtn active={mainTab === "sensory"} onClick={() => setMainTab("sensory")}>
-            🌈 פעילויות סנסוריות
-          </SideTabBtn>
-          <SideTabBtn active={mainTab === "movement"} onClick={() => setMainTab("movement")}>
-            🤸 פעילויות תנועה
-          </SideTabBtn>
-          <SideTabBtn active={mainTab === "social"} onClick={() => setMainTab("social")}>
-            🎉 משחקי חברה
-          </SideTabBtn>
-          <SideTabBtn active={mainTab === "experiments"} onClick={() => setMainTab("experiments")}>
-            ניסויים
-          </SideTabBtn>
-          <SideTabBtn active={mainTab === "recipes"} onClick={() => setMainTab("recipes")}>
-            מתכונים
-          </SideTabBtn>
+          <SideTabBtn active={mainTab === "search"} onClick={() => setMainTab("search")}>{t("מנוע חיפוש", "Find Activities")}</SideTabBtn>
+          <SideTabBtn active={mainTab === "all"} onClick={() => setMainTab("all")}>כל הפעילויות</SideTabBtn>
+          <SideTabBtn active={mainTab === "creative"} onClick={() => setMainTab("creative")}>🎨 פעילויות יצירה</SideTabBtn>
+          <SideTabBtn active={mainTab === "game-making"} onClick={() => setMainTab("game-making")}>🧩 הכנת משחקים</SideTabBtn>
+          <SideTabBtn active={mainTab === "sensory"} onClick={() => setMainTab("sensory")}>🌈 פעילויות סנסוריות</SideTabBtn>
+          <SideTabBtn active={mainTab === "movement"} onClick={() => setMainTab("movement")}>🤸 פעילויות תנועה</SideTabBtn>
+          <SideTabBtn active={mainTab === "social"} onClick={() => setMainTab("social")}>🎉 משחקי חברה</SideTabBtn>
+          <SideTabBtn active={mainTab === "experiments"} onClick={() => setMainTab("experiments")}>ניסויים</SideTabBtn>
+          <SideTabBtn active={mainTab === "recipes"} onClick={() => setMainTab("recipes")}>מתכונים</SideTabBtn>
         </div>
 
-        {/* ---------- main area: filters + one activity at a time ---------- */}
         <div className="space-y-6">
           {mainTab === "search" ? (
-          <div className="space-y-5 rounded-3xl border border-border/60 bg-card p-6">
-            <div>
-              <Label className="mb-2 block">{t("מטרות טיפוליות", "Therapy goals")}</Label>
+            <div className="space-y-5 rounded-3xl border border-border/60 bg-card p-6">
+              <div>
+                <Label className="mb-2 block">{t("תחום התפתחות", "Skill Area")}</Label>
                 <div className="flex flex-wrap gap-2">
                   {THERAPIST_GOALS.map((g) => (
-                    <button
-                      key={g}
-                      onClick={() => toggleGoal(g)}
-                      className={cn(
-                        "inline-flex min-h-10 items-center gap-1.5 rounded-full border px-2.5 py-1 text-sm",
-                        goals.includes(g) ? "border-primary bg-primary text-primary-foreground" : "border-border",
-                      )}
-                    >
-                      <img
-                        src={therapistGoalIcon(g)}
-                        alt=""
-                        aria-hidden="true"
-                        className="h-7 w-7 shrink-0 rounded-full bg-white object-contain"
-                      />
+                    <button key={g} onClick={() => toggleGoal(g)} className={cn("inline-flex min-h-10 items-center gap-1.5 rounded-full border px-2.5 py-1 text-sm", goals.includes(g) ? "border-primary bg-primary text-primary-foreground" : "border-border", boardMode && "meeting-development-chip")}>
+                      <img src={therapistGoalIcon(g)} alt="" aria-hidden="true" className="h-7 w-7 shrink-0 rounded-full bg-white object-contain" />
                       {translatedTerm(g, language)}
                     </button>
                   ))}
                 </div>
-            </div>
-
-            <div>
-                <Label className="mb-2 block">{t("משך הפעילות", "Activity duration")}</Label>
+              </div>
+              <div>
+                <Label className="mb-2 block">{t("משך הפעילות", "Activity Length")}</Label>
                 <div className="flex flex-wrap gap-2">
                   {DURATIONS.map((d) => (
-                    <button
-                      key={d.mode}
-                      onClick={() => {
-                        setDurationMode(durationMode === d.mode ? null : d.mode);
-                        setIndex(0);
-                      }}
-                      className={cn(
-                        "rounded-full border px-4 py-1.5 text-sm",
-                        durationMode === d.mode ? "border-primary bg-primary text-primary-foreground" : "border-border",
-                      )}
-                    >
+                    <button key={d.mode} onClick={() => { setDurationMode(durationMode === d.mode ? null : d.mode); setIndex(0); }} className={cn("rounded-full border px-4 py-1.5 text-sm", durationMode === d.mode ? "border-primary bg-primary text-primary-foreground" : "border-border")}>
                       {translatedTerm(d.label, language)}
                     </button>
                   ))}
                 </div>
+              </div>
             </div>
-          </div>
           ) : null}
 
-          {/* ---------- 3 suggested items ---------- */}
-          {mainTab === "search" && (
-          displayed.length > 0 ? (
+          {mainTab === "search" && (displayed.length > 0 ? (
             <div>
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <h2 className="font-display text-lg font-bold">
-                  {contentType === "recipes" ? t("מתכונים מתאימים", "Matching recipes") : contentType === "experiments" ? t("ניסויים מתאימים", "Matching experiments") : t("פעילויות מתאימות", "Matching activities")}
-                </h2>
+                <h2 className="font-display text-lg font-bold">{contentType === "recipes" ? t("מתכונים מתאימים", "Matching recipes") : contentType === "experiments" ? t("ניסויים מתאימים", "Matching experiments") : t("פעילויות מתאימות", "Matching Activities")}</h2>
                 <Button variant="outline" onClick={goToNext} className="rounded-full">
                   <Shuffle className="h-4 w-4" /> 3 {contentType === "recipes" ? t("מתכונים אחרים", "Other recipes") : contentType === "experiments" ? t("ניסויים אחרים", "Other experiments") : t("פעילויות אחרות", "Other activities")}
                 </Button>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {displayed.map((item) => {
-                  if (contentType === "recipes") {
-                    return (
-                      <div key={item.id} className="flex flex-col overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm">
-                        <div className="flex h-40 items-center justify-center bg-white">
-                          {item.cover ? (
-                            <div className="flex h-28 w-28 items-center justify-center">
-                              <img src={item.cover} alt="" className="max-h-full max-w-full object-contain" />
-                            </div>
-                          ) : item.coverIcon ? (
-                            <div className="h-20 w-20"><item.coverIcon /></div>
-                          ) : (
-                            <span className="text-6xl">{item.coverEmoji ?? "🍳"}</span>
-                          )}
-                        </div>
-                        <div className="flex flex-1 flex-col p-4">
-                          <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-                            <h3 className="font-display text-base font-bold leading-snug">{item.title}</h3>
-                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                              <Clock className="h-3 w-3" /> {item.duration}
-                            </span>
-                          </div>
-                          <div className="mt-auto flex flex-wrap items-center gap-2">
-                            <Button onClick={() => handleAdd(item, "recipe")} size="sm" className="rounded-full bg-sage text-sage-foreground">
-                              <Plus className="h-3.5 w-3.5" /> הוסף לתכנית
-                            </Button>
-                            <Link
-                              to={`/therapist/recipes?r=${item.id}`}
-                              className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"
-                            >
-                              <ExternalLink className="h-3 w-3" /> צפייה מלאה
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }
-                  if (contentType === "experiments") {
-                    return (
-                      <div key={item.id} className="flex flex-col overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm">
-                        <div className="flex h-40 items-center justify-center bg-white p-3">
-                          <img src={experimentHero(item.id)} alt="" className="max-h-full max-w-full object-contain" />
-                        </div>
-                        <div className="flex flex-1 flex-col p-4">
-                          <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-                            <h3 className="font-display text-base font-bold leading-snug">{item.title}</h3>
-                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                              <Clock className="h-3 w-3" /> {item.time}
-                            </span>
-                          </div>
-                          <div className="mt-auto flex flex-wrap items-center gap-2">
-                            <Button onClick={() => handleAdd(item, "experiment")} size="sm" className="rounded-full bg-sage text-sage-foreground">
-                              <Plus className="h-3.5 w-3.5" /> הוסף לתכנית
-                            </Button>
-                            <Link
-                              to={`/therapist/experiments?e=${item.id}`}
-                              className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"
-                            >
-                              <ExternalLink className="h-3 w-3" /> צפייה מלאה
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }
-                  const activity = item;
-                  return (
-                    <div key={activity.id} className="flex flex-col overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm">
-                      <div className="flex h-40 items-center justify-center bg-white">
-                        {activityHero(activity.id) || activity.hero_image ? (
-                          <div className="flex h-28 w-28 items-center justify-center">
-                            <img src={activityHero(activity.id) || activity.hero_image} alt="" className="max-h-full max-w-full object-contain" />
-                          </div>
-                        ) : activity.ai_generated ? (
-                          <img src="/icon-bank/manual/pencil-2.webp" alt="" className="h-24 w-24 object-contain" />
-                        ) : (
-                          <span className="text-6xl">{activityEmoji(activity)}</span>
-                        )}
-                      </div>
-                      <div className="flex flex-1 flex-col p-4">
-                        <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-                          <h3 className="font-display text-base font-bold leading-snug">{activityTitle(activity, language)}</h3>
-                          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                            <Clock className="h-3 w-3" /> {activity.duration_min}+ {t("דק'", "min")}
-                          </span>
-                        </div>
-                        <div className="mt-auto flex flex-wrap items-center gap-2">
-                          <Button onClick={() => handleAdd(activity, "activity")} size="sm" className="rounded-full bg-sage text-sage-foreground">
-                            <Plus className="h-3.5 w-3.5" /> הוסף לתכנית
-                          </Button>
-                          <Link
-                            to={`/activity/${activity.id}`}
-                            className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"
-                          >
-                            <ExternalLink className="h-3 w-3" /> צפייה מלאה
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+              {cardSearch(activityTitles(displayed), "search")}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">
+                {displayed.map((activity) => (
+                  <SuggestedActivityCard key={activity.id} activity={activity} language={language} t={t} addLabel={addLabel} boardMode={boardMode} hidden={!nameVisible(activityTitle(activity, language))} onAdd={() => handleAdd(activity, "activity")} />
+                ))}
               </div>
             </div>
           ) : (
             <div className="rounded-3xl border border-dashed border-border p-10 text-center text-muted-foreground">
-              {contentType === "recipes"
-                ? "כל המתכונים כבר בתוכנית."
-                : contentType === "experiments"
-                  ? "כל הניסויים כבר בתוכנית."
-                  : "לא נמצאו פעילויות תואמות לסינון שבחרת. נסי גיל אחר, פחות מטרות, או משך זמן אחר."}
+              {contentType === "recipes" ? "כל המתכונים כבר בתוכנית." : contentType === "experiments" ? "כל הניסויים כבר בתוכנית." : "לא נמצאו פעילויות תואמות לסינון שבחרת. נסי גיל אחר, פחות מטרות, או משך זמן אחר."}
             </div>
-          )
-          )}
+          ))}
 
           {mainTab === "all" ? (
             <div>
               <p className="mb-3 text-sm text-muted-foreground">כל הפעילויות בבנק, בלי סינון - {therapistActivities.length} בסך הכל.</p>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {therapistActivities.map((activity) => (
-                  <ActivityCandidateCard key={activity.id} activity={activity} onAdd={() => handleAdd(activity, "activity")} />
-                ))}
-              </div>
+              {cardSearch(activityTitles(therapistActivities), "all")}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">{activityCards(therapistActivities)}</div>
             </div>
           ) : mainTab === "creative" ? (
             <div>
               <div className="mb-6 inline-flex flex-wrap rounded-full bg-muted p-1">
-                <SmallTabBtn active={creativeMode === "browse"} onClick={() => setCreativeMode("browse")}>
-                  כל פעילויות היצירה
-                </SmallTabBtn>
-                <SmallTabBtn active={creativeMode === "supplies"} onClick={() => setCreativeMode("supplies")}>
-                  לפי חומרי יצירה שיש לי
-                </SmallTabBtn>
+                <SmallTabBtn active={creativeMode === "browse"} onClick={() => setCreativeMode("browse")}>כל פעילויות היצירה</SmallTabBtn>
+                <SmallTabBtn active={creativeMode === "supplies"} onClick={() => setCreativeMode("supplies")}>לפי חומרי יצירה שיש לי</SmallTabBtn>
               </div>
-
               <div className="relative mb-5">
                 <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input value={craftQuery} onChange={(event) => setCraftQuery(event.target.value)} placeholder="חיפוש יצירה לפי שם, חומר או מילת מפתח..." className="pr-9" />
               </div>
-
               {creativeMode === "browse" ? (
-                searchedCreativeBrowseResults.length ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {searchedCreativeBrowseResults.map((activity) => (
-                    <ActivityCandidateCard key={activity.id} activity={activity} onAdd={() => handleAdd(activity, "activity")} />
-                  ))}
-                </div> : <div className="rounded-3xl border border-dashed border-border p-10 text-center text-muted-foreground">לא נמצאו יצירות שמתאימות לחיפוש.</div>
+                searchedCreativeBrowseResults.length ? (
+                  <>
+                    {cardSearch(activityTitles(searchedCreativeBrowseResults), "creative")}
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">{activityCards(searchedCreativeBrowseResults)}</div>
+                  </>
+                ) : <div className="rounded-3xl border border-dashed border-border p-10 text-center text-muted-foreground">לא נמצאו יצירות שמתאימות לחיפוש.</div>
               ) : (
                 <div>
                   <div className="mb-6 rounded-3xl border border-border/60 bg-background p-5">
-                    <p className="mb-3 text-sm text-muted-foreground">
-                      סמני את החומרים שיש לך בקליניקה או בבית, ונציג פעילויות יצירה - מהקרובה ביותר להכנה מיידית ועד הרחוקה יותר.
-                    </p>
+                    <p className="mb-3 text-sm text-muted-foreground">סמני את החומרים שיש לך בקליניקה או בבית, ונציג פעילויות יצירה - מהקרובה ביותר להכנה מיידית ועד הרחוקה יותר.</p>
                     <div className="flex flex-wrap gap-2">
                       {CRAFT_SUPPLIES.map((s) => (
-                        <button
-                          key={s.key}
-                          onClick={() => toggleCraftItem(s.key)}
-                          className={cn(
-                            "rounded-full border px-3 py-1.5 text-sm",
-                            craftHave.has(s.key) ? "border-primary bg-primary text-primary-foreground" : "border-border",
-                          )}
-                        >
-                          {s.label}
-                        </button>
+                        <button key={s.key} onClick={() => toggleCraftItem(s.key)} className={cn("rounded-full border px-3 py-1.5 text-sm", craftHave.has(s.key) ? "border-primary bg-primary text-primary-foreground" : "border-border")}>{s.label}</button>
                       ))}
                     </div>
                   </div>
-
                   {searchedCraftResults.length ? (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                      {searchedCraftResults.map(({ activity, missing }) => (
-                        <div key={activity.id} className="relative">
-                          {craftHave.size > 0 ? (
-                            <span
-                              className={cn(
-                                "absolute -top-2 right-3 z-10 rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow-sm",
-                                missing.length === 0 ? "bg-sage text-sage-foreground" : "bg-butter text-foreground/80",
-                              )}
-                            >
-                              {missing.length === 0 ? "יש לך הכל! ✓" : `חסר ${missing.length} פריטים`}
-                            </span>
-                          ) : null}
-                          <ActivityCandidateCard activity={activity} onAdd={() => handleAdd(activity, "activity")} />
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="rounded-3xl border border-dashed border-border p-10 text-center text-muted-foreground">
-                      לא מצאנו פעילויות יצירה מתאימות כרגע.
-                    </div>
-                  )}
+                    <>
+                      {cardSearch(activityTitles(searchedCraftResults.map((r) => r.activity)), "supplies")}
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {searchedCraftResults.map(({ activity, missing }) => (
+                          <div key={activity.id} className="relative" hidden={!nameVisible(activityTitle(activity, language))}>
+                            {craftHave.size > 0 ? <span className={cn("absolute -top-2 right-3 z-10 rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow-sm", missing.length === 0 ? "bg-sage text-sage-foreground" : "bg-butter text-foreground/80")}>{missing.length === 0 ? "יש לך הכל! ✓" : `חסר ${missing.length} פריטים`}</span> : null}
+                            <ActivityCandidateCard activity={activity} addLabel={addLabel} boardMode={boardMode} onAdd={() => handleAdd(activity, "activity")} />
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : <div className="rounded-3xl border border-dashed border-border p-10 text-center text-muted-foreground">לא מצאנו פעילויות יצירה מתאימות כרגע.</div>}
                 </div>
               )}
             </div>
           ) : mainTab === "game-making" ? (
             <div>
               <p className="mb-3 text-sm text-muted-foreground">פעילויות שבהן מכינים משחק שאפשר להמשיך לשחק בו.</p>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {gameMakingResults.map((activity) => (
-                  <ActivityCandidateCard key={activity.id} activity={activity} onAdd={() => handleAdd(activity, "activity")} />
-                ))}
-              </div>
+              {cardSearch(activityTitles(gameMakingResults), "game-making")}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">{activityCards(gameMakingResults)}</div>
             </div>
           ) : mainTab === "sensory" ? (
             <div>
               <p className="mb-3 text-sm text-muted-foreground">{sensoryResults.length} פעילויות סנסוריות.</p>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {sensoryResults.map((activity) => (
-                  <ActivityCandidateCard key={activity.id} activity={activity} onAdd={() => handleAdd(activity, "activity")} />
-                ))}
-              </div>
+              {cardSearch(activityTitles(sensoryResults), "sensory")}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">{activityCards(sensoryResults)}</div>
             </div>
           ) : mainTab === "movement" ? (
             <div>
               <p className="mb-3 text-sm text-muted-foreground">{movementResults.length} פעילויות תנועה.</p>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {movementResults.map((activity) => (
-                  <ActivityCandidateCard key={activity.id} activity={activity} onAdd={() => handleAdd(activity, "activity")} />
-                ))}
-              </div>
+              {cardSearch(activityTitles(movementResults), "movement")}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">{activityCards(movementResults)}</div>
             </div>
           ) : mainTab === "social" ? (
             <div>
               <p className="mb-3 text-sm text-muted-foreground">משחקי חצר וחברה קלאסיים - {socialGamesResults.length} משחקים.</p>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {socialGamesResults.map((activity) => (
-                  <ActivityCandidateCard key={activity.id} activity={activity} onAdd={() => handleAdd(activity, "activity")} />
-                ))}
-              </div>
+              {cardSearch(activityTitles(socialGamesResults), "social")}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">{activityCards(socialGamesResults)}</div>
             </div>
           ) : mainTab === "experiments" ? (
             <div>
               <div className="mb-6 inline-flex flex-wrap rounded-full bg-muted p-1">
-                <SmallTabBtn active={experimentsMode === "browse"} onClick={() => setExperimentsMode("browse")}>
-                  כל הניסויים
-                </SmallTabBtn>
-                <SmallTabBtn active={experimentsMode === "pantry"} onClick={() => setExperimentsMode("pantry")}>
-                  לפי מה שיש לי בבית
-                </SmallTabBtn>
+                <SmallTabBtn active={experimentsMode === "browse"} onClick={() => setExperimentsMode("browse")}>כל הניסויים</SmallTabBtn>
+                <SmallTabBtn active={experimentsMode === "pantry"} onClick={() => setExperimentsMode("pantry")}>לפי מה שיש לי בבית</SmallTabBtn>
               </div>
-
               {experimentsMode === "browse" ? (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {EXPERIMENTS.map((item) => (
-                    <ExperimentCandidateCard key={item.id} item={item} onAdd={() => handleAdd(item, "experiment")} />
-                  ))}
-                </div>
+                <>
+                  {cardSearch(EXPERIMENTS.map((e) => e.title), "experiments")}
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">
+                    {EXPERIMENTS.map((item) => <ExperimentCandidateCard key={item.id} item={item} addLabel={addLabel} boardMode={boardMode} hidden={!nameVisible(item.title)} onAdd={() => handleAdd(item, "experiment")} />)}
+                  </div>
+                </>
               ) : (
                 <div>
                   <div className="mb-6 space-y-3 rounded-3xl border border-border/60 bg-background p-5">
                     <p className="mb-1 text-sm text-muted-foreground">סמני מה יש בקליניקה או בבית, ונבנה רשימת ניסויים אפשרית.</p>
                     {PANTRY_CATEGORIES.map((cat) => (
                       <div key={cat.key}>
-                        <div className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-                          <span aria-hidden>{cat.emoji}</span>
-                          {cat.label}
-                        </div>
+                        <div className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground"><span aria-hidden>{cat.emoji}</span>{cat.label}</div>
                         <div className="flex flex-wrap gap-2">
                           {cat.items.map((it) => (
-                            <button
-                              key={it}
-                              onClick={() => togglePantryItem(it)}
-                              className={cn(
-                                "rounded-full border px-3 py-1.5 text-sm",
-                                pantryHave.has(it) ? "border-primary bg-primary text-primary-foreground" : "border-border",
-                              )}
-                            >
-                              {it}
-                            </button>
+                            <button key={it} onClick={() => togglePantryItem(it)} className={cn("rounded-full border px-3 py-1.5 text-sm", pantryHave.has(it) ? "border-primary bg-primary text-primary-foreground" : "border-border")}>{it}</button>
                           ))}
                         </div>
                       </div>
                     ))}
                   </div>
-
                   <h2 className="mb-3 font-display text-lg font-bold">{pantryHave.size > 0 ? "מה אפשר להכין עם מה שיש לך" : "כל הניסויים"}</h2>
+                  {cardSearch(pantryResults.map((r) => r.e.title), "pantry")}
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {pantryResults.map(({ e, missing }) => (
-                      <div key={e.id} className="relative">
-                        {pantryHave.size > 0 ? (
-                          <span
-                            className={cn(
-                              "absolute -top-2 right-3 z-10 rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow-sm",
-                              missing.length === 0 ? "bg-sage text-sage-foreground" : "bg-butter text-foreground/80",
-                            )}
-                          >
-                            {missing.length === 0 ? "יש לך הכל! ✓" : `חסר ${missing.length} פריטים`}
-                          </span>
-                        ) : null}
-                        <ExperimentCandidateCard item={e} onAdd={() => handleAdd(e, "experiment")} />
+                      <div key={e.id} className="relative" hidden={!nameVisible(e.title)}>
+                        {pantryHave.size > 0 ? <span className={cn("absolute -top-2 right-3 z-10 rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow-sm", missing.length === 0 ? "bg-sage text-sage-foreground" : "bg-butter text-foreground/80")}>{missing.length === 0 ? "יש לך הכל! ✓" : `חסר ${missing.length} פריטים`}</span> : null}
+                        <ExperimentCandidateCard item={e} addLabel={addLabel} boardMode={boardMode} onAdd={() => handleAdd(e, "experiment")} />
                       </div>
                     ))}
                   </div>
@@ -1105,113 +579,65 @@ export default function TherapistBuild() {
           ) : mainTab === "recipes" ? (
             <div>
               <p className="mb-3 text-sm text-muted-foreground">כל המתכונים בבנק, בלי סינון - {RECIPES.length} בסך הכל.</p>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {RECIPES.map((item) => (
-                  <RecipeCandidateCard key={item.id} item={item} onAdd={() => handleAdd(item, "recipe")} />
-                ))}
+              {cardSearch(RECIPES.map((r) => r.title), "recipes")}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">
+                {RECIPES.map((item) => <RecipeCandidateCard key={item.id} item={item} addLabel={addLabel} boardMode={boardMode} hidden={!nameVisible(item.title)} onAdd={() => handleAdd(item, "recipe")} />)}
               </div>
             </div>
           ) : null}
         </div>
 
         {/* ---------- plan sidebar ---------- */}
-        <aside className="h-fit space-y-4 rounded-3xl border border-border/60 bg-card p-5 lg:sticky lg:top-6">
+        <aside data-treatment-plan-panel="" className="h-fit space-y-4 rounded-3xl border border-border/60 bg-card p-5 lg:sticky lg:top-6">
           <div>
             <h2 className="font-display text-lg font-bold">תכנית הטיפול</h2>
-            <p className="text-sm text-muted-foreground">
-              {plan.length} פריטים{totalMinutes ? ` · ${totalMinutes}+ דק' סה"כ` : ""}
-            </p>
+            <p className="text-sm text-muted-foreground">{plan.length} פריטים{totalMinutes ? ` · ${totalMinutes}+ דק' סה"כ` : ""}</p>
           </div>
-
-          <Link
-            to={`/therapist/motor-trail?returnTo=plan${existingMotorTrail ? `&edit=${existingMotorTrail.uid}` : ""}`}
-            className="flex items-center gap-2 rounded-2xl border border-dashed border-sage/50 bg-sage/5 px-3 py-2.5 text-foreground transition-colors hover:bg-sage/10"
-          >
+          <Link to={`/therapist/motor-trail?returnTo=plan${existingMotorTrail ? `&edit=${existingMotorTrail.uid}` : ""}`} className="flex items-center gap-2 rounded-2xl border border-dashed border-sage/50 bg-sage/5 px-3 py-2.5 text-foreground transition-colors hover:bg-sage/10">
             <Route className="h-4 w-4 shrink-0 text-sage-foreground" />
             <span className="flex-1 text-sm font-medium">{existingMotorTrail ? "עריכת מסלול מוטורי" : "הוספת מסלול מוטורי"}</span>
             <ExternalLink className="h-3.5 w-3.5 shrink-0 text-sage-foreground" />
           </Link>
-
           <label className="flex cursor-pointer items-center gap-2 rounded-2xl border border-dashed border-sage/50 bg-sage/5 px-3 py-2.5 text-foreground transition-colors hover:bg-sage/10">
             <Camera className="h-4 w-4 shrink-0 text-sage-foreground" />
             <span className="flex-1 text-sm font-medium">צילום תמונה והוספה לתכנית</span>
             <input type="file" accept="image/*" capture="environment" onChange={handlePhotoCapture} className="hidden" />
           </label>
-
           {plan.length === 0 ? (
-            <p className="rounded-2xl bg-muted/50 p-4 text-sm text-muted-foreground">
-              עדיין לא הוספת פעילויות. לחצי על "הוסף לתכנית הטיפול" כדי להתחיל.
-            </p>
+            <p className="rounded-2xl bg-muted/50 p-4 text-sm text-muted-foreground">עדיין לא הוספת פעילויות. לחצי על "הוסף לתכנית הטיפול" כדי להתחיל.</p>
           ) : (
             <ul className="space-y-2">
               {plan.map((item, i) => {
                 const activity = item.kind === "activity" ? getActivity(item.id) : null;
                 const recipe = item.kind === "recipe" ? getRecipe(item.id) : null;
                 const experiment = item.kind === "experiment" ? getExperiment(item.id) : null;
-                const hero =
-                  item.kind === "activity"
-                    ? activityHero(item.id) || activity?.hero_image || (activity?.ai_generated ? "/icon-bank/manual/pencil-2.webp" : null)
-                    : item.kind === "photo"
-                      ? item.image
-                      : item.kind === "recipe"
-                        ? recipe?.cover ?? null
-                        : item.kind === "experiment"
-                          ? experimentHero(item.id)
-                          : motorTrailItem(item.equipment?.[0], item)?.image;
-                const rowKey =
-                  item.kind === "activity" || item.kind === "recipe" || item.kind === "experiment" ? `${item.kind}-${item.id}` : item.uid;
-                const linkTo =
-                  item.kind === "motor-trail"
-                    ? `/therapist/motor-trail?returnTo=plan&edit=${item.uid}`
-                    : item.kind === "recipe"
-                      ? `/therapist/recipes?r=${item.id}`
-                      : item.kind === "experiment"
-                        ? `/therapist/experiments?e=${item.id}`
-                        : null;
+                const hero = item.kind === "activity"
+                  ? activityHero(item.id) || activity?.hero_image || (activity?.ai_generated ? "/icon-bank/manual/pencil-2.webp" : null)
+                  : item.kind === "photo" ? item.image
+                    : item.kind === "recipe" ? recipe?.cover ?? null
+                      : item.kind === "experiment" ? experimentHero(item.id)
+                        : motorTrailItem(item.equipment?.[0], item)?.image;
+                const key = item.kind === "activity" || item.kind === "recipe" || item.kind === "experiment" ? `${item.kind}-${item.id}` : item.uid;
+                const linkTo = item.kind === "motor-trail" ? `/therapist/motor-trail?returnTo=plan&edit=${item.uid}` : item.kind === "recipe" ? `/therapist/recipes?r=${item.id}` : item.kind === "experiment" ? `/therapist/experiments?e=${item.id}` : null;
                 const inner = (
                   <>
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sage/30 text-xs font-bold text-sage-foreground">
-                      {i + 1}
-                    </span>
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sage/30 text-xs font-bold text-sage-foreground">{i + 1}</span>
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
-                      {hero ? (
-                        <img src={hero} alt="" className={`h-full w-full ${item.kind === "photo" ? "object-cover" : "object-contain p-0.5"}`} />
-                      ) : item.kind === "motor-trail" ? (
-                        <Route className="h-5 w-5 text-muted-foreground" />
-                      ) : item.kind === "recipe" ? (
-                        recipe?.coverIcon ? <recipe.coverIcon /> : <span className="text-xl">{recipe?.coverEmoji ?? "🍳"}</span>
-                      ) : item.kind === "experiment" ? (
-                        <FlaskConical className="h-5 w-5 text-muted-foreground" />
-                      ) : (
-                        <span className="text-xl">{activity ? activityEmoji(activity) : "✨"}</span>
-                      )}
+                      {hero ? <img src={hero} alt="" className={`h-full w-full ${item.kind === "photo" ? "object-cover" : "object-contain p-0.5"}`} />
+                        : item.kind === "motor-trail" ? <Route className="h-5 w-5 text-muted-foreground" />
+                          : item.kind === "recipe" ? (recipe?.coverIcon ? <recipe.coverIcon /> : <span className="text-xl">{recipe?.coverEmoji ?? "🍳"}</span>)
+                            : item.kind === "experiment" ? <FlaskConical className="h-5 w-5 text-muted-foreground" />
+                              : <span className="text-xl">{activity ? activityEmoji(activity) : "✨"}</span>}
                     </div>
                     <div className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium leading-snug">
-                        {item.kind === "activity"
-                          ? activityTitle(activity, language) ?? t("פעילות", "Activity")
-                          : item.kind === "photo"
-                            ? item.label || "תמונה"
-                            : item.kind === "recipe"
-                              ? recipe?.title ?? "מתכון"
-                              : item.kind === "experiment"
-                                ? experiment?.title ?? "ניסוי"
-                                : "מסלול מוטורי"}
+                        {item.kind === "activity" ? activityTitle(activity, language) ?? t("פעילות", "Activity") : item.kind === "photo" ? boardItemLabel(item, language) || "תמונה" : item.kind === "recipe" ? recipe?.title ?? "מתכון" : item.kind === "experiment" ? experiment?.title ?? "ניסוי" : "מסלול מוטורי"}
                       </span>
                       {item.kind === "motor-trail" && item.equipment?.length > 0 && (
                         <div className="mt-1 flex flex-wrap gap-1">
                           {item.equipment.map((eid) => {
-                            const eq = motorTrailItem(eid, item);
-                            if (!eq) return null;
-                            return (
-                              <span
-                                key={eid}
-                                title={eq.label}
-                                className="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-background"
-                              >
-                                <img src={eq.image} alt="" className="h-full w-full object-contain" />
-                              </span>
-                            );
+                            const it = motorTrailItem(eid, item);
+                            return it ? <span key={eid} title={it.label} className="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-background"><img src={it.image} alt="" className="h-full w-full object-contain" /></span> : null;
                           })}
                         </div>
                       )}
@@ -1219,51 +645,21 @@ export default function TherapistBuild() {
                   </>
                 );
                 return (
-                  <li key={rowKey} className="flex items-center gap-2 rounded-2xl border border-border/60 bg-background p-2">
-                    {linkTo ? (
-                      <Link to={linkTo} className="flex flex-1 items-center gap-2 hover:opacity-80">
-                        {inner}
-                      </Link>
-                    ) : (
-                      <div className="flex flex-1 items-center gap-2">{inner}</div>
-                    )}
+                  <li key={key} className="flex items-center gap-2 rounded-2xl border border-border/60 bg-background p-2">
+                    {linkTo ? <Link to={linkTo} className="flex flex-1 items-center gap-2 hover:opacity-80">{inner}</Link> : <div className="flex flex-1 items-center gap-2">{inner}</div>}
                     <div className="flex shrink-0 items-center">
-                      <button
-                        type="button"
-                        onClick={() => moveItem(i, -1)}
-                        disabled={i === 0}
-                        aria-label="הזז למעלה"
-                        className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted disabled:opacity-30"
-                      >
-                        <ChevronUp className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => moveItem(i, 1)}
-                        disabled={i === plan.length - 1}
-                        aria-label="הזז למטה"
-                        className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted disabled:opacity-30"
-                      >
-                        <ChevronDown className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleRemove(item)}
-                        aria-label="הסר מהתוכנית"
-                        className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
+                      <button type="button" onClick={() => moveItem(i, -1)} disabled={i === 0} aria-label="הזז למעלה" className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted disabled:opacity-30"><ChevronUp className="h-3.5 w-3.5" /></button>
+                      <button type="button" onClick={() => moveItem(i, 1)} disabled={i === plan.length - 1} aria-label="הזז למטה" className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted disabled:opacity-30"><ChevronDown className="h-3.5 w-3.5" /></button>
+                      <button type="button" onClick={() => removeFromPlan(item)} aria-label="הסר מהתוכנית" className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"><X className="h-4 w-4" /></button>
                     </div>
                   </li>
                 );
               })}
             </ul>
           )}
-
           <div className="space-y-2 border-t border-border/60 pt-4">
             <Button onClick={startSession} disabled={!plan.length} className="w-full rounded-full bg-sage text-sage-foreground">
-              <Play className="h-4 w-4" /> {sessionId ? "התחל טיפול" : "התחל מפגש"}
+              <Play className="h-4 w-4" /> {boardMode ? "הוסף למפגש" : sessionId ? "התחל טיפול" : "התחל מפגש"}
             </Button>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="שם התוכנית" />
             <Button onClick={handleSave} disabled={saving || !plan.length} variant="outline" className="w-full rounded-full">
@@ -1273,16 +669,9 @@ export default function TherapistBuild() {
               <Printer className="h-4 w-4" /> הדפס
             </Button>
             <Link to="/therapist/plans" className="block">
-              <Button variant="outline" className="w-full rounded-full">
-                <FolderOpen className="h-4 w-4" /> התוכניות השמורות שלי
-              </Button>
+              <Button variant="outline" className="w-full rounded-full"><FolderOpen className="h-4 w-4" /> התוכניות השמורות שלי</Button>
             </Link>
-            <Button
-              variant="ghost"
-              onClick={handleResetPlan}
-              disabled={!plan.length}
-              className="w-full rounded-full text-muted-foreground"
-            >
+            <Button variant="ghost" onClick={handleResetPlan} disabled={!plan.length} className="w-full rounded-full text-muted-foreground">
               <RotateCcw className="h-4 w-4" /> איפוס תוכנית הטיפול
             </Button>
           </div>
@@ -1292,112 +681,409 @@ export default function TherapistBuild() {
   );
 }
 
-function ActivityCandidateCard({ activity, onAdd }) {
-  const { language, t } = useTranslator();
-  const location = useLocation();
-  const params = new URLSearchParams({
-    mode: "therapist",
-    returnPath: `${location.pathname}${location.search}`,
-    returnLabel: "חזרה לבניית הטיפול",
+// Sign and game items keep their saved label, but are shown in the board language.
+function boardItemLabel(item, language) {
+  const sign = item.visualSign ? findSign(item.visualSign) : null;
+  if (sign) return localizedLabel(sign, language);
+  const game = item.boardGame ? findBoardGame(item.boardGame) : null;
+  if (game) return localizedLabel(game, language);
+  return item.label;
+}
+
+// ---------- Session board (the treatment board shown during the session) ----------
+function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, patientBoardId, patientBoardInDraft, boardDate, hasDateParam, searchParams, onToggleCompleted, onFinishSession }) {
+  const navigate = useNavigate();
+  const boardRef = useRef(null);
+  const photoInputRef = useRef(null);
+  const [timerOpen, setTimerOpen] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [penEnabled, setPenEnabled] = useState(false);
+  const [penTool, setPenTool] = useState("pen");
+  const [penColor, setPenColor] = useState("#5a67a8");
+  const [penWidth, setPenWidth] = useState(4);
+  const [drawingStatus, setDrawingStatus] = useState("");
+  const [strokes, setStrokes] = useState(() => {
+    if (!patientBoardId) return getGuestBoardDrawing(boardDate);
+    return patientBoardInDraft ? readJson(patientDrawingKey(patientBoardId, boardDate), []) : [];
   });
+  const [cloudReady, setCloudReady] = useState(Boolean(patientBoardId && patientBoardInDraft));
+  const [cloudStatus, setCloudStatus] = useState("saved");
+  const [patientName, setPatientName] = useState(() => (patientBoardInDraft ? readActivePatient()?.name : ""));
+  const [savedDates, setSavedDates] = useState(() => (patientBoardId ? [] : guestBoardDates(boardDate)));
+  const saveTimer = useRef(0);
+  const firstCloudSave = useRef(!patientBoardInDraft);
+
+  useEffect(() => {
+    document.body.classList.add("meeting-board-page");
+    return () => document.body.classList.remove("meeting-board-page", "meeting-board-fullscreen");
+  }, []);
+
+  // Client board: load it from the cloud (unless it was already loaded before going to the search page).
+  useEffect(() => {
+    if (!patientBoardId) return undefined;
+    let cancelled = false;
+    listPatientBoardDates(patientBoardId).then((dates) => { if (!cancelled) setSavedDates(dates); }).catch(() => {});
+    if (patientBoardInDraft) return () => { cancelled = true; };
+    if (!hasCloudSession()) { setCloudStatus("error"); return () => { cancelled = true; }; }
+    if (!readActivePatient()) localStorage.setItem(GUEST_BACKUP_KEY, JSON.stringify(getDraftPlan()));
+    loadPatientBoard(patientBoardId, boardDate)
+      .then((board) => {
+        if (cancelled) return;
+        localStorage.setItem(ACTIVE_PATIENT_KEY, JSON.stringify(board.patient));
+        localStorage.setItem(patientDrawingKey(patientBoardId, boardDate), JSON.stringify(board.drawingData));
+        setPatientName(board.patient.name);
+        setStrokes(board.drawingData);
+        setPlan(board.items);
+        setCloudReady(true);
+        const next = new URLSearchParams(window.location.search);
+        next.set("cloudBoardReady", "1");
+        navigate(`${window.location.pathname}?${next.toString()}`, { replace: true });
+      })
+      .catch(() => { if (!cancelled) setCloudStatus("error"); });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Save every change: guest boards in this browser, client boards in the cloud.
+  useEffect(() => {
+    if (!patientBoardId) {
+      saveGuestBoard(boardDate, plan);
+      return undefined;
+    }
+    if (!cloudReady) return undefined;
+    if (firstCloudSave.current) { firstCloudSave.current = false; return undefined; }
+    setCloudStatus("saving");
+    window.clearTimeout(saveTimer.current);
+    saveTimer.current = window.setTimeout(() => {
+      savePatientBoard(patientBoardId, boardDate, plan).then(() => setCloudStatus("saved")).catch(() => setCloudStatus("error"));
+    }, 100);
+    return () => window.clearTimeout(saveTimer.current);
+  }, [plan, cloudReady]);
+
+  function updateStrokes(next) {
+    setStrokes(next);
+    if (!patientBoardId) {
+      saveGuestBoardDrawing(boardDate, next);
+      setDrawingStatus(t("נשמר", "Saved"));
+      return;
+    }
+    localStorage.setItem(patientDrawingKey(patientBoardId, boardDate), JSON.stringify(next));
+    if (!cloudReady) return;
+    setDrawingStatus(t("שומרת…", "Saving…"));
+    savePatientBoard(patientBoardId, boardDate, plan, next)
+      .then(() => setDrawingStatus(t("נשמר בענן", "Saved to cloud")))
+      .catch(() => setDrawingStatus(t("השמירה נכשלה", "Save failed")));
+  }
+  function clearDrawing() {
+    if (!strokes.length || !window.confirm(t("למחוק את כל הכתיבה מהלוח?", "Clear all drawing from the board?"))) return;
+    updateStrokes([]);
+  }
+
+  // ---- dates ----
+  const boardQuery = (date, extra = {}) => {
+    const next = new URLSearchParams({ view: "session", boardDate: date });
+    if (patientBoardId) next.set("patientBoard", patientBoardId);
+    Object.entries(extra).forEach(([key, value]) => next.set(key, value));
+    return `/therapist/build?${next.toString()}`;
+  };
+  function goToDate(date) {
+    if (!DATE_PATTERN.test(date || "") || date === boardDate) return;
+    if (!patientBoardId) saveGuestBoard(boardDate, plan);
+    navigate(boardQuery(date));
+    window.scrollTo(0, 0);
+  }
+  async function copyToNextWeek(nextDate) {
+    if (patientBoardId) {
+      if (!hasCloudSession()) throw new Error("signed-out");
+      await savePatientBoard(patientBoardId, nextDate, plan, strokes);
+    } else {
+      saveGuestBoard(nextDate, plan);
+    }
+    goToDate(nextDate);
+  }
+
+  // ---- links ----
+  const dateSuffix = hasDateParam ? `&boardDate=${encodeURIComponent(boardDate)}` : "";
+  const patientSuffix = patientBoardId ? `&patientBoard=${encodeURIComponent(patientBoardId)}${dateSuffix}${cloudReady ? "&cloudBoardReady=1" : ""}` : dateSuffix;
+  const returnPath = `/therapist/build?view=session${sessionId ? `&session=${sessionId}` : ""}${linkedPatient?.id ? `&patient=${linkedPatient.id}` : ""}${patientSuffix}`;
+  const planningReturnUrl = (() => {
+    const next = new URLSearchParams(searchParams);
+    next.set("view", "session");
+    next.set("planning", "1");
+    ["patientBoard", "cloudBoardReady", "guest"].forEach((key) => next.delete(key));
+    return `/therapist/build?${next.toString()}`;
+  })();
+
+  // ---- items ----
+  function moveItem(itemIndex, direction) {
+    const target = itemIndex + direction;
+    if (target < 0 || target >= plan.length) return;
+    const next = [...plan];
+    const [item] = next.splice(itemIndex, 1);
+    next.splice(target, 0, item);
+    setPlan(next);
+  }
+  function removeItem(itemIndex) {
+    setPlan(plan.filter((_, i) => i !== itemIndex));
+  }
+  async function addSign(sign) {
+    try {
+      const image = await renderSignCard(sign, language);
+      setPlan((prev) => [...prev, { kind: "photo", uid: `sign-${sign.id}-${Date.now()}`, image, label: localizedLabel(sign, language), visualSign: sign.id }]);
+    } catch { /* image failed to load */ }
+  }
+  function addGame(game) {
+    setPlan((prev) => [...prev, { kind: "photo", uid: `game-${game.id}-${Date.now()}`, image: game.asset, label: localizedLabel(game, language), boardGame: game.id }]);
+  }
+  async function photoChosen(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    try { setPhotoPreview(await readPhotoFile(file, 900, 0.82)); } catch { /* unreadable image */ }
+  }
+  function confirmPhoto() {
+    setPlan((prev) => [...prev, { kind: "photo", uid: `photo-${Date.now()}`, image: photoPreview, label: t("תמונה", "Photo") }]);
+    setPhotoPreview(null);
+  }
+
+  // Signs are saved as an image with the word in it; show them in the current language.
+  const [signImages, setSignImages] = useState({});
+  useEffect(() => {
+    let cancelled = false;
+    plan.forEach((item) => {
+      const sign = item.visualSign ? findSign(item.visualSign) : null;
+      if (!sign) return;
+      renderSignCard(sign, language).then((image) => { if (!cancelled) setSignImages((all) => (all[sign.id] === image ? all : { ...all, [sign.id]: image })); }).catch(() => {});
+    });
+    return () => { cancelled = true; };
+  }, [plan, language]);
+
+  // ---- full screen ----
+  function setFullscreenState(active) {
+    setFullscreen(active);
+    document.body.classList.toggle("meeting-board-fullscreen", active);
+  }
+  function toggleFullscreen() {
+    const active = !fullscreen;
+    setFullscreenState(active);
+    if (active && boardRef.current?.requestFullscreen) boardRef.current.requestFullscreen().catch(() => {});
+    if (!active && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+  }
+  function exitFullscreen() {
+    setFullscreenState(false);
+    if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+  }
+  useEffect(() => {
+    const onChange = () => { if (!document.fullscreenElement) setFullscreenState(false); };
+    const onKey = (event) => { if (event.key === "Escape" && document.body.classList.contains("meeting-board-fullscreen")) exitFullscreen(); };
+    document.addEventListener("fullscreenchange", onChange);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("fullscreenchange", onChange); document.removeEventListener("keydown", onKey); };
+  }, []);
+
+  const heading = linkedPatient ? t(`הטיפול של ${linkedPatient.name}`, `${linkedPatient.name}'s session`) : t("לוח המפגש", "Session board");
+
   return (
-    <div className="flex flex-col overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm">
+    <AppShell mode="therapist" fullScreen={false}>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="font-display text-3xl font-black">{heading}</h1>
+          <p className="mt-1 text-muted-foreground">{t("בחרי פעילות כדי להתחיל בה. אפשר לחזור ללוח בכל רגע.", "Choose an activity to begin. You can return to the board at any time.")}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <VisualSessionTimer language={language} open={timerOpen} onOpenChange={setTimerOpen} hideTrigger />
+          {sessionId && <Button onClick={onFinishSession} className="rounded-full bg-foreground text-background"><Save className="h-4 w-4" /> {t("סיום טיפול", "Finish session")}</Button>}
+        </div>
+      </div>
+
+      <TherapistPostureScissorsTips />
+
+      <BoardDateNavigation date={boardDate} savedDates={savedDates} language={language} onNavigate={goToDate} onCopyToNextWeek={copyToNextWeek} />
+
+      <BoardToolbar
+        language={language}
+        patientBoardId={patientBoardId}
+        patientName={patientName}
+        cloudStatus={cloudStatus}
+        planningReturnUrl={planningReturnUrl}
+        openPlanningOnMount={searchParams.get("planning") === "1"}
+        onSelectPatient={(id) => navigate(`/therapist/build?view=session&patientBoard=${encodeURIComponent(id)}${dateSuffix}`)}
+        onUseGuestBoard={() => navigate("/therapist/build?view=session&guest=1")}
+        addActivityHref={`/therapist/build?tab=search&boardMode=1${patientSuffix}`}
+        motorTrailHref={`/therapist/motor-trail?returnTo=session${patientSuffix}`}
+        pen={{ enabled: penEnabled, setEnabled: setPenEnabled, tool: penTool, setTool: setPenTool, color: penColor, setColor: setPenColor, width: penWidth, setWidth: setPenWidth, status: drawingStatus, onClear: clearDrawing }}
+        onAddSign={addSign}
+        onAddGame={addGame}
+        onOpenTimer={() => { setPenEnabled(false); setTimerOpen(true); }}
+        onPickPhoto={() => photoInputRef.current?.click()}
+        fullscreen={fullscreen}
+        onToggleFullscreen={toggleFullscreen}
+      />
+
+      <ol ref={boardRef} className="space-y-3 meeting-board-surface">
+        {plan.map((item, i) => {
+          const activity = item.kind === "activity" ? getActivity(item.id) : null;
+          const recipe = item.kind === "recipe" ? getRecipe(item.id) : null;
+          const experiment = item.kind === "experiment" ? getExperiment(item.id) : null;
+          const sign = item.visualSign ? findSign(item.visualSign) : null;
+          const hero = item.kind === "activity"
+            ? activityHero(item.id) || activity?.hero_image || (activity?.ai_generated ? "/icon-bank/manual/pencil-2.webp" : null)
+            : item.kind === "photo" ? (sign && signImages[sign.id]) || item.image
+              : item.kind === "recipe" ? recipe?.cover ?? null
+                : item.kind === "experiment" ? experimentHero(item.id)
+                  : MOTOR_TRAIL_HERO;
+          const itemTitle = item.kind === "activity" ? activityTitle(activity, language) ?? t("פעילות", "Activity")
+            : item.kind === "photo" ? boardItemLabel(item, language) || t("תמונה", "Photo")
+              : item.kind === "recipe" ? recipe?.title ?? t("מתכון", "Recipe")
+                : item.kind === "experiment" ? experiment?.title ?? t("ניסוי", "Experiment")
+                  : t("מסלול מוטורי", "Obstacle Course");
+          const linkTo = item.kind === "activity"
+            ? `/activity/${item.id}?mode=therapist&returnTo=session&returnPath=${encodeURIComponent(returnPath)}`
+            : item.kind === "motor-trail" ? `/therapist/motor-trail?returnTo=session&edit=${item.uid}${patientSuffix}`
+              : item.kind === "recipe" ? `/therapist/recipes?r=${item.id}`
+                : item.kind === "experiment" ? `/therapist/experiments?e=${item.id}`
+                  : null;
+          const inner = (
+            <>
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sage/30 text-sm font-bold">{i + 1}</span>
+              <div className="flex h-40 w-40 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2">
+                {hero ? <img src={hero} alt={sign ? itemTitle : ""} className={`max-h-full max-w-full drop-shadow-md ${item.kind === "photo" ? "h-full w-full object-cover" : "object-contain"}`} />
+                  : item.kind === "motor-trail" ? <Route className="h-8 w-8 text-muted-foreground" />
+                    : item.kind === "recipe" ? (recipe?.coverIcon ? <recipe.coverIcon /> : <span className="text-4xl">{recipe?.coverEmoji ?? "🍳"}</span>)
+                      : item.kind === "experiment" ? <FlaskConical className="h-8 w-8 text-muted-foreground" />
+                        : <span className="text-4xl">{activity ? activityEmoji(activity) : "✨"}</span>}
+              </div>
+              <div className="flex-1">
+                <h3 className="font-display text-base font-bold leading-snug">{itemTitle}</h3>
+                {item.kind === "motor-trail" && <p className="mt-1 truncate text-xs text-muted-foreground">{(item.equipment || []).map((eid) => motorTrailItem(eid, item)?.label).filter(Boolean).join(" · ")}</p>}
+              </div>
+            </>
+          );
+          return (
+            <li
+              key={item.kind === "activity" || item.kind === "recipe" || item.kind === "experiment" ? `${item.kind}-${item.id}` : item.uid}
+              className={cn("group relative overflow-hidden rounded-3xl border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md", item.completed ? "border-[#b7d8bd] bg-[#edf7ee]" : "border-border/60 bg-card", sign && "visual-sign-board-item")}
+            >
+              <div className="flex items-center gap-3 p-3">
+                <button
+                  type="button"
+                  aria-pressed={Boolean(item.completed)}
+                  aria-label={item.completed ? t(`ביטול סימון ${itemTitle} כפעילות שבוצעה`, `Mark ${itemTitle} as not completed`) : t(`סימון ${itemTitle} כפעילות שבוצעה`, `Mark ${itemTitle} as completed`)}
+                  title={item.completed ? t("סומן כבוצע", "Completed") : t("סימון כבוצע", "Mark as completed")}
+                  onClick={() => onToggleCompleted(i)}
+                  className={cn("z-20 flex h-9 w-9 shrink-0 items-center justify-center rounded-md border-2 bg-white shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage", item.completed ? "border-[#7fb58a] bg-[#a9cfaa] text-[#234f35]" : "border-border text-transparent hover:border-[#9bc4a3] hover:bg-[#f3faf4]")}
+                >
+                  <Check className="h-5 w-5" strokeWidth={3} />
+                </button>
+                {linkTo ? <Link to={linkTo} className="flex min-w-0 flex-1 items-center gap-4">{inner}</Link> : <div className="flex min-w-0 flex-1 items-center gap-4">{inner}</div>}
+                <div className="meeting-item-controls" data-meeting-item-controls="true" aria-label={t("שינוי סדר הפעילות", "Change activity order")}>
+                  <button type="button" className="meeting-move-item" data-move-direction="-1" disabled={i === 0} aria-label={t("העלאת הפעילות למעלה", "Move activity up")} title={t("העלאה למעלה", "Move up")} onClick={() => moveItem(i, -1)}>↑</button>
+                  <button type="button" className="meeting-move-item" data-move-direction="1" disabled={i === plan.length - 1} aria-label={t("הורדת הפעילות למטה", "Move activity down")} title={t("הורדה למטה", "Move down")} onClick={() => moveItem(i, 1)}>↓</button>
+                  <button type="button" className="meeting-delete-item" aria-label={t("מחיקת הפעילות מלוח המפגש", "Remove activity from the session board")} title={t("מחיקה מהלוח", "Remove from board")} onClick={() => removeItem(i)}>×</button>
+                </div>
+              </div>
+            </li>
+          );
+        })}
+        <button type="button" className="meeting-fullscreen-exit" data-exit-board-fullscreen="true" aria-label={t("יציאה ממסך מלא", "Exit full screen")} title={t("יציאה ממסך מלא", "Exit full screen")} onClick={exitFullscreen}>×</button>
+        <BoardCanvas boardRef={boardRef} strokes={strokes} onStrokesChange={updateStrokes} enabled={penEnabled} tool={penTool} color={penColor} width={penWidth} language={language} />
+      </ol>
+
+      <input ref={photoInputRef} type="file" accept="image/*" capture="environment" hidden data-board-photo-input="true" onChange={photoChosen} />
+      {photoPreview && (
+        <BoardPhotoPreview
+          image={photoPreview}
+          language={language}
+          onConfirm={confirmPhoto}
+          onRepick={() => { setPhotoPreview(null); photoInputRef.current?.click(); }}
+          onCancel={() => setPhotoPreview(null)}
+        />
+      )}
+    </AppShell>
+  );
+}
+
+// ---------- cards on the search page ----------
+function SuggestedActivityCard({ activity, language, t, addLabel, boardMode, hidden, onAdd }) {
+  return (
+    <div className={cn("flex flex-col overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm", boardMode && "meeting-search-activity-card")} hidden={hidden}>
       <div className="flex h-40 items-center justify-center bg-white">
         {activityHero(activity.id) || activity.hero_image ? (
-          <div className="flex h-28 w-28 items-center justify-center">
-            <img src={activityHero(activity.id) || activity.hero_image} alt="" className="max-h-full max-w-full object-contain" />
-          </div>
-        ) : activity.ai_generated ? (
-          <img src="/icon-bank/manual/pencil-2.webp" alt="" className="h-24 w-24 object-contain" />
-        ) : (
-          <span className="text-6xl">{activityEmoji(activity)}</span>
-        )}
+          <div className="flex h-28 w-28 items-center justify-center"><img src={activityHero(activity.id) || activity.hero_image} alt="" className="max-h-full max-w-full object-contain" /></div>
+        ) : activity.ai_generated ? <img src="/icon-bank/manual/pencil-2.webp" alt="" className="h-24 w-24 object-contain" /> : <span className="text-6xl">{activityEmoji(activity)}</span>}
       </div>
       <div className="flex flex-1 flex-col p-4">
         <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
           <h3 className="font-display text-base font-bold leading-snug">{activityTitle(activity, language)}</h3>
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-            <Clock className="h-3 w-3" /> {activity.duration_min}+ {t("דק'", "min")}
-          </span>
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"><Clock className="h-3 w-3" /> {activity.duration_min}+ {t("דק'", "min")}</span>
         </div>
         <div className="mt-auto flex flex-wrap items-center gap-2">
-          <Button onClick={onAdd} size="sm" className="rounded-full bg-sage text-sage-foreground">
-            <Plus className="h-3.5 w-3.5" /> {t("הוסף לתכנית", "Add to plan")}
-          </Button>
-          <Link
-            to={`/activity/${activity.id}?${params.toString()}`}
-            className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <ExternalLink className="h-3 w-3" /> {t("צפייה מלאה", "View details")}
-          </Link>
+          <Button onClick={onAdd} size="sm" className="rounded-full bg-sage text-sage-foreground"><Plus className="h-3.5 w-3.5" /> {addLabel}</Button>
+          <Link to={`/activity/${activity.id}`} className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"><ExternalLink className="h-3 w-3" /> צפייה מלאה</Link>
         </div>
       </div>
     </div>
   );
 }
 
-function ExperimentCandidateCard({ item, onAdd }) {
+function ActivityCandidateCard({ activity, addLabel, boardMode, hidden, onAdd }) {
+  const { language, t } = useTranslator();
+  const location = useLocation();
+  const query = new URLSearchParams({ mode: "therapist", returnPath: `${location.pathname}${location.search}`, returnLabel: t("חזרה לבניית הטיפול", "Back to Session Planner") });
   return (
-    <div className="flex flex-col overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm">
-      <div className="flex h-40 items-center justify-center bg-white p-3">
-        <img src={experimentHero(item.id)} alt="" className="max-h-full max-w-full object-contain" />
-      </div>
-      <div className="flex flex-1 flex-col p-4">
-        <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-          <h3 className="font-display text-base font-bold leading-snug">{item.title}</h3>
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-            <Clock className="h-3 w-3" /> {item.time}
-          </span>
-        </div>
-        <div className="mt-auto flex flex-wrap items-center gap-2">
-          <Button onClick={onAdd} size="sm" className="rounded-full bg-sage text-sage-foreground">
-            <Plus className="h-3.5 w-3.5" /> הוסף לתכנית
-          </Button>
-          <Link
-            to={`/therapist/experiments?e=${item.id}`}
-            className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <ExternalLink className="h-3 w-3" /> צפייה מלאה
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function RecipeCandidateCard({ item, onAdd }) {
-  return (
-    <div className="flex flex-col overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm">
+    <div className={cn("flex flex-col overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm", boardMode && "meeting-search-activity-card")} hidden={hidden}>
       <div className="flex h-40 items-center justify-center bg-white">
-        {item.cover ? (
-          <div className="flex h-28 w-28 items-center justify-center">
-            <img src={item.cover} alt="" className="max-h-full max-w-full object-contain" />
-          </div>
-        ) : item.coverIcon ? (
-          <div className="h-20 w-20">
-            <item.coverIcon />
-          </div>
-        ) : (
-          <span className="text-6xl">{item.coverEmoji ?? "🍳"}</span>
-        )}
+        {activityHero(activity.id) || activity.hero_image ? (
+          <div className="flex h-28 w-28 items-center justify-center"><img src={activityHero(activity.id) || activity.hero_image} alt="" className="max-h-full max-w-full object-contain" /></div>
+        ) : activity.ai_generated ? <img src="/icon-bank/manual/pencil-2.webp" alt="" className="h-24 w-24 object-contain" /> : <span className="text-6xl">{activityEmoji(activity)}</span>}
+      </div>
+      <div className="flex flex-1 flex-col p-4">
+        <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="font-display text-base font-bold leading-snug">{activityTitle(activity, language)}</h3>
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"><Clock className="h-3 w-3" /> {activity.duration_min}+ {t("דק'", "min")}</span>
+        </div>
+        <div className="mt-auto flex flex-wrap items-center gap-2">
+          <Button onClick={onAdd} size="sm" className="rounded-full bg-sage text-sage-foreground"><Plus className="h-3.5 w-3.5" /> {addLabel}</Button>
+          <Link to={`/activity/${activity.id}?${query.toString()}`} className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"><ExternalLink className="h-3 w-3" /> {t("צפייה מלאה", "View details")}</Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ExperimentCandidateCard({ item, addLabel, boardMode, hidden, onAdd }) {
+  return (
+    <div className={cn("flex flex-col overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm", boardMode && "meeting-search-activity-card")} hidden={hidden}>
+      <div className="flex h-40 items-center justify-center bg-white p-3"><img src={experimentHero(item.id)} alt="" className="max-h-full max-w-full object-contain" /></div>
+      <div className="flex flex-1 flex-col p-4">
+        <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="font-display text-base font-bold leading-snug">{item.title}</h3>
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"><Clock className="h-3 w-3" /> {item.time}</span>
+        </div>
+        <div className="mt-auto flex flex-wrap items-center gap-2">
+          <Button onClick={onAdd} size="sm" className="rounded-full bg-sage text-sage-foreground"><Plus className="h-3.5 w-3.5" /> {addLabel}</Button>
+          <Link to={`/therapist/experiments?e=${item.id}`} className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"><ExternalLink className="h-3 w-3" /> צפייה מלאה</Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RecipeCandidateCard({ item, addLabel, boardMode, hidden, onAdd }) {
+  return (
+    <div className={cn("flex flex-col overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm", boardMode && "meeting-search-activity-card")} hidden={hidden}>
+      <div className="flex h-40 items-center justify-center bg-white">
+        {item.cover ? <div className="flex h-28 w-28 items-center justify-center"><img src={item.cover} alt="" className="max-h-full max-w-full object-contain" /></div>
+          : item.coverIcon ? <div className="h-20 w-20"><item.coverIcon /></div> : <span className="text-6xl">{item.coverEmoji ?? "🍳"}</span>}
       </div>
       <div className="flex flex-1 flex-col p-4">
         <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
           <h3 className="font-display text-base font-bold leading-snug">{item.title}</h3>
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-            <Clock className="h-3 w-3" /> {item.duration}
-          </span>
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"><Clock className="h-3 w-3" /> {item.duration}</span>
         </div>
         <div className="mt-auto flex flex-wrap items-center gap-2">
-          <Button onClick={onAdd} size="sm" className="rounded-full bg-sage text-sage-foreground">
-            <Plus className="h-3.5 w-3.5" /> הוסף לתכנית
-          </Button>
-          <Link
-            to={`/therapist/recipes?r=${item.id}`}
-            className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <ExternalLink className="h-3 w-3" /> צפייה מלאה
-          </Link>
+          <Button onClick={onAdd} size="sm" className="rounded-full bg-sage text-sage-foreground"><Plus className="h-3.5 w-3.5" /> {addLabel}</Button>
+          <Link to={`/therapist/recipes?r=${item.id}`} className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"><ExternalLink className="h-3 w-3" /> צפייה מלאה</Link>
         </div>
       </div>
     </div>
@@ -1405,29 +1091,9 @@ function RecipeCandidateCard({ item, onAdd }) {
 }
 
 function SideTabBtn({ active, children, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "shrink-0 whitespace-nowrap rounded-2xl border px-4 py-3 text-sm font-bold text-right transition-colors lg:whitespace-normal",
-        active ? "border-primary bg-sage/20 text-foreground" : "border-border/60 bg-card text-muted-foreground hover:bg-muted",
-      )}
-    >
-      {children}
-    </button>
-  );
+  return <button onClick={onClick} className={cn("shrink-0 whitespace-nowrap rounded-2xl border px-4 py-3 text-sm font-bold text-right transition-colors lg:whitespace-normal", active ? "border-primary bg-sage/20 text-foreground" : "border-border/60 bg-card text-muted-foreground hover:bg-muted")}>{children}</button>;
 }
 
 function SmallTabBtn({ active, children, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "rounded-full px-4 py-2 text-sm font-bold transition-colors",
-        active ? "bg-background text-foreground shadow-sm" : "text-muted-foreground",
-      )}
-    >
-      {children}
-    </button>
-  );
+  return <button onClick={onClick} className={cn("rounded-full px-4 py-2 text-sm font-bold transition-colors", active ? "bg-background text-foreground shadow-sm" : "text-muted-foreground")}>{children}</button>;
 }

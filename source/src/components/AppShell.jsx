@@ -128,13 +128,14 @@ export function AppShell({ mode = "parent", children, pageClassName, fullScreen 
   const patientBoard = params.get("patientBoard");
   const patientSuffix = patientBoard ? `&patientBoard=${encodeURIComponent(patientBoard)}&cloudBoardReady=1` : "";
 
+  // The third value marks links that are never shown as the current page (as on the live site).
   const headerLinks = therapistArea
     ? [
         ["/", t("בית", "Home")],
-        ["/therapist/build?view=session", t("לוח מובנה", "Session board")],
-        ["/therapist/diary", t("יומן", "Diary")],
-        ["/therapist/build?tab=search", t("מנוע חיפוש", "Search")],
-        ["/therapist/my-patients/", t("המטופלים שלי", "My clients")],
+        ["/therapist/build?view=session", t("לוח מובנה", "Session board"), false],
+        ["/therapist/diary", t("יומן", "Diary"), false],
+        ["/therapist/build?tab=search", t("מנוע חיפוש", "Search"), false],
+        ["/therapist/my-patients/", t("המטופלים שלי", "My clients"), false],
         ["/favorites", t("מועדפים", "Favorites")],
         ["/about", t("אודות", "About")],
       ]
@@ -161,9 +162,9 @@ export function AppShell({ mode = "parent", children, pageClassName, fullScreen 
               <img src={brandLogo(language)} alt={t("בואו נשחק", "Let's Play")} className="h-11 w-auto max-w-[130px] object-contain md:h-14 md:max-w-[155px]" />
             </Link>
             <nav className="hidden min-w-0 items-center justify-center gap-1 lg:flex" aria-label={t("ניווט ראשי", "Main navigation")}>
-              {headerLinks.map(([href, label]) => {
+              {headerLinks.map(([href, label, highlight = true]) => {
                 const [hrefPath, hrefQuery] = href.split("?");
-                const active = hrefQuery ? location.pathname === hrefPath && location.search.includes(hrefQuery) : isActive(hrefPath);
+                const active = highlight && (hrefQuery ? location.pathname === hrefPath && location.search.includes(hrefQuery) : isActive(hrefPath));
                 return (
                   <NavLink
                     key={`${href}-${label}`}

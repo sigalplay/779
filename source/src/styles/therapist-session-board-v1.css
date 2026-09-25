@@ -135,3 +135,6 @@
 }
 
 @media print{.meeting-item-controls,.meeting-fullscreen-exit{display:none!important}}
+
+/* The treatment board is shown to the child: no site footer and no legal line under it. */
+@media screen { .meeting-board-page .global-print-legal { display: none !important; } }

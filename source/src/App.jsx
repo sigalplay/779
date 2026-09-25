@@ -104,7 +104,8 @@ function TherapistBuildEntry() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   if (!params.has("tab") && !params.has("view")) return <TherapistBoardEntry />;
-  return <TherapistBuild />;
+  // Moving to another board date or client board starts the builder afresh.
+  return <TherapistBuild key={`${params.get("boardDate") || ""}|${params.get("patientBoard") || ""}`} />;
 }
 
 // כתובות /en ו-/en/... מעבירות את האתר לאנגלית ומציגות את אותו עמוד בלי הקידומת.

@@ -36,7 +36,8 @@ Status: `done` = behavior is in source, `todo` = not yet, `drop` = intentionally
 | Cipher generator | done | Same keys and symbols as live; `?key=sukkot` opens the Sukkot key |
 | Child boards, shared weekly board | done | "Make your own board" button, print logo and legal line |
 | Favorites / board game favorite | done | Sends to sign-in with return address, as live |
-| Therapist build / board / diary / patient | todo | |
+| Therapist builder and treatment board | done | See "Treatment board" below |
+| Therapist diary / patient / plans / session notes | todo | Text matches live; interaction check pending |
 
 ## Patch files (`assets/*.js`, `assets/*.css`)
 
@@ -52,7 +53,12 @@ Status: `done` = behavior is in source, `todo` = not yet, `drop` = intentionally
 | mobile-share-links-v1.js | done | Standalone pages: `standalone-page.js`. React boards: `components/ShareLinkField.jsx` (on live the patch did not take effect in the React share dialogs) |
 | adl-sequence-reorder-v2.js | drop | Loaded only on the React home page, where nothing matches it; the ADL page has its own move buttons |
 | v36-targeted-fixes.css | todo | |
-| therapist-*.js / .css (tabs, header, session board, drawing, signs, games, cloud, search bridge) | todo | |
+| therapist-session-board, board-drawing, board-signs, board-games, cloud-board, board-search-bridge | done | Built into `pages/TherapistBuild.jsx` and `components/session-board/` |
+| therapist-area-header-v1.js | done | Header links, phone bar and heading were already in AppShell; "לוח המפגש" heading and search-page class in the builder |
+| therapist-tabs-v1.js / .css | done | Redirects in App routes; the tab row only lives on the standalone tools page |
+| therapist-free-board-v1.js / .css, therapist-board-fullscreen/activity CSS | drop | Only loaded by /therapist/board/, which always redirected to the treatment board |
+| patients-site-header-v1, therapist-patients-v1, patients-mobile-workflow-v1 | done | Moved next to /therapist/my-patients/ (patients.js, patients.css) |
+| therapist-tools-v1.css | done | Moved next to /therapist/tools/ (tools.css) |
 | english-content-v9, english-approved-v1, american-english-v1, us-english-polish-v2 | todo | Move all translations into source |
 | language-switch-v1.js, english-route-boot-v93.js, english-ltr-v1/v2.css | todo | |
 | google-snippet-guard-v1.js | todo | |
@@ -101,3 +107,25 @@ Changes from live, on purpose:
   uses the English logo, and the shared link opens in English. Hebrew dates are hidden in
   English, as on live.
 - The "Ministry of Education holidays" link shows only in Hebrew (that page is Hebrew only).
+
+## Treatment board
+
+Checked against live with the same actions on both: adding signs and games, reordering,
+deleting, marking done, drawing with the pen, adding a photo, copying to next week, moving
+between dates, and a client (cloud) board with simulated database answers. The saved data and
+the database requests are identical.
+
+The saved formats did not change (`pp_draft_plan`, `boo_guest_boards_by_date`,
+`boo_board_drawing_*`, `boo_active_cloud_patient`, the `daily_meeting_boards` table), so boards
+therapists already saved still open.
+
+Changes from live, on purpose:
+- Adding an activity from the search page to today's board no longer disappears when you
+  return to the board (live reloaded the older saved board over it).
+- Adding an obstacle course from a board of another date returns to that date (live jumped to
+  today's board and overwrote it).
+- Links from a client board (activity page, obstacle course) come back to the same client board.
+- English: "mark as completed" labels are in English; `/en/therapist/...` opens the English
+  builder (live showed the Hebrew home page).
+- The legal line is hidden under the treatment board, like the site footer.
+- The board no longer reloads the page after each change.

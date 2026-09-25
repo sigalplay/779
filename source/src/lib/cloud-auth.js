@@ -1,5 +1,9 @@
-const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || "").replace(/\/$/, "");
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+// The live site's project. The key is the public (publishable) key, safe to ship in the page.
+// A build can point elsewhere with VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY.
+const DEFAULT_SUPABASE_URL = "https://qcklptudfclzvddjarkw.supabase.co";
+const DEFAULT_SUPABASE_KEY = "sb_publishable_8Bp_l_qcOxT2A67Sw2T35A_aVCvWh8H";
+export const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, "");
+export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_KEY;
 const SESSION_KEY = "boo_cloud_session";
 const LOCAL_TEST_KEY = "boo_local_test_session";
 const BETA_ACCESS_KEY = "boo_beta_email_access";

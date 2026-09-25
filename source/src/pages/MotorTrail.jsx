@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { normalizeBoardDate, saveGuestBoard } from "@/lib/session-board-storage";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Route, Printer, RotateCcw, X, ChevronUp, ChevronDown, Plus, ArrowRight, ListPlus, Play, Pause, Trash2, Undo2, Archive } from "lucide-react";
@@ -53,7 +54,14 @@ export default function MotorTrail({ mode }) {
   const navigate = useNavigate();
   const returnTo = searchParams.get("returnTo"); // "plan" | "session" | null
   const requestedReturnPath = searchParams.get("returnPath");
-  const fallbackReturnPath = `/therapist/build${returnTo === "session" ? "?view=session" : ""}`;
+  // Back to the same treatment board: same client board and date as the board that opened this page.
+  const patientBoard = searchParams.get("patientBoard");
+  const boardDate = searchParams.get("boardDate");
+  const hasBoardDate = /^\d{4}-\d{2}-\d{2}$/.test(boardDate || "");
+  const sessionReturn = new URLSearchParams({ view: "session" });
+  if (hasBoardDate) sessionReturn.set("boardDate", boardDate);
+  if (patientBoard) { sessionReturn.set("patientBoard", patientBoard); sessionReturn.set("cloudBoardReady", "1"); }
+  const fallbackReturnPath = returnTo === "session" ? `/therapist/build?${sessionReturn.toString()}` : "/therapist/build";
   const returnPath = requestedReturnPath?.startsWith("/") && !requestedReturnPath.startsWith("//")
     ? requestedReturnPath
     : fallbackReturnPath;
@@ -161,6 +169,8 @@ export default function MotorTrail({ mode }) {
       addMotorTrailToDraftPlan(order, customItems);
       toast.success("המסלול נוסף לתוכנית הטיפול");
     }
+    // A board without a client is kept per date; store the updated board so the course stays on it.
+    if (returnTo === "session" && !patientBoard) saveGuestBoard(normalizeBoardDate(boardDate), getDraftPlan());
     navigate(returnPath);
   }
 

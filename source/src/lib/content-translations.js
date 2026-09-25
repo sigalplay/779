@@ -107,6 +107,7 @@ ACTIVITY_TITLES_EN["seed-113"] = "Shark Teeth";
 ACTIVITY_TITLES_EN["seed-113"] = "Shark Teeth Play Dough Activity";
 
 const TERM_EN = {
+  "התנסות במאכלים": "Food exploration",
   "ידיים ועבודה עדינה": "Hands and fine motor skills",
   "תנועה וגוף": "Movement and body awareness",
   "חברתי ורגשי": "Social and emotional skills",
