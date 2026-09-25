@@ -37,7 +37,7 @@ Status: `done` = behavior is in source, `todo` = not yet, `drop` = intentionally
 | Child boards, shared weekly board | done | "Make your own board" button, print logo and legal line |
 | Favorites / board game favorite | done | Sends to sign-in with return address, as live |
 | Therapist builder and treatment board | done | See "Treatment board" below |
-| Therapist diary / patient / plans / session notes | todo | Text matches live; interaction check pending |
+| Therapist diary / patient / plans / session notes | done | Text matches live at both widths; adding a client in the diary saves the same data |
 
 ## Patch files (`assets/*.js`, `assets/*.css`)
 
