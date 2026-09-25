@@ -365,7 +365,7 @@ export const ACTIVITY_ICON_SETS = {
     hero: "/icon-bank/activities/seed-37.webp",
     materials: {
       "פינצטה": "/icon-bank/fine-motor-new/seed-37-tweezers-pompoms/material-tweezers.webp",
-      "פומפונים צבעוניים": "/icon-bank/kitchen-crafts/pompoms-bag.webp",
+      "פומפונים צבעוניים": "/icon-bank/manual/pompoms-sorting-step.webp",
       "2 קעריות": "/icon-bank/manual/sandbottle-bowls.webp",
     },
     steps: {
@@ -793,7 +793,7 @@ export const ACTIVITY_ICON_SETS = {
     hero: "/icon-bank/manual/whisk-pompoms.webp",
     materials: {
       "מטרפה (וויסק) מטבח": "/icon-bank/manual/whisk-tool.webp",
-      "פומפונים רכים בצבעים שונים": "/icon-bank/kitchen-crafts/pompoms-bag.webp",
+      "פומפונים רכים בצבעים שונים": "/icon-bank/manual/pompoms-sorting-step.webp",
     },
     steps: {
       1: "/icon-bank/manual/whisk-pompoms-step1.webp",

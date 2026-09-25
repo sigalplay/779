@@ -4,6 +4,7 @@ import { AppShell } from "@/components/AppShell";
 import { BOARD_GAMES } from "@/lib/board-games-data";
 import { BOARD_GAMES_EN } from "@/lib/board-games-en";
 import { useTranslator } from "@/lib/language";
+import { imageAlt } from "@/lib/image-seo";
 
 export default function BoardGames({ mode = "therapist" }) {
   const { language, t } = useTranslator();
@@ -26,7 +27,7 @@ export default function BoardGames({ mode = "therapist" }) {
           >
             <div className="flex h-40 items-center justify-center overflow-hidden bg-white p-3">
               {g.image ? (
-                <img src={g.image} alt={t(`איור של המשחק ${original.title}`, `Illustration for ${g.title}`)} title={t(`${original.title} — משחק לילדים מבואו נשחק`, `${g.title} — a Let's Play game for children`)} data-seo-name={t(`${original.title} משחק לילדים`, `${g.title} game for children`)} className="h-full w-full object-contain" />
+                <img src={g.image} alt={imageAlt(g.title, "boardGame", language)} title={imageAlt(g.title, "boardGame", language)} className="h-full w-full object-contain" />
               ) : (
                 <span className="text-7xl leading-none drop-shadow-md">{g.emoji}</span>
               )}

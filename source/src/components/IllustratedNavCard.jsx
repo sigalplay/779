@@ -6,7 +6,15 @@ import { useTranslator } from "@/lib/language";
 const baseClasses =
   "group relative block overflow-hidden border border-white/80 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2";
 
+// "מחולל סיפורים חברתיים" -> "מחולל סיפורים חברתיים לילדים": the picture says who it is for.
+function cardAlt(title, subtitle, language) {
+  const text = [title, subtitle].filter((part) => typeof part === "string" && part).join(" – ");
+  if (/ילדים|kids|children/i.test(text)) return text;
+  return `${text} ${language === "en" ? "for kids" : "לילדים"}`;
+}
+
 function CardContent({ image, title, subtitle, description, large = false, showArrow = false, captionClassName, language, eager = false }) {
+  const alt = cardAlt(title, subtitle, language);
   return (
     <>
       <img
@@ -14,9 +22,8 @@ function CardContent({ image, title, subtitle, description, large = false, showA
         loading={eager ? "eager" : "lazy"}
         fetchPriority={eager ? "high" : "auto"}
         decoding="async"
-        alt={language === "en" ? `Illustration for ${title}` : `איור של ${title}`}
-        title={`${title} — ${language === "en" ? "Let's Play" : "בואו נשחק"}`}
-        data-seo-name={title}
+        alt={alt}
+        title={alt}
         className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.015]"
       />
       <div
@@ -58,15 +65,11 @@ const STANDALONE_PAGES = new Set([
 
 export function IllustratedNavCard({ to, image, title, subtitle, description, large = false, showArrow = false, className, captionClassName, eager = false }) {
   const { language } = useTranslator();
-  return (
-    <Link
-      to={to}
-      reloadDocument={STANDALONE_PAGES.has(to)}
-      className={cn(baseClasses, language === "en" ? "text-left" : "text-right", large ? "min-h-[330px] rounded-3xl md:min-h-[370px]" : "min-h-[190px] rounded-2xl", className)}
-    >
-      <CardContent image={image} title={title} subtitle={subtitle} description={description} large={large} showArrow={showArrow} captionClassName={captionClassName} language={language} eager={eager} />
-    </Link>
-  );
+  const cardClass = cn(baseClasses, language === "en" ? "text-left" : "text-right", large ? "min-h-[330px] rounded-3xl md:min-h-[370px]" : "min-h-[190px] rounded-2xl", className);
+  const content = <CardContent image={image} title={title} subtitle={subtitle} description={description} large={large} showArrow={showArrow} captionClassName={captionClassName} language={language} eager={eager} />;
+  // A standalone page is a plain link to its full address (the router would add /en to it again).
+  if (STANDALONE_PAGES.has(to)) return <a href={to} className={cardClass}>{content}</a>;
+  return <Link to={to} className={cardClass}>{content}</Link>;
 }
 
 export function IllustratedNavButton({ onClick, image, title, description, large = false, className, captionClassName }) {

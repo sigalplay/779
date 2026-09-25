@@ -134,3 +134,17 @@ Please read through; any change is a one-line edit in the file shown.
 
 Also written by hand: session-number labels ("Session 3"), sample client names, weekday abbreviations,
 confirmation messages that include a name (archive/delete client, delete board), motor-trail equipment messages.
+
+## Added in stage 7
+
+| File | Hebrew | English |
+|---|---|---|
+| lib/board-games-en.js | צוללות (the whole game) | Submarines — was a description of Battleships, now translated from the Hebrew |
+| lib/image-seo.js | לוח התארגנות בוקר / ערב / שבועי לילדים | Morning / Evening routine chart for kids, Weekly visual schedule for kids |
+| lib/image-seo.js | פעילות / משחק / משחק קופסה / מתכון / ניסוי לילדים | Activity / Game / Board game / Recipe / Science experiment for kids |
+| lib/image-seo.js | סיפור חברתי / מסלול מוטורי / לוח מפגש טיפולי לילדים | Social story / Obstacle course / Therapy session board for kids |
+| lib/seo.js | (title) … – משחק לילדים \| בואו נשחק | … — Game for Kids \| Let's Play |
+| lib/seo.js | (title) … – ניסוי לילדים \| בואו נשחק | … — Science Experiment for Kids \| Let's Play |
+| lib/seo.js | מתכון מאויר להכנת … עם ילדים: מצרכים, כלים ושלבי הכנה ברורים. | An illustrated recipe for making … with children: ingredients, tools and clear steps. |
+| lib/seo.js | …: ציוד, שלבים מאוירים והסבר מדעי פשוט לילדים. | …: materials, illustrated steps and a simple science explanation for children. |
+| pages/SessionNotes.jsx | תמונת פרופיל | Profile photo |

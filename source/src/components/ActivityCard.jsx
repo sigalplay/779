@@ -11,6 +11,7 @@ import { getActivityDurationShortLabel } from "@/lib/activity-duration";
 import { activityHero } from "@/lib/activity-icons";
 import { useTranslator } from "@/lib/language";
 import { activityTitle } from "@/lib/content-translations";
+import { activityContext, imageAlt } from "@/lib/image-seo";
 
 const DIFFICULTY_LABEL = {
   easy: "קל",
@@ -99,9 +100,8 @@ export function ActivityCard({ activity, index = 0, mode, returnPath, returnLabe
           {hero ? (
             <img
               src={hero}
-              alt={t(`איור של הפעילות ${activity.title}`, `Illustration for ${title}`)}
-              title={t(`${activity.title} — פעילות לילדים מבואו נשחק`, `${title} — a Let's Play activity for children`)}
-              data-seo-name={t(`${activity.title} פעילות לילדים`, `${title} activity for children`)}
+              alt={imageAlt(title, activityContext(activity), language)}
+              title={imageAlt(title, activityContext(activity), language)}
               className="h-full w-full object-contain"
             />
           ) : (

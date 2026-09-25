@@ -3,6 +3,7 @@ import { ShareLinkField } from "@/components/ShareLinkField";
 import { Printer, RotateCcw, X, ChevronUp, ChevronDown, Plus, Smartphone, Copy, Check } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useTranslator } from "@/lib/language";
+import { imageAlt } from "@/lib/image-seo";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -73,7 +74,7 @@ export default function EveningRoutine({ mode }) {
 
       {characters.length > 1 && <div className="print:hidden mb-6">
         <h2 className="mb-2 font-display text-base font-bold">{t("בחרו את הדמות שהכי דומה לילד/ה שלכם", "Choose the character that looks most like your child")}</h2>
-        <div className="flex flex-wrap gap-3">{characters.map((c) => <button key={c.id} type="button" onClick={() => switchCharacter(c.id)} className={`flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border-2 bg-cream ${characterId === c.id ? "border-sage" : "border-transparent hover:border-sage/40"}`}><img src={c.avatar} alt={c.name || t("בחירת דמות", "Choose character")} className="h-full w-full object-cover" /></button>)}</div>
+        <div className="flex flex-wrap gap-3">{characters.map((c) => <button key={c.id} type="button" onClick={() => switchCharacter(c.id)} className={`flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border-2 bg-cream ${characterId === c.id ? "border-sage" : "border-transparent hover:border-sage/40"}`}><img src={c.avatar} alt={imageAlt(c.name || t("בחירת דמות", "Choose character"), "evening", language)} className="h-full w-full object-cover" /></button>)}</div>
       </div>}
 
       <div className="grid gap-6 md:grid-cols-[1fr_1.2fr] print:!grid-cols-1">
@@ -81,7 +82,7 @@ export default function EveningRoutine({ mode }) {
           <h2 className="mb-1 font-display text-lg font-bold">{t("בנק שלבים", "Step library")}</h2>
           <p className="mb-4 text-xs text-muted-foreground">{t("לוחצים על תמונה כדי להוסיף אותה ללוח, בסדר שרוצים.", "Tap a picture to add it to the visual schedule. Add the steps in the order you want.")}</p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{available.map((s) => <button key={s.id} type="button" onClick={() => setOrder((prev) => [...prev, s.id])} className="group relative flex aspect-[4/3] items-stretch overflow-hidden rounded-3xl border border-border/60 bg-cream text-right hover:border-sage/60">
-            <div className="relative flex min-w-0 flex-1 items-center justify-center p-2"><img src={imageForStep(s, characterId)} alt={labelFor(s, gender, language)} className="max-h-full max-w-full object-contain" /><span className="absolute left-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-sage opacity-0 group-hover:opacity-100"><Plus className="h-3 w-3" /></span></div>
+            <div className="relative flex min-w-0 flex-1 items-center justify-center p-2"><img src={imageForStep(s, characterId)} alt={imageAlt(labelFor(s, gender, language), "evening", language)} className="max-h-full max-w-full object-contain" /><span className="absolute left-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-sage opacity-0 group-hover:opacity-100"><Plus className="h-3 w-3" /></span></div>
             <span className="flex w-[42%] shrink-0 items-center justify-center border-r border-sage/20 bg-white/90 px-1.5 text-center text-[10px] font-bold leading-snug text-blue-700 sm:text-[11px]">{labelFor(s, gender, language)}</span>
           </button>)}</div>
         </section>
@@ -91,7 +92,7 @@ export default function EveningRoutine({ mode }) {
           <h3 className="mb-3 hidden text-center font-display text-xl font-bold print:!mb-1 print:block print:text-sm">{t("לוח התארגנות ערב", "Evening Visual Schedule")}</h3>
           {!scheduled.length ? <p className="py-8 text-center text-sm text-muted-foreground print:hidden">{t("בחרו שלבים מהבנק כדי לבנות את הלוח.", "Choose steps from the library to build the board.")}</p> : <ol className="space-y-2 print:!space-y-0.5">{scheduled.map((s, i) => <li key={s.id} className="routine-print-item flex items-center gap-3 rounded-xl border border-border/60 bg-background px-3 py-2 print:break-inside-avoid print:!gap-1.5 print:border print:border-border print:!px-1.5 print:!py-0.5">
             <span className="routine-print-number flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sage/70 text-sm font-bold print:!h-4 print:!w-4 print:text-[9px]">{i + 1}</span>
-            <div className="routine-print-image flex h-24 w-24 shrink-0 items-center justify-center print:!h-[92px] print:!w-[92px]"><img src={imageForStep(s, characterId)} alt={labelFor(s, gender, language)} className="max-h-full max-w-full object-contain" /></div>
+            <div className="routine-print-image flex h-24 w-24 shrink-0 items-center justify-center print:!h-[92px] print:!w-[92px]"><img src={imageForStep(s, characterId)} alt={imageAlt(labelFor(s, gender, language), "evening", language)} className="max-h-full max-w-full object-contain" /></div>
             <span className="routine-print-label flex-1 rounded-xl border border-sky/25 bg-sky/10 px-3 py-2 text-sm font-bold text-blue-700 print:border-0 print:bg-transparent print:px-1 print:py-0 print:text-xs">{labelFor(s, gender, language)}</span>
             <div className="flex shrink-0 items-center gap-1 print:hidden"><button type="button" onClick={() => move(i, -1)} disabled={i === 0} aria-label={t("הזז למעלה", "Move up")} className="flex h-7 w-7 items-center justify-center rounded-full disabled:opacity-30"><ChevronUp className="h-4 w-4" /></button><button type="button" onClick={() => move(i, 1)} disabled={i === scheduled.length - 1} aria-label={t("הזז למטה", "Move down")} className="flex h-7 w-7 items-center justify-center rounded-full disabled:opacity-30"><ChevronDown className="h-4 w-4" /></button><button type="button" onClick={() => setOrder((prev) => prev.filter((id) => id !== s.id))} aria-label={t("הסרה", "Remove")} className="flex h-7 w-7 items-center justify-center rounded-full hover:text-destructive"><X className="h-4 w-4" /></button></div>
           </li>)}</ol>}

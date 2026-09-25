@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { MotionGlobalConfig } from "framer-motion";
 import App from "./App.jsx";
 import "./index.css";
 // סגנונות שהיו קבצי תיקון נפרדים באתר החי. נטענים באותו סדר כמו באתר החי.
@@ -24,7 +25,17 @@ import "./styles/site-shell.css";
 const nativePrint = window.print.bind(window);
 window.print = () => window.setTimeout(nativePrint, 400);
 
-ReactDOM.createRoot(document.getElementById("root")).render(
+// A page saved ready by the build (scripts/prerender.mjs) is already on screen. It stays on screen
+// while the page's code loads (see PageLoader in App.jsx), and its entrance animations are skipped
+// so it does not disappear and fade in again. Animations come back for the next page.
+const root = document.getElementById("root");
+if (root.hasChildNodes()) {
+  window.__prerenderedPage = root.innerHTML;
+  MotionGlobalConfig.skipAnimations = true;
+  window.setTimeout(() => { MotionGlobalConfig.skipAnimations = false; }, 4000);
+}
+
+ReactDOM.createRoot(root).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,

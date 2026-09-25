@@ -612,7 +612,7 @@ export default function TherapistBuild() {
                 const recipe = item.kind === "recipe" ? getRecipe(item.id) : null;
                 const experiment = item.kind === "experiment" ? getExperiment(item.id) : null;
                 const hero = item.kind === "activity"
-                  ? activityHero(item.id) || activity?.hero_image || (activity?.ai_generated ? "/icon-bank/manual/pencil-2.webp" : null)
+                  ? activityHero(item.id) || activity?.hero_image || (activity?.ai_generated ? "/icon-bank/crafts-new/seed-71-independent/material-pencil.webp" : null)
                   : item.kind === "photo" ? item.image
                     : item.kind === "recipe" ? recipe?.cover ?? null
                       : item.kind === "experiment" ? experimentHero(item.id)
@@ -927,7 +927,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
           const experiment = item.kind === "experiment" ? getExperiment(item.id) : null;
           const sign = item.visualSign ? findSign(item.visualSign) : null;
           const hero = item.kind === "activity"
-            ? activityHero(item.id) || activity?.hero_image || (activity?.ai_generated ? "/icon-bank/manual/pencil-2.webp" : null)
+            ? activityHero(item.id) || activity?.hero_image || (activity?.ai_generated ? "/icon-bank/crafts-new/seed-71-independent/material-pencil.webp" : null)
             : item.kind === "photo" ? (sign && signImages[sign.id]) || item.image
               : item.kind === "recipe" ? recipe?.cover ?? null
                 : item.kind === "experiment" ? experimentHero(item.id)
@@ -1010,7 +1010,7 @@ function SuggestedActivityCard({ activity, language, t, addLabel, boardMode, hid
       <div className="flex h-40 items-center justify-center bg-white">
         {activityHero(activity.id) || activity.hero_image ? (
           <div className="flex h-28 w-28 items-center justify-center"><img src={activityHero(activity.id) || activity.hero_image} alt="" className="max-h-full max-w-full object-contain" /></div>
-        ) : activity.ai_generated ? <img src="/icon-bank/manual/pencil-2.webp" alt="" className="h-24 w-24 object-contain" /> : <span className="text-6xl">{activityEmoji(activity)}</span>}
+        ) : activity.ai_generated ? <img src="/icon-bank/crafts-new/seed-71-independent/material-pencil.webp" alt="" className="h-24 w-24 object-contain" /> : <span className="text-6xl">{activityEmoji(activity)}</span>}
       </div>
       <div className="flex flex-1 flex-col p-4">
         <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
@@ -1035,7 +1035,7 @@ function ActivityCandidateCard({ activity, addLabel, boardMode, hidden, onAdd })
       <div className="flex h-40 items-center justify-center bg-white">
         {activityHero(activity.id) || activity.hero_image ? (
           <div className="flex h-28 w-28 items-center justify-center"><img src={activityHero(activity.id) || activity.hero_image} alt="" className="max-h-full max-w-full object-contain" /></div>
-        ) : activity.ai_generated ? <img src="/icon-bank/manual/pencil-2.webp" alt="" className="h-24 w-24 object-contain" /> : <span className="text-6xl">{activityEmoji(activity)}</span>}
+        ) : activity.ai_generated ? <img src="/icon-bank/crafts-new/seed-71-independent/material-pencil.webp" alt="" className="h-24 w-24 object-contain" /> : <span className="text-6xl">{activityEmoji(activity)}</span>}
       </div>
       <div className="flex flex-1 flex-col p-4">
         <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">

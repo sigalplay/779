@@ -1,11 +1,12 @@
 import { Component, lazy, Suspense, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { MotionGlobalConfig } from "framer-motion";
 import { useImageSeo } from "@/lib/image-seo";
 import { SeoManager } from "@/components/SeoManager";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import Landing from "@/pages/Landing";
 import { AnalyticsConsent } from "@/components/AnalyticsConsent";
-import { setLanguage } from "@/lib/language";
+import { routerBasename } from "@/lib/language";
 
 
 
@@ -64,10 +65,19 @@ const DeferredToaster = lazy(() => import("sonner").then((module) => ({ default:
 
 function PageLoader() {
   const [slow, setSlow] = useState(false);
+  // On the first load of a page saved by the build, keep showing the saved page instead of "loading".
+  const [savedPage] = useState(() => window.__prerenderedPage || null);
   useEffect(() => {
     const id = window.setTimeout(() => setSlow(true), 6000);
-    return () => window.clearTimeout(id);
-  }, []);
+    return () => {
+      window.clearTimeout(id);
+      if (savedPage) {
+        window.__prerenderedPage = null;
+        window.setTimeout(() => { MotionGlobalConfig.skipAnimations = false; }, 300);
+      }
+    };
+  }, [savedPage]);
+  if (savedPage) return <div style={{ display: "contents" }} dangerouslySetInnerHTML={{ __html: savedPage }} />;
   return <div className="flex min-h-screen items-center justify-center bg-background"><div className="text-center"><div className="rounded-full bg-card px-5 py-3 text-sm font-bold text-muted-foreground shadow-sm">טוענת…</div>{slow && <button type="button" onClick={() => window.location.reload()} className="mt-4 rounded-full border border-border bg-white px-4 py-2 text-sm font-bold">הטעינה מתעכבת — רענון</button>}</div></div>;
 }
 
@@ -107,34 +117,29 @@ function TherapistBuildEntry() {
   return <TherapistBuild key={`${params.get("boardDate") || ""}|${params.get("patientBoard") || ""}`} />;
 }
 
-// כתובות /en ו-/en/... מעבירות את האתר לאנגלית ומציגות את אותו עמוד בלי הקידומת.
-function EnglishEntry() {
-  const location = useLocation();
-  setLanguage("en");
-  const target = location.pathname.replace(/^\/en(?=\/|$)/, "") || "/";
-  return <Navigate to={`${target}${location.search}${location.hash}`} replace />;
-}
-
 export default function App() {
   useImageSeo();
+  // English pages keep their /en/ address: the router runs under /en, so every link stays in English.
   return (
-    <RouteErrorBoundary><BrowserRouter>
+    <RouteErrorBoundary><BrowserRouter basename={routerBasename()}>
       <ScrollToTop />
       <SeoManager />
       <AnalyticsConsent />
       <DeferredServices />
       <Suspense fallback={<PageLoader />}><Routes>
         <Route path="/" element={<Landing />} />
-        <Route path="/en" element={<EnglishEntry />} />
-        <Route path="/en/*" element={<EnglishEntry />} />
         <Route path="/parent/play" element={<ParentPlay />} />
         <Route path="/parent/recipes" element={<TherapistRecipes mode="parent" />} />
+        <Route path="/parent/recipes/:recipeId" element={<TherapistRecipes mode="parent" />} />
         <Route path="/parent/experiments" element={<TherapistExperiments mode="parent" />} />
+        <Route path="/parent/experiments/:experimentId" element={<TherapistExperiments mode="parent" />} />
         <Route path="/therapist" element={<TherapistBoardEntry />} />
         <Route path="/therapist/board" element={<TherapistBoardEntry />} />
         <Route path="/therapist/build" element={<TherapistBuildEntry />} />
         <Route path="/therapist/recipes" element={<TherapistRecipes />} />
+        <Route path="/therapist/recipes/:recipeId" element={<TherapistRecipes />} />
         <Route path="/therapist/experiments" element={<TherapistExperiments />} />
+        <Route path="/therapist/experiments/:experimentId" element={<TherapistExperiments />} />
         <Route path="/therapist/cipher" element={<CipherGenerator />} />
         <Route path="/parent/cipher" element={<CipherGenerator mode="parent" />} />
         <Route path="/therapist/morning-routine" element={<MorningRoutine mode="therapist" />} />

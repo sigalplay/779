@@ -12,6 +12,7 @@ import { TagList } from "@/components/TagList";
 import { BOARD_GAMES_EN } from "@/lib/board-games-en";
 import { useTranslator } from "@/lib/language";
 import { translatedTerm } from "@/lib/content-translations";
+import { imageAlt } from "@/lib/image-seo";
 
 const NIKUD_KEY = "board-game:nikud";
 
@@ -182,7 +183,7 @@ export default function BoardGameDetail() {
           className="flex h-56 items-center justify-center overflow-hidden rounded-3xl bg-white p-4 md:h-72"
         >
           {g.image ? (
-            <img src={g.image} alt="" className="h-full w-full object-contain" />
+            <img src={g.image} alt={imageAlt(g.title, "boardGame", language)} title={imageAlt(g.title, "boardGame", language)} className="h-full w-full object-contain" />
           ) : (
             <span className="text-8xl leading-none drop-shadow-md md:text-9xl">{g.emoji}</span>
           )}

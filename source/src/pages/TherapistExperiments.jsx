@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useBodyClass } from "@/lib/use-body-class";
-import { useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowRight, Clock, FlaskConical, RotateCcw, ShieldAlert, Home, ChevronDown, ChevronUp, CheckCircle2, ListPlus, Check } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
@@ -10,6 +10,7 @@ import { addToDraftPlan } from "@/lib/storage";
 import { useCmsCollection } from "@/lib/cms-content";
 import { brandLogo, useTranslator } from "@/lib/language";
 import { EXPERIMENT_EN } from "@/lib/experiment-content-en";
+import { imageAlt, shortLabel } from "@/lib/image-seo";
 
 const ROOT = "/icon-bank/manual/experiments";
 export const EXPERIMENTS = [
@@ -720,7 +721,7 @@ function HighlightableText({ text, stepKey, highlighted, onToggle }) {
   );
 }
 
-function ExperimentPrintRow({ i, iconSrc, label }) {
+function ExperimentPrintRow({ i, iconSrc, label, altWhere }) {
   return (
     <tr>
       <td style={i === 0 ? { width: "6%" } : undefined} className="border border-black p-1 text-center">
@@ -730,7 +731,7 @@ function ExperimentPrintRow({ i, iconSrc, label }) {
         {i + 1}
       </td>
       <td style={i === 0 ? { width: "16%" } : undefined} className="border border-black p-1">
-        <img src={iconSrc} alt="" className="mx-auto h-14 w-14 object-contain" />
+        <img src={iconSrc} alt={imageAlt(shortLabel(label), altWhere)} className="mx-auto h-14 w-14 object-contain" />
       </td>
       <td style={i === 0 ? { width: "70%" } : undefined} className="border border-black p-1">
         {label}
@@ -742,11 +743,12 @@ function ExperimentPrintRow({ i, iconSrc, label }) {
 function ExperimentPrintSheet({ exp, pick, expN, language }) {
   const { t } = useTranslator();
   const label = (he, en) => language === "en" ? en : he;
+  const altWhere = imageAlt(pick(exp.title, expN.title), "experiment", language);
   return (
     <div className="activity-print-sheet hidden print:block print:space-y-4 print:text-black">
       <div className="relative flex items-center justify-center gap-5 border-b-2 border-black pb-3">
         <img src={brandLogo(language)} alt={label(t("בואו נשחק", "Let's Play"), "Let's Play")} className="print-sheet-brand absolute left-0 top-0 h-14 w-16 object-contain" />
-        <img src={src(exp.id, "hero")} alt="" className="h-24 w-24 shrink-0 object-contain" />
+        <img src={src(exp.id, "hero")} alt={altWhere} className="h-24 w-24 shrink-0 object-contain" />
         <h1 className="text-center text-4xl font-black">{pick(exp.title, expN.title)}</h1>
       </div>
 
@@ -763,7 +765,7 @@ function ExperimentPrintSheet({ exp, pick, expN, language }) {
           <table className="w-full table-fixed border-collapse border border-black text-base">
             <tbody>
               {exp.materials.map((m, i) => (
-                <ExperimentPrintRow key={i} i={i} iconSrc={materialSrc(exp, i)} label={pick(m, expN.materials?.[i])} />
+                <ExperimentPrintRow altWhere={altWhere} key={i} i={i} iconSrc={materialSrc(exp, i)} label={pick(m, expN.materials?.[i])} />
               ))}
             </tbody>
           </table>
@@ -776,7 +778,7 @@ function ExperimentPrintSheet({ exp, pick, expN, language }) {
           <table className="w-full table-fixed border-collapse border border-black text-base">
             <tbody>
               {exp.steps.map((s, i) => (
-                <ExperimentPrintRow key={i} i={i} iconSrc={stepSrc(exp, i)} label={pick(s, expN.steps?.[i])} />
+                <ExperimentPrintRow altWhere={altWhere} key={i} i={i} iconSrc={stepSrc(exp, i)} label={pick(s, expN.steps?.[i])} />
               ))}
             </tbody>
           </table>
@@ -800,7 +802,10 @@ export default function TherapistExperiments({ mode = "therapist" }){
  const {language,t}=useTranslator();
  useBodyClass("compact-catalog-mobile-page");
  const cmsExperiments=useCmsCollection("experiment", EXPERIMENTS);
- const [searchParams,setSearchParams]=useSearchParams();
+ const [searchParams]=useSearchParams();
+ const {experimentId}=useParams();
+ const navigate=useNavigate();
+ const listPath=mode==="parent"?"/parent/experiments":"/therapist/experiments";
  const [exp,setExp]=useState(null); const [done,setDone]=useState({}); const [nikud,setNikud]=useState(false);
  const [handwriting,setHandwriting]=useState(false);
  const [highlightedWords,setHighlightedWords]=useState(()=>new Set());
@@ -809,11 +814,11 @@ export default function TherapistExperiments({ mode = "therapist" }){
  const [expandedMaterial,setExpandedMaterial]=useState(null);
  const [pantryMode,setPantryMode]=useState(false); const [haveItems,setHaveItems]=useState(new Set()); const [openCat,setOpenCat]=useState(null);
  useEffect(()=>{
-  const eid=searchParams.get("e");
+  // Older links used ?e=<id>; they still open the experiment.
+  const eid=experimentId||searchParams.get("e");
   if(eid){const found=cmsExperiments.find(d=>d.id===eid); if(found){setExp(found); setDone({}); setExpandedStep(null);}}
   else setExp(null);
- },[searchParams,cmsExperiments]);
- const openExperiment=e=>{setExp(e);setSearchParams({e:e.id});reset();};
+ },[experimentId,searchParams,cmsExperiments]);
  const tick=k=>setDone(v=>({...v,[k]:!v[k]})); const reset=()=>{setDone({});setExpandedStep(null);setExpandedMaterial(null);};
  const pick=(t,tn)=>nikud&&tn?tn:t;
  const expN=exp?(language==="en"?(EXPERIMENT_EN[exp.id]||{}):(DATA_N[exp.id]||{})):{};
@@ -856,29 +861,30 @@ export default function TherapistExperiments({ mode = "therapist" }){
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 compact-catalog-grid-v95">
         {pantryResults.map(({e,missing})=><div key={e.id} className="relative overflow-hidden rounded-3xl border bg-card transition hover:-translate-y-1 hover:shadow-lg compact-catalog-card-v95">
           <AddToPlanButton id={e.id} mode={mode}/>
-          <button onClick={()=>{openExperiment(e);setPantryMode(false)}} className="block w-full text-right">
-          <div className="aspect-square bg-white p-3"><img src={src(e.id,"hero")} className="h-full w-full object-contain" alt={t(`תמונה של הניסוי ${e.title}`, `${e.title} experiment`)} title={t(`${e.title} — ניסוי לילדים מבואו נשחק`, `${e.title} — a kids' experiment from Let's Play`)} data-seo-name={t(`${e.title} ניסוי לילדים`, `${e.title} kids' experiment`)}/></div>
+          <Link to={`${listPath}/${e.id}`} onClick={()=>{reset();setPantryMode(false)}} className="block w-full text-right">
+          <div className="aspect-square bg-white p-3"><img src={src(e.id,"hero")} className="h-full w-full object-contain" alt={imageAlt(t(e.title, display(e).title), "experiment", language)} title={imageAlt(t(e.title, display(e).title), "experiment", language)}/></div>
           <div className="p-5">
             <h2 className="font-display text-xl font-black">{e.title}</h2>
             {missing.length===0?<p className="mt-2 flex items-center gap-1 text-sm font-bold text-sage-foreground"><CheckCircle2 className="h-4 w-4"/>{t("יש לכם הכל!","You have everything!")}</p>:<p className="mt-2 text-sm text-muted-foreground">{t("חסר:","Missing:")} {missing.map(pantryLabel).join(", ")}</p>}
           </div>
-          </button>
+          </Link>
         </div>)}
       </div>
     </div>
   </AppShell>;
  }
- if(!exp)return <AppShell mode={mode}><div className="mb-7"><p className="flex items-center gap-2 font-bold text-sage"><FlaskConical className="h-5 w-5"/>{t("ניסויים","Kids’ Science Experiments")}</p><h1 className="font-display text-4xl font-black">{t("מעבדת הניסויים","Science Lab")}</h1><p className="mt-2 text-muted-foreground">{t("ניסויים ביתיים עם כלים פשוטים, תמונה לכל פריט ואיור נפרד לכל שלב.","Home experiments using simple materials, with a picture for every item and every step.")}</p></div><button onClick={()=>setPantryMode(true)} className="mb-7 flex w-full items-center gap-4 overflow-hidden rounded-3xl border-2 border-sage/40 bg-gradient-to-l from-sage/25 via-sky/15 to-transparent p-6 text-right transition hover:-translate-y-0.5 hover:shadow-lg"><div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-sage/30 text-sage-foreground"><Home className="h-7 w-7"/></div><div><h2 className="font-display text-2xl font-black md:text-3xl">{t("מה יש לנו בבית?","What do we have at home?")}</h2><p className="mt-1 text-sm text-muted-foreground md:text-base">{t("סמנו מה יש לכם בבית, ונבנה לכם רשימת ניסויים אפשרית - בלי לחפש עוד","Select what you have and we'll show you experiments you can make.")}</p></div></button><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 compact-catalog-grid-v95">{cmsExperiments.map(e=>{const d=display(e);return <div key={e.id} className="relative overflow-hidden rounded-3xl border bg-card transition hover:-translate-y-1 hover:shadow-lg compact-catalog-card-v95"><AddToPlanButton id={e.id} mode={mode}/><button onClick={()=>openExperiment(e)} className="block w-full text-right"><div className="aspect-square bg-white p-3"><img src={src(e.id,"hero")} className="h-full w-full object-contain" alt={t(`תמונה של הניסוי ${e.title}`,`Illustration for the ${d.title} experiment`)} title={t(`${e.title} — ניסוי לילדים מבואו נשחק`,`${d.title} — a Let's Play science experiment for children`)} data-seo-name={t(`${e.title} ניסוי לילדים`,`${d.title} science experiment for children`)}/></div><div className="p-5"><h2 className="font-display text-xl font-black">{d.title}</h2><p className="mt-2 text-sm text-muted-foreground"><Clock className="ml-1 inline h-4 w-4"/>{d.time}</p>{d.warning&&<p className="mt-2 flex items-center gap-1 text-xs font-bold text-orange-700"><ShieldAlert className="h-4 w-4"/>{t("נדרש ליווי מבוגר","Adult supervision required")}</p>}</div></button></div>})}</div></AppShell>;
+ if(!exp)return <AppShell mode={mode}><div className="mb-7"><p className="flex items-center gap-2 font-bold text-sage"><FlaskConical className="h-5 w-5"/>{t("ניסויים","Kids’ Science Experiments")}</p><h1 className="font-display text-4xl font-black">{t("מעבדת הניסויים","Science Lab")}</h1><p className="mt-2 text-muted-foreground">{t("ניסויים ביתיים עם כלים פשוטים, תמונה לכל פריט ואיור נפרד לכל שלב.","Home experiments using simple materials, with a picture for every item and every step.")}</p></div><button onClick={()=>setPantryMode(true)} className="mb-7 flex w-full items-center gap-4 overflow-hidden rounded-3xl border-2 border-sage/40 bg-gradient-to-l from-sage/25 via-sky/15 to-transparent p-6 text-right transition hover:-translate-y-0.5 hover:shadow-lg"><div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-sage/30 text-sage-foreground"><Home className="h-7 w-7"/></div><div><h2 className="font-display text-2xl font-black md:text-3xl">{t("מה יש לנו בבית?","What do we have at home?")}</h2><p className="mt-1 text-sm text-muted-foreground md:text-base">{t("סמנו מה יש לכם בבית, ונבנה לכם רשימת ניסויים אפשרית - בלי לחפש עוד","Select what you have and we'll show you experiments you can make.")}</p></div></button><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 compact-catalog-grid-v95">{cmsExperiments.map(e=>{const d=display(e);return <div key={e.id} className="relative overflow-hidden rounded-3xl border bg-card transition hover:-translate-y-1 hover:shadow-lg compact-catalog-card-v95"><AddToPlanButton id={e.id} mode={mode}/><Link to={`${listPath}/${e.id}`} onClick={reset} className="block w-full text-right"><div className="aspect-square bg-white p-3"><img src={src(e.id,"hero")} className="h-full w-full object-contain" alt={imageAlt(t(e.title, d.title), "experiment", language)} title={imageAlt(t(e.title, d.title), "experiment", language)}/></div><div className="p-5"><h2 className="font-display text-xl font-black">{d.title}</h2><p className="mt-2 text-sm text-muted-foreground"><Clock className="ml-1 inline h-4 w-4"/>{d.time}</p>{d.warning&&<p className="mt-2 flex items-center gap-1 text-xs font-bold text-orange-700"><ShieldAlert className="h-4 w-4"/>{t("נדרש ליווי מבוגר","Adult supervision required")}</p>}</div></Link></div>})}</div></AppShell>;
  const shown=display(exp);
+ const altWhere=imageAlt(t(exp.title,shown.title),"experiment",language);
  const allItems=shown.materials.map((text,i)=>({text,i}));
- const item=(x)=>{const isExpanded=expandedMaterial===x.i; return <div key={x.i} className={`flex items-center gap-2 rounded-2xl border p-2 transition-all duration-300 ${isExpanded?"flex-col justify-center py-4 text-center shadow-md":""} ${done[`m${x.i}`]?"border-sage/60 bg-sage/10":"border-border/60 bg-background"}`}><Checkbox checked={!!done[`m${x.i}`]} onCheckedChange={()=>tick(`m${x.i}`)}/><button type="button" onClick={()=>setExpandedMaterial(current=>current===x.i?null:x.i)} aria-label={t(`${isExpanded?"הקטנת":"הגדלת"} ${x.text}`, `${isExpanded?"Reduce":"Enlarge"} ${x.text}`)} className="flex cursor-zoom-in items-center gap-2"><img src={materialSrc(exp,x.i)} className={`${isExpanded?"h-36 w-36 md:h-44 md:w-44":"h-14 w-14"} shrink-0 rounded-xl bg-white object-contain transition-all duration-300`} alt={x.text}/><span className={`text-lg leading-relaxed md:text-xl ${done[`m${x.i}`]?"text-muted-foreground line-through":""} ${handwriting?"font-handwriting":""}`}>{pick(x.text,expN.materials?.[x.i])}</span></button></div>};
+ const item=(x)=>{const isExpanded=expandedMaterial===x.i; return <div key={x.i} className={`flex items-center gap-2 rounded-2xl border p-2 transition-all duration-300 ${isExpanded?"flex-col justify-center py-4 text-center shadow-md":""} ${done[`m${x.i}`]?"border-sage/60 bg-sage/10":"border-border/60 bg-background"}`}><Checkbox checked={!!done[`m${x.i}`]} onCheckedChange={()=>tick(`m${x.i}`)}/><button type="button" onClick={()=>setExpandedMaterial(current=>current===x.i?null:x.i)} aria-label={t(`${isExpanded?"הקטנת":"הגדלת"} ${x.text}`, `${isExpanded?"Reduce":"Enlarge"} ${x.text}`)} className="flex cursor-zoom-in items-center gap-2"><img src={materialSrc(exp,x.i)} className={`${isExpanded?"h-36 w-36 md:h-44 md:w-44":"h-14 w-14"} shrink-0 rounded-xl bg-white object-contain transition-all duration-300`} alt={imageAlt(pick(x.text,expN.materials?.[x.i]),altWhere)}/><span className={`text-lg leading-relaxed md:text-xl ${done[`m${x.i}`]?"text-muted-foreground line-through":""} ${handwriting?"font-handwriting":""}`}>{pick(x.text,expN.materials?.[x.i])}</span></button></div>};
  return (
   <AppShell mode={mode}>
-   <button onClick={()=>{setExp(null);setSearchParams({});setExpandedStep(null)}} className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground">
+   <button onClick={()=>{setExp(null);navigate(listPath);setExpandedStep(null)}} className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground">
     <ArrowRight className="h-4 w-4"/>{t("חזרה לניסויים","Back to experiments")}
    </button>
    <div className="flex h-56 items-center justify-center overflow-hidden rounded-3xl border border-border/60 bg-white p-4 md:h-72 print:hidden">
-    <img src={src(exp.id,"hero")} className="h-full w-full object-contain" alt={t(`התוצאה של ${exp.title}`,`Result of ${shown.title}`)} title={t(exp.title,shown.title)}/>
+    <img src={src(exp.id,"hero")} className="h-full w-full object-contain" alt={altWhere} title={altWhere}/>
    </div>
    <h1 className={`mt-5 text-4xl font-black print:hidden ${handwriting?"font-handwriting":"font-display"}`}>{pick(shown.title,expN.title)}</h1>
    <div className="mt-3 flex flex-wrap gap-2 print:hidden">
@@ -930,8 +936,8 @@ export default function TherapistExperiments({ mode = "therapist" }){
           className={`aspect-square shrink-0 rounded-lg border border-border/40 bg-white object-contain transition-all duration-300 print:h-12 print:w-12 print:rounded-md ${
            isExpanded?"h-40 w-40 md:h-52 md:w-52":"h-[78px] w-[78px] sm:h-[88px] sm:w-[88px]"
           }`}
-          alt={t(`שלב ${i+1}`,`Step ${i+1}`)}
-          title={t(`שלב ${i+1} בניסוי ${exp.title}`,`Step ${i+1} of ${shown.title}`)}
+          alt={imageAlt(shortLabel(pick(s,expN.steps?.[i])),altWhere)}
+          title={imageAlt(shortLabel(pick(s,expN.steps?.[i])),altWhere)}
          />
          <span className={`min-w-0 flex-1 leading-relaxed transition-all duration-300 print:text-[11px] print:leading-3 ${isExpanded?"text-xl md:text-2xl":"text-lg md:text-xl"} ${isChecked?"text-muted-foreground line-through":""} ${handwriting?"font-handwriting":""}`}>
           <b className="ml-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-sage/70 text-[11px] text-sage-foreground print:h-4 print:w-4 print:text-[9px]">{i+1}</b>

@@ -7381,7 +7381,7 @@ const ALL_SEED_ACTIVITIES = [
     "materials": ["דף כריש עם פה עגול גדול", "פלסטלינה אדומה", "מקלות אוזניים חתוכים לחתיכות קצרות"],
     "materialsN": ["דַּף כָּרִישׁ עִם פֶּה עָגֹל גָּדוֹל", "פְּלַסְטֶלִינָה אֲדֻמָּה", "מַקְלוֹת אָזְנַיִם חֲתוּכִים לַחֲתִיכוֹת קְצָרוֹת"],
     "attachments": [
-      {"file": "/downloads/shark-teeth/shark-color.pdf", "preview": "/downloads/shark-teeth/shark-color.png", "label": "דף כריש צבעוני להדפסה - PDF"},
+      {"file": "/downloads/shark-teeth/shark-colour.pdf", "preview": "/downloads/shark-teeth/shark-colour.png", "label": "דף כריש צבעוני להדפסה - PDF"},
       {"file": "/downloads/shark-teeth/shark-black-white.pdf", "preview": "/downloads/shark-teeth/shark-black-white.png", "label": "דף כריש בשחור־לבן להדפסה - PDF"}
     ],
     "preparation": "מבוגר מצייר או מדפיס כריש עם פה עגול וריק, וחותך מראש את מקלות האוזניים לחתיכות קצרות. החלקים הקטנים מיועדים לעבודה בהשגחת מבוגר בלבד ואינם מתאימים לילדים שמכניסים חפצים לפה.",

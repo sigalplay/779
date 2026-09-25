@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useBodyClass } from "@/lib/use-body-class";
-import { useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ChefHat, Clock, ArrowLeft, RotateCcw, ListPlus, Check, Printer, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
@@ -11,6 +11,7 @@ import { addToDraftPlan } from "@/lib/storage";
 import { brandLogo, useTranslator } from "@/lib/language";
 import { RECIPE_EN } from "@/lib/recipe-content-en";
 import { useCmsCollection } from "@/lib/cms-content";
+import { imageAlt, shortLabel } from "@/lib/image-seo";
 
 function translatedRecipe(recipe, language) {
   if (language !== "en" || !RECIPE_EN[recipe.id]) return recipe;
@@ -816,7 +817,7 @@ export const RECIPES = [
       {
         text: "3–4 תפוחים גדולים",
         textN: "3–4 תַּפּוּחִים גְּדוֹלִים",
-        img: "/icon-bank/manual/chocolate-apple-slices/ingredient-apples-v2.webp",
+        img: "/icon-bank/manual/chocolate-apple-slices/ingredient-apples-v2.png",
       },
       {
         text: "12–16 שיפודי עץ",
@@ -826,7 +827,7 @@ export const RECIPES = [
       {
         text: "200 גרם שוקולד",
         textN: "200 גְּרַם שׁוֹקוֹלָד",
-        img: "/icon-bank/manual/chocolate-apple-slices/ingredient-chocolate-v2.webp",
+        img: "/icon-bank/manual/chocolate-apple-slices/ingredient-chocolate-v2.png",
       },
       {
         text: "סוכריות לבחירה",
@@ -1103,7 +1104,7 @@ export const RECIPES = [
       {
         text: "250 גרם ביסקוויטים",
         textN: "250 גְּרַם בִּיסְקְוִיטִים",
-        img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-cookies.webp",
+        img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-biscuits.webp",
       },
       {
         text: "3 כפות קקאו או שוקולית",
@@ -1173,7 +1174,7 @@ export const RECIPES = [
       {
         text: "4 ביסקוויטים",
         textN: "4 בִּיסְקְוִיטִים",
-        img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-cookies.webp",
+        img: "/icon-bank/manual/chocolate-balls-new/chocolate-balls-biscuits.webp",
       },
       {
         text: "8 יחידות מרשמלו",
@@ -1895,11 +1896,15 @@ export default function TherapistRecipes({ mode = "therapist" }) {
   const { language, t } = useTranslator();
   useBodyClass("compact-catalog-mobile-page");
   const cmsRecipes = useCmsCollection("recipe", RECIPES);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const activeId = searchParams.get("r");
+  const [searchParams] = useSearchParams();
+  const { recipeId } = useParams();
+  const navigate = useNavigate();
+  const listPath = mode === "parent" ? "/parent/recipes" : "/therapist/recipes";
+  // Older links used ?r=<id>; they still open the recipe.
+  const activeId = recipeId || searchParams.get("r");
   const active = cmsRecipes.find((r) => r.id === activeId) ?? null;
 
-  if (active) return <RecipeDetail recipe={active} mode={mode} onBack={() => setSearchParams({})} />;
+  if (active) return <RecipeDetail recipe={active} mode={mode} onBack={() => navigate(listPath)} />;
 
   return (
     <AppShell mode={mode}>
@@ -1918,14 +1923,14 @@ export default function TherapistRecipes({ mode = "therapist" }) {
           return (
           <div key={r.id} className="group relative overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md compact-catalog-card-v95">
             <AddToPlanButton kind="recipe" id={r.id} mode={mode} />
-            <button
-              onClick={() => setSearchParams({ r: r.id })}
+            <Link
+              to={`${listPath}/${r.id}`}
               className="block w-full text-right"
             >
               <div className="flex h-44 items-center justify-center bg-white">
                 {r.cover ? (
                   <div className="flex h-36 w-36 items-center justify-center">
-                    <img src={r.cover} alt={t(`תמונה של המתכון ${r.title}`, `Illustration for the ${title} recipe`)} title={t(`${r.title} — מתכון לילדים מבואו נשחק`, `${title} — a Let's Play recipe for children`)} data-seo-name={t(`${r.title} מתכון לילדים`, `${title} recipe for children`)} className="max-h-full max-w-full object-contain" />
+                    <img src={r.cover} alt={imageAlt(title, "recipe", language)} title={imageAlt(title, "recipe", language)} className="max-h-full max-w-full object-contain" />
                   </div>
                 ) : r.coverIcon ? (
                   <div className="h-28 w-28">
@@ -1941,7 +1946,7 @@ export default function TherapistRecipes({ mode = "therapist" }) {
                   <Clock className="h-3.5 w-3.5" /> {r.duration}
                 </span>
               </div>
-            </button>
+            </Link>
           </div>
         )})}
       </div>
@@ -2007,9 +2012,10 @@ function PrintRow({ i, icon, label, isLast }) {
 function RecipePrintSheet({ recipe, pick, language }) {
   const { t } = useTranslator();
   const label = (he, en) => language === "en" ? en : he;
+  const altWhere = imageAlt(recipe.title, "recipe", language);
   const iconFor = (item) =>
     item.img ? (
-      <img src={item.img} alt="" className="mx-auto h-14 w-14 object-contain" />
+      <img src={item.img} alt={imageAlt(shortLabel(pick(item.text, item.textN)), altWhere)} className="mx-auto h-14 w-14 object-contain" />
     ) : item.icon ? (
       <div className="mx-auto h-9 w-9">
         <item.icon />
@@ -2023,7 +2029,7 @@ function RecipePrintSheet({ recipe, pick, language }) {
       <div className="relative flex items-center justify-center gap-5 border-b-2 border-black pb-3">
         <img src={brandLogo(language)} alt={label(t("בואו נשחק", "Let's Play"), "Let's Play")} className="print-sheet-brand absolute left-0 top-0 h-14 w-16 object-contain" />
         {recipe.cover ? (
-          <img src={recipe.cover} alt="" className="h-24 w-24 shrink-0 object-contain" />
+          <img src={recipe.cover} alt={altWhere} className="h-24 w-24 shrink-0 object-contain" />
         ) : recipe.coverIcon ? (
           <div className="h-24 w-24 shrink-0">
             <recipe.coverIcon />
@@ -2088,6 +2094,7 @@ function RecipeDetail({ recipe, mode, onBack }) {
   const [batch, setBatch] = useState("full");
   const scaled = scaledRecipe(recipe, batch, language);
   const title = recipe.title;
+  const altWhere = imageAlt(title, "recipe", language);
   const { checked, toggle, reset, done, total } = useRecipeChecklist(recipe.id, recipe.steps.length);
   const ingChecklist = useItemsChecklist(`recipe-ing:${recipe.id}`, recipe.ingredients.length);
   const toolChecklist = useItemsChecklist(`recipe-tools:${recipe.id}`, recipe.tools.length);
@@ -2118,7 +2125,7 @@ function RecipeDetail({ recipe, mode, onBack }) {
       <div className="mb-6 flex h-56 items-center justify-center overflow-hidden rounded-3xl border border-border/40 bg-white md:h-80 print:hidden">
         {recipe.cover ? (
           <div className="flex h-44 w-44 items-center justify-center md:h-64 md:w-64">
-            <img src={recipe.cover} alt={t(`תמונה של המתכון ${recipe.title}`, `Illustration for the ${title} recipe`)} title={t(`${recipe.title} — מתכון לילדים מבואו נשחק`, `${title} — a Let's Play recipe for children`)} data-seo-name={t(`${recipe.title} מתכון לילדים`, `${title} recipe for children`)} className="max-h-full max-w-full object-contain" />
+            <img src={recipe.cover} alt={altWhere} title={altWhere} className="max-h-full max-w-full object-contain" />
           </div>
         ) : recipe.coverIcon ? (
           <div className="h-40 w-40">
@@ -2184,6 +2191,7 @@ function RecipeDetail({ recipe, mode, onBack }) {
           <div className="space-y-1.5">
             {scaled.ingredients.map((it, i) => (
               <IconChip
+                altWhere={altWhere}
                 key={it.text}
                 item={it}
                 label={pick(it.text, it.textN)}
@@ -2203,6 +2211,7 @@ function RecipeDetail({ recipe, mode, onBack }) {
           <div className="space-y-1.5">
             {recipe.tools.map((it, i) => (
               <IconChip
+                altWhere={altWhere}
                 key={it.text}
                 item={it}
                 label={pick(it.text, it.textN)}
@@ -2271,7 +2280,7 @@ function RecipeDetail({ recipe, mode, onBack }) {
                     }`}
                   >
                     {s.img ? (
-                      <img src={s.img} alt={t(`איור שלב ${s.n}`, `Illustration for step ${s.n}`)} title={t(`שלב ${s.n} במתכון ${recipe.title}`, `Step ${s.n} of ${title}`)} className="h-full w-full object-cover" />
+                      <img src={s.img} alt={imageAlt(shortLabel(pick(s.text, s.textN)), altWhere)} title={imageAlt(shortLabel(pick(s.text, s.textN)), altWhere)} className="h-full w-full object-cover" />
                     ) : s.icon ? (
                       <s.icon />
                     ) : (
@@ -2305,7 +2314,7 @@ function RecipeDetail({ recipe, mode, onBack }) {
   );
 }
 
-function IconChip({ item, label, checked, onToggle, expanded, onExpand, hwClass = "" }) {
+function IconChip({ altWhere, item, label, checked, onToggle, expanded, onExpand, hwClass = "" }) {
   const { t } = useTranslator();
   return (
     <div
@@ -2344,7 +2353,7 @@ function IconChip({ item, label, checked, onToggle, expanded, onExpand, hwClass 
         }`}
       >
         {item.img ? (
-          <img src={item.img} alt="" className="h-full w-full object-contain p-1" />
+          <img src={item.img} alt={imageAlt(label ?? item.text, altWhere)} className="h-full w-full object-contain p-1" />
         ) : item.icon ? (
           <item.icon />
         ) : (

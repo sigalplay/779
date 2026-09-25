@@ -3,6 +3,7 @@ import { ShareLinkField } from "@/components/ShareLinkField";
 import { Printer, RotateCcw, X, ChevronUp, ChevronDown, Plus, Smartphone, Copy, Check } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useTranslator } from "@/lib/language";
+import { imageAlt } from "@/lib/image-seo";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -121,7 +122,7 @@ export default function MorningRoutine({ mode }) {
                   characterId === c.id ? "border-sage" : "border-transparent hover:border-sage/40"
                 }`}
               >
-                <img src={c.avatar} alt={c.name || t("בחירת דמות", "Choose character")} className="h-full w-full object-cover" />
+                <img src={c.avatar} alt={imageAlt(c.name || t("בחירת דמות", "Choose character"), "morning", language)} className="h-full w-full object-cover" />
               </button>
             ))}
           </div>
@@ -142,7 +143,7 @@ export default function MorningRoutine({ mode }) {
                 className="group relative flex aspect-[4/3] items-stretch overflow-hidden rounded-3xl border border-border/60 bg-cream text-right transition-colors hover:border-sage/60"
               >
                 <div className="relative flex min-w-0 flex-1 items-center justify-center p-2">
-                  <img src={imageForStep(s, characterId)} alt="" className="max-h-full max-w-full object-contain" />
+                  <img src={imageForStep(s, characterId)} alt={imageAlt(labelFor(s, gender, language), "morning", language)} className="max-h-full max-w-full object-contain" />
                   <span className="absolute left-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-sage text-sage-foreground opacity-0 transition-opacity group-hover:opacity-100">
                     <Plus className="h-3 w-3" />
                   </span>
@@ -184,7 +185,7 @@ export default function MorningRoutine({ mode }) {
                     {i + 1}
                   </span>
                   <div className="routine-print-image flex h-24 w-24 shrink-0 items-center justify-center print:!h-[92px] print:!w-[92px]">
-                    <img src={imageForStep(s, characterId)} alt="" className="max-h-full max-w-full object-contain" />
+                    <img src={imageForStep(s, characterId)} alt={imageAlt(labelFor(s, gender, language), "morning", language)} className="max-h-full max-w-full object-contain" />
                   </div>
                   <span className="routine-print-label flex-1 rounded-xl border border-sky/25 bg-sky/10 px-3 py-2 text-sm font-bold leading-snug text-blue-700 print:border-0 print:bg-transparent print:px-1 print:py-0 print:text-xs">
                     {labelFor(s, gender, language)}

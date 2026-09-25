@@ -85,7 +85,7 @@ The game builder's script and styles moved next to the page (`generator.js`, `ge
 In English mode, menu links to these pages now go to the `/en/` copy (live sent them to the Hebrew page).
 | /therapist/board/, /therapist/tools/, /therapist/my-patients/ | done |
 | English versions under /en/ | done (React pages translate themselves; standalone pages have /en/ copies) |
-| ~250 SEO pages (activity/*, board-game/*, en/*) | todo |
+| ~250 SEO pages (activity/*, board-game/*, en/*) | done — built from source, see "Search engines (stage 7)" |
 
 ## How to check parity locally
 
@@ -160,3 +160,53 @@ Fixed live bugs (for review):
 - On desktop pages that load the newer CSS, the accessibility button covered the "report a mistake" button. It is now above it, as on the other pages.
 - The phone bottom bar and search filters depended on which page you entered from; now always the same.
 - "Build a Visual Schedule for a Therapy Session" overflowed the phone screen in English; now "Plan a Therapy Session" (same as the home page).
+
+## Search engines (stage 7)
+
+`npm run build` (in `source/`) now runs `vite build` and then `scripts/prerender.mjs`, which opens every
+public page in a headless Chrome and saves it as ready HTML: the full page text, its own title,
+description, address, language pair and structured data. `dist/` is the whole site, ready to publish.
+
+- One place for page tags: `src/lib/seo.js`. The build writes them into each saved page and
+  `components/SeoManager.jsx` uses the same code in the browser, so the two always agree.
+- Pages saved: the fixed pages, every activity, board game, recipe and experiment, in Hebrew and
+  English (314). Personal pages (therapist tools, accounts, child links) get an empty page with
+  `noindex`, so their address works directly. `404.html` is the same, for any other address.
+- `sitemap.xml` is written by the build from the same list, with the language pairs and the main picture
+  of each page. `public/sitemap.xml` and `scripts/generate-sitemap.mjs` were removed.
+- The build fails if a page cannot be saved, if its title in the app differs from `seo.js`, or if a
+  saved page links to a file that does not exist.
+
+Fixed on the live site (why Google did not index many pages):
+- 249 of the 268 live pages were empty until the app ran; now every indexed page has its text in the HTML.
+- After loading, the app set every English page's main address (canonical) to the Hebrew page, so the
+  English pages were treated as copies. Each page now names itself, with the address ending in `/`
+  (the address without `/` is a redirect on GitHub Pages).
+- `/en/...` addresses moved the visitor to the Hebrew address with English text. English pages now stay
+  under `/en/`: the router runs with `basename="/en"`, the language comes from the address, and the
+  language switch opens the same page in the other language.
+- Recipe and experiment cards were buttons, so search engines could not reach them. They are links now,
+  and each recipe and experiment has its own page: `/parent/recipes/<id>/`, `/parent/experiments/<id>/`
+  (old `?r=` and `?e=` links still work).
+- The "What should we play today?" page had no `<h1>`.
+- `seed-28` and `seed-31` (removed from the catalog) had live pages saying "Activity not found"; they are gone.
+
+Other changes:
+- Titles of playful activities say "משחק לילדים" / "Game for Kids" instead of "פעילות לילדים"
+  (activities in the categories משחק, משחק חברתי, משחק ופנאי, or with משחק/תופסת/מחבואים in the title).
+- Descriptions come from the activity data. On live, 38 pages had only the title as the description
+  or a generic English line.
+- Structured data: HowTo for activities and experiments, Recipe for recipes, Game for board games,
+  Organization + WebSite on the home page.
+- Every picture has alt text that says what it shows and where: "אני מצחצחת שיניים – לוח התארגנות
+  בוקר לילדים", "מגש חושי – פעילות לילדים" (`imageAlt` in `lib/image-seo.js`). Pictures without their own
+  alt get the text next to them plus the page type, instead of a guess from the file name.
+- 8 pictures and one printable (the shark PDF and its preview) were linked under names that do not
+  exist (broken on live too); they point at the existing files now.
+- The English text of the board game "Submarines" described Battleships; it is translated from the Hebrew now.
+- Cloudflare Web Analytics is back on the React pages (live had it; the source had dropped it).
+- A saved page stays on screen while its code loads, without the entrance animation, so it does not flash.
+
+Publishing: `.github/workflows/site.yml` builds on every push. It publishes to GitHub Pages only from
+`main`, and only after Settings → Pages → Source is "GitHub Actions" and the repository variable
+`PAGES_FROM_ACTIONS` is `true`. Until then the live site is still served from the files in `main`.

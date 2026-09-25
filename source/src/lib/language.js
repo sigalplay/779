@@ -1,34 +1,36 @@
 import { useEffect, useState } from "react";
 
 const KEY = "boo_nesahek_language";
-function readLanguage() {
-  try { return window.localStorage.getItem(KEY); }
-  catch { return null; }
-}
 
-// הבחירה באנגלית נשמרת לשיחת הגלישה הנוכחית (sessionStorage). ביקור חדש נפתח בעברית,
-// אלא אם הכתובת מתחילה ב-/en.
-const SESSION_KEY = "boo_english_preview";
-
-function isEnglishPath() {
-  const path = window.location.pathname;
+// The address decides the language: English pages live under /en/ and Hebrew pages everywhere else.
+// Each page has one address per language, so search engines can index both.
+export function isEnglishPath(path = window.location.pathname) {
   return path === "/en" || path.startsWith("/en/");
 }
 
+// The router runs under /en for English pages, so links inside the app keep the language.
+export function routerBasename() {
+  return isEnglishPath() ? "/en" : undefined;
+}
+
+// The same page in the other language: /activity/seed-9 <-> /en/activity/seed-9.
+export function languagePath(language, location = window.location) {
+  const bare = location.pathname.replace(/^\/en(?=\/|$)/, "") || "/";
+  const path = language === "en" ? `/en${bare === "/" ? "/" : bare}` : bare;
+  return `${path}${location.search}${location.hash}`;
+}
+
 export function getLanguage() {
-  if (isEnglishPath()) return "en";
-  try {
-    return window.sessionStorage.getItem(SESSION_KEY) === "1" && readLanguage() === "en" ? "en" : "he";
-  } catch {
-    return readLanguage() === "en" ? "en" : "he";
-  }
+  return isEnglishPath() ? "en" : "he";
 }
 export function setLanguage(language) {
   try {
     window.localStorage.setItem(KEY, language);
-    if (language === "en") window.sessionStorage.setItem(SESSION_KEY, "1");
-    else window.sessionStorage.removeItem(SESSION_KEY);
   } catch { /* The site must still work when browser storage is blocked. */ }
+  if (language !== getLanguage()) {
+    window.location.assign(languagePath(language));
+    return;
+  }
   document.documentElement.lang = language;
   document.documentElement.dir = language === "he" ? "rtl" : "ltr";
   window.dispatchEvent(new Event("boo_language_change"));

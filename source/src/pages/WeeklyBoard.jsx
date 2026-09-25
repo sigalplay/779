@@ -58,6 +58,7 @@ import {
 import { WEEKLY_BOARD_CATEGORIES, KIDS_WEEKLY_BOARD_CATEGORIES, weeklyBoardTaskById, weeklyBoardCategoryLabel, weeklyBoardTaskTitle } from "@/lib/weekly-board-tasks";
 import { weeklyBoardLimit } from "@/lib/subscription";
 import { useTranslator } from "@/lib/language";
+import { imageAlt } from "@/lib/image-seo";
 import { useNavigate } from "react-router-dom";
 
 const DAY_LABELS = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
@@ -151,9 +152,9 @@ function Cell({ card, onAdd, onRemove, compact = false, kidsStyle = false, langu
       </button>
       <div className="absolute inset-0 flex h-full w-full items-center justify-center overflow-hidden bg-white">
         {card.photo ? (
-          <img src={card.photo} alt="" className="h-full w-full object-cover" />
+          <img src={card.photo} alt={imageAlt(card.title, "weekly", language)} className="h-full w-full object-cover" />
         ) : card.image ? (
-          <img src={card.image} alt="" className={`h-full w-full object-contain mix-blend-multiply transition-transform ${kidsStyle ? "scale-110" : ""}`} />
+          <img src={card.image} alt={imageAlt(card.title, "weekly", language)} className={`h-full w-full object-contain mix-blend-multiply transition-transform ${kidsStyle ? "scale-110" : ""}`} />
         ) : (
           <span className="text-base" aria-hidden>{card.emoji}</span>
         )}
@@ -766,11 +767,11 @@ export default function WeeklyBoard({ mode }) {
               <label className="mb-1 block text-sm font-bold">{t("בחרו סגנון", "Choose a style")}</label>
               <div className="grid grid-cols-2 gap-1.5 rounded-2xl bg-muted p-1">
                 <button type="button" onClick={() => changeBoardStyle("general")} aria-pressed={settings.boardStyle === "general"} className={`flex items-center justify-center gap-2 rounded-xl px-2 py-1.5 text-sm font-bold transition ${settings.boardStyle === "general" ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:bg-white/60"}`}>
-                  <img src="/icon-bank/weekly-board/reading.webp" alt="" className="h-8 w-8 rounded-lg bg-white object-contain" />
+                  <img src="/icon-bank/weekly-board/reading.webp" alt={imageAlt(t("סגנון 1", "Style 1"), "weekly", language)} className="h-8 w-8 rounded-lg bg-white object-contain" />
                   {t("סגנון 1", "Style 1")}
                 </button>
                 <button type="button" onClick={() => changeBoardStyle("kids")} aria-pressed={settings.boardStyle === "kids"} className={`flex items-center justify-center gap-2 rounded-xl px-2 py-1.5 text-sm font-bold transition ${settings.boardStyle === "kids" ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:bg-white/60"}`}>
-                  <img src="/icon-bank/weekly-board-kids/reading.webp" alt="" className="h-8 w-8 rounded-lg bg-white object-cover" />
+                  <img src="/icon-bank/weekly-board-kids/reading.webp" alt={imageAlt(t("סגנון 2", "Style 2"), "weekly", language)} className="h-8 w-8 rounded-lg bg-white object-cover" />
                   {t("סגנון 2", "Style 2")}
                 </button>
               </div>
@@ -823,7 +824,7 @@ export default function WeeklyBoard({ mode }) {
                               style={{ backgroundColor: category.color }}
                             >
                               <span className="flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden">
-                                <img src={task.image} alt="" className={`h-full w-full object-contain mix-blend-multiply ${settings.boardStyle === "kids" ? "scale-110" : ""}`} />
+                                <img src={task.image} alt={imageAlt(weeklyBoardTaskTitle(task, language), "weekly", language)} className={`h-full w-full object-contain mix-blend-multiply ${settings.boardStyle === "kids" ? "scale-110" : ""}`} />
                               </span>
                               <span className="w-full bg-transparent px-1.5 pb-1.5 text-xs font-extrabold leading-tight text-foreground">
                                 {weeklyBoardTaskTitle(task, language)}
@@ -853,7 +854,7 @@ export default function WeeklyBoard({ mode }) {
                 <label className="mb-1.5 block text-sm font-bold">{t("תמונה אישית (לא חובה)", "Personal photo (optional)")}</label>
                 {draft.photo ? (
                   <div className="flex items-center gap-2">
-                    <img src={draft.photo} alt="" className="h-10 w-10 rounded-lg border border-border/60 object-cover" />
+                    <img src={draft.photo} alt={imageAlt(draft.title || t("תמונה אישית", "Personal photo"), "weekly", language)} className="h-10 w-10 rounded-lg border border-border/60 object-cover" />
                     <Button type="button" variant="outline" size="sm" onClick={() => setDraft((d) => ({ ...d, photo: null }))} className="h-8 rounded-full px-3">
                       {t("הסרת תמונה", "Remove photo")}
                     </Button>

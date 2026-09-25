@@ -3,7 +3,8 @@ import { useSearchParams } from "react-router-dom";
 import { Printer, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { parseWeeklyBoardShareParams } from "@/lib/storage";
-import { useTranslator } from "@/lib/language";
+import { getLanguage, useTranslator } from "@/lib/language";
+import { imageAlt } from "@/lib/image-seo";
 
 const DAY_LABELS = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
 const MONTH_LABELS = [
@@ -161,9 +162,9 @@ export default function SharedWeeklyBoard() {
                               ) : null}
                               <div className="absolute inset-0 flex h-full w-full items-center justify-center overflow-hidden bg-white">
                                 {card.photo ? (
-                                  <img src={card.photo} alt="" className="h-full w-full object-cover" />
+                                  <img src={card.photo} alt={imageAlt(card.title, "weekly")} className="h-full w-full object-cover" />
                                 ) : card.image ? (
-                                  <img src={card.image} alt="" className={`h-full w-full object-contain mix-blend-multiply ${boardStyle === "kids" ? "scale-110" : ""}`} />
+                                  <img src={card.image} alt={imageAlt(card.title, "weekly")} className={`h-full w-full object-contain mix-blend-multiply ${boardStyle === "kids" ? "scale-110" : ""}`} />
                                 ) : (
                                   <span className="text-base" aria-hidden>{card.emoji}</span>
                                 )}
@@ -187,7 +188,7 @@ export default function SharedWeeklyBoard() {
           </table>
         </div>
 
-        <a href="/" className="mx-auto mt-6 block max-w-md rounded-2xl border border-rose/30 bg-rose/20 px-4 py-3 text-center font-bold text-foreground transition hover:bg-rose/30 print:hidden">
+        <a href={getLanguage() === "en" ? "/en/" : "/"} className="mx-auto mt-6 block max-w-md rounded-2xl border border-rose/30 bg-rose/20 px-4 py-3 text-center font-bold text-foreground transition hover:bg-rose/30 print:hidden">
           {t("צור לוח משלך — בואו נשחק", "Create your own visual schedule — Let's Play")}
         </a>
         <div className="shared-weekly-board-logo hidden items-center justify-start print:flex">

@@ -29,7 +29,7 @@ function MonthPage({ month, monthIndex, year, settings, title, customEvents, pho
   const cells = Array(month.days[0]?.weekday || 0).fill(null).concat(month.days);
   while (cells.length % 7) cells.push(null);
   const weekRows = cells.length / 7;
-  const brand = english ? "boo nesahek Let's Play" : "בואו נשחק";
+  const brand = english ? "Let's Play" : "בואו נשחק";
   const logo = english ? "/boo-nesahek-logo-en.png" : "/boo-nesahek-logo.png";
 
   return (

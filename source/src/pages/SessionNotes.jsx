@@ -162,7 +162,7 @@ export default function SessionNotes() {
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-border/60 bg-card p-4">
             <div className="flex items-center gap-3">
               {profile.picture ? (
-                <img src={profile.picture} alt="" className="h-10 w-10 rounded-full" />
+                <img src={profile.picture} alt={t("תמונת פרופיל", "Profile photo")} className="h-10 w-10 rounded-full" />
               ) : (
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sage/20 text-sage-foreground">
                   <ShieldCheck className="h-5 w-5" />

@@ -19,6 +19,7 @@ import { VisualSessionTimer } from "@/components/VisualSessionTimer";
 import { brandLogo, useTranslator } from "@/lib/language";
 import { activityTitle, translatedTerm } from "@/lib/content-translations";
 import { activityEnglishContent } from "@/lib/activity-content-en";
+import { activityContext, imageAlt, shortLabel } from "@/lib/image-seo";
 
 const NIKUD_KEY = "activity:nikud";
 const HANDWRITING_KEY = "activity:handwriting";
@@ -218,6 +219,8 @@ export default function ActivityDetail() {
   const flowText = en?.flow_text || pick(a.flow_text, a.flow_textN);
   const adaptations = en?.adaptations || pick(a.adaptations, a.adaptationsN);
   const extensions = en?.extensions || pick(a.extensions, a.extensionsN);
+  // "מגש חושי – פעילות לילדים": every image on the page ends with this.
+  const altWhere = imageAlt(title, activityContext(a), language);
 
   return (
     <AppShell mode={mode}>
@@ -249,7 +252,7 @@ export default function ActivityDetail() {
           className="flex h-56 items-center justify-center overflow-hidden rounded-3xl border border-border/40 bg-gradient-to-br from-sage/30 via-sky/30 to-primary/20 md:h-72 print:hidden"
         >
           {activityHero(a.id) || a.hero_image ? (
-            <img src={activityHero(a.id) || a.hero_image} alt={t(`איור של הפעילות ${a.title}`, `Illustration for ${title}`)} title={t(`${a.title} — פעילות לילדים מבואו נשחק`, `${title} — a Let's Play activity for children`)} data-seo-name={t(`${a.title} פעילות לילדים`, `${title} activity for children`)} className="max-h-[90%] max-w-[90%] object-contain" />
+            <img src={activityHero(a.id) || a.hero_image} alt={altWhere} title={altWhere} className="max-h-[90%] max-w-[90%] object-contain" />
           ) : (
             (() => {
               const GenericIcon = libMaterialIcon("דף");
@@ -320,7 +323,7 @@ export default function ActivityDetail() {
           </div>
         </header>
 
-        <PrintSheet activity={a} activityId={id} pick={pick} language={language} title={title} description={description} materials={materials} steps={steps} preparation={preparation} flowText={flowText} adaptations={adaptations} extensions={extensions} tips={en?.tips || a.tips} />
+        <PrintSheet altWhere={altWhere} activity={a} activityId={id} pick={pick} language={language} title={title} description={description} materials={materials} steps={steps} preparation={preparation} flowText={flowText} adaptations={adaptations} extensions={extensions} tips={en?.tips || a.tips} />
 
         {(a.description || a.short_description) && (
           <section className="rounded-3xl border border-border/60 bg-card p-5 md:p-6 print:hidden">
@@ -354,7 +357,7 @@ export default function ActivityDetail() {
         )}
 
         {a.materials?.length ? (
-          <MaterialsChecklist activityId={id} materials={a.materials} displayMaterials={materials} materialsN={a.materialsN} materialImages={a.material_images} pick={pick} hwClass={hwClass} language={language} />
+          <MaterialsChecklist altWhere={altWhere} activityId={id} materials={a.materials} displayMaterials={materials} materialsN={a.materialsN} materialImages={a.material_images} pick={pick} hwClass={hwClass} language={language} />
         ) : null}
 
         {a.attachments?.length ? (
@@ -373,7 +376,7 @@ export default function ActivityDetail() {
                   <div className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 -translate-x-1/2 opacity-0 transition-opacity group-hover:opacity-100">
                     <img
                       src={att.preview || att.file}
-                      alt=""
+                      alt={imageAlt(en?.attachmentLabels?.[a.attachments.indexOf(att)] || att.label, altWhere)}
                       className="h-56 w-96 max-w-[85vw] rounded-xl border border-border/60 bg-white object-contain p-2 shadow-xl md:h-72 md:w-[32rem]"
                     />
                   </div>
@@ -394,13 +397,13 @@ export default function ActivityDetail() {
             {ACTIVITY_ICON_SETS[id]?.flow ? (
               <img
                 src={ACTIVITY_ICON_SETS[id].flow}
-                alt=""
+                alt={imageAlt(t("מהלך הפעילות", "How to play"), altWhere)}
                 className="mx-auto mb-4 h-52 w-full max-w-md rounded-2xl bg-white object-contain md:h-64"
               />
             ) : null}
             <span className={hwClass}>{flowText}</span>
           </Section>
-        ) : a.steps?.length ? <StepsChecklist activityId={id} steps={steps} pick={pick} hwClass={hwClass} language={language} /> : null}
+        ) : a.steps?.length ? <StepsChecklist altWhere={altWhere} activityId={id} steps={steps} pick={pick} hwClass={hwClass} language={language} /> : null}
 
         {(en?.tips || a.tips)?.length ? (
           <section className="rounded-3xl border border-sky/50 bg-sky/10 p-5 md:p-6 print:hidden">
@@ -474,16 +477,16 @@ function Pill({ children }) {
   return <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-3 py-1">{children}</span>;
 }
 
-function PrintCellIcon({ src, srcs, Icon, size = "large" }) {
+function PrintCellIcon({ src, srcs, Icon, size = "large", alt = "" }) {
   const imgClass = size === "large" ? "mx-auto h-24 w-24 object-contain" : "mx-auto h-14 w-14 object-contain";
   const iconClass = size === "large" ? "mx-auto h-12 w-12" : "mx-auto h-7 w-7";
   const images = srcs?.length ? srcs : [src].filter(Boolean);
-  if (images.length) return <div className="flex flex-wrap items-center justify-center gap-1">{images.map((path) => <img key={path} src={path} alt="" className={images.length > 1 ? (size === "large" ? "h-16 w-16 object-contain" : "h-10 w-10 object-contain") : imgClass} />)}</div>;
+  if (images.length) return <div className="flex flex-wrap items-center justify-center gap-1">{images.map((path) => <img key={path} src={path} alt={alt} className={images.length > 1 ? (size === "large" ? "h-16 w-16 object-contain" : "h-10 w-10 object-contain") : imgClass} />)}</div>;
   if (Icon) return <Icon className={iconClass} />;
   return null;
 }
 
-function PrintSheet({ activity: a, activityId, pick, language, title, description, materials, steps, preparation, flowText, adaptations, extensions, tips }) {
+function PrintSheet({ altWhere, activity: a, activityId, pick, language, title, description, materials, steps, preparation, flowText, adaptations, extensions, tips }) {
   const { t } = useTranslator();
   const customMaterials = ACTIVITY_ICON_SETS[activityId]?.materials;
   const customSteps = ACTIVITY_ICON_SETS[activityId]?.steps;
@@ -521,7 +524,7 @@ function PrintSheet({ activity: a, activityId, pick, language, title, descriptio
     <div className="activity-print-sheet hidden print:block print:space-y-4 print:text-black">
       <div className="activity-print-hero relative flex items-center justify-center gap-5 rounded-3xl border border-border/60 bg-gradient-to-br from-sage/20 to-sky/30 p-5">
         <img src={brandLogo(language)} alt={label(t("בואו נשחק", "Let's Play"), "Let's Play")} className="print-sheet-brand absolute left-0 top-0 h-14 w-16 object-contain" />
-        {hero ? <img src={hero} alt="" className="h-28 w-28 shrink-0 rounded-2xl bg-white/80 object-contain p-2" /> : null}
+        {hero ? <img src={hero} alt={altWhere} className="h-28 w-28 shrink-0 rounded-2xl bg-white/80 object-contain p-2" /> : null}
         <h1 className="text-center text-4xl font-black">{title}</h1>
       </div>
 
@@ -540,7 +543,7 @@ function PrintSheet({ activity: a, activityId, pick, language, title, descriptio
               <div key={i} className="activity-print-item flex min-w-0 items-center gap-3 rounded-2xl border border-black/60 bg-white p-2.5">
                 <span aria-hidden className="block h-4 w-4 shrink-0 rounded-sm border-2 border-black" />
                 <div className="activity-item-illustration h-14 w-14 shrink-0 rounded-xl border border-border/50 bg-white p-1">
-                  <PrintCellIcon {...materialCell(m)} size="small" />
+                  <PrintCellIcon {...materialCell(m)} size="small" alt={imageAlt(materials[i] || pick(m, a.materialsN?.[i]), altWhere)} />
                 </div>
                 <span className="min-w-0 flex-1 text-base leading-snug">
                   <span className="me-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-sky/60 text-xs font-bold">{i + 1}</span>
@@ -569,7 +572,7 @@ function PrintSheet({ activity: a, activityId, pick, language, title, descriptio
               <div key={step.n} className="activity-print-item flex items-center gap-3 rounded-2xl border border-black/60 bg-white p-3">
                 {!ideasList && <span aria-hidden className="block h-4 w-4 shrink-0 rounded-sm border-2 border-black" />}
                 <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border/50 bg-white p-1">
-                  <PrintCellIcon {...stepCell(step)} />
+                  <PrintCellIcon {...stepCell(step)} alt={imageAlt(shortLabel(step.displayText), altWhere)} />
                 </div>
                 <p className="min-w-0 flex-1 text-lg leading-relaxed">
                   <span className={`me-2 inline-flex items-center justify-center rounded-full bg-sage/70 px-2 py-1 text-sm font-bold ${ideasList ? "h-auto w-auto" : "h-7 w-7"}`}>
@@ -583,7 +586,7 @@ function PrintSheet({ activity: a, activityId, pick, language, title, descriptio
         </div>
       ) : a.flow_text ? (
         <div className="text-lg leading-relaxed" style={{ breakBefore: "page" }}>
-          {ACTIVITY_ICON_SETS[activityId]?.flow ? <img src={ACTIVITY_ICON_SETS[activityId].flow} alt="" className="mx-auto mb-4 h-56 w-full object-contain" /> : null}
+          {ACTIVITY_ICON_SETS[activityId]?.flow ? <img src={ACTIVITY_ICON_SETS[activityId].flow} alt={imageAlt(label("מהלך הפעילות", "How to play"), altWhere)} className="mx-auto mb-4 h-56 w-full object-contain" /> : null}
           <p>
             <strong>{label(t("מהלך הפעילות: ", "How to play: "), "How to play: ")}</strong>
             {flowText}
@@ -657,7 +660,7 @@ function HighlightableText({ text, stepKey, highlighted, onToggle }) {
   );
 }
 
-function StepsChecklist({ activityId, steps, pick, hwClass, language }) {
+function StepsChecklist({ altWhere, activityId, steps, pick, hwClass, language }) {
   const { checked, toggle, reset, done, total } = useStepChecklist(activityId, steps.length);
   const progress = total > 0 ? Math.round((done / total) * 100) : 0;
   const customSteps = ACTIVITY_ICON_SETS[activityId]?.steps;
@@ -713,6 +716,7 @@ function StepsChecklist({ activityId, steps, pick, hwClass, language }) {
           const LibIcon = !CustomIcon && !BankImg ? libStepIcon(s.text) : null;
           const isTooltipOpen = openTooltips.has(s.n);
           const isExpanded = expandedStep === s.n;
+          const stepAlt = imageAlt(shortLabel(s.displayText || pick(s.text, s.textN)), altWhere);
           return (
             <li
               key={s.n}
@@ -753,18 +757,18 @@ function StepsChecklist({ activityId, steps, pick, hwClass, language }) {
                   >
                     {stepImages.length ? (
                       <div className={`grid h-full w-full place-items-center gap-1 ${stepImages.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
-                        {stepImages.map((path) => <img key={path} src={path} alt="" className="max-h-full max-w-full object-contain" />)}
+                        {stepImages.map((path) => <img key={path} src={path} alt={stepAlt} className="max-h-full max-w-full object-contain" />)}
                       </div>
                     ) : typeof CustomIcon === "string" ? (
-                      <img src={CustomIcon} alt="" className="h-full w-full object-contain" />
+                      <img src={CustomIcon} alt={stepAlt} className="h-full w-full object-contain" />
                     ) : CustomIcon ? (
                       <CustomIcon />
                     ) : BankImg ? (
-                      <img src={BankImg} alt="" className="h-full w-full object-contain" />
+                      <img src={BankImg} alt={stepAlt} className="h-full w-full object-contain" />
                     ) : LibIcon ? (
                       <LibIcon />
                     ) : (
-                      <img src={activityHero(activityId)} alt="" className="h-full w-full object-contain" />
+                      <img src={activityHero(activityId)} alt={stepAlt} className="h-full w-full object-contain" />
                     )}
                   </div>
                   <span
@@ -817,7 +821,7 @@ function StepsChecklist({ activityId, steps, pick, hwClass, language }) {
                       <div className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 -translate-x-1/2 opacity-0 transition-opacity group-hover:opacity-100">
                         <img
                           src={s.download.file}
-                          alt=""
+                          alt={imageAlt(s.displayDownloadLabel, altWhere)}
                           className="h-56 w-96 max-w-[85vw] rounded-xl border border-border/60 bg-white object-contain p-2 shadow-xl md:h-72 md:w-[32rem]"
                         />
                       </div>
@@ -833,7 +837,7 @@ function StepsChecklist({ activityId, steps, pick, hwClass, language }) {
   );
 }
 
-function MaterialsChecklist({ activityId, materials, displayMaterials, materialsN, materialImages, pick, hwClass, language }) {
+function MaterialsChecklist({ altWhere, activityId, materials, displayMaterials, materialsN, materialImages, pick, hwClass, language }) {
   const { checked, toggle } = useMaterialsChecklist(activityId);
   const [expandedMaterial, setExpandedMaterial] = useState(null);
   const done = materials.filter((_, i) => checked.has(i)).length;
@@ -853,6 +857,7 @@ function MaterialsChecklist({ activityId, materials, displayMaterials, materials
           const CustomIcon = materialImages?.[m] || customMaterials?.[m];
           const BankImg = !CustomIcon ? bankMaterialIcon(m) : null;
           const LibIcon = !CustomIcon && !BankImg ? libMaterialIcon(m) : null;
+          const itemAlt = imageAlt(language === "en" ? displayMaterials?.[i] || m : pick(m, materialsN?.[i]), altWhere);
           return (
             <li
               key={`${i}-${m}`}
@@ -882,15 +887,15 @@ function MaterialsChecklist({ activityId, materials, displayMaterials, materials
                     }`}
                   >
                     {typeof CustomIcon === "string" ? (
-                      <img src={CustomIcon} alt="" className="h-full w-full object-contain" />
+                      <img src={CustomIcon} alt={itemAlt} className="h-full w-full object-contain" />
                     ) : CustomIcon ? (
                       <CustomIcon />
                     ) : BankImg ? (
-                      <img src={BankImg} alt="" className="h-full w-full object-contain" />
+                      <img src={BankImg} alt={itemAlt} className="h-full w-full object-contain" />
                     ) : LibIcon ? (
                       <LibIcon />
                     ) : (
-                      <img src={activityHero(activityId)} alt="" className="h-full w-full object-contain" />
+                      <img src={activityHero(activityId)} alt={itemAlt} className="h-full w-full object-contain" />
                     )}
                   </div>
                   <span

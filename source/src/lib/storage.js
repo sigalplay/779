@@ -744,7 +744,8 @@ export function buildWeeklyBoardShareUrl(weekDates, cardsByDay, settings, thumbn
       );
     }
   });
-  return `${window.location.origin}/shared/weekly-board?${params.toString()}`;
+  const english = /^\/en(?:\/|$)/.test(window.location.pathname);
+  return `${window.location.origin}${english ? "/en" : ""}/shared/weekly-board?${params.toString()}`;
 }
 
 /** מפענח פרמטרים משותפים מתוך ה-URL. מחזיר null אם אין נתוני שיתוף תקינים. */

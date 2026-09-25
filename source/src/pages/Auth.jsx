@@ -284,7 +284,7 @@ export default function Auth() {
         {/* Brand panel (desktop) */}
         <aside className="relative hidden flex-col justify-between overflow-hidden bg-gradient-to-br from-sage/35 via-cream to-rose/25 p-10 lg:flex" aria-hidden="true">
           <Link to="/" className="inline-flex" tabIndex={-1}>
-            <img src={brandLogo(language)} alt="" className="h-20 w-20 rounded-2xl bg-white/80 object-contain p-1 shadow-sm" />
+            <img src={brandLogo(language)} alt={language === "en" ? "Let's Play" : "בואו נשחק"} className="h-20 w-20 rounded-2xl bg-white/80 object-contain p-1 shadow-sm" />
           </Link>
           <div>
             <p className="font-display text-2xl font-black leading-snug text-foreground">{t("כל מה ששמרת — בכל מכשיר", "Everything you saved — on every device")}</p>

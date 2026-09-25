@@ -4,6 +4,7 @@ import { RotateCcw, PartyPopper, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { labelForStep, parseChildRoutineParams, imageForStep } from "@/lib/morning-routine-steps";
 import { useTranslator } from "@/lib/language";
+import { imageAlt } from "@/lib/image-seo";
 
 export default function ChildMorningRoutine() {
   const { t, language } = useTranslator();
@@ -88,7 +89,7 @@ export default function ChildMorningRoutine() {
                     {isDone ? <Check className="h-5 w-5" /> : i + 1}
                   </span>
                   <div className="flex h-24 w-24 shrink-0 items-center justify-center">
-                    <img src={imageForStep(s, characterId)} alt="" className="max-h-full max-w-full object-contain" />
+                    <img src={imageForStep(s, characterId)} alt={imageAlt(labelForStep(s, gender, language), "morning", language)} className="max-h-full max-w-full object-contain" />
                   </div>
                   <span
                     className={`flex-1 rounded-xl border px-3 py-2 text-sm font-bold leading-snug sm:text-base ${
@@ -112,7 +113,7 @@ export default function ChildMorningRoutine() {
             </Button>
           </div>
         )}
-        <a href="/" className="mt-8 block rounded-2xl border border-rose/30 bg-rose/20 px-4 py-3 text-center font-bold text-foreground transition hover:bg-rose/30">
+        <a href={language === "en" ? "/en/" : "/"} className="mt-8 block rounded-2xl border border-rose/30 bg-rose/20 px-4 py-3 text-center font-bold text-foreground transition hover:bg-rose/30">
           {t("צור לוח משלך — בואו נשחק", "Create your own visual schedule — Let's Play")}
         </a>
       </div>

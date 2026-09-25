@@ -114,7 +114,7 @@ export default function ParentPlay() {
   return (
     <AppShell mode="parent">
       <div className="mb-2">
-        <h2 className="font-display text-2xl font-black md:text-3xl">{t("במה נשחק היום?", "What should we play today?")}</h2>
+        <h1 className="font-display text-2xl font-black md:text-3xl">{t("במה נשחק היום?", "What should we play today?")}</h1>
       </div>
 
       {language === "he" ? <TherapistPostureScissorsTips /> : null}

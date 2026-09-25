@@ -1,79 +1,115 @@
 import { useEffect } from "react";
 import { getLanguage } from "@/lib/language";
 
-const FILE_TERMS = {
-  apple: ["תפוח", "apple"], apples: ["תפוחים", "apples"], biscuit: ["ביסקוויט", "biscuit"], biscuits: ["ביסקוויטים", "biscuits"],
-  chocolate: ["שוקולד", "chocolate"], fridge: ["מקרר", "refrigerator"], refrigerator: ["מקרר", "refrigerator"],
-  scissors: ["מספריים", "scissors"], pencil: ["עיפרון", "pencil"], glue: ["דבק", "glue"], book: ["ספר", "book"], books: ["ספרים", "books"],
-  balloon: ["בלון", "balloon"], milk: ["חלב", "milk"], cup: ["כוס", "cup"], plate: ["צלחת", "plate"], water: ["מים", "water"],
-  timer: ["טיימר חזותי", "visual timer"], bowl: ["קערה", "bowl"], spoon: ["כף", "spoon"], tray: ["מגש", "tray"],
-  soap: ["סבון", "soap"], faucet: ["ברז", "faucet"], tap: ["ברז", "faucet"], experiment: ["ניסוי", "experiment"],
-  marker: ["טוש", "marker"], markers: ["טושים", "markers"], black: ["שחור", "black"], red: ["אדום", "red"],
-  paper: ["נייר", "paper"], crepe: ["קרפ", "crepe"], cardboard: ["קרטון", "cardboard"],
-  bread: ["לחם", "bread"], tortilla: ["טורטייה", "tortilla"], cheese: ["גבינה", "cheese"], olives: ["זיתים", "olives"], olive: ["זית", "olive"],
-  flour: ["קמח", "flour"], sugar: ["סוכר", "sugar"], salt: ["מלח", "salt"], oil: ["שמן", "oil"], vinegar: ["חומץ", "vinegar"],
-  baking: ["אפייה", "baking"], soda: ["סודה", "soda"], food: ["מאכל", "food"], colouring: ["צבע מאכל", "food coloring"], color: ["צבע", "color"],
-  knife: ["סכין", "knife"], fork: ["מזלג", "fork"], bottle: ["בקבוק", "bottle"], bag: ["שקית", "bag"],
-  candle: ["נר", "candle"], straw: ["קש", "straw"], string: ["חוט", "string"], tape: ["סרט הדבקה", "tape"],
-  towel: ["מגבת", "towel"], hands: ["ידיים", "hands"], hand: ["יד", "hand"], socks: ["גרביים", "socks"], shoes: ["נעליים", "shoes"],
-  shirt: ["חולצה", "shirt"], trousers: ["מכנסיים", "pants"], pants: ["מכנסיים", "pants"], shower: ["מקלחת", "shower"],
-  logo: ["בואו נשחק", "Let's Play"],
-};
-
 const GENERATED_TITLE = "imageSeoTitle";
 const GENERATED_ALT = "imageSeoAlt";
 
 function cleanText(value = "") { return value.replace(/\s+/g, " ").trim(); }
-function hasHebrew(value = "") { return /[\u0590-\u05ff]/.test(value); }
+function hasHebrew(value = "") { return /[֐-׿]/.test(value); }
 function hasLatin(value = "") { return /[a-z]/i.test(value); }
 function matchesLanguage(value, language) {
   if (!value) return false;
   return language === "he" ? !hasLatin(value) : !hasHebrew(value);
 }
 
-export function labelFromFile(src = "", language = "he") {
-  const raw = decodeURIComponent(src.split("?")[0].split("/").pop() || "")
-    .replace(/\.[a-z0-9]+$/i, "")
-    .replace(/(?:^|[-_])(hero|cover|image|img|icon|material|step)(?:[-_]|$)/gi, " ")
-    .replace(/[-_]+/g, " ")
-    .replace(/\b(?:seed|v)\d+\b/gi, " ")
-    .replace(/\b\d+\b/g, " ");
-  const translated = cleanText(raw).split(" ").map((word) => FILE_TERMS[word.toLowerCase()]?.[language === "he" ? 0 : 1] || word).join(" ");
-  const cleaned = cleanText(translated);
-  return matchesLanguage(cleaned, language) ? cleaned : (language === "he" ? "איור לילדים" : "Children's illustration");
+// Where an image appears. Every context says "for kids" — that is what people search for.
+export const IMAGE_CONTEXT = {
+  morning: ["לוח התארגנות בוקר לילדים", "Morning routine chart for kids"],
+  evening: ["לוח התארגנות ערב לילדים", "Evening routine chart for kids"],
+  weekly: ["לוח התארגנות שבועי לילדים", "Weekly visual schedule for kids"],
+  activity: ["פעילות לילדים", "Activity for kids"],
+  game: ["משחק לילדים", "Game for kids"],
+  boardGame: ["משחק קופסה לילדים", "Board game for kids"],
+  recipe: ["מתכון לילדים", "Recipe for kids"],
+  experiment: ["ניסוי לילדים", "Science experiment for kids"],
+  story: ["סיפור חברתי לילדים", "Social story for kids"],
+  motorTrail: ["מסלול מוטורי לילדים", "Obstacle course for kids"],
+  sessionBoard: ["לוח מפגש טיפולי לילדים", "Therapy session board for kids"],
+  writing: ["הדרכה לכתיבה לילדים", "Handwriting guide for kids"],
+  calendar: ["לוח שנה משפחתי להדפסה", "Printable family calendar"],
+  activities: ["פעילויות לילדים", "Activities for kids"],
+};
+
+// The context of a page, from its address. Used for images that have no alt of their own.
+const ROUTE_CONTEXT = [
+  [/^\/(?:en\/)?(?:parent|therapist|child)\/morning-routine/, "morning"],
+  [/^\/(?:en\/)?(?:parent|therapist|child)\/evening-routine/, "evening"],
+  [/^\/(?:en\/)?(?:(?:parent|therapist)\/weekly-board|shared\/weekly-board)/, "weekly"],
+  [/^\/(?:en\/)?(?:parent|therapist)\/social-stories/, "story"],
+  [/^\/(?:en\/)?(?:parent|therapist)\/recipes/, "recipe"],
+  [/^\/(?:en\/)?(?:parent|therapist)\/experiments/, "experiment"],
+  [/^\/(?:en\/)?(?:board-game\/|(?:parent|therapist)\/board-games)/, "boardGame"],
+  [/^\/(?:en\/)?therapist\/motor-trail/, "motorTrail"],
+  [/^\/(?:en\/)?therapist\/(?:build|board)/, "sessionBoard"],
+  [/^\/(?:en\/)?(?:(?:parent|therapist)\/hebrew-calendar|shared\/hebrew-calendar)/, "calendar"],
+  [/^\/(?:en\/)?activity\//, "activity"],
+  [/^\/(?:en\/)?(?:parent|therapist)\/(?:play|all)/, "activities"],
+];
+
+function routeContext(pathname = window.location.pathname) {
+  return ROUTE_CONTEXT.find(([pattern]) => pattern.test(pathname))?.[1] || "";
+}
+
+const GAME_CATEGORIES = ["משחק", "משחק חברתי", "משחק ופנאי"];
+
+// Playful activities are searched for as "משחקים לילדים", the rest as "פעילויות לילדים".
+export function activityContext(activity) {
+  if (!activity) return "activity";
+  const title = activity.title || "";
+  const isGame = (activity.categories || []).some((c) => GAME_CATEGORIES.includes(c))
+    || (/(^|\s)(משחק|משחקי|תופסת|מחבואים)(\s|$)/.test(title) && !/^הכנת\s/.test(title));
+  return isGame ? "game" : "activity";
+}
+
+export function shortLabel(text = "", max = 70) {
+  const clean = cleanText(String(text)).replace(/[.:;,]+$/, "");
+  if (clean.length <= max) return clean;
+  const cut = clean.slice(0, max);
+  return cut.slice(0, cut.lastIndexOf(" ") > 30 ? cut.lastIndexOf(" ") : max).replace(/[.:;,]+$/, "") + "…";
+}
+
+// Alt text: what the image shows, then where it appears — "אני מצחצחת שיניים – לוח התארגנות בוקר לילדים".
+export function imageAlt(label, context, language = getLanguage()) {
+  const where = Array.isArray(IMAGE_CONTEXT[context]) ? IMAGE_CONTEXT[context][language === "en" ? 1 : 0] : context;
+  const parts = [cleanText(label || ""), cleanText(where || "")].filter(Boolean);
+  if (parts.length === 2 && parts[0].includes(parts[1])) return parts[0];
+  return parts.join(" – ");
 }
 
 function localizedAttribute(img, name, language) {
   return cleanText(img.dataset[`${name}${language === "he" ? "He" : "En"}`] || "");
 }
 
+// The text shown next to an image: its button, list item, card or figure.
 function nearbyLabel(img, language) {
-  const localized = localizedAttribute(img, "alt", language) || localizedAttribute(img, "title", language);
-  if (localized) return localized;
   const explicit = cleanText(img.dataset.seoName || img.getAttribute("aria-label") || "");
   if (matchesLanguage(explicit, language)) return explicit;
-  const parent = img.closest("figure, a, button, article, [data-image-label], [data-image-label-he], [data-image-label-en]");
-  const localizedParent = cleanText(parent?.dataset?.[language === "he" ? "imageLabelHe" : "imageLabelEn"] || "");
+  const parent = img.closest("figure, li, a, button, label, article, [data-image-label], [data-image-label-he], [data-image-label-en]");
+  if (!parent) return "";
+  const localizedParent = cleanText(parent.dataset?.[language === "he" ? "imageLabelHe" : "imageLabelEn"] || "");
   if (localizedParent) return localizedParent;
-  const dataLabel = cleanText(parent?.dataset?.imageLabel || "");
+  const dataLabel = cleanText(parent.dataset?.imageLabel || "");
   if (matchesLanguage(dataLabel, language)) return dataLabel;
-  const parentAriaLabel = cleanText(parent?.getAttribute?.("aria-label") || "")
+  const parentAriaLabel = cleanText(parent.getAttribute?.("aria-label") || "")
     .replace(/^(?:הגדלת|הקטנת)\s+/, "")
     .replace(/^(?:Enlarge|Reduce)\s+/i, "");
   if (matchesLanguage(parentAriaLabel, language)) return parentAriaLabel;
-  const heading = parent?.querySelector?.("h1, h2, h3, h4, figcaption");
-  const headingText = cleanText(heading?.textContent || "");
-  if (matchesLanguage(headingText, language)) return headingText.slice(0, 100);
-  return labelFromFile(img.currentSrc || img.src, language);
+  const caption = cleanText(parent.querySelector?.("figcaption, h1, h2, h3, h4")?.textContent || parent.textContent || "");
+  return matchesLanguage(caption, language) ? shortLabel(caption) : "";
+}
+
+function pageTitle(language) {
+  const heading = cleanText(document.querySelector("main h1, h1")?.textContent || "");
+  return matchesLanguage(heading, language) ? shortLabel(heading) : (language === "he" ? "בואו נשחק" : "Let's Play");
 }
 
 function describeImage(img, language) {
   const existingAlt = cleanText(img.getAttribute("alt") || "");
   const originalAlt = cleanText(img.dataset.imageSeoOriginalAlt || "");
   const canUseExistingAlt = img.dataset[GENERATED_ALT] !== "true" && matchesLanguage(existingAlt, language);
-  const label = localizedAttribute(img, "alt", language) || (matchesLanguage(originalAlt, language) ? originalAlt : "") || (canUseExistingAlt ? existingAlt : "") || nearbyLabel(img, language);
-  const brand = language === "he" ? "בואו נשחק" : "Let's Play";
-  return label.includes(brand) ? label : `${label} — ${brand}`;
+  const own = localizedAttribute(img, "alt", language) || (matchesLanguage(originalAlt, language) ? originalAlt : "") || (canUseExistingAlt ? existingAlt : "");
+  if (own) return own;
+  return imageAlt(nearbyLabel(img, language) || pageTitle(language), routeContext(), language);
 }
 
 function enrichImage(img, language = getLanguage()) {
@@ -89,9 +125,8 @@ function enrichImage(img, language = getLanguage()) {
       img.dataset[GENERATED_TITLE] = "true";
     }
   }
-  const decorative = img.getAttribute("aria-hidden") === "true" || img.closest('[aria-hidden="true"]');
   const alt = cleanText(img.getAttribute("alt") || "");
-  if (!decorative && (!alt || img.dataset[GENERATED_ALT] === "true" || !matchesLanguage(alt, language))) {
+  if (!alt || img.dataset[GENERATED_ALT] === "true" || !matchesLanguage(alt, language)) {
     img.setAttribute("alt", localizedAttribute(img, "alt", language) || description);
     img.dataset[GENERATED_ALT] = "true";
   }
