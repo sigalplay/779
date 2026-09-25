@@ -205,15 +205,8 @@ export function AppShell({ mode = "parent", children, pageClassName, fullScreen 
               })}
             </nav>
             <div className="flex shrink-0 items-center gap-2">
-              <div className="hidden rounded-full border bg-white p-0.5 sm:flex" aria-label={t("בחירת שפה", "Choose language")}>
-                <button type="button" className={cn("rounded-full px-2 py-1 text-xs", language === "he" ? "bg-foreground text-background" : "text-muted-foreground")} onClick={() => changeLanguage("he")}>
-                  {t("עברית", "Hebrew")}
-                </button>
-                <button type="button" className={cn("rounded-full px-2 py-1 text-xs", language === "en" ? "bg-foreground text-background" : "text-muted-foreground")} onClick={() => changeLanguage("en")}>
-                  English
-                </button>
-              </div>
-              <button type="button" className="language-switch-compact sm:hidden" onClick={switchLanguage} aria-label={language === "en" ? "Switch to Hebrew" : "מעבר לאנגלית"}>
+              {/* One language button, the same in Hebrew and English. */}
+              <button type="button" className="language-switch-compact" onClick={switchLanguage} aria-label={language === "en" ? "Switch to Hebrew" : "מעבר לאנגלית"}>
                 <GlobeIcon />
                 <span>{languageLabel}</span>
               </button>
