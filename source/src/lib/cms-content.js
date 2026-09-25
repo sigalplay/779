@@ -1,8 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { getCloudSession, isCloudAuthConfigured } from "./cloud-auth";
-
-const URL = (import.meta.env.VITE_SUPABASE_URL || "").replace(/\/$/, "");
-const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+import { SUPABASE_ANON_KEY as KEY, SUPABASE_URL as URL, getCloudSession, isCloudAuthConfigured } from "./cloud-auth";
 const CACHE_KEY = "boo_cms_published_v1";
 
 function apiHeaders(withSession = false) {

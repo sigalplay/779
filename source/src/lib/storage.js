@@ -4,10 +4,8 @@ import { weeklyBoardTaskById } from "./weekly-board-tasks";
 import { getCachedCmsCollection } from "./cms-content";
 
 /**
- * שכבת "באקאנד" מקומית מבוססת localStorage.
- * מחליפה את Supabase של הפרויקט המקורי כדי שהאתר ירוץ מיד בלי חיבור לשרת.
- * כל הפונקציות סינכרוניות ופשוטות לניפוי — לפרויקט אמיתי מומלץ להחליף
- * בקריאות API אמיתיות (או לחבר Supabase/כל באקאנד אחר משלכם).
+ * Saved data lives in the browser (localStorage). For signed-in users, favorites, folders and
+ * treatment plans are also mirrored to the cloud (see cloud-data.js).
  */
 
 const KEYS = {
@@ -56,8 +54,34 @@ export function getProfile() {
   return read(KEYS.profile, null);
 }
 
+// Signed in = has a cloud account session (as on the live site).
 export function isSignedIn() {
-  return !!getProfile();
+  try {
+    return Boolean(JSON.parse(localStorage.getItem("boo_cloud_session") || "null")?.access_token);
+  } catch {
+    return false;
+  }
+}
+
+// Favorites, folders and plans saved in this browser (copied to the account after sign-up).
+export function getSavedContent() {
+  return { favorites: read(KEYS.favorites, []), folders: read(KEYS.folders, []), plans: read(KEYS.plans, []) };
+}
+
+// Replace them with the account's saved content after signing in.
+export function setSavedContent({ favorites = [], folders = [], plans = [] }) {
+  write(KEYS.favorites, favorites);
+  write(KEYS.folders, folders);
+  write(KEYS.plans, plans);
+  window.dispatchEvent(new Event("pp_saved_content_change"));
+}
+
+// Mirror a change to the cloud when signed in. The module loads only when needed; failures do
+// not block the local change.
+function syncToCloud(action) {
+  import("./cloud-data")
+    .then(action)
+    .catch(() => window.dispatchEvent(new Event("pp_cloud_sync_error")));
 }
 
 export function signIn(displayName, email = "", accountType = "local") {
@@ -262,6 +286,7 @@ export function saveTreatmentPlan(title, items, params) {
   const list = read(KEYS.plans, []);
   list.unshift(plan);
   write(KEYS.plans, list);
+  syncToCloud(({ savePlanToCloud }) => savePlanToCloud(plan));
   return plan;
 }
 
@@ -278,6 +303,7 @@ export function updateTreatmentPlan(id, title, items, params) {
   };
   list[index] = updated;
   write(KEYS.plans, list);
+  syncToCloud(({ savePlanToCloud }) => savePlanToCloud(updated));
   return updated;
 }
 
@@ -300,6 +326,7 @@ export function deleteTreatmentPlan(id) {
     KEYS.plans,
     list.filter((p) => p.id !== id),
   );
+  syncToCloud(({ deletePlanFromCloud }) => deletePlanFromCloud(id));
 }
 
 // ---------- Draft plan (in-progress session being built by the therapist) ----------
@@ -348,6 +375,7 @@ export function createFolder(name) {
   const list = listFolders();
   list.push(folder);
   write(KEYS.folders, list);
+  syncToCloud(({ saveFolderToCloud }) => saveFolderToCloud(folder));
   return folder;
 }
 
@@ -367,12 +395,15 @@ export function toggleFavorite(activityId, folderId = null) {
   const favs = read(KEYS.favorites, []);
   const idx = favs.findIndex((f) => f.activity_id === activityId && f.folder_id === folderId);
   if (idx >= 0) {
-    favs.splice(idx, 1);
+    const [removed] = favs.splice(idx, 1);
     write(KEYS.favorites, favs);
+    syncToCloud(({ deleteFavoriteFromCloud }) => deleteFavoriteFromCloud(removed.id));
     return { favored: false };
   }
-  favs.unshift({ id: uid(), activity_id: activityId, folder_id: folderId, created_at: new Date().toISOString() });
+  const favorite = { id: uid(), activity_id: activityId, folder_id: folderId, created_at: new Date().toISOString() };
+  favs.unshift(favorite);
   write(KEYS.favorites, favs);
+  syncToCloud(({ saveFavoriteToCloud }) => saveFavoriteToCloud(favorite));
   return { favored: true };
 }
 

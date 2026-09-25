@@ -31,7 +31,11 @@ Status: `done` = behavior is in source, `todo` = not yet, `drop` = intentionally
 | Cookie consent + Google Analytics after consent | done | |
 | Legal pages (privacy, terms, cookies) | done | |
 | All pages open without login | done | Live removed the login gate |
-| Auth (password sign-up, confirmation, recovery) | todo | |
+| Auth (password sign-up, confirmation, recovery) | done | Same requests and saved session as live (tested with a simulated server); new two-panel design |
+| Cloud sync of favorites, folders, plans | done | `lib/cloud-data.js`, called from `lib/storage.js` like live |
+| Signed-in check | done | Uses the cloud session, as live (the source used a local profile) |
+| CMS (published edits, admin page) | done | Uses the live project by default |
+| Profile page | done | Same as live |
 | Calendar (photos, print, Google save) | done | See "Calendar" below |
 | Cipher generator | done | Same keys and symbols as live; `?key=sukkot` opens the Sukkot key |
 | Child boards, shared weekly board | done | "Make your own board" button, print logo and legal line |
@@ -129,3 +133,13 @@ Changes from live, on purpose:
   builder (live showed the Hebrew home page).
 - The legal line is hidden under the treatment board, like the site footer.
 - The board no longer reloads the page after each change.
+
+## Accounts
+
+The cloud project address and public key default to the live project (`lib/cloud-auth.js`), so
+a build without extra settings behaves like the live site. The old "beta email" and "local test
+mode" sign-ins were removed; accounts are email + password only, as on live.
+
+Sign-in screens: same flow and texts as live, with a new layout (brand panel on desktop, clearer
+fields with show-password, a live "8 characters" check, errors shown next to the form).
+The password label reads "סיסמה" with a separate "לפחות 8 תווים" check instead of one combined label.
