@@ -79,7 +79,7 @@ export function TherapistPostureScissorsTips({ language: languageProp, openPanel
                   <img src={tip.image} alt="" className="h-full w-full object-contain" />
                 </div>
                 <span className="text-sm font-semibold leading-snug text-foreground md:text-base">{language === "en" ? tip.titleEn : tip.title}</span>
-                <p className="text-xs leading-snug text-muted-foreground md:text-sm">{language === "en" ? tip.textEn : tip.text}</p>
+                {tip.text && <p className="text-xs leading-snug text-muted-foreground md:text-sm">{language === "en" ? tip.textEn : tip.text}</p>}
               </div>
             ))}
           </div>
