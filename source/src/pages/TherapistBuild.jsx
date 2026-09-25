@@ -348,7 +348,7 @@ export default function TherapistBuild() {
     attachPlanToSession(sessionId, plan, { goals, durationMode });
     completeClinicSession(sessionId);
     toast.success(t("הטיפול הסתיים ונשמר ביומן", "Session completed and saved to the calendar."));
-    navigate(`/therapist/patient/${linkedPatient?.id || linkedSession?.patientId}?session=${sessionId}`);
+    navigate("/therapist/diary");
   }
 
   function toggleSessionItemCompleted(itemIndex) {

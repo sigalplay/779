@@ -104,3 +104,26 @@ drop policy if exists "admins edit content" on public.cms_content;
 create policy "admins edit content" on public.cms_content for all to authenticated
   using (exists (select 1 from public.cms_admins a where a.user_id = auth.uid()))
   with check (exists (select 1 from public.cms_admins a where a.user_id = auth.uid()));
+
+-- Calendar: which client comes on which day (optionally at a time, optionally every week).
+-- Only a client reference, a date and a time are kept; no notes or summaries.
+create table if not exists public.diary_appointments (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users on delete cascade,
+  patient_id uuid not null references public.therapist_patients on delete cascade,
+  start_date date not null,
+  start_time text,
+  weekly boolean not null default false,
+  end_date date,
+  skipped_dates date[] not null default '{}',
+  created_at timestamptz not null default now()
+);
+
+alter table public.diary_appointments enable row level security;
+drop policy if exists "own appointments" on public.diary_appointments;
+create policy "own appointments" on public.diary_appointments for all to authenticated
+  using (user_id = auth.uid())
+  with check (
+    user_id = auth.uid()
+    and exists (select 1 from public.therapist_patients p where p.id = patient_id and p.user_id = auth.uid())
+  );
