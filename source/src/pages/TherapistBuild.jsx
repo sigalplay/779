@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { Camera, Check, ChevronDown, ChevronUp, Clock, ExternalLink, FlaskConical, FolderOpen, Play, Plus, Printer, RotateCcw, Route, Save, Search, Shuffle, X } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Clock, ExternalLink, FlaskConical, FolderOpen, Play, Plus, Printer, RotateCcw, Route, Save, Search, Shuffle, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { PageToolbox } from "@/components/toolbox/PageToolbox";
 import { VisualSessionTimer } from "@/components/VisualSessionTimer";
@@ -267,17 +267,6 @@ export default function TherapistBuild() {
 
   function removeFromPlan(item) {
     setPlan((prev) => prev.filter((p) => (item.kind === "activity" || item.kind === "recipe" || item.kind === "experiment" ? !(p.kind === item.kind && p.id === item.id) : p.uid !== item.uid)));
-  }
-
-  async function handlePhotoCapture(e) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    try {
-      const image = await readPhotoFile(file, 700, 0.85);
-      setPlan((prev) => [...prev, { kind: "photo", uid: `photo-${Date.now()}`, image, label: "תמונה" }]);
-      toast.success(t("התמונה נוספה לתכנית הטיפול", "Photo added to the session plan."));
-    } catch { /* unreadable image */ }
   }
 
   function moveItem(itemIndex, dir) {
@@ -608,11 +597,6 @@ export default function TherapistBuild() {
             <span className="flex-1 text-sm font-medium">{existingMotorTrail ? t("עריכת מסלול מוטורי", "Edit the Obstacle Course") : t("הוספת מסלול מוטורי", "Add an obstacle course")}</span>
             <ExternalLink className="h-3.5 w-3.5 shrink-0 text-sage-foreground" />
           </Link>
-          <label className="flex cursor-pointer items-center gap-2 rounded-2xl border border-dashed border-sage/50 bg-sage/5 px-3 py-2.5 text-foreground transition-colors hover:bg-sage/10">
-            <Camera className="h-4 w-4 shrink-0 text-sage-foreground" />
-            <span className="flex-1 text-sm font-medium">{t("צילום תמונה והוספה לתכנית", "Add a Photo to the Plan")}</span>
-            <input type="file" accept="image/*" capture="environment" onChange={handlePhotoCapture} className="hidden" />
-          </label>
           {plan.length === 0 ? (
             <p className="rounded-2xl bg-muted/50 p-4 text-sm text-muted-foreground">{t("עדיין לא הוספת פעילויות. לחצי על \"הוסף לתכנית הטיפול\" כדי להתחיל.", "No activities have been added yet. Select Add to Session Plan to begin.")}</p>
           ) : (
