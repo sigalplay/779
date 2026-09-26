@@ -187,3 +187,13 @@
   .meeting-picture-tools .board-game-choice>span,[data-games-tools] .board-game-choice>span{height:96px}
   .meeting-picture-tools .board-game-choice,[data-games-tools] .board-game-choice{grid-template-rows:96px auto}
 }
+/* Smaller item squares in the toys, motor equipment and emotions windows: five a row on a computer, three on a phone. */
+.meeting-board-actions .meeting-games-palette>div{grid-template-columns:repeat(5,minmax(0,1fr))}
+.meeting-picture-tools .board-game-choice>span,[data-games-tools] .board-game-choice>span{height:96px}
+.meeting-picture-tools .board-game-choice,[data-games-tools] .board-game-choice{grid-template-rows:96px auto}
+@media(max-width:760px){
+  .meeting-board-actions .meeting-games-palette>div{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .meeting-picture-tools .board-game-choice>span,[data-games-tools] .board-game-choice>span{height:72px;padding:5px 5px 0}
+  .meeting-picture-tools .board-game-choice,[data-games-tools] .board-game-choice{grid-template-rows:72px auto;border-radius:12px}
+  .meeting-picture-tools .board-game-choice>strong,[data-games-tools] .board-game-choice>strong{padding:3px 2px 6px;font-size:11px;line-height:1.15}
+}
