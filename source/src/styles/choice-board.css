@@ -37,8 +37,13 @@
 .first-then-label{justify-self:center;padding:4px 18px;border-radius:999px;background:#f8df9a;font-size:20px}
 .first-then-slot+.first-then-slot .first-then-label{background:#bcdcf2}
 @media(max-width:600px){
-  /* All cards are the same size, so no option stands out. Three wrap as two and one, centered. */
+  /* All cards are the same size, so no option stands out. Three sit in one row. */
   .choice-big{flex-basis:calc(50% - 8px);font-size:16px;padding:10px;border-radius:20px}
+  .choice-board-show.count-3{flex-wrap:nowrap;gap:8px}
+  .choice-board-show.count-3 .choice-big{flex:1 1 0;min-width:0;padding:6px;border-width:3px;border-radius:16px;font-size:14px}
+  .choice-board-show.count-3 .choice-big-image{border-radius:12px}
+  .choice-board-show.count-3 .choice-big-check{top:-10px;inset-inline-end:-8px;width:36px;height:36px;border-width:3px}
+  .choice-board-show.count-3 .choice-big-check svg{width:20px;height:20px}
   .choice-board-question{font-size:24px!important}
   .first-then-slot{flex-basis:40%}
 }
