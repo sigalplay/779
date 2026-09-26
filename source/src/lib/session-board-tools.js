@@ -22,15 +22,29 @@ export const EMOTIONS = [
 ];
 export const findEmotion = (id) => EMOTIONS.find((emotion) => emotion.id === id) || null;
 
+// Toys and materials from the therapy room (ids stay the same so saved boards keep their names).
+const TOYS = "/icon-bank/toys";
 export const BOARD_GAMES = [
-  { id: "play-kitchen", label: "מטבח ילדים", labelEn: "Play kitchen", asset: "/assets/therapist-games/play-kitchen.png" },
-  { id: "paper-pencil", label: "דף ועיפרון", labelEn: "Paper and pencil", asset: "/assets/therapist-games/paper-pencil.png" },
-  { id: "board-game", label: "משחק קופסה", labelEn: "Board game", asset: "/assets/therapist-games/board-game.png" },
-  { id: "doll", label: "בובה", labelEn: "Doll", asset: "/assets/therapist-games/doll.png" },
+  { id: "doll", label: "בובה", labelEn: "Doll", asset: `${TOYS}/doll.webp` },
+  { id: "play-kitchen", label: "מטבח ילדים", labelEn: "Play kitchen", asset: `${TOYS}/play-kitchen.webp` },
+  { id: "chef-hat", label: "כובע שף", labelEn: "Chef hat", asset: `${TOYS}/chef-hat.webp` },
+  { id: "cars", label: "מכוניות", labelEn: "Cars", asset: `${TOYS}/cars.webp` },
+  { id: "lego", label: "לגו", labelEn: "Lego", asset: `${TOYS}/lego.webp` },
+  { id: "magnetic-tiles", label: "מגנטים לבנייה", labelEn: "Magnetic tiles", asset: `${TOYS}/magnetic-tiles.webp` },
+  { id: "puzzle", label: "פאזל", labelEn: "Puzzle", asset: `${TOYS}/puzzle.webp` },
+  { id: "board-game", label: "משחק קופסה", labelEn: "Board game", asset: "/icon-bank/social-new/seed-35-turn-draw/material-board-game.webp" },
+  { id: "cards", label: "קלפים", labelEn: "Cards", asset: `${TOYS}/cards.webp` },
+  { id: "bubbles", label: "בועות סבון", labelEn: "Bubbles", asset: `${TOYS}/bubbles.webp` },
+  { id: "ball", label: "כדור", labelEn: "Ball", asset: "/icon-bank/movement-new/seed-90-illustrated/material-soft-ball.webp" },
+  { id: "paper-pencil", label: "דף ועיפרון", labelEn: "Paper and pencil", asset: "/icon-bank/embedded-v359/seed-71/material-pencil.webp" },
+  { id: "markers", label: "טושים", labelEn: "Markers", asset: "/icon-bank/crafts-new/seed-100-independent/material-colored-markers.webp" },
+  { id: "crayons", label: "צבעי שעווה", labelEn: "Crayons", asset: "/icon-bank/embedded-v359/seed-71/material-crayons.webp" },
+  { id: "scissors", label: "מספריים", labelEn: "Scissors", asset: "/icon-bank/crafts-new/shared-independent/scissors.webp" },
+  { id: "stickers", label: "מדבקות", labelEn: "Stickers", asset: "/icon-bank/crafts-new/seed-33-independent/material-stickers.webp" },
+  { id: "play-dough", label: "בצק", labelEn: "Play dough", asset: "/icon-bank/crafts-new/seed-63-independent/material-plasticine.webp" },
+  { id: "therapy-putty", label: "פלסטלינה טיפולית", labelEn: "Therapy putty", asset: `${TOYS}/therapy-putty.webp` },
   { id: "kinetic-sand", label: "חול קינטי", labelEn: "Kinetic sand", asset: "/assets/therapist-games/kinetic-sand.png" },
-  { id: "play-dough", label: "בצק", labelEn: "Play dough", asset: "/assets/therapist-games/play-dough.png" },
-  { id: "markers", label: "טושים", labelEn: "Markers", asset: "/assets/therapist-games/markers.png" },
-  { id: "chef-hat", label: "כובע שף", labelEn: "Chef hat", asset: "/assets/therapist-games/chef-hat.png" },
+  { id: "tweezers", label: "פינצטה", labelEn: "Tweezers", asset: "/icon-bank/fine-motor-new/seed-37-tweezers-pompoms/material-tweezers.webp" },
 ];
 
 export const localizedLabel = (entry, language) => (language === "en" ? entry.labelEn : entry.label);

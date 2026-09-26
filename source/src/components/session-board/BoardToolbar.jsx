@@ -147,7 +147,7 @@ export function BoardToolbar({
 
       <div className="meeting-games-tools" data-games-tools="true">
         <button type="button" className="meeting-games-button" data-board-games="" aria-expanded={palette === "games"} title={t("הוספת צעצוע או חומר ללוח", "Add a toy or material to the board")} onClick={() => togglePalette("games")}>
-          <img className="meeting-tool-image-icon" src="/assets/therapist-games/board-game.png" alt="" />
+          <img className="meeting-tool-image-icon" src="/icon-bank/toys/lego.webp" alt="" />
           <span>{t("צעצועים וחומרים", "Toys and materials")}</span>
         </button>
         {palette === "games" && (
