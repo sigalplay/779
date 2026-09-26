@@ -14,6 +14,8 @@ import { BoardToolbox } from "@/components/session-board/BoardToolbox";
 import { ChoiceBoard } from "@/components/session-board/ChoiceBoard";
 import { BoardDayAppointments } from "@/components/session-board/BoardDayAppointments";
 import { HomePracticeShare } from "@/components/session-board/HomePracticeShare";
+import { MyImagesDialog } from "@/components/session-board/MyImagesDialog";
+import { imageAsDataUrl, listMyImages } from "@/lib/my-images-cloud";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -705,6 +707,14 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
   const [timerOpen, setTimerOpen] = useState(false);
   const [choiceMode, setChoiceMode] = useState(null); // "choice" | "firstThen" | null
   const [shareOpen, setShareOpen] = useState(false);
+  const [myImagesOpen, setMyImagesOpen] = useState(false);
+  const [myImages, setMyImages] = useState([]);
+  useEffect(() => {
+    if (!hasCloudSession()) return undefined;
+    let cancelled = false;
+    listMyImages().then((rows) => { if (!cancelled) setMyImages(rows); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
   const [fullscreen, setFullscreen] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [penEnabled, setPenEnabled] = useState(false);
@@ -924,12 +934,31 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
     }),
     ...BOARD_GAMES.filter((game) => !plan.some((item) => item.boardGame === game.id))
       .map((game) => ({ key: `game:${game.id}`, title: localizedLabel(game, language), image: game.asset, game })),
+    ...myImages.filter((image) => image.url && !plan.some((item) => item.myImage === image.id)).map((image) => ({ key: `mine:${image.id}`, title: image.name, image: image.url, mine: image })),
   ];
+  // A photo from "my images" goes on the board as a copy, so it keeps showing after its address expires.
+  async function myImageItem(image) {
+    return { kind: "photo", uid: `mine-${image.id}-${Date.now()}`, image: image.url?.startsWith("data:") ? image.url : await imageAsDataUrl(image.url), label: image.name, myImage: image.id };
+  }
+  async function addMyImage(image) {
+    try {
+      const item = await myImageItem(image);
+      setPlan((prev) => [...prev, item]);
+      setMyImagesOpen(false);
+      toast.success(t("התמונה נוספה ללוח", "The image was added to the board"));
+    } catch {
+      toast.error(t("לא הצלחנו להוסיף את התמונה. נסי שוב.", "We could not add the image. Please try again."));
+    }
+  }
   // Put the chosen option right after the activities already done, so it is the next one.
-  function makeNext(option) {
+  async function makeNext(option) {
+    let mineItem = null;
+    if (option.mine) {
+      try { mineItem = await myImageItem(option.mine); } catch { return; }
+    }
     setPlan((prev) => {
       const rest = option.item ? prev.filter((item) => boardItemKey(item) !== boardItemKey(option.item)) : prev;
-      const entry = option.item || { kind: "photo", uid: `game-${option.game.id}-${Date.now()}`, image: option.game.asset, label: localizedLabel(option.game, language), boardGame: option.game.id };
+      const entry = option.item || mineItem || { kind: "photo", uid: `game-${option.game.id}-${Date.now()}`, image: option.game.asset, label: localizedLabel(option.game, language), boardGame: option.game.id };
       let at = 0;
       rest.forEach((item, index) => { if (item.completed) at = index + 1; });
       return [...rest.slice(0, at), entry, ...rest.slice(at)];
@@ -972,6 +1001,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
         onOpenChoice={() => { setPenEnabled(false); setChoiceMode("choice"); }}
         onOpenFirstThen={() => { setPenEnabled(false); setChoiceMode("firstThen"); }}
         onShareWithParents={() => { setPenEnabled(false); setShareOpen(true); }}
+        onOpenMyImages={() => { setPenEnabled(false); setMyImagesOpen(true); }}
         onPickPhoto={() => photoInputRef.current?.click()}
         fullscreen={fullscreen}
         onToggleFullscreen={toggleFullscreen}
@@ -1032,7 +1062,8 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
         {/* Inside the board so the timer and the toolbox stay visible in full screen. */}
         <div className="meeting-board-overlay">
           <VisualSessionTimer language={language} open={timerOpen} onOpenChange={setTimerOpen} hideTrigger />
-          {fullscreen && <BoardToolbox language={language} pen={pen} onOpenTimer={openTimer} onAddSign={addSign} onOpenChoice={setChoiceMode} />}
+          {fullscreen && <BoardToolbox language={language} pen={pen} onOpenTimer={openTimer} onAddSign={addSign} onOpenChoice={setChoiceMode} onOpenMyImages={() => setMyImagesOpen(true)} />}
+          {myImagesOpen && <MyImagesDialog language={language} returnUrl={`${window.location.pathname}${window.location.search}`} onAdd={addMyImage} onChanged={setMyImages} onClose={() => setMyImagesOpen(false)} />}
           {shareOpen && <HomePracticeShare language={language} onClose={() => setShareOpen(false)}
             activities={plan.filter((item) => item.kind === "activity" && getActivity(item.id)).map((item) => ({ id: item.id, title: boardItemView(item).title, image: boardItemView(item).hero }))} />}
           {choiceMode && <ChoiceBoard key={choiceMode} mode={choiceMode} language={language} options={pickerOptions} onStart={makeNext} onClose={() => setChoiceMode(null)} />}

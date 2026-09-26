@@ -22,6 +22,7 @@ export function BoardToolbar({
   onOpenChoice,
   onOpenFirstThen,
   onShareWithParents,
+  onOpenMyImages,
   onPickPhoto,
   fullscreen,
   onToggleFullscreen,
@@ -189,6 +190,11 @@ export function BoardToolbar({
         <span className="meeting-action-icon" aria-hidden="true">🏠</span>
         <span className="meeting-action-label-desktop">{t("שליחה להורים", "Send to parents")}</span>
         <span className="meeting-action-label-mobile">{t("שליחה להורים", "To parents")}</span>
+      </button>
+      <button className="meeting-my-images" type="button" onClick={onOpenMyImages} title={t("התמונות שלי - העלאת תמונות של משחקים וציוד", "My images - upload photos of games and equipment")}>
+        <span className="meeting-action-icon" aria-hidden="true">🖼️</span>
+        <span className="meeting-action-label-desktop">{t("העלאת תמונות", "Upload images")}</span>
+        <span className="meeting-action-label-mobile">{t("העלאת תמונות", "My images")}</span>
       </button>
     </div>
   );

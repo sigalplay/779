@@ -150,14 +150,21 @@
 }
 @keyframes patient-sheet-up{from{transform:translateY(100%)}to{transform:none}}
 
-/* Choice board and first-then buttons: one row under the tool buttons. */
-.meeting-board-page .meeting-board-actions>.meeting-choice{grid-column:1/5}
-.meeting-board-page .meeting-board-actions>.meeting-first-then{grid-column:5/9}
-.meeting-board-page .meeting-board-actions>.meeting-share-parents{grid-column:9/13}
+/* Choice board, first-then, send to parents and my images: a second row of tool buttons, the same size as the first. */
+.meeting-board-page .meeting-board-actions>.meeting-choice{grid-column:1/3}
+.meeting-board-page .meeting-board-actions>.meeting-first-then{grid-column:3/5}
+.meeting-board-page .meeting-board-actions>.meeting-share-parents{grid-column:5/7}
+.meeting-board-page .meeting-board-actions>.meeting-my-images{grid-column:7/9}
 .meeting-board-page .meeting-board-actions>.meeting-choice,
 .meeting-board-page .meeting-board-actions>.meeting-first-then,
-.meeting-board-page .meeting-board-actions>.meeting-share-parents{display:flex!important;width:100%!important;min-width:0!important;min-height:52px!important;flex-direction:row!important;gap:8px!important;padding:7px 10px!important;border-radius:15px!important;font-size:13px!important;line-height:1.15!important;white-space:normal!important}
-
+.meeting-board-page .meeting-board-actions>.meeting-share-parents,
+.meeting-board-page .meeting-board-actions>.meeting-my-images{display:flex!important;width:100%!important;min-width:0!important;min-height:64px!important;flex-direction:column!important;gap:4px!important;padding:7px 3px!important;border-radius:15px!important;font-size:11px!important;line-height:1.15!important;text-align:center!important;white-space:normal!important}
+@media(max-width:760px){
+  .meeting-board-page .meeting-board-actions>.meeting-choice,
+  .meeting-board-page .meeting-board-actions>.meeting-first-then,
+  .meeting-board-page .meeting-board-actions>.meeting-share-parents,
+  .meeting-board-page .meeting-board-actions>.meeting-my-images{min-height:52px!important;padding:4px 1px!important;border-radius:13px!important;font-size:9px!important}
+}
 
 /* Today's clients from the calendar, above the session board (BoardDayAppointments). */
 .board-day-appointments{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 0 2px}

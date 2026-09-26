@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeftRight, Hand, Pencil, Split, Timer } from "lucide-react";
+import { ArrowLeftRight, Hand, ImagePlus, Pencil, Split, Timer } from "lucide-react";
 import { TherapistPostureScissorsTips } from "@/components/TherapistPostureScissorsTips";
 import { PenBar } from "@/components/toolbox/PenBar";
 import { Toolbox, tipTools } from "@/components/toolbox/Toolbox";
@@ -8,7 +8,7 @@ import { VISUAL_SIGNS, localizedLabel } from "@/lib/session-board-tools";
 // The toolbox on the session board in full screen, where the tool row is hidden (outside full screen
 // the tool row already has every tool). It sits inside the board so it stays visible in full screen.
 // Its timer and pen are the board's own, and signs are added to the board.
-export function BoardToolbox({ language, pen, onOpenTimer, onAddSign, onOpenChoice }) {
+export function BoardToolbox({ language, pen, onOpenTimer, onAddSign, onOpenChoice, onOpenMyImages }) {
   const t = (he, en) => (language === "en" ? en : he);
   const [tipPanel, setTipPanel] = useState(null);
 
@@ -36,6 +36,7 @@ export function BoardToolbox({ language, pen, onOpenTimer, onAddSign, onOpenChoi
     },
     { id: "choice", color: "#d8ecc6", icon: <Split />, label: t("לוח בחירה", "Choice board"), onSelect: () => { pen.setEnabled(false); onOpenChoice("choice"); } },
     { id: "first-then", color: "#e6dcf5", icon: <ArrowLeftRight />, label: t("קודם-אחר כך", "First-then"), onSelect: () => { pen.setEnabled(false); onOpenChoice("firstThen"); } },
+    { id: "my-images", color: "#f9d0de", icon: <ImagePlus />, label: t("העלאת תמונות", "Upload images"), onSelect: () => { pen.setEnabled(false); onOpenMyImages(); } },
     ...tipTools(language, (panel) => { pen.setEnabled(false); setTipPanel(panel); }),
   ];
 
