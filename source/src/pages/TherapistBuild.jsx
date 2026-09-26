@@ -32,7 +32,7 @@ import { CRAFT_SUPPLIES, matchByCraftSupplies } from "@/lib/craft-supplies";
 import { attachPlanToSession, completeClinicSession, getPatient, getSession, startClinicSession } from "@/lib/therapist-clinic";
 import { activityTitle, translatedTerm } from "@/lib/content-translations";
 import { useTranslator } from "@/lib/language";
-import { BOARD_GAMES, findBoardGame, findSign, localizedLabel, readPhotoFile, renderSignCard } from "@/lib/session-board-tools";
+import { BOARD_GAMES, findBoardGame, findEmotion, findSign, localizedLabel, readPhotoFile, renderSignCard } from "@/lib/session-board-tools";
 import { getGuestBoard, getGuestBoardDrawing, guestBoardDates, normalizeBoardDate, saveGuestBoard, saveGuestBoardDrawing } from "@/lib/session-board-storage";
 import { hasCloudSession, listPatientBoardDates, loadPatientBoard, savePatientBoard } from "@/lib/session-board-cloud";
 
@@ -698,6 +698,8 @@ function boardItemLabel(item, language) {
   if (game) return localizedLabel(game, language);
   const motor = item.motorItem ? MOTOR_TRAIL_ITEMS.find((entry) => entry.id === item.motorItem) : null;
   if (motor) return localizedLabel(motor, language);
+  const emotion = item.emotion ? findEmotion(item.emotion) : null;
+  if (emotion) return localizedLabel(emotion, language);
   return item.label;
 }
 
@@ -856,6 +858,9 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
   function addGame(game) {
     setPlan((prev) => [...prev, { kind: "photo", uid: `game-${game.id}-${Date.now()}`, image: game.asset, label: localizedLabel(game, language), boardGame: game.id }]);
   }
+  function addEmotion(emotion) {
+    setPlan((prev) => [...prev, { kind: "photo", uid: `emotion-${emotion.id}-${Date.now()}`, image: emotion.asset, label: localizedLabel(emotion, language), emotion: emotion.id }]);
+  }
   // One piece of obstacle-course equipment on its own, as a picture on the board.
   function addMotorItem(item) {
     setPlan((prev) => [...prev, { kind: "photo", uid: `motor-${item.id}-${Date.now()}`, image: item.image, label: localizedLabel(item, language), motorItem: item.id }]);
@@ -1004,6 +1009,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
         onAddSign={addSign}
         onAddGame={addGame}
         onAddMotorItem={addMotorItem}
+        onAddEmotion={addEmotion}
         onOpenTimer={openTimer}
         onOpenChoice={() => { setPenEnabled(false); setChoiceMode("choice"); }}
         onOpenFirstThen={() => { setPenEnabled(false); setChoiceMode("firstThen"); }}
@@ -1027,7 +1033,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
             <>
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sage/30 text-sm font-bold">{i + 1}</span>
               <div className="flex h-40 w-40 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2">
-                {hero ? <img src={hero} alt={sign ? itemTitle : ""} className={`max-h-full max-w-full drop-shadow-md ${item.kind === "photo" && !item.motorItem ? "h-full w-full object-cover" : "object-contain"}`} />
+                {hero ? <img src={hero} alt={sign ? itemTitle : ""} className={`max-h-full max-w-full drop-shadow-md ${item.kind === "photo" && !item.motorItem && !item.emotion ? "h-full w-full object-cover" : "object-contain"}`} />
                   : item.kind === "motor-trail" ? <Route className="h-8 w-8 text-muted-foreground" />
                     : item.kind === "recipe" ? (recipe?.coverIcon ? <recipe.coverIcon /> : <span className="text-4xl">{recipe?.coverEmoji ?? "🍳"}</span>)
                       : item.kind === "experiment" ? <FlaskConical className="h-8 w-8 text-muted-foreground" />
@@ -1069,7 +1075,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
         {/* Inside the board so the timer and the toolbox stay visible in full screen. */}
         <div className="meeting-board-overlay">
           <VisualSessionTimer language={language} open={timerOpen} onOpenChange={setTimerOpen} hideTrigger />
-          {fullscreen && <BoardToolbox language={language} pen={pen} onOpenTimer={openTimer} onAddSign={addSign} onOpenChoice={setChoiceMode} onAddMotorItem={addMotorItem} />}
+          {fullscreen && <BoardToolbox language={language} pen={pen} onOpenTimer={openTimer} onAddSign={addSign} onOpenChoice={setChoiceMode} onAddMotorItem={addMotorItem} onAddEmotion={addEmotion} />}
           {myImagesOpen && <MyImagesDialog language={language} returnUrl={`${window.location.pathname}${window.location.search}`} onAdd={addMyImage} onChanged={setMyImages} onClose={() => setMyImagesOpen(false)} />}
           {shareOpen && <HomePracticeShare language={language} onClose={() => setShareOpen(false)}
             activities={plan.filter((item) => item.kind === "activity" && getActivity(item.id)).map((item) => ({ id: item.id, title: boardItemView(item).title, image: boardItemView(item).hero }))} />}

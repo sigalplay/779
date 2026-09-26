@@ -9,6 +9,18 @@ export const VISUAL_SIGNS = [
   { id: "your-turn", label: "תורך", labelEn: "Your turn", asset: "/icon-bank/ui/visual-signs-v95/your-turn.png" },
 ];
 
+// Emotion faces (the same boy, a shirt colour for each feeling), added to the board as pictures.
+export const EMOTIONS = [
+  { id: "happy", label: "שמח", labelEn: "Happy", asset: "/icon-bank/emotions/happy.webp" },
+  { id: "calm", label: "רגוע", labelEn: "Calm", asset: "/icon-bank/emotions/calm.webp" },
+  { id: "excited", label: "נרגש", labelEn: "Excited", asset: "/icon-bank/emotions/excited.webp" },
+  { id: "sad", label: "עצוב", labelEn: "Sad", asset: "/icon-bank/emotions/sad.webp" },
+  { id: "worried", label: "דואג", labelEn: "Worried", asset: "/icon-bank/emotions/worried.webp" },
+  { id: "scared", label: "מפחד", labelEn: "Scared", asset: "/icon-bank/emotions/scared.webp" },
+  { id: "tired", label: "עייף", labelEn: "Tired", asset: "/icon-bank/emotions/tired.webp" },
+];
+export const findEmotion = (id) => EMOTIONS.find((emotion) => emotion.id === id) || null;
+
 export const BOARD_GAMES = [
   { id: "play-kitchen", label: "מטבח ילדים", labelEn: "Play kitchen", asset: "/assets/therapist-games/play-kitchen.png" },
   { id: "paper-pencil", label: "דף ועיפרון", labelEn: "Paper and pencil", asset: "/assets/therapist-games/paper-pencil.png" },

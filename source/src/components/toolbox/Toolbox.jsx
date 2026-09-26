@@ -43,7 +43,7 @@ function ToolboxIcon() {
 function ToolCircle({ tool, index, className = "", onClick }) {
   const content = (
     <>
-      <span className={`toolbox-tool-circle ${className}`} style={tool.color ? { background: tool.color } : undefined}>
+      <span className={`toolbox-tool-circle ${className}${tool.fill ? " toolbox-tool-fill" : ""}`} style={tool.color ? { background: tool.color } : undefined}>
         {tool.image ? <img src={tool.image} alt="" /> : tool.icon}
       </span>
       <small>{tool.label}</small>

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { addPatient, hasCloudSession, listPatients } from "@/lib/session-board-cloud";
-import { BOARD_GAMES, VISUAL_SIGNS, localizedLabel } from "@/lib/session-board-tools";
+import { BOARD_GAMES, EMOTIONS, VISUAL_SIGNS, localizedLabel } from "@/lib/session-board-tools";
 import { MOTOR_TRAIL_ITEMS } from "@/lib/motor-trail-items";
 
 // The tool row above the session board. Markup and class names follow the live site so the
@@ -20,6 +20,7 @@ export function BoardToolbar({
   onAddSign,
   onAddGame,
   onAddMotorItem,
+  onAddEmotion,
   onOpenTimer,
   onOpenChoice,
   onOpenFirstThen,
@@ -32,7 +33,7 @@ export function BoardToolbar({
   const t = (he, en) => (language === "en" ? en : he);
   const [collapsed, setCollapsed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [palette, setPalette] = useState(null); // "signs" | "games" | "motor" | null
+  const [palette, setPalette] = useState(null); // "signs" | "games" | "motor" | "emotions" | null
   const planningRef = useRef(null);
 
   useEffect(() => {
@@ -198,7 +199,7 @@ export function BoardToolbar({
         <span className="meeting-action-label-desktop">{t("העלאת תמונות", "Upload images")}</span>
         <span className="meeting-action-label-mobile">{t("העלאת תמונות", "My images")}</span>
       </button>
-      <div className="meeting-games-tools meeting-motor-tools" data-motor-tools="true">
+      <div className="meeting-games-tools meeting-picture-tools meeting-motor-tools" data-motor-tools="true">
         <button type="button" className="meeting-games-button meeting-motor-button" aria-expanded={palette === "motor"} title={t("הוספת אביזר מהמסלול המוטורי ללוח", "Add obstacle-course equipment to the board")} onClick={() => togglePalette("motor")}>
           <img className="meeting-tool-image-icon" src="/icon-bank/motor-trail/trampoline.webp" alt="" />
           <span>{t("אביזרים מוטוריים", "Motor equipment")}</span>
@@ -210,6 +211,25 @@ export function BoardToolbar({
               {MOTOR_TRAIL_ITEMS.map((item) => (
                 <button key={item.id} type="button" data-add-board-game={`motor-${item.id}`} aria-label={t(`הוספת ${item.label} ללוח`, `Add ${item.labelEn} to the board`)} onClick={() => { setPalette(null); onAddMotorItem(item); }}>
                   <span className="board-game-choice"><span><img src={item.image} alt="" /></span><strong>{localizedLabel(item, language)}</strong></span>
+                </button>
+              ))}
+            </div>
+            <button type="button" className="meeting-games-close" onClick={() => setPalette(null)}>{t("סגירה", "Close")}</button>
+          </div>
+        )}
+      </div>
+      <div className="meeting-games-tools meeting-picture-tools meeting-emotions-tools" data-emotions-tools="true">
+        <button type="button" className="meeting-games-button meeting-emotions-button" aria-expanded={palette === "emotions"} title={t("הוספת רגש ללוח", "Add an emotion to the board")} onClick={() => togglePalette("emotions")}>
+          <img className="meeting-tool-image-icon" src="/icon-bank/emotions/happy.webp" alt="" />
+          <span>{t("רגשות", "Emotions")}</span>
+        </button>
+        {palette === "emotions" && (
+          <div className="meeting-games-palette" role="dialog" aria-label={t("בחירת רגש ללוח", "Choose an emotion for the board")}>
+            <strong>{t("בחירת רגש ללוח", "Choose an emotion for the board")}</strong>
+            <div>
+              {EMOTIONS.map((emotion) => (
+                <button key={emotion.id} type="button" data-add-board-game={`emotion-${emotion.id}`} aria-label={t(`הוספת ${emotion.label} ללוח`, `Add ${emotion.labelEn} to the board`)} onClick={() => { setPalette(null); onAddEmotion(emotion); }}>
+                  <span className="board-game-choice"><span><img src={emotion.asset} alt="" /></span><strong>{localizedLabel(emotion, language)}</strong></span>
                 </button>
               ))}
             </div>
