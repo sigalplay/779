@@ -146,13 +146,13 @@ export function BoardToolbar({
       </div>
 
       <div className="meeting-games-tools" data-games-tools="true">
-        <button type="button" className="meeting-games-button" data-board-games="" aria-expanded={palette === "games"} title={t("הוספת משחק ללוח", "Add a game to the board")} onClick={() => togglePalette("games")}>
+        <button type="button" className="meeting-games-button" data-board-games="" aria-expanded={palette === "games"} title={t("הוספת צעצוע או חומר ללוח", "Add a toy or material to the board")} onClick={() => togglePalette("games")}>
           <img className="meeting-tool-image-icon" src="/assets/therapist-games/board-game.png" alt="" />
-          <span>{t("משחקים", "Games")}</span>
+          <span>{t("צעצועים וחומרים", "Toys and materials")}</span>
         </button>
         {palette === "games" && (
-          <div className="meeting-games-palette" data-games-palette="true" role="dialog" aria-label={t("בחירת משחק ללוח", "Choose a game for the board")}>
-            <strong>{t("בחירת משחק ללוח", "Choose a game for the board")}</strong>
+          <div className="meeting-games-palette" data-games-palette="true" role="dialog" aria-label={t("בחירת צעצוע או חומר ללוח", "Choose a toy or material for the board")}>
+            <strong>{t("בחירת צעצוע או חומר ללוח", "Choose a toy or material for the board")}</strong>
             <div>
               {BOARD_GAMES.map((game) => (
                 <button key={game.id} type="button" data-add-board-game={game.id} aria-label={t(`הוספת ${game.label} ללוח`, `Add ${game.labelEn} to the board`)} onClick={() => { setPalette(null); onAddGame(game); }}>
