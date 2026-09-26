@@ -7,7 +7,8 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { getActivity, toggleFavorite, logView, isSignedIn, isFavorite } from "@/lib/storage";
+import { getActivity, toggleFavorite, logView, isSignedIn, isFavorite, similarActivities } from "@/lib/storage";
+import { ActivityCard } from "@/components/ActivityCard";
 import { activityEmoji } from "@/lib/activity-emoji";
 import { getActivityDurationLabel } from "@/lib/activity-duration";
 import { ACTIVITY_ICON_SETS, activityHero } from "@/lib/activity-icons";
@@ -458,6 +459,8 @@ export default function ActivityDetail() {
             ) : null}
           </div>
         ) : null}
+
+        <SimilarActivities activity={a} mode={mode} title={t("פעילויות דומות", "Similar activities")} />
       </motion.article>
     </AppShell>
   );
@@ -844,6 +847,20 @@ function MaterialsChecklist({ altWhere, activityId, materials, displayMaterials,
           );
         })}
       </ol>
+    </section>
+  );
+}
+
+// Three activities that work on the same skills (bottom of the activity page).
+function SimilarActivities({ activity, mode, title }) {
+  const similar = similarActivities(activity, mode === "parent" ? "parent" : "therapist");
+  if (!similar.length) return null;
+  return (
+    <section className="space-y-3 print:hidden">
+      <h2 className="font-display text-xl font-bold">{title}</h2>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {similar.map((other, index) => <ActivityCard key={other.id} activity={other} index={index} mode={mode} />)}
+      </div>
     </section>
   );
 }

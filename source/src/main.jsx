@@ -14,6 +14,7 @@ import "./styles/therapist-board-signs-v93.css";
 import "./styles/therapist-board-games-v1.css";
 import "./styles/v92-board-and-search.css";
 import "./styles/toolbox.css";
+import "./styles/choice-board.css";
 import "./styles/mobile-search-filters-v1.css";
 import "./styles/calendar-qa-v27.css";
 import "./styles/mobile-calendar-compact-v1.css";
@@ -24,6 +25,10 @@ import "./styles/activity-print-sheet.css";
 
 // בספארי באייפון חלון ההדפסה נפתח לפעמים לפני שהעמוד מוכן להדפסה, ויוצא קובץ ריק.
 // השהיה קצרה מונעת את זה.
+// The old diary kept client names, goals and session notes in the browser. The diary now lives in the
+// account (cloud), so the old copy is removed from every browser that still has it.
+try { localStorage.removeItem("boo_therapist_clinic_v1"); } catch { /* storage blocked */ }
+
 const nativePrint = window.print.bind(window);
 window.print = () => window.setTimeout(nativePrint, 400);
 

@@ -19,6 +19,10 @@ export function BoardToolbar({
   onAddSign,
   onAddGame,
   onOpenTimer,
+  onOpenChoice,
+  onOpenFirstThen,
+  onShareWithParents,
+  onOpenMyImages,
   onPickPhoto,
   fullscreen,
   onToggleFullscreen,
@@ -171,6 +175,26 @@ export function BoardToolbar({
       <button className="meeting-fullscreen" type="button" aria-pressed={fullscreen} onClick={onToggleFullscreen}>
         <span className="meeting-action-icon" aria-hidden="true">⛶</span>
         <span data-fullscreen-label="">{fullscreen ? t("יציאה ממסך מלא", "Exit full screen") : t("מסך מלא", "Full screen")}</span>
+      </button>
+      <button className="meeting-choice" type="button" onClick={onOpenChoice} title={t("לוח בחירה - הילד בוחר מבין 2-3 אפשרויות", "Choice board - the child picks one of 2-3 options")}>
+        <span className="meeting-action-icon" aria-hidden="true">✌</span>
+        <span className="meeting-action-label-desktop">{t("לוח בחירה", "Choice board")}</span>
+        <span className="meeting-action-label-mobile">{t("לוח בחירה", "Choice")}</span>
+      </button>
+      <button className="meeting-first-then" type="button" onClick={onOpenFirstThen} title={t("קודם - אחר כך", "First - then")}>
+        <span className="meeting-action-icon" aria-hidden="true">⇠</span>
+        <span className="meeting-action-label-desktop">{t("קודם - אחר כך", "First - then")}</span>
+        <span className="meeting-action-label-mobile">{t("קודם-אחר כך", "First-then")}</span>
+      </button>
+      <button className="meeting-share-parents" type="button" onClick={onShareWithParents} title={t("שליחת פעילויות מהלוח להורים לתרגול בבית", "Send board activities to parents to practice at home")}>
+        <span className="meeting-action-icon" aria-hidden="true">🏠</span>
+        <span className="meeting-action-label-desktop">{t("שליחה להורים", "Send to parents")}</span>
+        <span className="meeting-action-label-mobile">{t("שליחה להורים", "To parents")}</span>
+      </button>
+      <button className="meeting-my-images" type="button" onClick={onOpenMyImages} title={t("התמונות שלי - העלאת תמונות של משחקים וציוד", "My images - upload photos of games and equipment")}>
+        <span className="meeting-action-icon" aria-hidden="true">🖼️</span>
+        <span className="meeting-action-label-desktop">{t("העלאת תמונות", "Upload images")}</span>
+        <span className="meeting-action-label-mobile">{t("העלאת תמונות", "My images")}</span>
       </button>
     </div>
   );

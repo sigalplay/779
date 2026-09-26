@@ -104,3 +104,57 @@ drop policy if exists "admins edit content" on public.cms_content;
 create policy "admins edit content" on public.cms_content for all to authenticated
   using (exists (select 1 from public.cms_admins a where a.user_id = auth.uid()))
   with check (exists (select 1 from public.cms_admins a where a.user_id = auth.uid()));
+
+-- Calendar: which client comes on which day (optionally at a time, optionally every week).
+-- Only a client reference, a date and a time are kept; no notes or summaries.
+create table if not exists public.diary_appointments (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users on delete cascade,
+  patient_id uuid not null references public.therapist_patients on delete cascade,
+  start_date date not null,
+  start_time text,
+  weekly boolean not null default false,
+  end_date date,
+  skipped_dates date[] not null default '{}',
+  created_at timestamptz not null default now()
+);
+
+alter table public.diary_appointments enable row level security;
+drop policy if exists "own appointments" on public.diary_appointments;
+create policy "own appointments" on public.diary_appointments for all to authenticated
+  using (user_id = auth.uid())
+  with check (
+    user_id = auth.uid()
+    and exists (select 1 from public.therapist_patients p where p.id = patient_id and p.user_id = auth.uid())
+  );
+
+-- "My images": photos a therapist uploads for her session boards (games, equipment).
+-- Files live in a private storage bucket, in a folder named after the therapist's user id;
+-- only she can read, add or delete them. The table keeps each image's name and file path.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('therapist-images', 'therapist-images', false, 2097152, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do nothing;
+
+drop policy if exists "own image files read" on storage.objects;
+create policy "own image files read" on storage.objects for select to authenticated
+  using (bucket_id = 'therapist-images' and (storage.foldername(name))[1] = auth.uid()::text);
+drop policy if exists "own image files add" on storage.objects;
+create policy "own image files add" on storage.objects for insert to authenticated
+  with check (bucket_id = 'therapist-images' and (storage.foldername(name))[1] = auth.uid()::text);
+drop policy if exists "own image files delete" on storage.objects;
+create policy "own image files delete" on storage.objects for delete to authenticated
+  using (bucket_id = 'therapist-images' and (storage.foldername(name))[1] = auth.uid()::text);
+
+create table if not exists public.therapist_images (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users on delete cascade,
+  name text not null,
+  path text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.therapist_images enable row level security;
+drop policy if exists "own images" on public.therapist_images;
+create policy "own images" on public.therapist_images for all to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid() and split_part(path, '/', 1) = auth.uid()::text);

@@ -17,6 +17,9 @@ export function BoardPhotoPreview({ image, language, onConfirm, onRepick, onCanc
       <div className="board-photo-preview-card">
         <h2>{t("התמונה שתתווסף ללוח", "Photo to add to the board")}</h2>
         <img src={image} alt={t("תצוגה מקדימה", "Preview")} />
+        <p className="board-photo-warning" role="note">
+          {t("רק תמונות של משחקים, ציוד וחומרים, בלי ילדים ובלי פרטים מזהים.", "Only photos of games, equipment and materials, with no children and no identifying details.")}
+        </p>
         <div>
           <button ref={confirmRef} type="button" data-confirm-photo="" onClick={onConfirm}>{t("הוספה ללוח", "Add to board")}</button>
           <button type="button" data-repick-photo="" onClick={onRepick}>{t("צילום או בחירה מחדש", "Take or choose another photo")}</button>

@@ -25,9 +25,9 @@ const PRIVATE_ROUTES = [
   "/favorites", "/profile", "/auth", "/admin/cms",
   "/therapist/build", "/therapist/all", "/therapist/recipes", "/therapist/experiments", "/therapist/cipher",
   "/therapist/morning-routine", "/therapist/evening-routine", "/therapist/weekly-board", "/therapist/motor-trail",
-  "/therapist/plans", "/therapist/session-notes", "/therapist/diary", "/therapist/board-games",
+  "/therapist/plans", "/therapist/diary", "/therapist/board-games",
   "/therapist/social-stories", "/therapist/hebrew-calendar", "/parent/cipher",
-  "/child/morning-routine", "/child/evening-routine", "/shared/weekly-board", "/shared/hebrew-calendar",
+  "/child/morning-routine", "/child/evening-routine", "/shared/weekly-board", "/shared/hebrew-calendar", "/shared/home-practice",
 ];
 
 // Plain HTML pages in public/ that are indexed as they are (they carry their own tags).

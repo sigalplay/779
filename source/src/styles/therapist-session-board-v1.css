@@ -149,3 +149,30 @@
   .meeting-board-page .meeting-patient-menu>button,.meeting-board-page .meeting-patient-menu>a{display:flex!important;width:100%!important;justify-content:center}
 }
 @keyframes patient-sheet-up{from{transform:translateY(100%)}to{transform:none}}
+
+/* Choice board, first-then, send to parents and my images: a second row of tool buttons, the same size as the first. */
+.meeting-board-page .meeting-board-actions>.meeting-choice{grid-column:1/3}
+.meeting-board-page .meeting-board-actions>.meeting-first-then{grid-column:3/5}
+.meeting-board-page .meeting-board-actions>.meeting-share-parents{grid-column:5/7}
+.meeting-board-page .meeting-board-actions>.meeting-my-images{grid-column:7/9}
+.meeting-board-page .meeting-board-actions>.meeting-choice,
+.meeting-board-page .meeting-board-actions>.meeting-first-then,
+.meeting-board-page .meeting-board-actions>.meeting-share-parents,
+.meeting-board-page .meeting-board-actions>.meeting-my-images{display:flex!important;width:100%!important;min-width:0!important;min-height:64px!important;flex-direction:column!important;gap:4px!important;padding:7px 3px!important;border-radius:15px!important;font-size:11px!important;line-height:1.15!important;text-align:center!important;white-space:normal!important}
+@media(max-width:760px){
+  .meeting-board-page .meeting-board-actions>.meeting-choice,
+  .meeting-board-page .meeting-board-actions>.meeting-first-then,
+  .meeting-board-page .meeting-board-actions>.meeting-share-parents,
+  .meeting-board-page .meeting-board-actions>.meeting-my-images{min-height:52px!important;padding:4px 1px!important;border-radius:13px!important;font-size:9px!important}
+}
+
+/* Today's clients from the calendar, above the session board (BoardDayAppointments). */
+.board-day-appointments{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 0 2px}
+.board-day-label{display:inline-flex;align-items:center;gap:6px;color:#6f635a;font:700 14px Rubik,Arial,sans-serif}
+.board-day-label svg{width:18px;height:18px}
+.board-day-chip{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:6px 14px;border:1px solid #d9d0c5;border-radius:999px;background:#fff;color:#40362f;font:700 14px Rubik,Arial,sans-serif;cursor:pointer}
+.board-day-chip:hover{border-color:#9bcdb4;background:#f3faf6}
+.board-day-chip.current{border-color:#5f9f7c;background:#dff1e7;color:#23533c}
+.board-day-time{font-variant-numeric:tabular-nums;color:#6f635a;font-weight:500}
+.board-day-chip.current .board-day-time{color:#23533c}
+@media print{.board-day-appointments{display:none}}

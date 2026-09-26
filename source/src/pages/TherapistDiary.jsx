@@ -1,331 +1,268 @@
-import { useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Archive, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Clock3, Download, GripVertical, Plus, RotateCcw, Search, ShieldCheck, Sparkles, Trash2, Upload, UsersRound, ClipboardCheck, MessageCircle, PackageCheck, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { CalendarDays, ChevronLeft, ChevronRight, Clock3, GripVertical, Plus, Repeat, X } from "lucide-react";
+import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
-import { TherapistDemoNotice } from "@/components/TherapistDemoNotice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { addSession, archivePatient, createEncryptedClinicBackup, deletePatientPermanently, deleteSession, getAllocationStatus, getArchivedPatients, getPatients, getSessions, rescheduleSession, restoreEncryptedClinicBackup, restorePatient, savePatient, saveSession } from "@/lib/therapist-clinic";
-import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { useTranslator } from "@/lib/language";
-import { sessionTitle, translatedTerm } from "@/lib/content-translations";
+import { addPatient, hasCloudSession, listPatients } from "@/lib/session-board-cloud";
+import { addAppointment, deleteAppointment, listAppointments, localDateKey, occursOn, previousDay, updateAppointment } from "@/lib/diary-cloud";
 
-const DAY_LABELS = ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"];
-const DAY_LABELS_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-function dateKey(date) { return date.toISOString().slice(0, 10); }
-function currentWeekDays(offset = 0) {
-  const today = new Date();
-  const sunday = new Date(today);
-  sunday.setDate(today.getDate() - today.getDay() + offset * 7);
-  return DAY_LABELS.map((label, index) => { const date = new Date(sunday); date.setDate(sunday.getDate() + index); return { key: dateKey(date), label, labelEn: DAY_LABELS_EN[index], date: String(date.getDate()) }; });
-}
-function frameworkName(patient) {
-  if (patient.settingName) return patient.settingName;
-  return patient.setting === "kindergarten" ? "גן" : patient.setting === "school" ? "בית ספר" : patient.setting === "other" ? "אחר" : "עצמאית";
-}
+const DAY_LABELS = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
+const DAY_LABELS_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-function PatientPill({ patient }) {
-  const { t } = useTranslator();
-  if (!patient) return <span className="text-[11px] leading-tight">{t("מטופל", "Client")}</span>;
-  return <span className="block break-words text-[11px] font-bold leading-tight text-foreground md:text-xs">{patient.name}</span>;
+function weekDays(offset) {
+  const sunday = new Date();
+  sunday.setHours(12, 0, 0, 0);
+  sunday.setDate(sunday.getDate() - sunday.getDay() + offset * 7);
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(sunday);
+    date.setDate(sunday.getDate() + index);
+    return { key: localDateKey(date), index, day: date.getDate(), month: date.getMonth() + 1 };
+  });
 }
 
+const boardHref = (patientId, date) => `/therapist/build?view=session&patientBoard=${encodeURIComponent(patientId)}&boardDate=${date}`;
+
+// The therapist's calendar: which client comes on which day. A click on an appointment opens that
+// client's session board for the same date. Only names, dates and times are kept (no notes).
 export default function TherapistDiary() {
   const { t, language } = useTranslator();
   const navigate = useNavigate();
-  const [patients, setPatients] = useState(() => getPatients());
-  const [archivedPatients, setArchivedPatients] = useState(() => getArchivedPatients());
-  const [showArchive, setShowArchive] = useState(false);
-  const [archiveDropActive, setArchiveDropActive] = useState(false);
-  const [draggingPatientId, setDraggingPatientId] = useState(null);
-  const draggingPatientIdRef = useRef(null);
-  const backupInputRef = useRef(null);
-  const suppressPatientClickRef = useRef(false);
-  const [dragOverDate, setDragOverDate] = useState(null);
-  const [settingFilter, setSettingFilter] = useState("all");
-  const [activeStat, setActiveStat] = useState(null);
-  const [sessions, setSessions] = useState(() => getSessions());
-  const [moveRequest, setMoveRequest] = useState(null);
-  const [addRequest, setAddRequest] = useState(null);
-  const [patientDropRequest, setPatientDropRequest] = useState(null);
-  const [dropTime, setDropTime] = useState("");
-  const [selectedPatientId, setSelectedPatientId] = useState("");
+  const signedIn = hasCloudSession();
+  const [state, setState] = useState(signedIn ? "loading" : "signed-out");
+  const [patients, setPatients] = useState([]);
+  const [appointments, setAppointments] = useState([]);
   const [weekOffset, setWeekOffset] = useState(0);
-  const weekDays = useMemo(() => currentWeekDays(weekOffset), [weekOffset]);
-  const [search, setSearch] = useState("");
-  const [view, setView] = useState("week");
-  const [backupBusy, setBackupBusy] = useState(false);
-  const todayKey = dateKey(new Date());
-  const displayedDays = view === "day" && weekOffset === 0 ? weekDays.filter((day) => day.key === todayKey) : weekDays;
-  const visibleSessions = useMemo(() => sessions.filter((session) => !session.archivedFromDiary), [sessions]);
-  const todaySessions = useMemo(() => visibleSessions.filter((s) => s.date === todayKey), [visibleSessions, todayKey]);
-  const activePatientList = showArchive ? archivedPatients : patients;
-  const frameworkOptions = useMemo(() => [...new Map(activePatientList.map((patient) => { const name = frameworkName(patient); return [name, { name, color: patient.settingColor || "#A9CFAA" }]; })).values()], [activePatientList]);
-  const filteredPatients = activePatientList.filter((p) => p.name.includes(search.trim()) && (settingFilter === "all" || frameworkName(p) === settingFilter));
-  const completed = visibleSessions.filter((s) => s.status === "completed").length;
-  const pending = visibleSessions.filter((s) => !["completed", "cancelled"].includes(s.status) && s.summary === "").length;
-  const completedSessions = visibleSessions.filter((session) => session.status === "completed");
-  const pendingSessions = visibleSessions.filter((session) => !["completed", "cancelled"].includes(session.status) && session.summary === "");
-  const statCards = [
-    { key: "today", label: t("טיפולי היום", "Today’s sessions"), value: todaySessions.length, icon: Clock3 },
-    { key: "patients", label: t("מטופלים פעילים", "Active clients"), value: patients.length, icon: UsersRound },
-    { key: "completed", label: t("סיכומים שהושלמו", "Completed summaries"), value: completed, icon: ClipboardCheck },
-    { key: "pending", label: t("להשלמה", "To complete"), value: pending, icon: MessageCircle },
-  ];
-  const statItems = activeStat === "today" ? todaySessions : activeStat === "patients" ? patients : activeStat === "completed" ? completedSessions : activeStat === "pending" ? pendingSessions : [];
-  function requestMove(event, targetDate) {
+  const [form, setForm] = useState(null); // { date, patientId, time, weekly }
+  const [removing, setRemoving] = useState(null); // { appointment, date }
+  const [dropDay, setDropDay] = useState(null);
+  const [newName, setNewName] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!signedIn) return undefined;
+    let cancelled = false;
+    Promise.all([listPatients(), listAppointments()])
+      .then(([patientRows, appointmentRows]) => {
+        if (cancelled) return;
+        setPatients(Array.isArray(patientRows) ? patientRows : []);
+        setAppointments(Array.isArray(appointmentRows) ? appointmentRows : []);
+        setState("ready");
+      })
+      .catch(() => { if (!cancelled) setState("error"); });
+    return () => { cancelled = true; };
+  }, [signedIn]);
+
+  const days = useMemo(() => weekDays(weekOffset), [weekOffset]);
+  const todayKey = localDateKey(new Date());
+  const patientName = (id) => patients.find((patient) => patient.id === id)?.display_name || t("מטופל", "Client");
+  const dayLabel = (index) => (language === "en" ? DAY_LABELS_EN[index] : DAY_LABELS[index]);
+
+  function appointmentsOn(dayKey) {
+    return appointments
+      .filter((appointment) => occursOn(appointment, dayKey))
+      .sort((a, b) => (a.start_time || "99").localeCompare(b.start_time || "99"));
+  }
+
+  function openForm(date, patientId = "") {
+    setRemoving(null);
+    setForm({ date, patientId: patientId || patients[0]?.id || "", time: "", weekly: false });
+  }
+
+  async function submitForm(event) {
     event.preventDefault();
-    const sessionId = event.dataTransfer.getData("text/session-id");
-    const session = sessions.find((item) => item.id === sessionId);
-    if (!session || session.date === targetDate) return;
-    setMoveRequest({ session, targetDate });
-  }
-  function handleCalendarDrop(event, targetDate) {
-    event.preventDefault();
-    setDragOverDate(null);
-    const patientId = event.dataTransfer.getData("application/x-patient-id") || event.dataTransfer.getData("text/patient-id") || event.dataTransfer.getData("text/plain") || draggingPatientIdRef.current || draggingPatientId;
-    if (!patientId) { requestMove(event, targetDate); return; }
-    const patient = patients.find((item) => item.id === patientId);
-    if (!patient) return;
-    setPatientDropRequest({ patient, targetDate });
-    setDropTime(patient.treatmentSchedule?.time || "");
-    setDraggingPatientId(null);
-  }
-  function confirmPatientDrop(permanent) {
-    if (!patientDropRequest) return;
-    const { patient, targetDate } = patientDropRequest;
-    if (getSessions(patient.id).some((session) => session.date === targetDate && !session.hiddenFromDiary)) { toast.error(t("כבר קיים למטופל טיפול בתאריך הזה", "This client already has a session on that date.")); return; }
-    const count = getSessions(patient.id).filter((session) => session.status !== "cancelled").length;
-    addSession(patient.id, { date: targetDate, time: dropTime, title: `טיפול ${count + 1}`, status: "planned", generatedFromSchedule: false });
-    if (permanent) {
-      const day = new Date(`${targetDate}T12:00:00Z`).getUTCDay();
-      const current = patient.treatmentSchedule || {};
-      savePatient({ ...patient, treatmentSchedule: { ...current, frequency: "weekly", weekdays: [day], time: dropTime, startDate: targetDate, totalAllocation: current.totalAllocation || 12 } });
-      setPatients(getPatients());
-    }
-    setSessions(getSessions());
-    setPatientDropRequest(null);
-    toast.success(permanent ? t("הטיפול והיום הקבוע נשמרו", "Session and regular day saved") : t("הטיפול נוסף ליומן", "Session added to the calendar"));
-  }
-  function confirmMove(changeType) {
-    if (!moveRequest) return;
-    rescheduleSession(moveRequest.session.id, moveRequest.targetDate, changeType);
-    setSessions(getSessions());
-    setMoveRequest(null);
-  }
-  function beginAdd(date) {
-    setAddRequest({ date });
-    setSelectedPatientId("");
-  }
-  function assignKnownPatient() {
-    const selectedPatient = patients.find((patient) => patient.id === selectedPatientId);
-    if (!selectedPatient || !addRequest) return;
-    const count = getSessions(selectedPatient.id).length;
-    const session = addSession(selectedPatient.id, { date: addRequest.date, title: `טיפול ${count + 1}`, generatedFromSchedule: false });
-    setSessions(getSessions());
-    setAddRequest(null);
-    navigate(`/therapist/patient/${selectedPatient.id}?session=${session.id}`);
-  }
-  function restoreArchivedPatient(patientId) {
-    restorePatient(patientId);
-    setArchivedPatients(getArchivedPatients());
-    setPatients(getPatients());
-    toast.success(t("התיק שוחזר מהארכיון", "File restored from archive."));
-  }
-  function removeArchivedPatient(patientId) {
-    const patient = archivedPatients.find((item) => item.id === patientId);
-    if (!patient) return;
-    const approved = window.confirm(t(`למחוק לצמיתות את התיק של ${patient.name}? כל המפגשים, התוכניות והמידע בתיק יימחקו מהמחשב ולא יהיה אפשר לבטל את הפעולה. אם יש גיבוי מוצפן קודם, ניתן יהיה לשחזר ממנו.`, `Permanently delete ${patient.name}'s file? All sessions, plans, and information in the file will be deleted from this computer, and this can't be undone. If you have an earlier encrypted backup, you can restore from it.`));
-    if (!approved) return;
-    deletePatientPermanently(patientId);
-    setArchivedPatients(getArchivedPatients());
-    setSessions(getSessions());
-    toast.success(t("תיק המטופל נמחק לצמיתות", "The client file was permanently deleted"));
-  }
-  function archiveActivePatient(patientId) {
-    const patient = patients.find((item) => item.id === patientId);
-    if (!patient || !window.confirm(t(`להעביר את התיק של ${patient.name} לארכיון?`, `Move ${patient.name}'s file to the archive?`))) return;
-    archivePatient(patientId);
-    setPatients(getPatients());
-    setArchivedPatients(getArchivedPatients());
-    setSessions(getSessions());
-    toast.success(t("תיק המטופל הועבר לארכיון", "Client file moved to archive."));
-  }
-  function setSessionStatus(session, status) {
-    saveSession({
-      ...session,
-      status,
-      ...(status === "completed" ? { completedAt: new Date().toISOString() } : {}),
-      ...(status === "cancelled" ? { cancelledAt: new Date().toISOString() } : {}),
-    });
-    setSessions(getSessions());
-    toast.success(status === "completed" ? t("הטיפול סומן כבוצע", "Session marked as done") : t("הטיפול סומן כמבוטל", "Session marked as canceled"));
-  }
-  function removeSessionFromDiary(session) {
-    if (!window.confirm(t(`למחוק את ${session.title} מהיומן?`, `Delete ${sessionTitle(session.title, language)} from the diary?`))) return;
-    deleteSession(session.id);
-    setSessions(getSessions());
-    toast.success(t("הטיפול נמחק מהיומן", "Session removed from the calendar."));
-  }
-  function dropPatientInArchive(event) {
-    event.preventDefault();
-    setArchiveDropActive(false);
-    const patientId = event.dataTransfer.getData("application/x-patient-id") || event.dataTransfer.getData("text/patient-id") || draggingPatientIdRef.current || draggingPatientId;
-    if (!patientId || showArchive) return;
-    archivePatient(patientId);
-    setPatients(getPatients());
-    setArchivedPatients(getArchivedPatients());
-    setSessions(getSessions());
-    toast.success(t("תיק המטופל הועבר לארכיון", "Client file moved to archive."));
-    setDraggingPatientId(null);
-  }
-  async function downloadEncryptedBackup() {
-    const password = window.prompt(t("בחרי סיסמה לגיבוי (לפחות 8 תווים). חשוב לשמור אותה במקום בטוח:", "Choose a password for the backup (at least 8 characters). Keep it somewhere safe:"));
-    if (password === null) return;
-    if (password.length < 8) { toast.error(t("הסיסמה צריכה לכלול לפחות 8 תווים", "The password must be at least 8 characters")); return; }
-    const confirmation = window.prompt(t("הקלידי שוב את הסיסמה לאישור:", "Type the password again to confirm:"));
-    if (confirmation !== password) { toast.error(t("הסיסמאות אינן תואמות", "The passwords don't match")); return; }
-    setBackupBusy(true);
+    if (!form?.patientId) return;
+    setBusy(true);
     try {
-      const backup = await createEncryptedClinicBackup(password);
-      const blob = new Blob([JSON.stringify(backup)], { type: "application/octet-stream" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `boo-nesahek-diary-backup-${new Date().toISOString().slice(0, 10)}.boo-backup`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
-      toast.success(t("הגיבוי המוצפן הורד למחשב", "The encrypted backup was downloaded to your computer"));
+      const row = await addAppointment({ patientId: form.patientId, date: form.date, time: form.time, weekly: form.weekly });
+      if (row) setAppointments((all) => [...all, row]);
+      setForm(null);
+      toast.success(form.weekly ? t("השיבוץ השבועי נוסף ליומן", "Weekly appointment added") : t("השיבוץ נוסף ליומן", "Appointment added"));
     } catch {
-      toast.error(t("לא הצלחנו ליצור את הגיבוי. נסי שוב.", "We couldn't create the backup. Please try again."));
-    } finally {
-      setBackupBusy(false);
+      toast.error(t("לא הצלחנו לשמור את השיבוץ. נסי שוב.", "We could not save the appointment. Please try again."));
     }
+    setBusy(false);
   }
-  async function restoreFromEncryptedBackup(event) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file) return;
-    const password = window.prompt(t("הקלידי את הסיסמה של קובץ הגיבוי:", "Enter the backup file's password:"));
-    if (password === null) return;
-    setBackupBusy(true);
+
+  async function remove(mode) {
+    const { appointment, date } = removing;
+    setBusy(true);
     try {
-      const backup = JSON.parse(await file.text());
-      if (!window.confirm(t("השחזור יחליף את כל נתוני היומן ותיקי המטופלים השמורים כעת במחשב זה. להמשיך?", "Restoring will replace all calendar data and client files currently saved on this computer. Continue?"))) return;
-      await restoreEncryptedClinicBackup(backup, password);
-      setPatients(getPatients());
-      setArchivedPatients(getArchivedPatients());
-      setSessions(getSessions());
-      setShowArchive(false);
-      toast.success(t("היומן שוחזר מהגיבוי המוצפן", "The calendar was restored from the encrypted backup"));
-    } catch (error) {
-      toast.error(error?.message === "wrong-password" ? t("הסיסמה שגויה או שהקובץ נפגם", "The password is wrong or the file is damaged") : t("זה אינו קובץ גיבוי תקין", "This isn't a valid backup file"));
-    } finally {
-      setBackupBusy(false);
+      if (mode === "all" || !appointment.weekly || (mode === "from" && date <= appointment.start_date)) {
+        await deleteAppointment(appointment.id);
+        setAppointments((all) => all.filter((item) => item.id !== appointment.id));
+      } else {
+        const patch = mode === "once"
+          ? { skipped_dates: [...(appointment.skipped_dates || []), date] }
+          : { end_date: previousDay(date) };
+        const row = await updateAppointment(appointment.id, patch);
+        setAppointments((all) => all.map((item) => (item.id === appointment.id ? row || { ...item, ...patch } : item)));
+      }
+      setRemoving(null);
+      toast.success(t("השיבוץ הוסר", "Appointment removed"));
+    } catch {
+      toast.error(t("לא הצלחנו להסיר את השיבוץ. נסי שוב.", "We could not remove the appointment. Please try again."));
     }
+    setBusy(false);
   }
+
+  async function createPatient(event) {
+    event.preventDefault();
+    const name = newName.trim();
+    if (!name) return;
+    setBusy(true);
+    try {
+      const id = await addPatient(name);
+      setPatients((all) => [{ id, display_name: name }, ...all]);
+      setNewName("");
+    } catch {
+      toast.error(t("לא הצלחנו להוסיף את המטופל כרגע.", "We could not add the client right now."));
+    }
+    setBusy(false);
+  }
+
+  const first = days[0];
+  const last = days[6];
+  const rangeLabel = `${first.day}.${first.month} – ${last.day}.${last.month}`;
 
   return (
     <AppShell mode="therapist">
-      <div className="space-y-6">
-        <section className="rounded-[2rem] border border-border/60 bg-gradient-to-br from-card via-card to-sage/10 p-5 shadow-sm md:p-7">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <div className="mb-2 flex items-center gap-2 text-sage-foreground"><CalendarDays className="h-5 w-5" /><span className="text-sm font-bold">{t("המרחב שלי למטפלת", "My therapist workspace")}</span></div>
-              <h1 className="font-display text-3xl font-black md:text-4xl">{t("היום שלי", "My day")}</h1>
-              <p className="mt-2 max-w-2xl text-muted-foreground">{t("יומן, מטופלים ותכנון טיפול — מחוברים ישירות לפעילויות של בואו נשחק.", "Diary, clients, and session planning — connected directly to Let's Play activities.")}</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <input ref={backupInputRef} type="file" accept=".boo-backup,application/octet-stream" onChange={restoreFromEncryptedBackup} className="hidden" />
-              <Button type="button" variant="outline" disabled={backupBusy} onClick={downloadEncryptedBackup} className="rounded-full"><Download className="h-4 w-4" />{" "}{t("הורדת גיבוי מוצפן", "Download encrypted backup")}</Button>
-              <Button type="button" variant="outline" disabled={backupBusy} onClick={() => backupInputRef.current?.click()} className="rounded-full"><Upload className="h-4 w-4" />{" "}{t("שחזור מגיבוי", "Restore from backup")}</Button>
-              <Button onClick={() => navigate("/therapist/build?tab=search")} className="rounded-full bg-sage text-sage-foreground"><Sparkles className="h-4 w-4" />{" "}{t("בנה לוח למפגש טיפולי", "Plan a Therapy Session")}</Button>
-              <Button variant="outline" onClick={() => navigate("/therapist/patient/new")} className="rounded-full"><Plus className="h-4 w-4" />{" "}{t("מטופל חדש", "New client")}</Button>
-            </div>
-          </div>
-        </section>
+      <div className="mb-5">
+        <h1 className="flex items-center gap-2 font-display text-3xl font-black"><CalendarDays className="h-7 w-7 text-sage-foreground" />{t("יומן", "Calendar")}</h1>
+        <p className="mt-1 text-muted-foreground">{t("שבצי מטופלים לימים. לחיצה על שיבוץ פותחת את לוח המפגש של אותו מטופל באותו תאריך.", "Schedule clients on days. Select an appointment to open that client's session board for the date.")}</p>
+      </div>
 
-        <TherapistDemoNotice />
-
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {statCards.map(({ key, label, value, icon: Icon }) => (
-            <button type="button" key={key} onClick={() => setActiveStat((current) => current === key ? null : key)} aria-expanded={activeStat === key} className={`rounded-3xl border bg-card p-4 text-right transition hover:-translate-y-0.5 hover:shadow-md ${activeStat === key ? "border-sage ring-2 ring-sage/15" : "border-border/60"}`}>
-              <div className="mb-2 flex items-center justify-between"><span className="text-sm text-muted-foreground">{label}</span><div className="flex items-center gap-2"><Icon className="h-4 w-4 text-sage-foreground" /><ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${activeStat === key ? "rotate-180" : ""}`} /></div></div>
-              <div className="font-display text-2xl font-black">{value}</div>
-            </button>
-          ))}
+      {state === "signed-out" && (
+        <div className="rounded-3xl border border-border/60 bg-card p-6">
+          <h2 className="font-display text-xl font-bold">{t("היומן שמור בחשבון שלך", "Your calendar is saved to your account")}</h2>
+          <p className="mt-2 text-muted-foreground">{t("התחברי כדי לשבץ מטופלים ולראות את היומן מכל מכשיר.", "Sign in to schedule clients and see your calendar on any device.")}</p>
+          <Link to={`/auth?mode=login&redirect=${encodeURIComponent("/therapist/diary")}`} className="mt-4 inline-flex min-h-10 items-center rounded-full bg-foreground px-5 text-sm font-bold text-background">{t("התחברות", "Sign in")}</Link>
         </div>
-        {activeStat && <section className="rounded-3xl border border-sage/30 bg-card p-4 md:p-5"><div className="mb-4 flex items-center justify-between"><div><h2 className="font-display text-lg font-black">{statCards.find((card) => card.key === activeStat)?.label}</h2><p className="text-sm text-muted-foreground">{t("פירוט מלא", "Full details")}</p></div><button type="button" onClick={() => setActiveStat(null)} className="rounded-full px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted">{t("סגירה", "Close")}</button></div>{statItems.length > 0 ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{statItems.map((item) => { const isPatient = activeStat === "patients"; const patient = isPatient ? item : patients.find((candidate) => candidate.id === item.patientId); return <button type="button" key={item.id} onClick={() => navigate(`/therapist/patient/${isPatient ? item.id : item.patientId}${isPatient ? "" : `?session=${item.id}`}`)} className="flex items-center gap-3 rounded-2xl border border-border/60 p-3 text-right transition hover:bg-muted"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-black" style={{ backgroundColor: patient?.color || "#E8F3EC" }}>{patient?.name?.trim()?.charAt(0) || "?"}</div><div className="min-w-0 flex-1"><div className="font-bold">{patient?.name || t("מטופל", "Client")}</div>{isPatient ? <div className="truncate text-xs text-muted-foreground">{translatedTerm(frameworkName(item), language)} · {item.goals?.slice(0, 2).map((goal) => translatedTerm(goal, language)).join(" · ")}</div> : <div className="text-xs text-muted-foreground">{item.date}{item.time ? ` · ${item.time}` : ""} · {sessionTitle(item.title, language)}</div>}</div><ChevronLeft className="h-4 w-4 text-muted-foreground" /></button>; })}</div> : <div className="rounded-2xl bg-muted/50 p-6 text-center text-sm text-muted-foreground">{t("אין פריטים להצגה", "No items to display")}</div>}</section>}
+      )}
+      {state === "loading" && <p className="text-muted-foreground">{t("טוענת את היומן…", "Loading your calendar…")}</p>}
+      {state === "error" && (
+        <div className="rounded-3xl border border-border/60 bg-card p-6">
+          <h2 className="font-display text-xl font-bold">{t("לא הצלחנו לטעון את היומן", "We could not load your calendar")}</h2>
+          <p className="mt-2 text-muted-foreground">{t("ייתכן שצריך להתחבר מחדש. אם זה חוזר, נסי שוב מאוחר יותר.", "You may need to sign in again. If this keeps happening, try again later.")}</p>
+          <Link to={`/auth?mode=login&redirect=${encodeURIComponent("/therapist/diary")}`} className="mt-4 inline-flex min-h-10 items-center rounded-full border border-border px-5 text-sm font-bold">{t("התחברות מחדש", "Sign in again")}</Link>
+        </div>
+      )}
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-          <section className="rounded-3xl border border-border/60 bg-card p-4 md:p-5">
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-              <div><h2 className="font-display text-xl font-black">{t("השבוע שלי", "My week")}</h2><p className="text-sm text-muted-foreground">{t("גררי מטופל מהרשימה שבצד שמאל אל היום הרצוי", "Drag a client from the list on the left onto the day you want")}</p></div>
-              <div className="flex flex-wrap items-center gap-2"><div className="flex items-center gap-1 rounded-full border bg-background p-1"><button type="button" onClick={() => { setWeekOffset((value) => value - 1); setView("week"); }} aria-label={t("השבוע הקודם", "Previous week")} className="rounded-full p-1.5 hover:bg-muted"><ChevronRight className="h-4 w-4" /></button><button type="button" onClick={() => { setWeekOffset(0); setView("week"); }} className="rounded-full px-2 py-1 text-xs font-bold hover:bg-muted">{t("השבוע הנוכחי", "Current week")}</button><button type="button" onClick={() => { setWeekOffset((value) => value + 1); setView("week"); }} aria-label={t("השבוע הבא", "Next week")} className="rounded-full p-1.5 hover:bg-muted"><ChevronLeft className="h-4 w-4" /></button></div><div className="flex items-center gap-1 rounded-full border bg-background p-1">
-                <button onClick={() => setView("week")} className={`rounded-full px-3 py-1.5 text-sm ${view === "week" ? "bg-foreground text-background" : "text-muted-foreground"}`}>{t("שבוע", "Week")}</button>
-                <button onClick={() => setView("day")} className={`rounded-full px-3 py-1.5 text-sm ${view === "day" ? "bg-foreground text-background" : "text-muted-foreground"}`}>{t("היום", "Today")}</button>
-              </div></div>
+      {state === "ready" && (
+        <div className="grid gap-5 lg:grid-cols-[250px_1fr]">
+          <aside className="h-fit rounded-3xl border border-border/60 bg-card p-4">
+            <h2 className="font-display text-lg font-bold">{t("המטופלים שלי", "My clients")}</h2>
+            <p className="mt-1 text-xs text-muted-foreground">{t("אפשר לגרור מטופל אל יום ביומן.", "Drag a client onto a day.")}</p>
+            <ul className="mt-3 grid gap-2">
+              {patients.map((patient) => (
+                <li key={patient.id}>
+                  <div
+                    draggable
+                    onDragStart={(event) => event.dataTransfer.setData("text/plain", patient.id)}
+                    className="flex cursor-grab items-center gap-2 rounded-2xl border border-border/60 bg-background px-3 py-2 text-sm font-bold"
+                  >
+                    <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                    <span className="min-w-0 flex-1 truncate">{patient.display_name}</span>
+                  </div>
+                </li>
+              ))}
+              {!patients.length && <li className="text-sm text-muted-foreground">{t("עדיין לא הוספת מטופלים.", "You have not added any clients yet.")}</li>}
+            </ul>
+            <form onSubmit={createPatient} className="mt-4 grid gap-2">
+              <label htmlFor="diaryNewPatient" className="text-sm font-bold">{t("הוספת מטופל", "Add a client")}</label>
+              <div className="flex gap-2">
+                <Input id="diaryNewPatient" value={newName} maxLength={80} onChange={(e) => setNewName(e.target.value)} placeholder={t("שם פרטי או כינוי", "First name or nickname")} />
+                <Button type="submit" disabled={busy || !newName.trim()} className="rounded-full">{t("הוספה", "Add")}</Button>
+              </div>
+              <small className="text-xs text-muted-foreground">{t("מומלץ לא להזין שם מלא או מידע רפואי.", "We recommend not entering a full name or medical information.")}</small>
+            </form>
+          </aside>
+
+          <section className="rounded-3xl border border-border/60 bg-card p-4">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="font-display text-lg font-bold tabular-nums">{rangeLabel}</h2>
+              <div className="flex items-center gap-1.5">
+                <Button variant="outline" size="icon" className="rounded-full" onClick={() => setWeekOffset((w) => w - 1)} aria-label={t("השבוע הקודם", "Previous week")}>{language === "en" ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}</Button>
+                <Button variant="outline" className="rounded-full" onClick={() => setWeekOffset(0)} disabled={weekOffset === 0}>{t("השבוע", "This week")}</Button>
+                <Button variant="outline" size="icon" className="rounded-full" onClick={() => setWeekOffset((w) => w + 1)} aria-label={t("השבוע הבא", "Next week")}>{language === "en" ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}</Button>
+              </div>
             </div>
-            <div className={view === "day" ? "grid gap-2" : "grid gap-2 md:grid-cols-4 xl:grid-cols-7"}>
-              {displayedDays.map((day) => {
-                const daySessions = visibleSessions.filter((s) => s.date === day.key);
+
+            <div className="grid gap-3 md:grid-cols-7 md:gap-2">
+              {days.map((day) => {
+                const items = appointmentsOn(day.key);
+                const isToday = day.key === todayKey;
+                const formHere = form?.date === day.key;
                 return (
-                  <div key={day.key} onDragEnter={(event) => { event.preventDefault(); if (draggingPatientIdRef.current || draggingPatientId || event.dataTransfer.types.includes("application/x-patient-id")) setDragOverDate(day.key); }} onDragOver={(event) => { event.preventDefault(); const isPatientDrag = Boolean(draggingPatientIdRef.current || draggingPatientId) || event.dataTransfer.types.includes("application/x-patient-id"); event.dataTransfer.dropEffect = isPatientDrag ? "copy" : "move"; if (isPatientDrag) setDragOverDate(day.key); }} onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setDragOverDate((current) => current === day.key ? null : current); }} onDrop={(event) => handleCalendarDrop(event, day.key)} className={`min-h-[260px] rounded-2xl border p-2 transition-all ${view === "day" ? "mx-auto w-full max-w-2xl" : ""} ${dragOverDate === day.key ? "scale-[1.015] border-2 border-sage bg-sage/15 shadow-lg ring-4 ring-sage/15" : day.key === todayKey ? "border-sage/50 bg-sage/5" : "border-border/60 bg-background"}`}>
-                    <div className="mb-3 flex items-center justify-between border-b border-border/60 pb-2"><div className="flex items-center gap-1"><span className="text-xs font-bold text-muted-foreground">{language === "en" ? day.labelEn : day.label}</span><button type="button" onClick={() => beginAdd(day.key)} aria-label={t(`הוספת טיפול בתאריך ${day.key}`, `Add session on ${day.key}`)} title={t("הוספת טיפול", "Add session")} className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-sage/15 hover:text-sage-foreground"><Plus className="h-4 w-4" /></button></div><span className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-black ${day.key === todayKey ? "bg-sage text-sage-foreground" : "bg-muted"}`}>{day.date}</span></div>
-                    <div className="space-y-2">
-                      {daySessions.map((s) => {
-                        const patient = patients.find((p) => p.id === s.patientId);
-                        const completed = s.status === "completed";
-                        const cancelled = s.status === "cancelled";
-                        return <div key={s.id} draggable onDragStart={(event) => { event.dataTransfer.setData("text/session-id", s.id); event.dataTransfer.effectAllowed = "move"; }} className={`w-full cursor-grab overflow-hidden rounded-2xl border text-right shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:cursor-grabbing ${completed ? "border-emerald-300 bg-emerald-50" : cancelled ? "border-red-300 bg-red-50" : "border-border/60 bg-card"}`}>
-                          <button type="button" onClick={() => navigate(`/therapist/patient/${s.patientId}?session=${s.id}`)} className="w-full p-2.5 text-right">
-                            <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground"><span>{s.time}</span><span className={completed ? "font-bold text-emerald-700" : cancelled ? "font-bold text-red-700" : "text-amber-700"}>{completed ? t("בוצע", "Completed") : cancelled ? t("בוטל", "Cancelled") : t("מתוכנן", "Planned")}</span></div>
-                            <div className="mt-1"><PatientPill patient={patient} /></div>
-                            <div className="mt-1 truncate text-[11px] text-muted-foreground">{sessionTitle(s.title, language)}</div>
-                          </button>
-                          <div className="grid grid-cols-3 border-t border-current/10 bg-white/45 text-[10px] font-bold">
-                            <button type="button" onClick={() => setSessionStatus(s, "completed")} className={`flex items-center justify-center gap-1 px-1 py-2 transition hover:bg-emerald-100 ${completed ? "text-emerald-700" : "text-muted-foreground"}`} title={t("סימון כבוצע", "Mark as completed")}><Check className="h-3.5 w-3.5" />{" "}{t("בוצע", "Completed")}</button>
-                            <button type="button" onClick={() => setSessionStatus(s, "cancelled")} className={`flex items-center justify-center gap-1 border-x border-current/10 px-1 py-2 transition hover:bg-red-100 ${cancelled ? "text-red-700" : "text-muted-foreground"}`} title={t("סימון כמבוטל", "Mark as cancelled")}><X className="h-3.5 w-3.5" />{" "}{t("בוטל", "Cancelled")}</button>
-                            <button type="button" onClick={() => removeSessionFromDiary(s)} className="flex items-center justify-center gap-1 px-1 py-2 text-muted-foreground transition hover:bg-red-100 hover:text-red-700" title={t("מחיקה מהיומן", "Remove from calendar")}><Trash2 className="h-3.5 w-3.5" />{" "}{t("מחיקה", "Delete")}</button>
-                          </div>
-                        </div>;
-                      })}
-                      {dragOverDate === day.key && draggingPatientId ? <div className="my-3 rounded-xl border-2 border-dashed border-sage bg-card/80 px-2 py-5 text-center text-xs font-bold text-sage-foreground">{t("שחררי כאן כדי לשבץ ביום זה", "Drop here to schedule on this day")}</div> : daySessions.length === 0 && <div className="py-10 text-center text-xs text-muted-foreground">{t("אין טיפולים", "No sessions")}</div>}
+                  <div
+                    key={day.key}
+                    onDragOver={(event) => { event.preventDefault(); setDropDay(day.key); }}
+                    onDragLeave={() => setDropDay((current) => (current === day.key ? null : current))}
+                    onDrop={(event) => { event.preventDefault(); setDropDay(null); openForm(day.key, event.dataTransfer.getData("text/plain")); }}
+                    className={cn("flex min-h-24 flex-col gap-2 rounded-2xl border p-2 md:min-h-64", isToday ? "border-sage bg-sage/10" : "border-border/60 bg-background", dropDay === day.key && "ring-2 ring-sage")}
+                  >
+                    <div className="flex items-center justify-between gap-1">
+                      <span className={cn("text-sm font-bold", isToday && "text-sage-foreground")}>{dayLabel(day.index)} <span className="tabular-nums text-muted-foreground">{day.day}.{day.month}</span></span>
+                      <button type="button" onClick={() => openForm(day.key)} className="grid h-7 w-7 place-items-center rounded-full border border-border/60 bg-card text-muted-foreground hover:bg-muted" aria-label={t("שיבוץ מטופל ביום הזה", "Schedule a client on this day")}><Plus className="h-4 w-4" /></button>
                     </div>
+
+                    {items.map((appointment) => (
+                      <div key={appointment.id} className="group relative rounded-xl border border-sage/40 bg-card">
+                        <button type="button" onClick={() => navigate(boardHref(appointment.patient_id, day.key))} className="flex w-full flex-col items-start gap-0.5 px-2.5 py-2 pe-8 text-start" title={t("פתיחת לוח המפגש", "Open the session board")}>
+                          <span className="text-sm font-bold leading-tight">{patientName(appointment.patient_id)}</span>
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            {appointment.start_time && <><Clock3 className="h-3 w-3" /><span className="tabular-nums">{appointment.start_time}</span></>}
+                            {appointment.weekly && <Repeat className="h-3 w-3" aria-label={t("כל שבוע", "Every week")} />}
+                          </span>
+                        </button>
+                        <button type="button" onClick={() => { setForm(null); setRemoving({ appointment, date: day.key }); }} className="absolute end-1 top-1 grid h-6 w-6 place-items-center rounded-full text-muted-foreground hover:bg-muted" aria-label={t("הסרת השיבוץ", "Remove the appointment")}><X className="h-3.5 w-3.5" /></button>
+                        {removing?.appointment.id === appointment.id && removing.date === day.key && (
+                          <div className="grid gap-1.5 border-t border-border/60 p-2 text-xs">
+                            <strong>{t("להסיר את השיבוץ?", "Remove this appointment?")}</strong>
+                            {appointment.weekly ? (
+                              <>
+                                <button type="button" disabled={busy} onClick={() => remove("once")} className="rounded-lg border border-border/60 px-2 py-1 hover:bg-muted">{t("רק ביום הזה", "Only this day")}</button>
+                                <button type="button" disabled={busy} onClick={() => remove("from")} className="rounded-lg border border-border/60 px-2 py-1 hover:bg-muted">{t("מהיום והלאה", "This day and after")}</button>
+                              </>
+                            ) : (
+                              <button type="button" disabled={busy} onClick={() => remove("all")} className="rounded-lg border border-border/60 px-2 py-1 hover:bg-muted">{t("הסרה", "Remove")}</button>
+                            )}
+                            <button type="button" onClick={() => setRemoving(null)} className="px-2 py-1 text-muted-foreground">{t("ביטול", "Cancel")}</button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {formHere && (
+                      <form onSubmit={submitForm} className="grid gap-2 rounded-xl border border-border/60 bg-card p-2 text-sm">
+                        <label className="grid gap-1"><span className="text-xs font-bold">{t("מטופל", "Client")}</span>
+                          <select value={form.patientId} onChange={(e) => setForm({ ...form, patientId: e.target.value })} required className="rounded-lg border border-border/60 bg-background px-2 py-1.5">
+                            {!patients.length && <option value="">{t("הוסיפי קודם מטופל", "Add a client first")}</option>}
+                            {patients.map((patient) => <option key={patient.id} value={patient.id}>{patient.display_name}</option>)}
+                          </select>
+                        </label>
+                        <label className="grid gap-1"><span className="text-xs font-bold">{t("שעה (לא חובה)", "Time (optional)")}</span>
+                          <input type="time" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} className="rounded-lg border border-border/60 bg-background px-2 py-1.5" />
+                        </label>
+                        <label className="flex items-center gap-2 text-xs font-bold"><input type="checkbox" checked={form.weekly} onChange={(e) => setForm({ ...form, weekly: e.target.checked })} className="h-4 w-4 accent-[#5f9f7c]" />{t(`כל יום ${DAY_LABELS[day.index]}`, `Every ${DAY_LABELS_EN[day.index]}`)}</label>
+                        <div className="flex gap-1.5">
+                          <Button type="submit" size="sm" disabled={busy || !form.patientId} className="rounded-full">{t("שיבוץ", "Schedule")}</Button>
+                          <Button type="button" size="sm" variant="ghost" onClick={() => setForm(null)} className="rounded-full">{t("ביטול", "Cancel")}</Button>
+                        </div>
+                      </form>
+                    )}
+
+                    {!items.length && !formHere && <span className="hidden text-center text-xs text-muted-foreground md:block">{t("אין שיבוצים", "No appointments")}</span>}
                   </div>
                 );
               })}
             </div>
           </section>
-
-          <aside className="space-y-4">
-            <section className="rounded-3xl border border-border/60 bg-card p-5">
-              <div className="mb-3 flex items-center justify-between gap-2"><div className="flex items-center gap-2">{showArchive ? <Archive className="h-5 w-5 text-sage-foreground" /> : <UsersRound className="h-5 w-5 text-sage-foreground" />}<div><h2 className="font-display text-lg font-black">{showArchive ? t("ארכיון", "Archive") : t("המטופלים שלי", "My clients")}</h2>{!showArchive && <p className="text-[11px] text-muted-foreground">{t("אחזי בידית וגררי ליום ביומן", "Grab the handle and drag it onto a day in the planner")}</p>}</div></div><button type="button" onDragEnter={() => !showArchive && setArchiveDropActive(true)} onDragLeave={() => setArchiveDropActive(false)} onDragOver={(event) => { if (!showArchive) event.preventDefault(); }} onDrop={dropPatientInArchive} onClick={() => { setShowArchive((value) => !value); setSettingFilter("all"); setArchiveDropActive(false); }} className={`rounded-full border px-2.5 py-1 text-xs font-bold transition ${archiveDropActive ? "scale-110 border-amber-500 bg-amber-100 text-amber-900 ring-4 ring-amber-200/60" : "text-muted-foreground hover:bg-muted"}`}>{showArchive ? t("חזרה לפעילים", "Back to active") : archiveDropActive ? t("שחררי כאן", "Drop here") : t("ארכיון", "Archive")}</button></div>
-              {!showArchive && draggingPatientId && <div onDragOver={(event) => { event.preventDefault(); setArchiveDropActive(true); }} onDragLeave={() => setArchiveDropActive(false)} onDrop={dropPatientInArchive} className={`mb-3 flex min-h-20 items-center justify-center rounded-2xl border-2 border-dashed p-3 text-center text-sm font-bold transition ${archiveDropActive ? "border-amber-500 bg-amber-100 text-amber-900" : "border-amber-300 bg-amber-50 text-amber-800"}`}><Archive className="ml-2 h-5 w-5" />{" "}{t("שחררי כאן להעברה לארכיון", "Drop here to archive")}</div>}
-              <div className="relative mb-3"><Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} className="rounded-2xl pr-9" placeholder={t("חיפוש מטופל", "Search for a client")} /></div>
-              <div className="mb-3 flex flex-wrap gap-1.5"><button type="button" onClick={() => setSettingFilter("all")} className={`rounded-full border px-2.5 py-1 text-xs ${settingFilter === "all" ? "border-sage bg-sage/15 font-bold" : "border-border text-muted-foreground"}`}>{t("הכל", "All")}</button>{frameworkOptions.map((framework) => <button type="button" key={framework.name} onClick={() => setSettingFilter(framework.name)} className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs ${settingFilter === framework.name ? "font-bold" : "text-muted-foreground"}`} style={{ borderColor: framework.color, backgroundColor: settingFilter === framework.name ? `${framework.color}33` : undefined }}><span className="h-2 w-2 rounded-full" style={{ backgroundColor: framework.color }} />{translatedTerm(framework.name, language)}</button>)}</div>
-              <div className="space-y-2">{filteredPatients.map((p) => (showArchive ?
-                <div key={p.id} className="flex items-center gap-3 rounded-2xl border border-border/60 p-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-black" style={{ backgroundColor: p.color }}>{p.name?.trim()?.charAt(0) || "?"}</div>
-                  <div className="min-w-0 flex-1"><div className="font-bold">{p.name}</div><div className="mt-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs" style={{ backgroundColor: `${p.settingColor || "#A9CFAA"}33` }}><span className="h-2 w-2 rounded-full" style={{ backgroundColor: p.settingColor || "#A9CFAA" }} />{translatedTerm(frameworkName(p), language)}</div></div><button type="button" onClick={() => restoreArchivedPatient(p.id)} aria-label={t(`שחזור התיק של ${p.name}`, `Restore ${p.name}'s file`)} title={t("שחזור מהארכיון", "Restore from archive")} className="rounded-full p-2 text-sage-foreground hover:bg-sage/10"><RotateCcw className="h-4 w-4" /></button><button type="button" onClick={() => removeArchivedPatient(p.id)} aria-label={t(`מחיקה לצמיתות של התיק של ${p.name}`, `Permanently delete ${p.name}'s file`)} title={t("מחיקה לצמיתות", "Delete permanently")} className="rounded-full p-2 text-red-600 hover:bg-red-50"><Trash2 className="h-4 w-4" /></button>
-                </div> : <div key={p.id} draggable onClick={(event) => { if (suppressPatientClickRef.current) { event.preventDefault(); suppressPatientClickRef.current = false; return; } navigate(`/therapist/patient/${p.id}`); }} onKeyDown={(event) => { if (event.key === "Enter") navigate(`/therapist/patient/${p.id}`); }} role="link" tabIndex={0} onDragStart={(event) => { draggingPatientIdRef.current = p.id; suppressPatientClickRef.current = true; event.dataTransfer.setData("application/x-patient-id", p.id); event.dataTransfer.setData("text/patient-id", p.id); event.dataTransfer.setData("text/plain", p.id); event.dataTransfer.effectAllowed = "copy"; window.requestAnimationFrame(() => setDraggingPatientId(p.id)); }} onDragEnd={() => { setArchiveDropActive(false); setDragOverDate(null); setDraggingPatientId(null); draggingPatientIdRef.current = null; window.setTimeout(() => { suppressPatientClickRef.current = false; }, 250); }} className={`flex cursor-grab select-none items-center gap-3 rounded-2xl border p-3 transition active:cursor-grabbing ${draggingPatientId === p.id ? "border-sage bg-sage/10 opacity-60 shadow-md" : "border-border/60 hover:bg-muted"}`}>
-                  <GripVertical className="h-5 w-5 shrink-0 text-sage-foreground" aria-hidden="true" />
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-black" style={{ backgroundColor: p.color }}>{p.name?.trim()?.charAt(0) || "?"}</div>
-                  <div className="min-w-0 flex-1"><div className="font-bold">{p.name}</div><div className="mt-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs" style={{ backgroundColor: `${p.settingColor || "#A9CFAA"}33` }}><span className="h-2 w-2 rounded-full" style={{ backgroundColor: p.settingColor || "#A9CFAA" }} />{translatedTerm(frameworkName(p), language)}</div><div className="truncate text-xs text-muted-foreground">{p.goals.slice(0, 2).map((goal) => translatedTerm(goal, language)).join(" · ")}</div>{(() => { const allocation = getAllocationStatus(p.id); return allocation.total > 0 && allocation.remaining <= 3 ? <div className="mt-1 text-[11px] font-bold text-amber-700">{t(`נותרו ${allocation.remaining} טיפולים`, `${allocation.remaining} sessions left`)}</div> : null; })()}</div><span role="button" tabIndex={0} onClick={(event) => { event.preventDefault(); event.stopPropagation(); archiveActivePatient(p.id); }} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.stopPropagation(); archiveActivePatient(p.id); } }} aria-label={t(`העברת התיק של ${p.name} לארכיון`, `Move ${p.name}'s file to the archive`)} title={t("העברה לארכיון", "Move to archive")} className="rounded-full p-2 text-amber-700 transition hover:bg-amber-100"><Archive className="h-4 w-4" /></span><ChevronLeft className="h-4 w-4 text-muted-foreground" />
-                </div>))}{filteredPatients.length === 0 && <div className="rounded-2xl bg-muted/50 p-4 text-center text-sm text-muted-foreground">{showArchive ? t("הארכיון ריק", "The Archive Is Empty") : t("לא נמצאו מטופלים", "No clients found")}</div>}</div>
-            </section>
-            <section className="rounded-3xl border border-sage/30 bg-sage/10 p-5">
-              <div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-sage-foreground" /><div><h3 className="font-bold">{t("מרחב מקצועי אישי", "Personal professional workspace")}</h3><p className="mt-1 text-sm leading-6 text-muted-foreground">{t("השתמשי בשם פרטי בלבד, ללא שם משפחה או פרט מזהה נוסף. המידע נשמר בדפדפן במכשיר זה בלבד.", "Use a first name only, with no last name or other identifying detail. The information is stored in the browser on this device only.")}</p></div></div>
-            </section>
-            <section className="rounded-3xl border border-border/60 bg-card p-5"><div className="flex items-center gap-2"><PackageCheck className="h-5 w-5 text-sage-foreground" /><h3 className="font-bold">{t("ציוד למחר", "Equipment for tomorrow")}</h3></div><p className="mt-2 text-sm text-muted-foreground">{t("בגרסה הבאה הרשימה תיאסף אוטומטית מהטיפולים שתכננת.", "In a future version, this list will be collected automatically from your planned sessions.")}</p></section>
-          </aside>
         </div>
-        {moveRequest && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" role="dialog" aria-modal="true"><div className="w-full max-w-md rounded-3xl bg-card p-6 shadow-xl"><h2 className="font-display text-xl font-black">{t("שינוי מועד טיפול", "Change session time")}</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{t("העברת את", "You moved")}{" "}{moveRequest.session.title}{" "}{t("לתאריך", "to")}{" "}{moveRequest.targetDate}{t(". האם השינוי חד־פעמי או קבוע לכל סדרת הטיפולים?", ". Is this a one-time change or a permanent change to the whole series?")}</p><div className="mt-5 grid gap-2"><Button onClick={() => confirmMove("once")} variant="outline" className="rounded-full">{t("שינוי חד־פעמי", "One-time change")}</Button><Button onClick={() => confirmMove("permanent")} className="rounded-full bg-sage text-sage-foreground">{t("שינוי קבוע בסדרה", "Permanent series change")}</Button><Button onClick={() => setMoveRequest(null)} variant="ghost" className="rounded-full">{t("ביטול", "Cancel")}</Button></div></div></div>}
-        {patientDropRequest && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" role="dialog" aria-modal="true"><div className="w-full max-w-md rounded-3xl bg-card p-6 shadow-xl"><h2 className="font-display text-xl font-black">{t("שיבוץ", "Schedule")}{" "}{patientDropRequest.patient.name}</h2><p className="mt-2 text-sm text-muted-foreground">{t("בחרי שעה לתאריך", "Choose a time for")}{" "}{patientDropRequest.targetDate}{t(". האם זה היום הקבוע?", ". Is this the regular day?")}</p><label className="mb-1 mt-4 block text-sm font-bold">{t("שעת הטיפול", "Session time")}</label><Input type="time" value={dropTime} onChange={(event) => setDropTime(event.target.value)} className="rounded-2xl" /><div className="mt-5 grid gap-2"><Button onClick={() => confirmPatientDrop(true)} className="rounded-full bg-sage text-sage-foreground">{t("כן, זה היום הקבוע", "Yes, this is the regular day")}</Button><Button onClick={() => confirmPatientDrop(false)} variant="outline" className="rounded-full">{t("לא, שיבוץ חד פעמי", "No, one-time booking")}</Button><Button onClick={() => setPatientDropRequest(null)} variant="ghost" className="rounded-full">{t("ביטול", "Cancel")}</Button></div></div></div>}
-        {addRequest && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" role="dialog" aria-modal="true"><div className="w-full max-w-md rounded-3xl bg-card p-6 shadow-xl"><h2 className="font-display text-xl font-black">{t("הוספת טיפול ליום", "Add session to day")}{" "}{addRequest.date}</h2><p className="mt-2 text-sm text-muted-foreground">{t("בחרי מטופל לפי שמו הפרטי.", "Choose a client by first name.")}</p><select autoFocus value={selectedPatientId} onChange={(event) => setSelectedPatientId(event.target.value)} className="mt-4 h-11 w-full rounded-2xl border border-input bg-background px-3"><option value="">{t("בחירת מטופל", "Choose client")}</option>{patients.map((patient) => <option key={patient.id} value={patient.id}>{patient.name}</option>)}</select><Button onClick={assignKnownPatient} disabled={!selectedPatientId} className="mt-3 w-full rounded-full bg-sage text-sage-foreground">{t("שיבוץ ביומן", "Schedule in calendar")}</Button><div className="mt-4 rounded-2xl border border-dashed p-4"><p className="text-sm font-semibold text-amber-700">{t("יש להזין שם פרטי בלבד — ללא שם משפחה או פרט מזהה נוסף.", "Enter a first name only — no last name or other identifying details.")}</p><Button onClick={() => navigate(`/therapist/patient/new?date=${addRequest.date}`)} variant="outline" className="mt-3 w-full rounded-full"><Plus className="h-4 w-4" />{" "}{t("פתיחת תיק מטופל חדש", "Open a new client file")}</Button></div><Button onClick={() => setAddRequest(null)} variant="ghost" className="mt-2 w-full rounded-full">{t("ביטול", "Cancel")}</Button></div></div>}
-      </div>
+      )}
     </AppShell>
   );
 }

@@ -61,7 +61,8 @@ export function clearCloudSession() {
 export async function signUpWithPassword({ email, password, displayName }) {
   const result = await cloudRequest(`/auth/v1/signup?redirect_to=${encodeURIComponent(authRedirect())}`, {
     method: "POST",
-    body: JSON.stringify({ email, password, data: { display_name: displayName } }),
+    // The time the terms and privacy policy were accepted is kept on the account.
+    body: JSON.stringify({ email, password, data: { display_name: displayName, terms_accepted_at: new Date().toISOString() } }),
   });
   if (result.access_token) saveCloudSession(result);
   return result;

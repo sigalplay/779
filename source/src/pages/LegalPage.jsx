@@ -2,8 +2,8 @@ import { Link } from "react-router-dom";
 import { AppShell } from "@/components/AppShell";
 import { useTranslator } from "@/lib/language";
 
-const UPDATED_HE = "4 בספטמבר 2026";
-const UPDATED_EN = "4 September 2026";
+const UPDATED_HE = "26 בספטמבר 2026";
+const UPDATED_EN = "26 September 2026";
 
 // כל טקסט מופיע כזוג [עברית, אנגלית]. כל סעיף: [כותרת עברית, כותרת אנגלית, טקסט עברית, טקסט אנגלית].
 const LEGAL_CONTENT = {
@@ -40,6 +40,12 @@ const LEGAL_CONTENT = {
         "Accounts and user content",
         "יש למסור פרטים נכונים, לשמור על סודיות הסיסמה ולהשתמש רק בתוכן שיש למשתמש הרשאה להזין. אין להזין מידע מזהה או רפואי שאינו נחוץ, ואין להעלות תמונת ילד ללא הרשאת הורה או אפוטרופוס.",
         "Provide accurate details, keep your password confidential and submit only content you are authorised to use. Do not enter unnecessary identifying or medical information, and do not upload a child's photo without a parent or guardian's permission."
+      ],
+      [
+        "תמונות שמשתמשים מעלים",
+        "Images uploaded by users",
+        "מטפלת שמעלה תמונות לאתר או מצלמת אותן ללוח המפגש אחראית לתוכן שלהן. מותר להעלות רק תמונות של משחקים, ציוד וחומרים. אסור להעלות תמונות של ילדים, של מטופלים או של אנשים אחרים, או תמונות עם פרטים מזהים. לפני ההעלאה הראשונה המטפלת מאשרת זאת. תמונה שמפרה כלל זה עלולה להימחק.",
+        "A therapist who uploads images to the website or photographs them onto a session board is responsible for their content. Only photos of games, equipment and materials may be uploaded. Do not upload photos of children, clients or other people, or images with identifying details. Before the first upload, the therapist confirms this. An image that breaks this rule may be deleted."
       ],
       [
         "קניין רוחני",
@@ -80,14 +86,26 @@ const LEGAL_CONTENT = {
       [
         "מידע שנאסף",
         "Information we collect",
-        "בעת הרשמה נשמרים כתובת אימייל ומזהה חשבון. סיסמת המשתמש מעובדת על ידי שירות האימות של Supabase ואינה מוצגת לנו כסיסמה גלויה. בחשבון ניתן לשמור מועדפים, תיקיות ותוכניות טיפול. מידע נוסף שהמשתמש מזין בכלים מסוימים עשוי להישמר מקומית בדפדפן בלבד.",
-        "When you register, an email address and account identifier are stored. Your password is processed by Supabase authentication and is not shown to us in plain text. Your account may store favorites, folders and therapy plans. Other information entered into some tools may be stored only in your browser."
+        "בעת הרשמה נשמרים כתובת אימייל ומזהה חשבון. סיסמת המשתמש מעובדת על ידי שירות האימות של Supabase ואינה מוצגת לנו כסיסמה גלויה. בחשבון נשמרים התכנים שהמשתמש יוצר: מועדפים, תיקיות, תוכניות טיפול, יומן, לוחות מפגש ו„העלאת תמונות”, כמפורט בהמשך. העדפות כמו שפה ומיקום כפתורים נשמרות מקומית בדפדפן בלבד.",
+        "When you register, an email address and account identifier are stored. Your password is processed by Supabase authentication and is not shown to us in plain text. Your account stores the content you create: favorites, folders, therapy plans, the diary, session boards and uploaded images, as described below. Preferences such as language and button positions are stored only in your browser."
       ],
       [
-        "יומן ותיקי מטופלים",
-        "Therapist diary and client files",
-        "היומן ותיקי המטופלים נשמרים מקומית במכשיר ואינם מסונכרנים לחשבון Supabase. יש להזין שם פרטי או כינוי בלבד, ללא שם משפחה, מספר זהות, כתובת, טלפון או מידע מזהה אחר. ניקוי נתוני הדפדפן עלול למחוק מידע זה.",
-        "The therapist diary and client files are stored locally on the device and are not synced to the Supabase account. Use a first name or nickname only, without a surname, ID number, address, phone number or other identifying information. Clearing browser data may delete this information."
+        "יומן ולוחות מפגש למטפלות",
+        "Therapist diary and session boards",
+        "היומן ולוחות המפגש נשמרים בחשבון בענן כדי שיהיו זמינים מכל מכשיר. ביומן נשמרים שם המטופל, תאריך, שעה (אם הוזנה) והאם המפגש קבוע. בלוח המפגש נשמרים הפעילויות, המשחקים והשלטים שנבחרו, ציורים בעט ותמונות שהמטפלת הוסיפה ללוח. יש להזין שם פרטי או כינוי בלבד, ללא שם משפחה, מספר זהות, כתובת, טלפון, אבחנה או מידע מזהה אחר. באתר אין סיכומי טיפול.",
+        "The diary and session boards are stored in your cloud account so they are available on any device. The diary stores the client's name, the date, the time (if entered) and whether the session repeats weekly. A session board stores the chosen activities, games and signs, pen drawings and photos the therapist added to the board. Enter a first name or nickname only, without a surname, ID number, address, phone number, diagnosis or other identifying information. The website does not keep session notes."
+      ],
+      [
+        "העלאת תמונות",
+        "Uploaded images",
+        "מטפלת יכולה להעלות תמונות משלה (למשל משחקים, ציוד וחומרים) לשימוש בלוח המפגש. התמונות נשמרות באחסון פרטי בחשבון, וגם תמונות שמצולמות ישירות ללוח נשמרות עם הלוח. יש להעלות ולצלם רק ציוד וחומרים, בלי ילדים ובלי פרטים מזהים.",
+        "A therapist can upload her own images (for example games, equipment and materials) to use on session boards. The images are kept in private storage in the account, and photos taken directly onto a board are saved with that board. Upload and photograph only equipment and materials, with no children and no identifying details."
+      ],
+      [
+        "מי רואה את המידע",
+        "Who can see the information",
+        "כל משתמש רואה רק את המידע שלו. הגישה לנתונים בענן מוגבלת לחשבון שיצר אותם, ואיננו משתפים אותם עם משתמשים אחרים. קישור „תרגול בבית” שנשלח להורים כולל רק את רשימת הפעילויות, בלי שם המטופל ובלי פרטים אישיים.",
+        "Each user sees only their own information. Access to cloud data is limited to the account that created it, and we do not share it with other users. A home-practice link sent to parents contains only the list of activities, with no client name or personal details."
       ],
       [
         "תמונות ילדים",
