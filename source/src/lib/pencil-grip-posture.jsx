@@ -1,4 +1,4 @@
-const POSTURE_POINTS = [
+export const POSTURE_POINTS = [
   {
     title: "כפות רגליים על משטח יציב",
     titleEn: "Feet on a stable surface",

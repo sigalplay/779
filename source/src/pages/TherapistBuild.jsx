@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { Camera, Check, ChevronDown, ChevronUp, Clock, ExternalLink, FlaskConical, FolderOpen, Play, Plus, Printer, RotateCcw, Route, Save, Search, Shuffle, X } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Clock, ExternalLink, FlaskConical, FolderOpen, Play, Plus, Printer, RotateCcw, Route, Save, Search, Shuffle, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { PageToolbox } from "@/components/toolbox/PageToolbox";
 import { VisualSessionTimer } from "@/components/VisualSessionTimer";
@@ -11,6 +11,7 @@ import { BoardToolbar } from "@/components/session-board/BoardToolbar";
 import { BoardCanvas } from "@/components/session-board/BoardCanvas";
 import { BoardPhotoPreview } from "@/components/session-board/BoardPhotoPreview";
 import { BoardToolbox } from "@/components/session-board/BoardToolbox";
+import { BoardStickers, stickerStartPosition } from "@/components/session-board/BoardStickers";
 import { ChoiceBoard } from "@/components/session-board/ChoiceBoard";
 import { BoardDayAppointments } from "@/components/session-board/BoardDayAppointments";
 import { HomePracticeShare } from "@/components/session-board/HomePracticeShare";
@@ -32,7 +33,7 @@ import { CRAFT_SUPPLIES, matchByCraftSupplies } from "@/lib/craft-supplies";
 import { attachPlanToSession, completeClinicSession, getPatient, getSession, startClinicSession } from "@/lib/therapist-clinic";
 import { activityTitle, translatedTerm } from "@/lib/content-translations";
 import { useTranslator } from "@/lib/language";
-import { BOARD_GAMES, findBoardGame, findSign, localizedLabel, readPhotoFile, renderSignCard } from "@/lib/session-board-tools";
+import { BOARD_GAMES, findBoardGame, findEmotion, findSign, localizedLabel, readPhotoFile, renderSignCard } from "@/lib/session-board-tools";
 import { getGuestBoard, getGuestBoardDrawing, guestBoardDates, normalizeBoardDate, saveGuestBoard, saveGuestBoardDrawing } from "@/lib/session-board-storage";
 import { hasCloudSession, listPatientBoardDates, loadPatientBoard, savePatientBoard } from "@/lib/session-board-cloud";
 
@@ -266,17 +267,6 @@ export default function TherapistBuild() {
 
   function removeFromPlan(item) {
     setPlan((prev) => prev.filter((p) => (item.kind === "activity" || item.kind === "recipe" || item.kind === "experiment" ? !(p.kind === item.kind && p.id === item.id) : p.uid !== item.uid)));
-  }
-
-  async function handlePhotoCapture(e) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    try {
-      const image = await readPhotoFile(file, 700, 0.85);
-      setPlan((prev) => [...prev, { kind: "photo", uid: `photo-${Date.now()}`, image, label: "תמונה" }]);
-      toast.success(t("התמונה נוספה לתכנית הטיפול", "Photo added to the session plan."));
-    } catch { /* unreadable image */ }
   }
 
   function moveItem(itemIndex, dir) {
@@ -607,11 +597,6 @@ export default function TherapistBuild() {
             <span className="flex-1 text-sm font-medium">{existingMotorTrail ? t("עריכת מסלול מוטורי", "Edit the Obstacle Course") : t("הוספת מסלול מוטורי", "Add an obstacle course")}</span>
             <ExternalLink className="h-3.5 w-3.5 shrink-0 text-sage-foreground" />
           </Link>
-          <label className="flex cursor-pointer items-center gap-2 rounded-2xl border border-dashed border-sage/50 bg-sage/5 px-3 py-2.5 text-foreground transition-colors hover:bg-sage/10">
-            <Camera className="h-4 w-4 shrink-0 text-sage-foreground" />
-            <span className="flex-1 text-sm font-medium">{t("צילום תמונה והוספה לתכנית", "Add a Photo to the Plan")}</span>
-            <input type="file" accept="image/*" capture="environment" onChange={handlePhotoCapture} className="hidden" />
-          </label>
           {plan.length === 0 ? (
             <p className="rounded-2xl bg-muted/50 p-4 text-sm text-muted-foreground">{t("עדיין לא הוספת פעילויות. לחצי על \"הוסף לתכנית הטיפול\" כדי להתחיל.", "No activities have been added yet. Select Add to Session Plan to begin.")}</p>
           ) : (
@@ -696,6 +681,10 @@ function boardItemLabel(item, language) {
   if (sign) return localizedLabel(sign, language);
   const game = item.boardGame ? findBoardGame(item.boardGame) : null;
   if (game) return localizedLabel(game, language);
+  const motor = item.motorItem ? MOTOR_TRAIL_ITEMS.find((entry) => entry.id === item.motorItem) : null;
+  if (motor) return localizedLabel(motor, language);
+  const emotion = item.emotion ? findEmotion(item.emotion) : null;
+  if (emotion) return localizedLabel(emotion, language);
   return item.label;
 }
 
@@ -703,6 +692,7 @@ function boardItemLabel(item, language) {
 function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, patientBoardId, patientBoardInDraft, boardDate, hasDateParam, searchParams, onToggleCompleted, onFinishSession }) {
   const navigate = useNavigate();
   const boardRef = useRef(null);
+  const [stickers, setStickers] = useState([]);
   const photoInputRef = useRef(null);
   const [timerOpen, setTimerOpen] = useState(false);
   const [choiceMode, setChoiceMode] = useState(null); // "choice" | "firstThen" | null
@@ -845,14 +835,22 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
   function removeItem(itemIndex) {
     setPlan(plan.filter((_, i) => i !== itemIndex));
   }
-  async function addSign(sign) {
-    try {
-      const image = await renderSignCard(sign, language);
-      setPlan((prev) => [...prev, { kind: "photo", uid: `sign-${sign.id}-${Date.now()}`, image, label: localizedLabel(sign, language), visualSign: sign.id }]);
-    } catch { /* image failed to load */ }
+  // Signs and emotions go on the board as round stickers that can be dragged (not saved).
+  function addSticker(entry, fill) {
+    setStickers((prev) => [...prev, { uid: `${entry.id}-${Date.now()}`, id: entry.id, image: entry.asset, label: localizedLabel(entry, language), fill, ...stickerStartPosition(boardRef.current, 100, prev.length) }]);
+  }
+  function addSign(sign) {
+    addSticker(sign, false);
   }
   function addGame(game) {
     setPlan((prev) => [...prev, { kind: "photo", uid: `game-${game.id}-${Date.now()}`, image: game.asset, label: localizedLabel(game, language), boardGame: game.id }]);
+  }
+  function addEmotion(emotion) {
+    addSticker(emotion, true);
+  }
+  // One piece of obstacle-course equipment on its own, as a picture on the board.
+  function addMotorItem(item) {
+    setPlan((prev) => [...prev, { kind: "photo", uid: `motor-${item.id}-${Date.now()}`, image: item.image, label: localizedLabel(item, language), motorItem: item.id }]);
   }
   async function photoChosen(event) {
     const file = event.target.files?.[0];
@@ -997,12 +995,12 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
         pen={pen}
         onAddSign={addSign}
         onAddGame={addGame}
+        onAddMotorItem={addMotorItem}
+        onAddEmotion={addEmotion}
         onOpenTimer={openTimer}
-        onOpenChoice={() => { setPenEnabled(false); setChoiceMode("choice"); }}
         onOpenFirstThen={() => { setPenEnabled(false); setChoiceMode("firstThen"); }}
         onShareWithParents={() => { setPenEnabled(false); setShareOpen(true); }}
         onOpenMyImages={() => { setPenEnabled(false); setMyImagesOpen(true); }}
-        onPickPhoto={() => photoInputRef.current?.click()}
         fullscreen={fullscreen}
         onToggleFullscreen={toggleFullscreen}
       />
@@ -1020,7 +1018,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
             <>
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sage/30 text-sm font-bold">{i + 1}</span>
               <div className="flex h-40 w-40 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2">
-                {hero ? <img src={hero} alt={sign ? itemTitle : ""} className={`max-h-full max-w-full drop-shadow-md ${item.kind === "photo" ? "h-full w-full object-cover" : "object-contain"}`} />
+                {hero ? <img src={hero} alt={sign ? itemTitle : ""} className={`max-h-full max-w-full drop-shadow-md ${item.kind === "photo" && !item.motorItem && !item.emotion ? "h-full w-full object-cover" : "object-contain"}`} />
                   : item.kind === "motor-trail" ? <Route className="h-8 w-8 text-muted-foreground" />
                     : item.kind === "recipe" ? (recipe?.coverIcon ? <recipe.coverIcon /> : <span className="text-4xl">{recipe?.coverEmoji ?? "🍳"}</span>)
                       : item.kind === "experiment" ? <FlaskConical className="h-8 w-8 text-muted-foreground" />
@@ -1062,12 +1060,15 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
         {/* Inside the board so the timer and the toolbox stay visible in full screen. */}
         <div className="meeting-board-overlay">
           <VisualSessionTimer language={language} open={timerOpen} onOpenChange={setTimerOpen} hideTrigger />
-          {fullscreen && <BoardToolbox language={language} pen={pen} onOpenTimer={openTimer} onAddSign={addSign} onOpenChoice={setChoiceMode} onOpenMyImages={() => setMyImagesOpen(true)} />}
+          {fullscreen && <BoardToolbox language={language} pen={pen} onOpenTimer={openTimer} onAddSign={addSign} onOpenChoice={setChoiceMode} onAddMotorItem={addMotorItem} onAddEmotion={addEmotion} />}
           {myImagesOpen && <MyImagesDialog language={language} returnUrl={`${window.location.pathname}${window.location.search}`} onAdd={addMyImage} onChanged={setMyImages} onClose={() => setMyImagesOpen(false)} />}
           {shareOpen && <HomePracticeShare language={language} onClose={() => setShareOpen(false)}
             activities={plan.filter((item) => item.kind === "activity" && getActivity(item.id)).map((item) => ({ id: item.id, title: boardItemView(item).title, image: boardItemView(item).hero }))} />}
           {choiceMode && <ChoiceBoard key={choiceMode} mode={choiceMode} language={language} options={pickerOptions} onStart={makeNext} onClose={() => setChoiceMode(null)} />}
         </div>
+        <BoardStickers language={language} boardRef={boardRef} stickers={stickers}
+          onMove={(uid, position) => setStickers((prev) => prev.map((sticker) => (sticker.uid === uid ? { ...sticker, ...position } : sticker)))}
+          onRemove={(uid) => setStickers((prev) => prev.filter((sticker) => sticker.uid !== uid))} />
         <BoardCanvas boardRef={boardRef} strokes={strokes} onStrokesChange={updateStrokes} enabled={penEnabled} tool={penTool} color={penColor} width={penWidth} language={language} />
       </ol>
 
