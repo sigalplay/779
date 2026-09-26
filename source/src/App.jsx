@@ -54,6 +54,7 @@ const Profile = lazyRoute(() => import("@/pages/Profile"));
 const Auth = lazyRoute(() => import("@/pages/Auth"));
 const CmsAdmin = lazyRoute(() => import("@/pages/CmsAdmin"));
 const About = lazyRoute(() => import("@/pages/About"));
+const SharedHomePractice = lazyRoute(() => import("@/pages/SharedHomePractice"));
 const TherapistDiary = lazyRoute(() => import("@/pages/TherapistDiary"));
 const HebrewCalendarGenerator = lazyRoute(() => import("@/pages/HebrewCalendarGenerator"));
 const SharedHebrewCalendar = lazyRoute(() => import("@/pages/SharedHebrewCalendar"));
@@ -163,6 +164,7 @@ export default function App() {
         <Route path="/child/morning-routine" element={<ChildMorningRoutine />} />
         <Route path="/child/evening-routine" element={<ChildEveningRoutine />} />
         <Route path="/shared/weekly-board" element={<SharedWeeklyBoard />} />
+        <Route path="/shared/home-practice" element={<SharedHomePractice />} />
         <Route path="/shared/hebrew-calendar" element={<SharedHebrewCalendar />} />
         <Route path="/therapist/all" element={<AllActivities mode="therapist" />} />
         <Route path="/parent/all" element={<AllActivities mode="parent" />} />

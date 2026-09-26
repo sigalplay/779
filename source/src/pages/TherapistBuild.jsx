@@ -12,6 +12,8 @@ import { BoardCanvas } from "@/components/session-board/BoardCanvas";
 import { BoardPhotoPreview } from "@/components/session-board/BoardPhotoPreview";
 import { BoardToolbox } from "@/components/session-board/BoardToolbox";
 import { ChoiceBoard } from "@/components/session-board/ChoiceBoard";
+import { BoardDayAppointments } from "@/components/session-board/BoardDayAppointments";
+import { HomePracticeShare } from "@/components/session-board/HomePracticeShare";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -702,6 +704,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
   const photoInputRef = useRef(null);
   const [timerOpen, setTimerOpen] = useState(false);
   const [choiceMode, setChoiceMode] = useState(null); // "choice" | "firstThen" | null
+  const [shareOpen, setShareOpen] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [penEnabled, setPenEnabled] = useState(false);
@@ -948,6 +951,8 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
       </div>
 
       <BoardDateNavigation date={boardDate} savedDates={savedDates} language={language} onNavigate={goToDate} onCopyToNextWeek={copyToNextWeek} />
+      <BoardDayAppointments boardDate={boardDate} patientBoardId={patientBoardId} language={language}
+        onOpen={(id) => { if (id !== patientBoardId) navigate(`/therapist/build?view=session&patientBoard=${encodeURIComponent(id)}&boardDate=${boardDate}`); }} />
 
       <BoardToolbar
         language={language}
@@ -966,6 +971,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
         onOpenTimer={openTimer}
         onOpenChoice={() => { setPenEnabled(false); setChoiceMode("choice"); }}
         onOpenFirstThen={() => { setPenEnabled(false); setChoiceMode("firstThen"); }}
+        onShareWithParents={() => { setPenEnabled(false); setShareOpen(true); }}
         onPickPhoto={() => photoInputRef.current?.click()}
         fullscreen={fullscreen}
         onToggleFullscreen={toggleFullscreen}
@@ -1027,6 +1033,8 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
         <div className="meeting-board-overlay">
           <VisualSessionTimer language={language} open={timerOpen} onOpenChange={setTimerOpen} hideTrigger />
           {fullscreen && <BoardToolbox language={language} pen={pen} onOpenTimer={openTimer} onAddSign={addSign} onOpenChoice={setChoiceMode} />}
+          {shareOpen && <HomePracticeShare language={language} onClose={() => setShareOpen(false)}
+            activities={plan.filter((item) => item.kind === "activity" && getActivity(item.id)).map((item) => ({ id: item.id, title: boardItemView(item).title, image: boardItemView(item).hero }))} />}
           {choiceMode && <ChoiceBoard key={choiceMode} mode={choiceMode} language={language} options={pickerOptions} onStart={makeNext} onClose={() => setChoiceMode(null)} />}
         </div>
         <BoardCanvas boardRef={boardRef} strokes={strokes} onStrokesChange={updateStrokes} enabled={penEnabled} tool={penTool} color={penColor} width={penWidth} language={language} />

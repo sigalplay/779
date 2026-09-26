@@ -21,6 +21,7 @@ export function BoardToolbar({
   onOpenTimer,
   onOpenChoice,
   onOpenFirstThen,
+  onShareWithParents,
   onPickPhoto,
   fullscreen,
   onToggleFullscreen,
@@ -183,6 +184,11 @@ export function BoardToolbar({
         <span className="meeting-action-icon" aria-hidden="true">⇠</span>
         <span className="meeting-action-label-desktop">{t("קודם - אחר כך", "First - then")}</span>
         <span className="meeting-action-label-mobile">{t("קודם-אחר כך", "First-then")}</span>
+      </button>
+      <button className="meeting-share-parents" type="button" onClick={onShareWithParents} title={t("שליחת פעילויות מהלוח להורים לתרגול בבית", "Send board activities to parents to practice at home")}>
+        <span className="meeting-action-icon" aria-hidden="true">🏠</span>
+        <span className="meeting-action-label-desktop">{t("שליחה להורים", "Send to parents")}</span>
+        <span className="meeting-action-label-mobile">{t("שליחה להורים", "To parents")}</span>
       </button>
     </div>
   );

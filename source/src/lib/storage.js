@@ -128,6 +128,24 @@ export function isSearchActive(activity) {
   return !activity.searchStatus || activity.searchStatus === "active";
 }
 
+// Up to `count` activities that work on the same skills, for the same audience, at an overlapping age.
+export function similarActivities(activity, audience, count = 3) {
+  if (!activity) return [];
+  const skills = new Set(activity.goals || []);
+  const senses = new Set(activity.sensory_systems || []);
+  return allActivities()
+    .filter((other) => other.id !== activity.id && isSearchActive(other) && (other.audience === "both" || other.audience === audience))
+    .filter((other) => other.age_min <= activity.age_max && other.age_max >= activity.age_min)
+    .map((other) => ({
+      other,
+      score: (other.goals || []).filter((g) => skills.has(g)).length * 2 + (other.sensory_systems || []).filter((s) => senses.has(s)).length,
+    }))
+    .filter(({ score }) => score >= 4)
+    .sort((a, b) => b.score - a.score || newestActivitiesFirst(a.other, b.other))
+    .slice(0, count)
+    .map(({ other }) => other);
+}
+
 export function getActivity(id) {
   return allActivities().find((a) => a.id === id) ?? null;
 }
