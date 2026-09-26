@@ -17,6 +17,7 @@ export const EMOTIONS = [
   { id: "sad", label: "עצוב", labelEn: "Sad", asset: "/icon-bank/emotions/sad.webp" },
   { id: "worried", label: "דואג", labelEn: "Worried", asset: "/icon-bank/emotions/worried.webp" },
   { id: "scared", label: "מפחד", labelEn: "Scared", asset: "/icon-bank/emotions/scared.webp" },
+  { id: "angry", label: "כועס", labelEn: "Angry", asset: "/icon-bank/emotions/angry.webp" },
   { id: "tired", label: "עייף", labelEn: "Tired", asset: "/icon-bank/emotions/tired.webp" },
 ];
 export const findEmotion = (id) => EMOTIONS.find((emotion) => emotion.id === id) || null;
