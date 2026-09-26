@@ -26,7 +26,7 @@ export function BoardToolbox({ language, pen, onOpenTimer, onAddSign, onOpenChoi
       id: "signs",
       color: "#f8df9a",
       icon: <Hand />,
-      label: t("סימנים מוסכמים", "Visual signs"),
+      label: t("סימנים", "Signs"),
       items: VISUAL_SIGNS.map((sign) => ({
         id: sign.id,
         image: sign.asset,

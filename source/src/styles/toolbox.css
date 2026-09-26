@@ -51,3 +51,8 @@ body.board-tip-open .meeting-board-surface .meeting-fullscreen-exit{display:none
   .toolbox-tool-circle svg{width:25px;height:25px}
 }
 @media print{.toolbox-toggle,.toolbox-strip,.toolbox-pen-bar,.page-drawing-layer{display:none!important}}
+
+/* A second row of tools (signs, motor equipment) shown whole in a grid, not scrolled. */
+.toolbox-strip.toolbox-grid{display:grid;gap:10px;overflow:visible;touch-action:auto;-webkit-mask-image:none;mask-image:none}
+.toolbox-grid .toolbox-tool{width:68px}
+.toolbox-grid .toolbox-tool small{white-space:normal;font-size:11px;line-height:1.15}
