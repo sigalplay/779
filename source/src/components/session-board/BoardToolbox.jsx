@@ -19,7 +19,7 @@ export function BoardToolbox({ language, pen, onOpenTimer, onAddSign, onOpenChoi
     return () => document.body.classList.remove("board-tip-open");
   }, [tipPanel]);
 
-  const tools = [
+  const byId = Object.fromEntries([
     { id: "timer", color: "#bcdcf2", icon: <Timer />, label: t("טיימר", "Timer"), onSelect: onOpenTimer },
     { id: "pen", color: "#f6c3b5", icon: <Pencil />, label: t("עט", "Pen"), onSelect: () => { pen.setTool("pen"); pen.setEnabled(true); } },
     {
@@ -51,7 +51,9 @@ export function BoardToolbox({ language, pen, onOpenTimer, onAddSign, onOpenChoi
       })),
     },
     ...tipTools(language, (panel) => { pen.setEnabled(false); setTipPanel(panel); }),
-  ];
+  ].map((tool) => [tool.id, tool]));
+  // In groups: the therapist's tools, then the tips, then what is shown to the child.
+  const tools = ["timer", "pen", "motor", "posture", "scissors", "writing", "coloring", "signs", "choice", "first-then"].map((id) => byId[id]).filter(Boolean);
 
   return (
     <>
