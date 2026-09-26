@@ -62,3 +62,7 @@
 .my-images-name input{padding:10px 12px;border:1px solid #d9d0c5;border-radius:12px;background:#fff;font:15px Rubik,Arial,sans-serif}
 .my-images-error{margin:0;color:#9a3b2e;font-weight:700;text-align:center}
 .choice-link{display:inline-flex;min-height:44px;align-items:center;padding:8px 18px;border-radius:999px;background:#5f9f7c;color:#fff;font:700 15px Rubik,Arial,sans-serif;text-decoration:none}
+
+.my-images-terms{margin:4px auto 0;max-width:460px;padding:14px 16px;border-radius:16px;background:#fff4dc;text-align:start}
+.my-images-terms label{display:flex;align-items:flex-start;gap:10px;color:#40362f;font:600 14px/1.55 Rubik,Arial,sans-serif;cursor:pointer}
+.my-images-terms input{flex:none;width:20px;height:20px;margin-top:2px;accent-color:#3f8f67}

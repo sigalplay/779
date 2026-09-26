@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ImagePlus, Trash2, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { deleteMyImage, listMyImages, uploadMyImage } from "@/lib/my-images-cloud";
+import { acceptImagesTerms, deleteMyImage, imagesTermsAccepted, listMyImages, uploadMyImage } from "@/lib/my-images-cloud";
 import { hasCloudSession } from "@/lib/session-board-cloud";
 import { readPhotoFile } from "@/lib/session-board-tools";
 
@@ -16,6 +16,8 @@ export function MyImagesDialog({ language, returnUrl, onAdd, onClose, onChanged 
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [accepted, setAccepted] = useState(() => imagesTermsAccepted());
+  const [agree, setAgree] = useState(false);
   const fileRef = useRef(null);
 
   useEffect(() => {
@@ -57,6 +59,19 @@ export function MyImagesDialog({ language, returnUrl, onAdd, onClose, onChanged 
     setBusy(false);
   }
 
+  async function accept(event) {
+    event.preventDefault();
+    setBusy(true);
+    try {
+      await acceptImagesTerms();
+      setAccepted(true);
+      setMessage("");
+    } catch {
+      setMessage(t("האישור לא נשמר. נסי שוב.", "Your confirmation was not saved. Please try again."));
+    }
+    setBusy(false);
+  }
+
   async function remove(image) {
     setBusy(true);
     try {
@@ -88,9 +103,22 @@ export function MyImagesDialog({ language, returnUrl, onAdd, onClose, onChanged 
 
         {state === "ready" && (
           <>
-            <p className="my-images-note">{t("יש להעלות רק תמונות של משחקים, ציוד וחומרים, בלי ילדים ובלי פרטים מזהים.", "Upload only photos of games, equipment and materials, with no children and no identifying details.")}</p>
+            {accepted && <p className="my-images-note">{t("יש להעלות רק תמונות של משחקים, ציוד וחומרים, בלי ילדים ובלי פרטים מזהים.", "Upload only photos of games, equipment and materials, with no children and no identifying details.")}</p>}
 
-            {draft ? (
+            {!accepted ? (
+              <form className="my-images-terms" onSubmit={accept}>
+                <label>
+                  <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
+                  <span>{t(
+                    "אני מאשרת שאעלה רק תמונות של משחקים, ציוד וחומרים, בלי ילדים ובלי פרטים מזהים. אני אחראית לתמונות שאני מעלה.",
+                    "I confirm that I will upload only photos of games, equipment and materials, with no children and no identifying details. I am responsible for the images I upload.",
+                  )}</span>
+                </label>
+                <div className="choice-board-actions">
+                  <button type="submit" className="choice-primary" disabled={busy || !agree}>{busy ? t("שומרת…", "Saving…") : t("אישור", "Confirm")}</button>
+                </div>
+              </form>
+            ) : draft ? (
               <form className="my-images-draft" onSubmit={save}>
                 <img src={draft.dataUrl} alt="" />
                 <label className="my-images-name"><span>{t("שם התמונה", "Image name")}</span>

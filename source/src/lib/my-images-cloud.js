@@ -1,4 +1,4 @@
-import { SUPABASE_ANON_KEY, SUPABASE_URL, cloudRequest, getCloudSession, isCloudAuthConfigured } from "@/lib/cloud-auth";
+import { SUPABASE_ANON_KEY, SUPABASE_URL, cloudRequest, getCloudSession, isCloudAuthConfigured, saveCloudSession } from "@/lib/cloud-auth";
 
 // "My images": each therapist's own photos for the session board (Supabase storage bucket
 // "therapist-images", folder = her user id, plus the table therapist_images for names).
@@ -11,6 +11,22 @@ function session() {
 }
 
 const authHeaders = (token) => ({ apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${token}` });
+
+// Before her first upload, the therapist confirms once that she uploads only equipment and materials,
+// with no children. The time she confirmed is kept on her account.
+export function imagesTermsAccepted() {
+  return Boolean(getCloudSession()?.user?.user_metadata?.images_terms_accepted_at);
+}
+
+export async function acceptImagesTerms() {
+  const current = session();
+  const user = await cloudRequest("/auth/v1/user", {
+    method: "PUT",
+    token: current.access_token,
+    body: JSON.stringify({ data: { images_terms_accepted_at: new Date().toISOString() } }),
+  });
+  saveCloudSession({ ...getCloudSession(), user });
+}
 
 // Images with a temporary address (valid for an hour) to show them.
 export async function listMyImages() {

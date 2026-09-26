@@ -42,6 +42,12 @@ const LEGAL_CONTENT = {
         "Provide accurate details, keep your password confidential and submit only content you are authorised to use. Do not enter unnecessary identifying or medical information, and do not upload a child's photo without a parent or guardian's permission."
       ],
       [
+        "תמונות שמשתמשים מעלים",
+        "Images uploaded by users",
+        "מטפלת שמעלה תמונות לאתר או מצלמת אותן ללוח המפגש אחראית לתוכן שלהן. מותר להעלות רק תמונות של משחקים, ציוד וחומרים. אסור להעלות תמונות של ילדים, של מטופלים או של אנשים אחרים, או תמונות עם פרטים מזהים. לפני ההעלאה הראשונה המטפלת מאשרת זאת. תמונה שמפרה כלל זה עלולה להימחק, וניתן לדווח עליה בכתובת sigalsplay@gmail.com.",
+        "A therapist who uploads images to the website or photographs them onto a session board is responsible for their content. Only photos of games, equipment and materials may be uploaded. Do not upload photos of children, clients or other people, or images with identifying details. Before the first upload, the therapist confirms this. An image that breaks this rule may be deleted, and can be reported to sigalsplay@gmail.com."
+      ],
+      [
         "קניין רוחני",
         "Intellectual property",
         "האתר, האיורים, העיצוב והתכנים מוגנים בזכויות יוצרים. מותר להשתמש בתוצרים לשימוש אישי, משפחתי או טיפולי ישיר. אין להעתיק, למכור, לפרסם מחדש או להפיץ את המאגר או חלקים מהותיים ממנו ללא אישור מראש.",
