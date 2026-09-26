@@ -11,6 +11,7 @@ import { BoardToolbar } from "@/components/session-board/BoardToolbar";
 import { BoardCanvas } from "@/components/session-board/BoardCanvas";
 import { BoardPhotoPreview } from "@/components/session-board/BoardPhotoPreview";
 import { BoardToolbox } from "@/components/session-board/BoardToolbox";
+import { BoardStickers, stickerStartPosition } from "@/components/session-board/BoardStickers";
 import { ChoiceBoard } from "@/components/session-board/ChoiceBoard";
 import { BoardDayAppointments } from "@/components/session-board/BoardDayAppointments";
 import { HomePracticeShare } from "@/components/session-board/HomePracticeShare";
@@ -707,6 +708,7 @@ function boardItemLabel(item, language) {
 function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, patientBoardId, patientBoardInDraft, boardDate, hasDateParam, searchParams, onToggleCompleted, onFinishSession }) {
   const navigate = useNavigate();
   const boardRef = useRef(null);
+  const [stickers, setStickers] = useState([]);
   const photoInputRef = useRef(null);
   const [timerOpen, setTimerOpen] = useState(false);
   const [choiceMode, setChoiceMode] = useState(null); // "choice" | "firstThen" | null
@@ -849,17 +851,18 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
   function removeItem(itemIndex) {
     setPlan(plan.filter((_, i) => i !== itemIndex));
   }
-  async function addSign(sign) {
-    try {
-      const image = await renderSignCard(sign, language);
-      setPlan((prev) => [...prev, { kind: "photo", uid: `sign-${sign.id}-${Date.now()}`, image, label: localizedLabel(sign, language), visualSign: sign.id }]);
-    } catch { /* image failed to load */ }
+  // Signs and emotions go on the board as round stickers that can be dragged (not saved).
+  function addSticker(entry, fill) {
+    setStickers((prev) => [...prev, { uid: `${entry.id}-${Date.now()}`, id: entry.id, image: entry.asset, label: localizedLabel(entry, language), fill, ...stickerStartPosition(boardRef.current, 100, prev.length) }]);
+  }
+  function addSign(sign) {
+    addSticker(sign, false);
   }
   function addGame(game) {
     setPlan((prev) => [...prev, { kind: "photo", uid: `game-${game.id}-${Date.now()}`, image: game.asset, label: localizedLabel(game, language), boardGame: game.id }]);
   }
   function addEmotion(emotion) {
-    setPlan((prev) => [...prev, { kind: "photo", uid: `emotion-${emotion.id}-${Date.now()}`, image: emotion.asset, label: localizedLabel(emotion, language), emotion: emotion.id }]);
+    addSticker(emotion, true);
   }
   // One piece of obstacle-course equipment on its own, as a picture on the board.
   function addMotorItem(item) {
@@ -1081,6 +1084,9 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
             activities={plan.filter((item) => item.kind === "activity" && getActivity(item.id)).map((item) => ({ id: item.id, title: boardItemView(item).title, image: boardItemView(item).hero }))} />}
           {choiceMode && <ChoiceBoard key={choiceMode} mode={choiceMode} language={language} options={pickerOptions} onStart={makeNext} onClose={() => setChoiceMode(null)} />}
         </div>
+        <BoardStickers language={language} boardRef={boardRef} stickers={stickers}
+          onMove={(uid, position) => setStickers((prev) => prev.map((sticker) => (sticker.uid === uid ? { ...sticker, ...position } : sticker)))}
+          onRemove={(uid) => setStickers((prev) => prev.filter((sticker) => sticker.uid !== uid))} />
         <BoardCanvas boardRef={boardRef} strokes={strokes} onStrokesChange={updateStrokes} enabled={penEnabled} tool={penTool} color={penColor} width={penWidth} language={language} />
       </ol>
 
