@@ -1326,6 +1326,11 @@ export const ACTIVITY_ICON_SETS = {
   "seed-118": { hero: "/icon-bank/sensory-new/seed-118-color-scarf-pull/hero.webp" },
   "seed-119": { large: true, hero: "/icon-bank/crafts-new/seed-119-sukkah/hero.webp" },
   "seed-120": { large: true, hero: "/icon-bank/crafts-new/seed-120-heart-chain/hero.webp" },
+  "seed-121": { large: true, hero: "/icon-bank/crafts-new/floating-butterfly/hero.webp" },
+  "seed-122": { large: true, hero: "/icon-bank/crafts-new/flying-butterfly/hero.webp" },
+  "seed-123": { large: true, hero: "/icon-bank/crafts-new/campfire-blow/hero.webp" },
+  "seed-124": { large: true, hero: "/icon-bank/crafts-new/hidden-spider-web/hero.webp" },
+  "seed-125": { large: true, hero: "/icon-bank/crafts-new/blow-hair/hero.webp" },
 };
 
 // The activity bank uses one calm, unified watercolor illustration per card.

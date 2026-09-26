@@ -1457,6 +1457,97 @@ const EN = {
       },
     ],
   },
+  "seed-121": {
+    description: "Build a frame from craft sticks, stretch a thread down the middle, and glue a butterfly onto it so it seems to float inside the frame.",
+    materials: ["4 craft sticks", "Hot glue gun (adult only) or strong craft glue", "Thin thread", "Printable butterfly page (a color butterfly and a white one)", "Scissors", "Glue stick"],
+    preparation: "Print the butterfly page. If using a hot glue gun, an adult heats it in advance and keeps it away from the child.",
+    steps: [
+      "Cut out both butterflies, the color one and the white one, along the line.",
+      "An adult glues the four sticks at the corners to make a square frame.",
+      "Stretch a thread from top to bottom down the middle of the frame, glue or tie both ends, and trim the extra thread.",
+      "Place the white butterfly under the thread so its body lies exactly along it, and spread glue stick over it.",
+      "Lay the color butterfly on top in exactly the same place, so the thread is between them, and press and smooth with your fingers.",
+      "Lift the frame. The butterfly floats inside it and can spin on the thread.",
+    ],
+    attachmentLabels: ["Printable butterfly page (color and white)"],
+    adaptations: "An adult prepares the frame and thread in advance, and the child cuts and glues the butterflies. The white butterfly can be cut out ahead of time.",
+    extensions: "Instead of glue, tie the corners with colorful yarn. You can also color the white butterfly yourself, add a second butterfly on another thread, or hang the frame in a window.",
+    tips: [
+      { boldPrefix: "Safety:", text: "The hot glue gun is for adults only. Scissors are used with adult supervision." },
+    ],
+  },
+  "seed-122": {
+    description: "Make a paper butterfly with a rolled-up body, slide it onto a straw, blow, and watch it fly.",
+    materials: ["Colored paper", "Scissors", "Pencil and markers", "Glue stick", "Straw"],
+    preparation: "Cut a strip of yellow paper about 4 cm wide for the butterfly's body.",
+    steps: [
+      "Fold a sheet of colored paper in half and draw half a butterfly next to the fold: a large upper wing and a smaller lower wing.",
+      "Cut along the line without cutting the folded edge, then open it. You have a whole butterfly.",
+      "Decorate the wings with markers, for example with circles or dots.",
+      "Spread glue on the yellow strip, roll it around the straw, and smooth it. Then slide out the straw, leaving a paper tube.",
+      "Close the top end of the tube by folding and gluing it so the air cannot escape. Draw a face on the tube and glue on two thin strips as antennae.",
+      "Glue the body down the middle of the butterfly.",
+      "Slide the straw into the open end of the tube, blow hard, and the butterfly flies.",
+    ],
+    adaptations: "An adult draws the cutting line or prepares the tube in advance, and the child decorates, cuts, and glues. A piece of tape over the end of the tube helps seal it well.",
+    extensions: "Hold a contest: whose butterfly flies farthest? Aim at a basket or a hoop on the floor, try a strong blow and then a gentle one, or make a bird, a bee, or a rocket instead.",
+    tips: [
+      { boldPrefix: "Safety:", text: "Do not aim the butterfly at other people's faces. Only blow out through the straw." },
+      { boldPrefix: "Oral motor:", text: "Strong, directed blowing through a straw strengthens the lips and control of the airflow." },
+    ],
+  },
+  "seed-123": {
+    description: "Arrange twigs on a page, drip paint, and blow through a straw so the paint spreads upward like campfire flames.",
+    materials: ["Thick white paper or cardstock", "Small thin twigs", "Liquid paint or watercolor: red, orange, and yellow", "A little water", "Straw", "Dropper or teaspoon", "Craft glue (optional)"],
+    preparation: "Cover the table, because the paint spreads.",
+    steps: [
+      "Lay the twigs at the bottom of the page, crossing each other like a campfire. You can glue them down.",
+      "Thin the red paint with a little water until it is runny.",
+      "Drip a few drops of red paint just above the twigs.",
+      "Blow through the straw at the drops, from the bottom upward, and the paint spreads in every direction like flames.",
+      "Add orange and yellow drops and blow again until the fire is full. Leave it to dry.",
+    ],
+    adaptations: "Use a short, wide straw. An adult drips the paint and the child only blows. If blowing through a straw is hard, blow directly, close to the page.",
+    extensions: "Blow in one direction to make a flame that leans sideways. With the same technique you can paint a volcano, a whale spouting water, or a tree with branches.",
+    tips: [
+      { boldPrefix: "Safety:", text: "Only blow out through the straw, never suck in." },
+      { boldPrefix: "Oral motor:", text: "Strong, sustained blowing with the lips closed around the straw, while controlling the strength and direction of the air." },
+    ],
+  },
+  "seed-124": {
+    description: "Draw a spider web on a paper plate with a white crayon, paint over it with watercolors, and watch the web appear like magic.",
+    materials: ["White paper plate", "White crayon", "Watercolors in dark shades: blue, purple, or turquoise", "Thick paintbrush", "Cup of water"],
+    preparation: "Set out a cup of water and cover the table.",
+    steps: [
+      "Draw a spider web in the middle of the plate with the white crayon: first straight lines from the center outward, like sun rays, then curved lines joining them. Press hard so the line is thick.",
+      "Wet the brush and dip it in dark watercolor.",
+      "Paint the whole center of the plate with wide strokes.",
+      "Watch the white spider web appear through the paint, and leave it to dry.",
+    ],
+    adaptations: "An adult draws the web in advance, and the child only paints and discovers the surprise. A thick crayon or a white candle also works.",
+    extensions: "Add a small spider on the web, write a name or a secret message, or draw a hidden picture for a friend to discover.",
+    tips: [
+      { boldPrefix: "Why does it work?", text: "Wax repels water, so the paint does not stick to the lines and they stay white." },
+    ],
+  },
+  "seed-125": {
+    description: "Draw a face, drip paint above the head, and blow through a straw so the paint spreads into wild, funny hair.",
+    materials: ["Thick white paper or cardstock", "Black marker", "Liquid paint or watercolor in several colors", "A little water", "Straw", "Dropper or teaspoon"],
+    preparation: "Cover the table, because the paint spreads.",
+    steps: [
+      "Draw a face in the lower half of the page: a circle for the head, eyes, nose, mouth, and ears. You can add a neck and a shirt.",
+      "Thin the paint with a little water until it is runny.",
+      "Drip a few drops of paint along the top line of the head.",
+      "Hold the straw close to a drop and blow it outward, upward and to the sides. The paint spreads into hair.",
+      "Add drops in other colors all around the head and blow again until the hair is full. Leave it to dry.",
+    ],
+    adaptations: "An adult draws the face in advance or drips the paint, and the child only blows. Use a short, wide straw.",
+    extensions: "Draw a self-portrait, make a whole family of faces with different hair colors, or make a lion whose mane is blown into shape.",
+    tips: [
+      { boldPrefix: "Safety:", text: "Only blow out through the straw, never suck in." },
+      { boldPrefix: "Oral motor:", text: "Strong, sustained blowing with the lips closed around the straw, while controlling the strength and direction of the air." },
+    ],
+  },
 };
 
 export function activityEnglishContent(activity) { return EN[activity?.id] || null; }
