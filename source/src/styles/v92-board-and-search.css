@@ -29,6 +29,7 @@
 .board-photo-preview-card{width:min(520px,100%);padding:18px;border-radius:24px;background:#fff;box-shadow:0 20px 60px rgba(35,29,25,.26);text-align:center}
 .board-photo-preview-card h2{margin:0 0 13px;color:#40362f;font:800 20px Rubik,Arial,sans-serif}
 .board-photo-preview-card img{display:block;width:100%;max-height:58vh;border-radius:17px;background:#f5f2ee;object-fit:contain}
+.board-photo-warning{margin:12px 0 0;padding:8px 12px;border-radius:12px;background:#fff4dc;color:#6b4e1a;font:600 13px/1.45 Rubik,Arial,sans-serif}
 .board-photo-preview-card>div{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:14px}
 .board-photo-preview-card button{min-height:42px;padding:8px 15px;border:1px solid #d9d0c5;border-radius:13px;background:#fff;color:#40362f;font:700 13px Rubik,Arial,sans-serif;cursor:pointer}
 .board-photo-preview-card [data-confirm-photo]{border-color:#8bc4a7;background:#cfead9;color:#264d3a}
