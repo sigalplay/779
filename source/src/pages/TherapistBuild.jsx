@@ -1014,11 +1014,9 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
         onAddMotorItem={addMotorItem}
         onAddEmotion={addEmotion}
         onOpenTimer={openTimer}
-        onOpenChoice={() => { setPenEnabled(false); setChoiceMode("choice"); }}
         onOpenFirstThen={() => { setPenEnabled(false); setChoiceMode("firstThen"); }}
         onShareWithParents={() => { setPenEnabled(false); setShareOpen(true); }}
         onOpenMyImages={() => { setPenEnabled(false); setMyImagesOpen(true); }}
-        onPickPhoto={() => photoInputRef.current?.click()}
         fullscreen={fullscreen}
         onToggleFullscreen={toggleFullscreen}
       />

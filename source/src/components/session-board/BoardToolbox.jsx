@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeftRight, Hand, Pencil, Split, Timer } from "lucide-react";
+import { ArrowLeftRight, Hand, Pencil, Timer } from "lucide-react";
 import { TherapistPostureScissorsTips } from "@/components/TherapistPostureScissorsTips";
 import { PenBar } from "@/components/toolbox/PenBar";
 import { Toolbox, tipTools } from "@/components/toolbox/Toolbox";
@@ -50,7 +50,6 @@ export function BoardToolbox({ language, pen, onOpenTimer, onAddSign, onOpenChoi
         onSelect: () => { pen.setEnabled(false); onAddEmotion(emotion); },
       })),
     },
-    { id: "choice", color: "#d8ecc6", icon: <Split />, label: t("לוח בחירה", "Choice board"), onSelect: () => { pen.setEnabled(false); onOpenChoice("choice"); } },
     { id: "first-then", color: "#e6dcf5", icon: <ArrowLeftRight />, label: t("קודם-אחר כך", "First-then"), onSelect: () => { pen.setEnabled(false); onOpenChoice("firstThen"); } },
     {
       id: "motor",
@@ -68,7 +67,7 @@ export function BoardToolbox({ language, pen, onOpenTimer, onAddSign, onOpenChoi
     ...tipTools(language, (panel) => { pen.setEnabled(false); setTipPanel(panel); }),
   ].map((tool) => [tool.id, tool]));
   // In groups: the therapist's tools, then the tips, then what is shown to the child.
-  const tools = ["timer", "pen", "motor", "posture", "scissors", "writing", "coloring", "signs", "emotions", "choice", "first-then"].map((id) => byId[id]).filter(Boolean);
+  const tools = ["timer", "pen", "motor", "posture", "scissors", "writing", "coloring", "signs", "emotions", "first-then"].map((id) => byId[id]).filter(Boolean);
 
   return (
     <>

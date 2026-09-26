@@ -22,11 +22,9 @@ export function BoardToolbar({
   onAddMotorItem,
   onAddEmotion,
   onOpenTimer,
-  onOpenChoice,
   onOpenFirstThen,
   onShareWithParents,
   onOpenMyImages,
-  onPickPhoto,
   fullscreen,
   onToggleFullscreen,
 }) {
@@ -170,19 +168,9 @@ export function BoardToolbar({
         <span className="meeting-action-label-desktop">{t("טיימר חזותי", "Visual timer")}</span>
         <span className="meeting-action-label-mobile">{t("טיימר", "Timer")}</span>
       </button>
-      <button className="meeting-photo" type="button" onClick={onPickPhoto}>
-        <span className="meeting-action-icon" aria-hidden="true">📷</span>
-        <span className="meeting-action-label-desktop">{t("צילום או הוספת תמונה", "Take or add a photo")}</span>
-        <span className="meeting-action-label-mobile">{t("תמונה", "Photo")}</span>
-      </button>
       <button className="meeting-fullscreen" type="button" aria-pressed={fullscreen} onClick={onToggleFullscreen}>
         <span className="meeting-action-icon" aria-hidden="true">⛶</span>
         <span data-fullscreen-label="">{fullscreen ? t("יציאה ממסך מלא", "Exit full screen") : t("מסך מלא", "Full screen")}</span>
-      </button>
-      <button className="meeting-choice" type="button" onClick={onOpenChoice} title={t("לוח בחירה - הילד בוחר מבין 2-3 אפשרויות", "Choice board - the child picks one of 2-3 options")}>
-        <span className="meeting-action-icon" aria-hidden="true">✌</span>
-        <span className="meeting-action-label-desktop">{t("לוח בחירה", "Choice board")}</span>
-        <span className="meeting-action-label-mobile">{t("לוח בחירה", "Choice")}</span>
       </button>
       <button className="meeting-first-then" type="button" onClick={onOpenFirstThen} title={t("קודם - אחר כך", "First - then")}>
         <span className="meeting-action-icon" aria-hidden="true">⇠</span>
