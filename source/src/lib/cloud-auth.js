@@ -33,11 +33,36 @@ function headers(token) {
 
 export async function cloudRequest(path, options = {}) {
   if (!isCloudAuthConfigured()) throw new Error("cloud-not-configured");
-  const { token, ...requestOptions } = options;
+  const { token, retried, ...requestOptions } = options;
   const response = await fetch(`${SUPABASE_URL}${path}`, { ...requestOptions, headers: { ...headers(token), ...options.headers } });
   const body = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(body.msg || body.message || body.error_description || "auth-error");
+  const message = body.msg || body.message || body.error_description || "";
+  // A sign-in expires after an hour. It is renewed once, then the request is repeated.
+  const expired = response.status === 401 || /jwt|token/i.test(message);
+  if (!response.ok && expired && token && !retried && token === getCloudSession()?.access_token) {
+    const renewed = await renewCloudSession().catch(() => null);
+    if (renewed?.access_token) return cloudRequest(path, { ...options, token: renewed.access_token, retried: true });
+  }
+  if (!response.ok) throw new Error(message || "auth-error");
   return body;
+}
+
+// Requests that start together share one renewal.
+let renewing = null;
+function renewCloudSession() {
+  renewing ||= refreshCloudSession().finally(() => { renewing = null; });
+  return renewing;
+}
+
+// The saved sign-in, renewed first if it expires within a minute.
+export async function freshCloudSession() {
+  const session = getCloudSession();
+  if (!session?.access_token || !session.refresh_token) return session;
+  try {
+    const { exp } = JSON.parse(atob(session.access_token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+    if (exp * 1000 - Date.now() > 60000) return session;
+  } catch { return session; }
+  return renewCloudSession().catch(() => session);
 }
 
 export function saveCloudSession(session) {

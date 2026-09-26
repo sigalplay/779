@@ -1,11 +1,11 @@
-import { SUPABASE_ANON_KEY, SUPABASE_URL, cloudRequest, getCloudSession, isCloudAuthConfigured, saveCloudSession } from "@/lib/cloud-auth";
+import { SUPABASE_ANON_KEY, SUPABASE_URL, cloudRequest, freshCloudSession, getCloudSession, isCloudAuthConfigured, saveCloudSession } from "@/lib/cloud-auth";
 
 // "My images": each therapist's own photos for the session board (Supabase storage bucket
 // "therapist-images", folder = her user id, plus the table therapist_images for names).
 const BUCKET = "therapist-images";
 
-function session() {
-  const current = getCloudSession();
+async function session() {
+  const current = await freshCloudSession();
   if (!isCloudAuthConfigured() || !current?.access_token || !current?.user?.id) throw new Error("cloud-session-required");
   return current;
 }
@@ -19,7 +19,7 @@ export function imagesTermsAccepted() {
 }
 
 export async function acceptImagesTerms() {
-  const current = session();
+  const current = await session();
   const user = await cloudRequest("/auth/v1/user", {
     method: "PUT",
     token: current.access_token,
@@ -30,7 +30,7 @@ export async function acceptImagesTerms() {
 
 // Images with a temporary address (valid for an hour) to show them.
 export async function listMyImages() {
-  const current = session();
+  const current = await session();
   const rows = await cloudRequest("/rest/v1/therapist_images?select=id,name,path,created_at&order=created_at.desc", { token: current.access_token });
   if (!rows?.length) return [];
   const signed = await cloudRequest(`/storage/v1/object/sign/${BUCKET}`, {
@@ -44,7 +44,7 @@ export async function listMyImages() {
 
 // `dataUrl` is an already resized JPEG (readPhotoFile).
 export async function uploadMyImage(name, dataUrl) {
-  const current = session();
+  const current = await session();
   const blob = await (await fetch(dataUrl)).blob();
   const path = `${current.user.id}/${crypto.randomUUID()}.jpg`;
   const response = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
@@ -63,7 +63,7 @@ export async function uploadMyImage(name, dataUrl) {
 }
 
 export async function deleteMyImage(image) {
-  const current = session();
+  const current = await session();
   await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${image.path}`, { method: "DELETE", headers: authHeaders(current.access_token) });
   await cloudRequest(`/rest/v1/therapist_images?id=eq.${encodeURIComponent(image.id)}`, {
     method: "DELETE",
