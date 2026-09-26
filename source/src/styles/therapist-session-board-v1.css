@@ -221,3 +221,17 @@
 .meeting-board-page .meeting-board-actions>.meeting-first-then{grid-row:4;grid-column:5/7}
 .meeting-board-page .meeting-board-actions>.meeting-share-parents{grid-row:4;grid-column:7/9}
 .meeting-board-page .meeting-board-actions>.meeting-fullscreen{grid-row:4;grid-column:9/11}
+/* The arrows and × of a board row show only when the mouse is over the row (or it has keyboard focus).
+   On touch screens a small ⋮ button opens them. */
+.meeting-item-controls-toggle{display:none}
+@media(hover:hover){
+  .meeting-board-page .meeting-item-controls{opacity:0;pointer-events:none;transition:opacity .15s ease}
+  .meeting-board-surface>li:hover .meeting-item-controls,.meeting-board-surface>li:has(:focus-visible) .meeting-item-controls{opacity:1;pointer-events:auto}
+}
+@media(hover:none){
+  .meeting-board-page .meeting-item-controls{display:none}
+  .meeting-board-page .meeting-item-controls.open{display:flex;top:6px;left:40px;flex-direction:row;gap:5px}
+  .meeting-board-page .meeting-item-controls-toggle{position:absolute;z-index:81;top:6px;left:6px;display:grid!important;width:28px!important;height:28px!important;min-height:28px!important;place-items:center;padding:0!important;border:1px solid #e3dbd1!important;border-radius:50%!important;background:#fff!important;color:#7a6d63!important;font:800 16px/1 Rubik,Arial,sans-serif!important;box-shadow:none!important}
+  .meeting-board-page .meeting-item-controls-toggle[aria-expanded="true"]{background:#40362f!important;color:#fff!important}
+}
+@media print{.meeting-item-controls-toggle{display:none!important}}

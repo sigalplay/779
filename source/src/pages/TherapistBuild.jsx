@@ -693,6 +693,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
   const navigate = useNavigate();
   const boardRef = useRef(null);
   const [stickers, setStickers] = useState([]);
+  const [controlsRow, setControlsRow] = useState(null);
   const photoInputRef = useRef(null);
   const [timerOpen, setTimerOpen] = useState(false);
   const [choiceMode, setChoiceMode] = useState(null); // "choice" | "firstThen" | null
@@ -1047,7 +1048,9 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
                   <Check className="h-5 w-5" strokeWidth={3} />
                 </button>
                 {linkTo ? <Link to={linkTo} className="flex min-w-0 flex-1 items-center gap-4">{inner}</Link> : <div className="flex min-w-0 flex-1 items-center gap-4">{inner}</div>}
-                <div className="meeting-item-controls" data-meeting-item-controls="true" aria-label={t("שינוי סדר הפעילות", "Change activity order")}>
+                {/* On touch screens (no mouse to hover), a small ⋮ button shows the arrows and × for this row. */}
+                <button type="button" className="meeting-item-controls-toggle" aria-expanded={controlsRow === item.uid} aria-label={t("שינוי סדר או מחיקה", "Reorder or remove")} onClick={() => setControlsRow((open) => (open === item.uid ? null : item.uid))}>⋮</button>
+                <div className={controlsRow === item.uid ? "meeting-item-controls open" : "meeting-item-controls"} data-meeting-item-controls="true" aria-label={t("שינוי סדר הפעילות", "Change activity order")}>
                   <button type="button" className="meeting-move-item" data-move-direction="-1" disabled={i === 0} aria-label={t("העלאת הפעילות למעלה", "Move activity up")} title={t("העלאה למעלה", "Move up")} onClick={() => moveItem(i, -1)}>↑</button>
                   <button type="button" className="meeting-move-item" data-move-direction="1" disabled={i === plan.length - 1} aria-label={t("הורדת הפעילות למטה", "Move activity down")} title={t("הורדה למטה", "Move down")} onClick={() => moveItem(i, 1)}>↓</button>
                   <button type="button" className="meeting-delete-item" aria-label={t("מחיקת הפעילות מלוח המפגש", "Remove activity from the session board")} title={t("מחיקה מהלוח", "Remove from board")} onClick={() => removeItem(i)}>×</button>
