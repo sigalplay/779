@@ -155,6 +155,8 @@
 .meeting-board-page .meeting-board-actions>.meeting-first-then{grid-column:3/5}
 .meeting-board-page .meeting-board-actions>.meeting-share-parents{grid-column:5/7}
 .meeting-board-page .meeting-board-actions>.meeting-my-images{grid-column:7/9}
+.meeting-board-page .meeting-board-actions>.meeting-games-tools.meeting-motor-tools{grid-column:9/11}
+@media(min-width:761px){.meeting-motor-tools .meeting-games-palette{right:auto;left:0}}
 .meeting-board-page .meeting-board-actions>.meeting-choice,
 .meeting-board-page .meeting-board-actions>.meeting-first-then,
 .meeting-board-page .meeting-board-actions>.meeting-share-parents,
@@ -176,3 +178,11 @@
 .board-day-time{font-variant-numeric:tabular-nums;color:#6f635a;font-weight:500}
 .board-day-chip.current .board-day-time{color:#23533c}
 @media print{.board-day-appointments{display:none}}
+/* Motor equipment pictures are taller than the game pictures; keep each inside its box, above its name. */
+.meeting-motor-tools .board-game-choice>span{height:118px;overflow:hidden;padding:8px 8px 0}
+.meeting-motor-tools .board-game-choice{aspect-ratio:auto;grid-template-rows:118px auto}
+.meeting-motor-tools .board-game-choice img{width:100%;height:100%;object-fit:contain}
+@media(max-width:760px){
+  .meeting-motor-tools .board-game-choice>span{height:96px}
+  .meeting-motor-tools .board-game-choice{grid-template-rows:96px auto}
+}
