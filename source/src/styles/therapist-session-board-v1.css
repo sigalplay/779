@@ -197,3 +197,10 @@
   .meeting-picture-tools .board-game-choice,[data-games-tools] .board-game-choice{grid-template-rows:72px auto;border-radius:12px}
   .meeting-picture-tools .board-game-choice>strong,[data-games-tools] .board-game-choice>strong{padding:3px 2px 6px;font-size:11px;line-height:1.15}
 }
+@media(max-width:760px){
+  .meeting-board-actions .meeting-games-palette>div{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+  .meeting-board-actions .meeting-games-palette [data-add-board-game]{padding:2px!important}
+  .meeting-picture-tools .board-game-choice>span,[data-games-tools] .board-game-choice>span{height:54px;padding:4px 4px 0}
+  .meeting-picture-tools .board-game-choice,[data-games-tools] .board-game-choice{grid-template-rows:54px auto;border-width:1.5px;border-radius:10px}
+  .meeting-picture-tools .board-game-choice>strong,[data-games-tools] .board-game-choice>strong{padding:2px 1px 5px;font-size:10px}
+}
