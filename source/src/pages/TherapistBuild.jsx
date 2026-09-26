@@ -11,6 +11,7 @@ import { BoardToolbar } from "@/components/session-board/BoardToolbar";
 import { BoardCanvas } from "@/components/session-board/BoardCanvas";
 import { BoardPhotoPreview } from "@/components/session-board/BoardPhotoPreview";
 import { BoardToolbox } from "@/components/session-board/BoardToolbox";
+import { ChoiceBoard } from "@/components/session-board/ChoiceBoard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,7 +28,7 @@ import { CRAFT_SUPPLIES, matchByCraftSupplies } from "@/lib/craft-supplies";
 import { attachPlanToSession, completeClinicSession, getPatient, getSession, startClinicSession } from "@/lib/therapist-clinic";
 import { activityTitle, translatedTerm } from "@/lib/content-translations";
 import { useTranslator } from "@/lib/language";
-import { findBoardGame, findSign, localizedLabel, readPhotoFile, renderSignCard } from "@/lib/session-board-tools";
+import { BOARD_GAMES, findBoardGame, findSign, localizedLabel, readPhotoFile, renderSignCard } from "@/lib/session-board-tools";
 import { getGuestBoard, getGuestBoardDrawing, guestBoardDates, normalizeBoardDate, saveGuestBoard, saveGuestBoardDrawing } from "@/lib/session-board-storage";
 import { hasCloudSession, listPatientBoardDates, loadPatientBoard, savePatientBoard } from "@/lib/session-board-cloud";
 
@@ -39,6 +40,9 @@ const THERAPIST_TABS = new Set(["search", "all", "creative", "game-making", "sen
 
 function scoreActivity(activity, expandedGoals) {
   return expandedGoals.filter((g) => activity.goals?.includes(g)).length;
+}
+function boardItemKey(item) {
+  return item.kind === "activity" || item.kind === "recipe" || item.kind === "experiment" ? `${item.kind}-${item.id}` : item.uid;
 }
 function motorTrailItem(id, planItem) {
   return MOTOR_TRAIL_ITEMS.find((it) => it.id === id) ?? planItem?.customItems?.find((it) => it.id === id);
@@ -697,6 +701,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
   const boardRef = useRef(null);
   const photoInputRef = useRef(null);
   const [timerOpen, setTimerOpen] = useState(false);
+  const [choiceMode, setChoiceMode] = useState(null); // "choice" | "firstThen" | null
   const [fullscreen, setFullscreen] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [penEnabled, setPenEnabled] = useState(false);
@@ -888,6 +893,46 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
     setTimerOpen(true);
   }
 
+  // Title and picture of a board item (also used by the choice and first-then boards).
+  function boardItemView(item) {
+    const activity = item.kind === "activity" ? getActivity(item.id) : null;
+    const recipe = item.kind === "recipe" ? getRecipe(item.id) : null;
+    const experiment = item.kind === "experiment" ? getExperiment(item.id) : null;
+    const sign = item.visualSign ? findSign(item.visualSign) : null;
+    const hero = item.kind === "activity"
+      ? activityHero(item.id) || activity?.hero_image || (activity?.ai_generated ? "/icon-bank/crafts-new/seed-71-independent/material-pencil.webp" : null)
+      : item.kind === "photo" ? (sign && signImages[sign.id]) || item.image
+        : item.kind === "recipe" ? recipe?.cover ?? null
+          : item.kind === "experiment" ? experimentHero(item.id)
+            : MOTOR_TRAIL_HERO;
+    const title = item.kind === "activity" ? activityTitle(activity, language) ?? t("פעילות", "Activity")
+      : item.kind === "photo" ? boardItemLabel(item, language) || t("תמונה", "Photo")
+        : item.kind === "recipe" ? recipe?.title ?? t("מתכון", "Recipe")
+          : item.kind === "experiment" ? experiment?.title ?? t("ניסוי", "Experiment")
+            : t("מסלול מוטורי", "Obstacle Course");
+    return { activity, recipe, experiment, sign, hero, title };
+  }
+
+  // Options for the choice and first-then boards: what is on the board, then the built-in games.
+  const pickerOptions = [
+    ...plan.map((item) => {
+      const view = boardItemView(item);
+      return { key: `board:${boardItemKey(item)}`, title: view.title, image: view.hero, item };
+    }),
+    ...BOARD_GAMES.filter((game) => !plan.some((item) => item.boardGame === game.id))
+      .map((game) => ({ key: `game:${game.id}`, title: localizedLabel(game, language), image: game.asset, game })),
+  ];
+  // Put the chosen option right after the activities already done, so it is the next one.
+  function makeNext(option) {
+    setPlan((prev) => {
+      const rest = option.item ? prev.filter((item) => boardItemKey(item) !== boardItemKey(option.item)) : prev;
+      const entry = option.item || { kind: "photo", uid: `game-${option.game.id}-${Date.now()}`, image: option.game.asset, label: localizedLabel(option.game, language), boardGame: option.game.id };
+      let at = 0;
+      rest.forEach((item, index) => { if (item.completed) at = index + 1; });
+      return [...rest.slice(0, at), entry, ...rest.slice(at)];
+    });
+  }
+
   const heading = linkedPatient ? t(`הטיפול של ${linkedPatient.name}`, `${linkedPatient.name}'s session`) : t("לוח המפגש", "Session board");
 
   return (
@@ -919,6 +964,8 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
         onAddSign={addSign}
         onAddGame={addGame}
         onOpenTimer={openTimer}
+        onOpenChoice={() => { setPenEnabled(false); setChoiceMode("choice"); }}
+        onOpenFirstThen={() => { setPenEnabled(false); setChoiceMode("firstThen"); }}
         onPickPhoto={() => photoInputRef.current?.click()}
         fullscreen={fullscreen}
         onToggleFullscreen={toggleFullscreen}
@@ -926,21 +973,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
 
       <ol ref={boardRef} className="space-y-3 meeting-board-surface">
         {plan.map((item, i) => {
-          const activity = item.kind === "activity" ? getActivity(item.id) : null;
-          const recipe = item.kind === "recipe" ? getRecipe(item.id) : null;
-          const experiment = item.kind === "experiment" ? getExperiment(item.id) : null;
-          const sign = item.visualSign ? findSign(item.visualSign) : null;
-          const hero = item.kind === "activity"
-            ? activityHero(item.id) || activity?.hero_image || (activity?.ai_generated ? "/icon-bank/crafts-new/seed-71-independent/material-pencil.webp" : null)
-            : item.kind === "photo" ? (sign && signImages[sign.id]) || item.image
-              : item.kind === "recipe" ? recipe?.cover ?? null
-                : item.kind === "experiment" ? experimentHero(item.id)
-                  : MOTOR_TRAIL_HERO;
-          const itemTitle = item.kind === "activity" ? activityTitle(activity, language) ?? t("פעילות", "Activity")
-            : item.kind === "photo" ? boardItemLabel(item, language) || t("תמונה", "Photo")
-              : item.kind === "recipe" ? recipe?.title ?? t("מתכון", "Recipe")
-                : item.kind === "experiment" ? experiment?.title ?? t("ניסוי", "Experiment")
-                  : t("מסלול מוטורי", "Obstacle Course");
+          const { activity, recipe, experiment, sign, hero, title: itemTitle } = boardItemView(item);
           const linkTo = item.kind === "activity"
             ? `/activity/${item.id}?mode=therapist&returnTo=session&returnPath=${encodeURIComponent(returnPath)}`
             : item.kind === "motor-trail" ? `/therapist/motor-trail?returnTo=session&edit=${item.uid}${patientSuffix}`
@@ -965,7 +998,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
           );
           return (
             <li
-              key={item.kind === "activity" || item.kind === "recipe" || item.kind === "experiment" ? `${item.kind}-${item.id}` : item.uid}
+              key={boardItemKey(item)}
               className={cn("group relative overflow-hidden rounded-3xl border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md", item.completed ? "border-[#b7d8bd] bg-[#edf7ee]" : "border-border/60 bg-card", sign && "visual-sign-board-item")}
             >
               <div className="flex items-center gap-3 p-3">
@@ -993,7 +1026,8 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
         {/* Inside the board so the timer and the toolbox stay visible in full screen. */}
         <div className="meeting-board-overlay">
           <VisualSessionTimer language={language} open={timerOpen} onOpenChange={setTimerOpen} hideTrigger />
-          {fullscreen && <BoardToolbox language={language} pen={pen} onOpenTimer={openTimer} onAddSign={addSign} />}
+          {fullscreen && <BoardToolbox language={language} pen={pen} onOpenTimer={openTimer} onAddSign={addSign} onOpenChoice={setChoiceMode} />}
+          {choiceMode && <ChoiceBoard key={choiceMode} mode={choiceMode} language={language} options={pickerOptions} onStart={makeNext} onClose={() => setChoiceMode(null)} />}
         </div>
         <BoardCanvas boardRef={boardRef} strokes={strokes} onStrokesChange={updateStrokes} enabled={penEnabled} tool={penTool} color={penColor} width={penWidth} language={language} />
       </ol>

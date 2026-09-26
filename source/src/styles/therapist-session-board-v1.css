@@ -149,3 +149,10 @@
   .meeting-board-page .meeting-patient-menu>button,.meeting-board-page .meeting-patient-menu>a{display:flex!important;width:100%!important;justify-content:center}
 }
 @keyframes patient-sheet-up{from{transform:translateY(100%)}to{transform:none}}
+
+/* Choice board and first-then buttons: one row under the tool buttons. */
+.meeting-board-page .meeting-board-actions>.meeting-choice{grid-column:1/7}
+.meeting-board-page .meeting-board-actions>.meeting-first-then{grid-column:7/13}
+.meeting-board-page .meeting-board-actions>.meeting-choice,
+.meeting-board-page .meeting-board-actions>.meeting-first-then{display:flex!important;width:100%!important;min-width:0!important;min-height:52px!important;flex-direction:row!important;gap:8px!important;padding:7px 10px!important;border-radius:15px!important;font-size:13px!important;line-height:1.15!important;white-space:normal!important}
+
