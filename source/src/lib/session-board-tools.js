@@ -27,7 +27,7 @@ const TOYS = "/icon-bank/toys";
 export const BOARD_GAMES = [
   { id: "doll", label: "בובה", labelEn: "Doll", asset: `${TOYS}/doll.webp` },
   { id: "play-kitchen", label: "מטבח ילדים", labelEn: "Play kitchen", asset: `${TOYS}/play-kitchen.webp` },
-  { id: "chef-hat", label: "כובע שף", labelEn: "Chef hat", asset: `${TOYS}/chef-hat.webp` },
+  { id: "chef-hat", label: "בישול", labelEn: "Cooking", asset: `${TOYS}/chef-hat.webp` },
   { id: "cars", label: "מכוניות", labelEn: "Cars", asset: `${TOYS}/cars.webp` },
   { id: "lego", label: "לגו", labelEn: "Lego", asset: `${TOYS}/lego.webp` },
   { id: "magnetic-tiles", label: "מגנטים לבנייה", labelEn: "Magnetic tiles", asset: `${TOYS}/magnetic-tiles.webp` },
