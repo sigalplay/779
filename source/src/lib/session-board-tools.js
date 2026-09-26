@@ -43,7 +43,7 @@ export const BOARD_GAMES = [
   { id: "stickers", label: "מדבקות", labelEn: "Stickers", asset: "/icon-bank/crafts-new/seed-33-independent/material-stickers.webp" },
   { id: "play-dough", label: "בצק", labelEn: "Play dough", asset: "/icon-bank/crafts-new/seed-63-independent/material-plasticine.webp" },
   { id: "therapy-putty", label: "פלסטלינה טיפולית", labelEn: "Therapy putty", asset: `${TOYS}/therapy-putty.webp` },
-  { id: "kinetic-sand", label: "חול קינטי", labelEn: "Kinetic sand", asset: "/assets/therapist-games/kinetic-sand.png" },
+  { id: "kinetic-sand", label: "חול קינטי", labelEn: "Kinetic sand", asset: `${TOYS}/kinetic-sand.webp` },
   { id: "beads", label: "חרוזים ושרוך", labelEn: "Beads and lace", asset: `${TOYS}/beads.webp` },
   { id: "tweezers", label: "פינצטה", labelEn: "Tweezers", asset: "/icon-bank/fine-motor-new/seed-37-tweezers-pompoms/material-tweezers.webp" },
 ];
