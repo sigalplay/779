@@ -13,13 +13,8 @@
 .toolbox-strip::-webkit-scrollbar{display:none}
 .toolbox-strip.opens-right{direction:ltr}
 .toolbox-strip.opens-left{direction:rtl}
-/* More tools than fit: an arrow stays at the end of the row until the last tool is in view. */
-.toolbox-more small{padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.92)}
-.toolbox-more{position:sticky;inset-inline-end:0;z-index:1;display:flex;flex:0 0 auto;flex-direction:column;align-items:center;gap:5px;padding:0;border:0;background:none;color:#40362f;font:800 12px/1.2 Rubik,Arial,sans-serif;cursor:pointer}
-.toolbox-more-circle{display:grid;width:52px;height:52px;margin-top:4px;place-items:center;border:3px solid #fff;border-radius:50%;background:#40362f;color:#fff;font-size:30px;line-height:1;box-shadow:0 6px 16px rgba(64,54,47,.3);animation:toolbox-more-nudge 1.6s ease-in-out infinite}
-.opens-left .toolbox-more-circle{--nudge:-5px}
-@keyframes toolbox-more-nudge{0%,100%{transform:none}50%{transform:translateX(var(--nudge,5px))}}
-@media (prefers-reduced-motion:reduce){.toolbox-more-circle{animation:none}}
+.toolbox-strip.overflowing.opens-right{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 40px),transparent)}
+.toolbox-strip.overflowing.opens-left{-webkit-mask-image:linear-gradient(to left,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(to left,#000 calc(100% - 40px),transparent)}
 .toolbox-tool{display:flex;flex:0 0 auto;width:68px;flex-direction:column;align-items:center;gap:5px;padding:0;border:0;background:none;color:#40362f;font:800 12px/1.2 Rubik,Arial,sans-serif;text-align:center;cursor:pointer;animation:toolbox-pop .32s cubic-bezier(.34,1.56,.64,1) both;animation-delay:calc(var(--i,0) * 45ms)}
 @keyframes toolbox-pop{from{opacity:0;transform:scale(.3) translateX(var(--from,-40px))}to{opacity:1;transform:none}}
 .opens-left .toolbox-tool{--from:40px}
