@@ -327,7 +327,7 @@ export const PINTEREST_ACTIVITIES = [
       "מַאֲכָל אֶחָד שֶׁלּוֹמְדִים לְהַכִּיר",
     ],
     material_images: {
-      "צלחת": "/icon-bank/food-exposure/plate.png",
+      "צלחת": "/icon-bank/food-exposure/plate.webp",
       "קרקרים או ביסקוויטים מלוחים": "/icon-bank/food-exposure/crackers.webp",
       "פרוסות מלפפון": "/icon-bank/food-exposure/cucumber.webp",
       "מקלות בייגלה": "/icon-bank/food-exposure/pretzel-sticks.webp",
@@ -408,7 +408,7 @@ export const PINTEREST_ACTIVITIES = [
       "מִמְרָח מֻכָּר — לִבְחִירָה",
     ],
     material_images: {
-      "צלחת": "/icon-bank/food-exposure/plate.png",
+      "צלחת": "/icon-bank/food-exposure/plate.webp",
       "פרוסת לחם": "/icon-bank/food-exposure/seed-115-bear/step-1.webp",
       "פרוסות בננה": "/icon-bank/food-exposure/banana.webp",
       "אוכמניות או מאכל עגול אחר": "/icon-bank/food-exposure/blueberries.webp",
