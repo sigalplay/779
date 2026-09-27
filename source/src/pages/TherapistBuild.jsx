@@ -817,7 +817,9 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
   // ---- links ----
   const dateSuffix = hasDateParam ? `&boardDate=${encodeURIComponent(boardDate)}` : "";
   const patientSuffix = patientBoardId ? `&patientBoard=${encodeURIComponent(patientBoardId)}${dateSuffix}${cloudReady ? "&cloudBoardReady=1" : ""}` : dateSuffix;
-  const returnPath = `/therapist/build?view=session${sessionId ? `&session=${sessionId}` : ""}${linkedPatient?.id ? `&patient=${linkedPatient.id}` : ""}${patientSuffix}`;
+  // Opened from the full-screen board, an activity or the obstacle course brings you back to it in full screen.
+  const fullscreenSuffix = fullscreen ? "&fullscreen=1" : "";
+  const returnPath = `/therapist/build?view=session${sessionId ? `&session=${sessionId}` : ""}${linkedPatient?.id ? `&patient=${linkedPatient.id}` : ""}${patientSuffix}${fullscreenSuffix}`;
   const planningReturnUrl = (() => {
     const next = new URLSearchParams(searchParams);
     next.set("view", "session");
@@ -893,6 +895,15 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
     setFullscreenState(false);
     if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
   }
+  // Back from an activity that was opened from the full-screen board: show the board in full screen
+  // again. The browser only allows its own full screen after a tap, so this is the site's full screen.
+  useEffect(() => {
+    if (searchParams.get("fullscreen") !== "1") return;
+    setFullscreenState(true);
+    const next = new URLSearchParams(searchParams);
+    next.delete("fullscreen");
+    navigate(`/therapist/build?${next.toString()}`, { replace: true });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     const onChange = () => { if (!document.fullscreenElement) setFullscreenState(false); };
     const onKey = (event) => { if (event.key === "Escape" && document.body.classList.contains("meeting-board-fullscreen")) exitFullscreen(); };
@@ -994,7 +1005,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
         onSelectPatient={(id) => navigate(`/therapist/build?view=session&patientBoard=${encodeURIComponent(id)}${dateSuffix}`)}
         onUseGuestBoard={() => navigate("/therapist/build?view=session&guest=1")}
         addActivityHref={`/therapist/build?tab=search&boardMode=1${patientSuffix}`}
-        motorTrailHref={`/therapist/motor-trail?returnTo=session${patientSuffix}`}
+        motorTrailHref={`/therapist/motor-trail?returnTo=session${patientSuffix}${fullscreenSuffix}`}
         pen={pen}
         onAddSign={addSign}
         onAddGame={addGame}
@@ -1014,7 +1025,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
           const { activity, recipe, experiment, sign, hero, title: itemTitle } = boardItemView(item);
           const linkTo = item.kind === "activity"
             ? `/activity/${item.id}?mode=therapist&returnTo=session&returnPath=${encodeURIComponent(returnPath)}`
-            : item.kind === "motor-trail" ? `/therapist/motor-trail?returnTo=session&edit=${item.uid}${patientSuffix}`
+            : item.kind === "motor-trail" ? `/therapist/motor-trail?returnTo=session&edit=${item.uid}${patientSuffix}${fullscreenSuffix}`
               : item.kind === "recipe" ? `/therapist/recipes?r=${item.id}`
                 : item.kind === "experiment" ? `/therapist/experiments?e=${item.id}`
                   : null;
