@@ -12,6 +12,7 @@ import { BoardCanvas } from "@/components/session-board/BoardCanvas";
 import { BoardPhotoPreview } from "@/components/session-board/BoardPhotoPreview";
 import { BoardToolbox } from "@/components/session-board/BoardToolbox";
 import { BoardStickers, stickerStartPosition } from "@/components/session-board/BoardStickers";
+import { FarewellDialog } from "@/components/session-board/FarewellDialog";
 import { ChoiceBoard } from "@/components/session-board/ChoiceBoard";
 import { BoardDayAppointments } from "@/components/session-board/BoardDayAppointments";
 import { HomePracticeShare } from "@/components/session-board/HomePracticeShare";
@@ -693,6 +694,8 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
   const navigate = useNavigate();
   const boardRef = useRef(null);
   const [stickers, setStickers] = useState([]);
+  const [controlsRow, setControlsRow] = useState(null);
+  const [farewellOpen, setFarewellOpen] = useState(false);
   const photoInputRef = useRef(null);
   const [timerOpen, setTimerOpen] = useState(false);
   const [choiceMode, setChoiceMode] = useState(null); // "choice" | "firstThen" | null
@@ -1000,6 +1003,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
         onOpenTimer={openTimer}
         onOpenFirstThen={() => { setPenEnabled(false); setChoiceMode("firstThen"); }}
         onShareWithParents={() => { setPenEnabled(false); setShareOpen(true); }}
+        onOpenFarewell={() => { setPenEnabled(false); setFarewellOpen(true); }}
         onOpenMyImages={() => { setPenEnabled(false); setMyImagesOpen(true); }}
         fullscreen={fullscreen}
         onToggleFullscreen={toggleFullscreen}
@@ -1047,7 +1051,9 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
                   <Check className="h-5 w-5" strokeWidth={3} />
                 </button>
                 {linkTo ? <Link to={linkTo} className="flex min-w-0 flex-1 items-center gap-4">{inner}</Link> : <div className="flex min-w-0 flex-1 items-center gap-4">{inner}</div>}
-                <div className="meeting-item-controls" data-meeting-item-controls="true" aria-label={t("שינוי סדר הפעילות", "Change activity order")}>
+                {/* On touch screens (no mouse to hover), a small ⋮ button shows the arrows and × for this row. */}
+                <button type="button" className="meeting-item-controls-toggle" aria-expanded={controlsRow === item.uid} aria-label={t("שינוי סדר או מחיקה", "Reorder or remove")} onClick={() => setControlsRow((open) => (open === item.uid ? null : item.uid))}>⋮</button>
+                <div className={controlsRow === item.uid ? "meeting-item-controls open" : "meeting-item-controls"} data-meeting-item-controls="true" aria-label={t("שינוי סדר הפעילות", "Change activity order")}>
                   <button type="button" className="meeting-move-item" data-move-direction="-1" disabled={i === 0} aria-label={t("העלאת הפעילות למעלה", "Move activity up")} title={t("העלאה למעלה", "Move up")} onClick={() => moveItem(i, -1)}>↑</button>
                   <button type="button" className="meeting-move-item" data-move-direction="1" disabled={i === plan.length - 1} aria-label={t("הורדת הפעילות למטה", "Move activity down")} title={t("הורדה למטה", "Move down")} onClick={() => moveItem(i, 1)}>↓</button>
                   <button type="button" className="meeting-delete-item" aria-label={t("מחיקת הפעילות מלוח המפגש", "Remove activity from the session board")} title={t("מחיקה מהלוח", "Remove from board")} onClick={() => removeItem(i)}>×</button>
@@ -1062,6 +1068,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
           <VisualSessionTimer language={language} open={timerOpen} onOpenChange={setTimerOpen} hideTrigger />
           {fullscreen && <BoardToolbox language={language} pen={pen} onOpenTimer={openTimer} onAddSign={addSign} onOpenChoice={setChoiceMode} onAddMotorItem={addMotorItem} onAddEmotion={addEmotion} />}
           {myImagesOpen && <MyImagesDialog language={language} returnUrl={`${window.location.pathname}${window.location.search}`} onAdd={addMyImage} onChanged={setMyImages} onClose={() => setMyImagesOpen(false)} />}
+          {farewellOpen && <FarewellDialog language={language} patientKey={patientBoardId || "guest"} patientName={patientBoardId ? patientName : ""} onClose={() => setFarewellOpen(false)} />}
           {shareOpen && <HomePracticeShare language={language} onClose={() => setShareOpen(false)}
             activities={plan.filter((item) => item.kind === "activity" && getActivity(item.id)).map((item) => ({ id: item.id, title: boardItemView(item).title, image: boardItemView(item).hero }))} />}
           {choiceMode && <ChoiceBoard key={choiceMode} mode={choiceMode} language={language} options={pickerOptions} onStart={makeNext} onClose={() => setChoiceMode(null)} />}

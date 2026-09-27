@@ -221,3 +221,51 @@
 .meeting-board-page .meeting-board-actions>.meeting-first-then{grid-row:4;grid-column:5/7}
 .meeting-board-page .meeting-board-actions>.meeting-share-parents{grid-row:4;grid-column:7/9}
 .meeting-board-page .meeting-board-actions>.meeting-fullscreen{grid-row:4;grid-column:9/11}
+/* The arrows and × of a board row show only when the mouse is over the row (or it has keyboard focus).
+   On touch screens a small ⋮ button opens them. */
+.meeting-item-controls-toggle{display:none}
+@media(hover:hover){
+  .meeting-board-page .meeting-item-controls{opacity:0;pointer-events:none;transition:opacity .15s ease}
+  .meeting-board-surface>li:hover .meeting-item-controls,.meeting-board-surface>li:has(:focus-visible) .meeting-item-controls{opacity:1;pointer-events:auto}
+}
+@media(hover:none){
+  .meeting-board-page .meeting-item-controls{display:none}
+  .meeting-board-page .meeting-item-controls.open{display:flex;top:6px;left:40px;flex-direction:row;gap:5px}
+  .meeting-board-page .meeting-item-controls-toggle{position:absolute;z-index:81;top:6px;left:6px;display:grid!important;width:28px!important;height:28px!important;min-height:28px!important;place-items:center;padding:0!important;border:1px solid #e3dbd1!important;border-radius:50%!important;background:#fff!important;color:#7a6d63!important;font:800 16px/1 Rubik,Arial,sans-serif!important;box-shadow:none!important}
+  .meeting-board-page .meeting-item-controls-toggle[aria-expanded="true"]{background:#40362f!important;color:#fff!important}
+}
+@media print{.meeting-item-controls-toggle{display:none!important}}
+
+/* Eleven tool buttons: five in the first row, six in the second (a 60-column grid). */
+.meeting-board-page .meeting-board-actions{grid-template-columns:repeat(60,minmax(0,1fr))!important}
+.meeting-board-page .meeting-board-actions>.meeting-add-activity{grid-column:1/31}
+.meeting-board-page .meeting-board-actions>.meeting-board-link{grid-column:31/61}
+.meeting-board-page .meeting-board-actions>.meeting-timer{grid-column:1/13}
+.meeting-board-page .meeting-board-actions>.meeting-drawing-tools{grid-column:13/25}
+.meeting-board-page .meeting-board-actions>.meeting-games-tools{grid-column:25/37}
+.meeting-board-page .meeting-board-actions>.meeting-games-tools.meeting-motor-tools{grid-column:37/49}
+.meeting-board-page .meeting-board-actions>.meeting-my-images{grid-column:49/61}
+.meeting-board-page .meeting-board-actions>.meeting-signs-tools{grid-column:1/11}
+.meeting-board-page .meeting-board-actions>.meeting-games-tools.meeting-emotions-tools{grid-column:11/21}
+.meeting-board-page .meeting-board-actions>.meeting-first-then{grid-column:21/31}
+.meeting-board-page .meeting-board-actions>.meeting-farewell{grid-row:4;grid-column:31/41}
+.meeting-board-page .meeting-board-actions>.meeting-share-parents{grid-column:41/51}
+.meeting-board-page .meeting-board-actions>.meeting-fullscreen{grid-column:51/61}
+.meeting-board-page .meeting-board-actions>.meeting-farewell{display:flex!important;width:100%!important;min-width:0!important;min-height:64px!important;flex-direction:column!important;gap:4px!important;padding:7px 3px!important;border-radius:15px!important;font-size:11px!important;line-height:1.15!important;text-align:center!important;white-space:normal!important}
+@media(max-width:760px){
+  .meeting-board-page .meeting-board-actions>.meeting-farewell{min-height:52px!important;padding:4px 1px!important;border-radius:13px!important;font-size:9px!important}
+}
+/* With 60 narrow columns the gaps would add up past the screen, so the space between buttons comes from margins instead. */
+.meeting-board-page .meeting-board-actions{column-gap:0!important}
+.meeting-board-page .meeting-board-actions>*:not(.meeting-planning-wrap):not(.meeting-tools-toggle){margin-inline:4.5px!important;width:calc(100% - 9px)!important}
+.meeting-board-page .meeting-board-actions>.meeting-add-activity,.meeting-board-page .meeting-board-actions>.meeting-board-link{margin-inline:4.5px!important}
+@media(max-width:760px){
+  .meeting-board-page .meeting-board-actions>*:not(.meeting-planning-wrap):not(.meeting-tools-toggle){margin-inline:3px!important;width:calc(100% - 6px)!important}
+}
+/* Illustrated icons on the tool buttons. */
+.meeting-board-page .meeting-board-actions .meeting-tool-image-icon{width:30px;height:30px;object-fit:contain}
+.meeting-board-page .meeting-board-actions>.meeting-board-link .meeting-tool-image-icon{width:40px;height:40px}
+@media(max-width:760px){
+  .meeting-board-page .meeting-board-actions .meeting-tool-image-icon{width:24px;height:24px}
+  .meeting-board-page .meeting-board-actions>.meeting-board-link .meeting-tool-image-icon{width:30px;height:30px}
+}

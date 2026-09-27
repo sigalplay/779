@@ -17,6 +17,7 @@ const THERAPIST_GOAL_ICONS = {
   התארגנות: "/icon-bank/therapist-goals/organization.webp",
   "זיכרון עבודה": "/icon-bank/therapist-goals/working-memory.webp",
   "גמישות מחשבתית": "/icon-bank/therapist-goals/cognitive-flexibility.webp",
+  "אורל מוטור": "/icon-bank/tools/oral-motor.webp",
 };
 
 export function therapistGoalIcon(goal) {

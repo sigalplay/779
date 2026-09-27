@@ -32,14 +32,14 @@ export const CREATIVE_ACCESSORIES = [
 ];
 
 // Everyday household items for building a motor trail without special equipment -
-// no dedicated illustrations yet, so each item uses an emoji instead of an image.
+// each with its own illustration (the emoji stays as a fallback).
 export const HOME_ITEMS = [
-  { id: "pillow", label: "כרית", labelEn: "Pillow", emoji: "🛏️" },
-  { id: "bottle", label: "בקבוק", labelEn: "Bottle", emoji: "🧴" },
-  { id: "chair", label: "כיסא", labelEn: "Chair", emoji: "🪑" },
-  { id: "blanket", label: "שמיכה", labelEn: "Blanket", emoji: "🛌" },
-  { id: "cardboard-box", label: "קופסת קרטון", labelEn: "Cardboard Box", emoji: "📦" },
-  { id: "couch-cushion", label: "כרית ספה", labelEn: "Couch Cushion", emoji: "🛋️" },
-  { id: "broom", label: "מטאטא", labelEn: "Broom", emoji: "🧹" },
-  { id: "rope", label: "חבל או סרט", labelEn: "Rope or Ribbon", emoji: "🪢" },
+  { id: "pillow", label: "כרית", labelEn: "Pillow", emoji: "🛏️", image: `${BASE}/home/pillow.webp` },
+  { id: "bottle", label: "בקבוק", labelEn: "Bottle", emoji: "🧴", image: `${BASE}/home/bottle.webp` },
+  { id: "chair", label: "כיסא", labelEn: "Chair", emoji: "🪑", image: `${BASE}/home/chair.webp` },
+  { id: "blanket", label: "שמיכה", labelEn: "Blanket", emoji: "🛌", image: `${BASE}/home/blanket.webp` },
+  { id: "cardboard-box", label: "קופסת קרטון", labelEn: "Cardboard Box", emoji: "📦", image: `${BASE}/home/cardboard-box.webp` },
+  { id: "couch-cushion", label: "כרית ספה", labelEn: "Couch Cushion", emoji: "🛋️", image: `${BASE}/home/couch-cushion.webp` },
+  { id: "broom", label: "מטאטא", labelEn: "Broom", emoji: "🧹", image: `${BASE}/home/broom.webp` },
+  { id: "rope", label: "חבל או סרט", labelEn: "Rope or Ribbon", emoji: "🪢", image: `${BASE}/home/rope.webp` },
 ];

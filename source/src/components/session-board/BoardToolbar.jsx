@@ -24,6 +24,7 @@ export function BoardToolbar({
   onOpenTimer,
   onOpenFirstThen,
   onShareWithParents,
+  onOpenFarewell,
   onOpenMyImages,
   fullscreen,
   onToggleFullscreen,
@@ -100,14 +101,14 @@ export function BoardToolbar({
 
       <a className="meeting-add-activity" href={addActivityHref}>{t("הוסף פעילות ללוח המפגש", "Add an activity to the session board")}</a>
       <a className="meeting-board-link" href={motorTrailHref}>
-        <span className="meeting-action-icon" aria-hidden="true">＋</span>
+        <img className="meeting-tool-image-icon" src="/icon-bank/tools/motor-trail.webp" alt="" />
         <span className="meeting-action-label-desktop">{t("הוספת מסלול מוטורי", "Add an obstacle course")}</span>
         <span className="meeting-action-label-mobile">{t("מסלול מוטורי", "Obstacle Course Builder")}</span>
       </a>
 
       <div className="meeting-drawing-tools" data-drawing-tools="true">
         <button type="button" className={pen.enabled ? "meeting-pen-button active" : "meeting-pen-button"} data-board-pen="" aria-pressed={pen.enabled} title={t("עט — כתיבה וציור על הלוח", "Pen — write and draw on the board")} onClick={togglePen}>
-          <span className="meeting-action-icon" aria-hidden="true">✎</span>
+          <img className="meeting-tool-image-icon" src="/icon-bank/tools/pen.webp" alt="" />
           <span className="meeting-action-label-desktop">{t("עט", "Pen")}</span>
           <span className="meeting-action-label-mobile">{t("עט", "Pen")}</span>
         </button>
@@ -124,7 +125,7 @@ export function BoardToolbar({
 
       <div className="meeting-signs-tools" data-signs-tools="true">
         <button type="button" className="meeting-signs-button" data-board-signs="" aria-expanded={palette === "signs"} title={t("הוספת סימנים מוסכמים ללוח", "Add visual signs to the board")} onClick={() => togglePalette("signs")}>
-          <span className="meeting-action-icon" aria-hidden="true">✋</span>
+          <img className="meeting-tool-image-icon" src="/icon-bank/tools/signs.webp" alt="" />
           <span className="meeting-action-label-desktop">{t("סימנים מוסכמים", "Visual signs")}</span>
           <span className="meeting-action-label-mobile">{t("סימנים", "Signs")}</span>
         </button>
@@ -164,26 +165,31 @@ export function BoardToolbar({
       </div>
 
       <button className="meeting-timer" type="button" onClick={onOpenTimer}>
-        <span className="meeting-action-icon" aria-hidden="true">⏱</span>
+        <img className="meeting-tool-image-icon" src="/icon-bank/tools/timer.webp" alt="" />
         <span className="meeting-action-label-desktop">{t("טיימר חזותי", "Visual timer")}</span>
         <span className="meeting-action-label-mobile">{t("טיימר", "Timer")}</span>
       </button>
       <button className="meeting-fullscreen" type="button" aria-pressed={fullscreen} onClick={onToggleFullscreen}>
-        <span className="meeting-action-icon" aria-hidden="true">⛶</span>
+        <img className="meeting-tool-image-icon" src="/icon-bank/tools/fullscreen.webp" alt="" />
         <span data-fullscreen-label="">{fullscreen ? t("יציאה ממסך מלא", "Exit full screen") : t("מסך מלא", "Full screen")}</span>
       </button>
       <button className="meeting-first-then" type="button" onClick={onOpenFirstThen} title={t("קודם - אחר כך", "First - then")}>
-        <span className="meeting-action-icon" aria-hidden="true">⇠</span>
+        <img className="meeting-tool-image-icon" src="/icon-bank/tools/first-then.webp" alt="" />
         <span className="meeting-action-label-desktop">{t("קודם - אחר כך", "First - then")}</span>
         <span className="meeting-action-label-mobile">{t("קודם-אחר כך", "First-then")}</span>
       </button>
+      <button className="meeting-farewell" type="button" onClick={onOpenFarewell} title={t("פרידה - ספירה לאחור של המפגשים, מה למדנו ותעודת סיום", "Farewell - session countdown, what we learned, and a certificate")}>
+        <img className="meeting-tool-image-icon" src="/icon-bank/tools/farewell.webp" alt="" />
+        <span className="meeting-action-label-desktop">{t("פרידה", "Farewell")}</span>
+        <span className="meeting-action-label-mobile">{t("פרידה", "Farewell")}</span>
+      </button>
       <button className="meeting-share-parents" type="button" onClick={onShareWithParents} title={t("שליחת פעילויות מהלוח להורים לתרגול בבית", "Send board activities to parents to practice at home")}>
-        <span className="meeting-action-icon" aria-hidden="true">🏠</span>
+        <img className="meeting-tool-image-icon" src="/icon-bank/tools/share-parents.webp" alt="" />
         <span className="meeting-action-label-desktop">{t("שליחה להורים", "Send to parents")}</span>
         <span className="meeting-action-label-mobile">{t("שליחה להורים", "To parents")}</span>
       </button>
       <button className="meeting-my-images" type="button" onClick={onOpenMyImages} title={t("התמונות שלי - העלאת תמונות של משחקים וציוד", "My images - upload photos of games and equipment")}>
-        <span className="meeting-action-icon" aria-hidden="true">🖼️</span>
+        <img className="meeting-tool-image-icon" src="/icon-bank/tools/upload-images.webp" alt="" />
         <span className="meeting-action-label-desktop">{t("העלאת תמונות", "Upload images")}</span>
         <span className="meeting-action-label-mobile">{t("העלאת תמונות", "My images")}</span>
       </button>

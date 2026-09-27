@@ -129,7 +129,7 @@ export default function MotorTrail({ mode }) {
   }
   function addHomeItem(homeItem) {
     const id = `custom-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-    const item = { id, label: homeItem.label, emoji: homeItem.emoji };
+    const item = { id, label: homeItem.label, emoji: homeItem.emoji, image: homeItem.image };
     setCustomItems((prev) => [...prev, item]);
     setOrder((prev) => [...prev, id]);
     toast.success(t(`"${homeItem.label}" נוסף למסלול`, `"${itemLabel(homeItem)}" added to the course`));
@@ -335,8 +335,8 @@ export default function MotorTrail({ mode }) {
                   onClick={() => addHomeItem(it)}
                   className="group relative flex aspect-square flex-col overflow-hidden rounded-3xl border border-border/60 bg-cream transition-colors hover:border-sky/60"
                 >
-                  <div className="relative flex w-full flex-1 items-center justify-center p-2 text-5xl" aria-hidden>
-                    {it.emoji}
+                  <div className="relative flex min-h-0 w-full flex-1 items-center justify-center p-2 text-5xl" aria-hidden>
+                    {it.image ? <img src={it.image} alt="" className="max-h-full max-w-full object-contain" /> : it.emoji}
                     <span className="absolute left-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-sage text-sage-foreground opacity-0 transition-opacity group-hover:opacity-100">
                       <Plus className="h-3 w-3" />
                     </span>
