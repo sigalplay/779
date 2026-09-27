@@ -16,6 +16,7 @@ import { libMaterialIcon, libStepIcon } from "@/lib/icon-library";
 import { bankMaterialIcon, bankStepIcon } from "@/lib/icon-bank";
 import { TagList } from "@/components/TagList";
 import { PageToolbox } from "@/components/toolbox/PageToolbox";
+import { ActivityHeroAnimation, hasHeroAnimation } from "@/components/ActivityHeroAnimation";
 import { useTranslator } from "@/lib/language";
 import { activityTitle, translatedTerm } from "@/lib/content-translations";
 import { activityEnglishContent } from "@/lib/activity-content-en";
@@ -250,7 +251,9 @@ export default function ActivityDetail() {
           transition={{ duration: 0.4, ease: "easeOut" }}
           className="flex h-56 items-center justify-center overflow-hidden rounded-3xl border border-border/40 bg-gradient-to-br from-sage/30 via-sky/30 to-primary/20 md:h-72 print:hidden"
         >
-          {activityHero(a.id) || a.hero_image ? (
+          {hasHeroAnimation(a.id) ? (
+            <ActivityHeroAnimation activityId={a.id} alt={altWhere} />
+          ) : activityHero(a.id) || a.hero_image ? (
             <img src={activityHero(a.id) || a.hero_image} alt={altWhere} title={altWhere} className="max-h-[90%] max-w-[90%] object-contain" />
           ) : (
             (() => {

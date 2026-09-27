@@ -15,6 +15,7 @@ import "./styles/therapist-board-games-v1.css";
 import "./styles/v92-board-and-search.css";
 import "./styles/toolbox.css";
 import "./styles/choice-board.css";
+import "./styles/activity-hero-animation.css";
 import "./styles/mobile-search-filters-v1.css";
 import "./styles/calendar-qa-v27.css";
 import "./styles/mobile-calendar-compact-v1.css";
