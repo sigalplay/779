@@ -528,7 +528,7 @@ const EN = {
   },
   "seed-75": {
     description: "Identify familiar objects using touch only.",
-    materials: [],
+    materials: ["Pillowcase or cloth bag", "Wooden spoon", "Sock", "Game die", "Hairbrush"],
     preparation: "Place four to six safe, familiar objects inside a pillowcase without showing the child.",
     steps: [
       "Put one hand into the pillowcase and choose an object without taking it out.",

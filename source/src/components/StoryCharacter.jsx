@@ -1,4 +1,11 @@
 import { useTranslator } from "@/lib/language";
+import { storyImageSrc } from "@/lib/social-story-templates";
+
+// How the therapist moved and sized the child's photo: x and y are percent of the face area.
+function adjustTransform(adjust, baseScale = 1) {
+  const { x = 0, y = 0, scale = 1 } = adjust || {};
+  return `translate(${x}%, ${y}%) scale(${baseScale * scale})`;
+}
 const CHARACTER_ASSETS = {
   girl: {
     body: "/icon-bank/social-stories/characters/girl-body.webp",
@@ -14,7 +21,7 @@ const CHARACTER_ASSETS = {
   },
 };
 
-export function StoryCharacter({ photo, gender = "girl", size = 128, className = "" }) {
+export function StoryCharacter({ photo, gender = "girl", size = 128, className = "", adjust = null }) {
   const character = CHARACTER_ASSETS[gender] || CHARACTER_ASSETS.girl;
   const { t } = useTranslator();
   const label = t(character.label, character.labelEn);
@@ -42,11 +49,13 @@ export function StoryCharacter({ photo, gender = "girl", size = 128, className =
           style={photo
             ? { top: size * 0.005, width: size * 0.53, height: size * 0.53 }
             : { top: size * 0.05, width: size * 0.56, height: size * 0.56 }}
+          data-face-box={photo ? "" : undefined}
         >
           <img
             src={photo || character.head}
             alt={photo ? t("תמונת הילד/ה", "Child's photo") : ""}
             className={`h-full w-full ${photo ? "object-cover object-top" : "object-contain"}`}
+            style={photo ? { transform: adjustTransform(adjust) } : undefined}
           />
         </div>
       </div>
@@ -92,7 +101,7 @@ const FACE_LAYOUTS = {
   },
 };
 
-function IntegratedFaces({ layout, photos }) {
+function IntegratedFaces({ layout, photos, adjust }) {
   const { t } = useTranslator();
   const placements = FACE_LAYOUTS[layout];
   if (!placements) return null;
@@ -101,7 +110,7 @@ function IntegratedFaces({ layout, photos }) {
     if (!photo) return null;
     const { imageScale, imageY, ...placementStyle } = style;
     return (
-      <div key={role} className="pointer-events-none absolute z-10" style={placementStyle} aria-label={role === "mother" ? t("פני האמא שהועלו", "Uploaded face of the mother") : t("פני הילדה שהועלו", "Uploaded face of the child")}>
+      <div key={role} className="pointer-events-none absolute z-10" style={placementStyle} data-face-box={role === "child" ? "" : undefined} aria-label={role === "mother" ? t("פני האמא שהועלו", "Uploaded face of the mother") : t("פני הילדה שהועלו", "Uploaded face of the child")}>
         <div
           className="absolute inset-0 overflow-hidden"
           style={{
@@ -113,7 +122,7 @@ function IntegratedFaces({ layout, photos }) {
             src={photo}
             alt=""
             className="h-full w-full object-contain"
-            style={{ transform: `scale(${imageScale})`, transformOrigin: `50% ${imageY}` }}
+            style={{ transform: role === "child" ? adjustTransform(adjust, imageScale) : `scale(${imageScale})`, transformOrigin: `50% ${imageY}` }}
           />
         </div>
       </div>
@@ -140,7 +149,7 @@ function MissingIllustratedHeads({ layout, photos, illustration }) {
     return (
       <img
         key={role}
-        src={illustration}
+        src={storyImageSrc(illustration)}
         alt=""
         className="pointer-events-none absolute inset-0 z-[9] h-full w-full object-contain"
         style={{ WebkitMaskImage: mask, maskImage: mask }}
@@ -149,22 +158,23 @@ function MissingIllustratedHeads({ layout, photos, illustration }) {
   });
 }
 
-export function StoryScene({ photo, facePhotos, faceLayout, faceBase, gender = "girl", illustration, className = "", characterSize = 148, integrated = false }) {
+export function StoryScene({ photo, facePhotos, faceLayout, faceBase, gender = "girl", illustration, className = "", characterSize = 148, integrated = false, faceAdjust = null }) {
   const hasIntegratedPhoto = !!faceLayout && !!faceBase && Object.values(facePhotos || {}).some(Boolean);
   return (
     <div className={`relative aspect-square overflow-hidden rounded-2xl bg-[#fffaf1] ${className}`}>
       {illustration ? (
-        <img src={hasIntegratedPhoto ? faceBase : illustration} alt="" className="absolute inset-0 h-full w-full bg-white object-contain" />
+        <img src={storyImageSrc(hasIntegratedPhoto ? faceBase : illustration)} alt="" className="absolute inset-0 h-full w-full bg-white object-contain" />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-[#fff8ea] via-[#eef5ef] to-[#f5eafa]" />
       )}
       {hasIntegratedPhoto && <MissingIllustratedHeads layout={faceLayout} photos={facePhotos} illustration={illustration} />}
-      <IntegratedFaces layout={faceLayout} photos={facePhotos} />
+      <IntegratedFaces layout={faceLayout} photos={facePhotos} adjust={faceAdjust} />
       {!integrated ? (
         <StoryCharacter
           photo={photo}
           gender={gender}
           size={characterSize}
+          adjust={faceAdjust}
           className="absolute inset-x-0 bottom-1 z-10 mx-auto drop-shadow-md"
         />
       ) : null}
@@ -173,7 +183,7 @@ export function StoryScene({ photo, facePhotos, faceLayout, faceBase, gender = "
 }
 
 // wordless: מצב "ספר ללא מילים" — מסתיר את הטקסט (חוץ מהכריכה) ומשאיר שורות לכתיבה.
-export function StoryBookPage({ page, index, total, photo, facePhotos, gender = "girl", wordless = false, className = "" }) {
+export function StoryBookPage({ page, index, total, photo, facePhotos, gender = "girl", wordless = false, className = "", faceAdjust = null }) {
   const { t } = useTranslator();
   const pageFacePhotos = page.faceLayout ? facePhotos : {};
   return (
@@ -194,6 +204,7 @@ export function StoryBookPage({ page, index, total, photo, facePhotos, gender = 
             illustration={page.illustration}
             integrated={!!page.integrated}
             characterSize={150}
+            faceAdjust={faceAdjust}
             className="w-full max-w-[92%] shadow-none"
           />
         </div>

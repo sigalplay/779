@@ -5,16 +5,13 @@ import {
   Printer,
   Plus,
   X,
-  ChevronUp,
-  ChevronDown,
   Trash2,
   FolderOpen,
   ArrowRight,
   Upload,
   ShieldCheck,
   WandSparkles,
-  Eye,
-  Pencil,
+  Play,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -33,7 +30,7 @@ import {
   clearLegacySocialStorySensitiveData,
   uid,
 } from "@/lib/storage";
-import { STORY_TEMPLATES, createTemplateStory } from "@/lib/social-story-templates";
+import { STORY_TEMPLATES, createTemplateStory, storyImageSrc } from "@/lib/social-story-templates";
 import { prepareUploadedPhoto, removePhotoBackground } from "@/lib/local-photo-cutout";
 import { useTranslator } from "@/lib/language";
 import { useCmsCollection } from "@/lib/cms-content";
@@ -50,13 +47,13 @@ function storyChoices(templateId, gender, language) {
       branchPrompt: he ? "מה קורה אחרי ההפסד? בחרו את המשך העלילה" : "What happens after losing? Choose how the story continues",
       endingPrompt: he ? "הבחירה האחרונה — איך הסיפור ממשיך?" : "One last choice — how does the story continue?",
       branchOptions: [
-        ["angry", he ? "כועס/ת על מי שמולו/ה" : "Gets angry with the other child", `${base}/choice-4-angry.png`],
+        ["angry", he ? "כועס/ת על מי שמולו/ה" : "Gets angry with the other child", `${base}/choice-4-angry.webp`],
         ["talks", he ? "מדבר/ת על ההרגשה" : "Talks about the feeling", `${base}/page-5.webp`],
         ["congratulates", he ? "מפרגן/ת למי שניצח/ה" : "Congratulates the winner", `${base}/page-6.webp`],
       ],
       endingOptions: [
-        ["winner-walks-away", he ? (girl ? "הילדה שניצחה מתרחקת" : "הילד שניצח מתרחק") : "The winner walks away", `${base}/ending-winner-walks-away.png`],
-        ["different-game", he ? (girl ? "הן משחקות במשחק אחר" : "הם משחקים במשחק אחר") : "They play a different game", `${base}/ending-different-game.png`],
+        ["winner-walks-away", he ? (girl ? "הילדה שניצחה מתרחקת" : "הילד שניצח מתרחק") : "The winner walks away", `${base}/ending-winner-walks-away.webp`],
+        ["different-game", he ? (girl ? "הן משחקות במשחק אחר" : "הם משחקים במשחק אחר") : "They play a different game", `${base}/ending-different-game.webp`],
       ],
     },
     "waiting-turn": {
@@ -128,7 +125,7 @@ function StoryChoices({ story, onBranch, onEnding, endingsOnly = false }) {
             )}
           >
             {!endingsOnly && <span className="mb-1 block text-base font-black">{index + 1}</span>}
-            <img src={option.illustration} alt="" className="mb-2 aspect-square w-full rounded-xl object-contain" />
+            <img src={storyImageSrc(option.illustration)} alt="" loading="lazy" className="mb-2 aspect-square w-full rounded-xl object-contain" />
             {option.label}
           </button>
         ))}
@@ -157,7 +154,9 @@ export default function SocialStories({ mode }) {
   const [cropRequest, setCropRequest] = useState(null);
   const [storyMode, setStoryMode] = useState("edit"); // "edit" | "view"
   const [viewPage, setViewPage] = useState(0);
+  const [editIndex, setEditIndex] = useState(0);
   const optionsRef = useRef(null);
+  const readerButtonRef = useRef(null);
   const interactiveTemplate = INTERACTIVE_STORIES.has(templateId);
 
   useEffect(() => {
@@ -275,8 +274,8 @@ export default function SocialStories({ mode }) {
       isCover: true,
       integrated: !!result.coverIntegrated,
       faceReplacement: result.coverFaceReplacement || [],
-      faceLayout: result.coverFaceLayout || (templateId === "toilet" ? `toilet-cover-${selectedGender}` : null),
-      faceBase: result.coverFaceBase || (templateId === "toilet" ? result.cover : null),
+      faceLayout: result.coverFaceLayout || (templateId === "toilet" && illustrationStyle === "new" ? `toilet-cover-${selectedGender}` : null),
+      faceBase: result.coverFaceBase || (templateId === "toilet" && illustrationStyle === "new" ? result.cover : null),
     };
     const contentPages = result.pages.map(([text, emoji, illustration, faceReplacement, faceLayout, faceBase]) => ({
       id: uid(), text: result.wordless ? "" : text, emoji, illustration, integrated: true, faceReplacement, faceLayout, faceBase,
@@ -302,6 +301,7 @@ export default function SocialStories({ mode }) {
     });
     setStoryMode("edit");
     setViewPage(0);
+    setEditIndex(0);
     setTimeout(() => {
       document.querySelector('[data-social-story-result="true"]')?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 0);
@@ -316,7 +316,7 @@ export default function SocialStories({ mode }) {
     setKindergartenRest(value);
     setStory((prev) => {
       if (!prev || prev.templateId !== "kindergarten") return prev;
-      const illustration = `/icon-bank/social-stories/kindergarten/daily-routine-${value === "no-sleep" ? "no-sleep" : "with-sleep"}.png`;
+      const illustration = `/icon-bank/social-stories/kindergarten/daily-routine-${value === "no-sleep" ? "no-sleep" : "with-sleep"}.webp`;
       return {
         ...prev,
         kindergartenRest: value,
@@ -326,30 +326,50 @@ export default function SocialStories({ mode }) {
       };
     });
   }
-  function removePage(id) {
-    setStory((prev) => ({ ...prev, pages: prev.pages.filter((p) => p.id !== id) }));
+  function removePage(index) {
+    if (story.pages.length <= 1) return;
+    if (!window.confirm(t(`למחוק את עמוד ${index + 1}?`, `Delete page ${index + 1}?`))) return;
+    setStory((prev) => ({ ...prev, pages: prev.pages.filter((_, i) => i !== index) }));
+    setEditIndex(Math.max(0, Math.min(index, story.pages.length - 2)));
   }
   function movePage(index, dir) {
+    const target = index + dir;
+    if (target < 0 || target >= story.pages.length) return;
     setStory((prev) => {
       const pages = [...prev.pages];
-      const target = index + dir;
-      if (target < 0 || target >= pages.length) return prev;
       [pages[index], pages[target]] = [pages[target], pages[index]];
       return { ...prev, pages };
     });
+    setEditIndex(target);
   }
   function addPage() {
     setStory((prev) => ({ ...prev, pages: [...prev.pages, { id: uid(), text: "", emoji: "✨", illustration: null }] }));
+    setEditIndex(story.pages.length);
+  }
+  function openReader(page) {
+    toast.dismiss();
+    setViewPage(page);
+    setStoryMode("view");
+  }
+  function closeReader() {
+    setStoryMode("edit");
+    window.requestAnimationFrame(() => readerButtonRef.current?.focus());
+  }
+  function startOver() {
+    if (!window.confirm(t("לחזור לבחירת סיפור? שינויים שלא נשמרו יימחקו.", "Go back to choosing a story? Unsaved changes will be lost."))) return;
+    setStory(null);
   }
 
   // בחירה ראשונה בעלילה: מחליפה את העמוד הרביעי. בחירה שנייה: את העמוד החמישי.
   function chooseBranch(option) {
     setStory((prev) => ({ ...prev, interactiveChoice: option.value, endingChoice: null, pages: [...prev.pages.slice(0, 3), { ...option, id: uid(), text: "", integrated: true }] }));
     if (storyMode === "view") setViewPage(3);
+    else setEditIndex(3);
   }
   function chooseEnding(option) {
     setStory((prev) => ({ ...prev, endingChoice: option.value, pages: [...prev.pages.slice(0, 4), { ...option, id: uid(), text: "", integrated: true }] }));
     if (storyMode === "view") setViewPage(4);
+    else setEditIndex(4);
   }
 
   function handleSaveStory() {
@@ -382,10 +402,21 @@ export default function SocialStories({ mode }) {
     });
     setStoryMode("edit");
     setViewPage(0);
+    setEditIndex(0);
     setView("create");
   }
 
   const childLabel = (value) => (value === "boy" ? "הילד" : "הילדה");
+  const faceIndex = story && !story.interactive ? facePageIndex(story.pages) : -1;
+  const currentPage = story?.pages[Math.min(editIndex, story.pages.length - 1)];
+  // Before the story is made: does the chosen story have a place for the child's face?
+  const draftStory = createTemplateStory(templateId, childName, gender, kindergartenRest, illustrationStyle, language);
+  const draftHasFace = !interactiveTemplate && Boolean(
+    draftStory.coverFaceLayout
+    || (templateId === "toilet" && illustrationStyle === "new")
+    || !draftStory.coverIntegrated
+    || draftStory.pages.some((page) => page[4]),
+  );
 
   return (
     <AppShell mode={mode}>
@@ -423,21 +454,24 @@ export default function SocialStories({ mode }) {
       ) : (
         <>
           {!story && (
-            <div className="space-y-5 rounded-3xl border border-border/60 bg-card p-6 print:hidden">
+            <div className="print:hidden">
+            <StorySteps current={1} />
+            <div className="space-y-5 rounded-3xl border border-border/60 bg-card p-6">
               <div>
-                <Label className="mb-2 block">{t("איזה סיפור נכין?", "Which story shall we make?")}</Label>
+                <h2 className="mb-3 font-display text-xl font-black">{t("1. איזה סיפור נכין?", "1. Which story shall we make?")}</h2>
                 <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
                   {cmsStoryTemplates.map((template) => (
                     <button
                       key={template.id}
                       type="button"
                       onClick={() => selectTemplate(template)}
+                      aria-pressed={templateId === template.id}
                       className={cn(
                         "min-w-0 overflow-hidden rounded-2xl border text-right transition",
                         templateId === template.id ? "border-2 border-primary bg-primary/10 shadow-md ring-4 ring-primary/50" : "border-border hover:bg-muted/50",
                       )}
                     >
-                      <img src={template.illustration} alt="" className="h-20 w-full bg-white object-contain p-1 sm:h-24" />
+                      <img src={storyImageSrc(template.illustration)} alt="" loading="lazy" decoding="async" className="h-20 w-full bg-white object-contain p-1 sm:h-24" />
                       <span className="block p-2.5 sm:p-3">
                         <span className="font-bold">{t(template.title, template.titleEn || template.title)}</span>
                         <span className="mt-1 block text-xs text-muted-foreground">{t(template.description, template.descriptionEn || template.description)}</span>
@@ -447,8 +481,9 @@ export default function SocialStories({ mode }) {
                 </div>
               </div>
               <div ref={optionsRef} className="scroll-mt-24" aria-hidden="true" />
+              <h2 className="font-display text-xl font-black">{t("2. התאמה אישית", "2. Make it personal")}</h2>
 
-              {templateId !== "kindergarten" && !interactiveTemplate && (
+              {templateId !== "kindergarten" && draftHasFace && (
                 <div className="rounded-2xl border border-sage/30 bg-sage/10 p-4">
                   <div className="mb-3 flex items-start gap-2 text-sm">
                     <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-sage-foreground" />
@@ -506,18 +541,20 @@ export default function SocialStories({ mode }) {
               <div className="grid gap-4 sm:grid-cols-3">
                 {!interactiveTemplate && (
                   <div>
-                    <Label className="mb-1.5 block">{t("שם הילד/ה (רשות)", "Child's name (optional)")}</Label>
-                    <Input value={childName} onChange={(e) => setChildName(e.target.value)} placeholder={t("לדוגמה: נועה", "For example: Maya")} />
+                    <Label htmlFor="storyChildName" className="mb-1.5 block">{t("שם הילד/ה (רשות)", "Child's name (optional)")}</Label>
+                    <Input id="storyChildName" value={childName} onChange={(e) => setChildName(e.target.value)} placeholder={t("לדוגמה: נועה", "For example: Maya")} />
                   </div>
                 )}
                 <div>
-                  <Label className="mb-1.5 block">{t("בחירת דמות ולשון", "Choose character and pronouns")}</Label>
+                  <p className="mb-1.5 text-sm font-medium">{t("בחירת דמות ולשון", "Choose character and pronouns")}</p>
                   <div className="flex gap-2">
                     {[{ v: "girl", label: t("בת", "Girl") }, { v: "boy", label: t("בן", "Boy") }].map((option) => (
                       <button
                         key={option.label}
+                        type="button"
+                        aria-pressed={gender === option.v}
                         onClick={() => setGender(option.v)}
-                        className={cn("rounded-full border px-3 py-1.5 text-sm", gender === option.v ? "border-primary bg-primary text-primary-foreground" : "border-border")}
+                        className={cn("min-h-11 rounded-full border px-5 text-sm font-semibold", gender === option.v ? "border-primary bg-primary text-primary-foreground" : "border-border")}
                       >
                         {option.label}
                       </button>
@@ -526,20 +563,21 @@ export default function SocialStories({ mode }) {
                 </div>
                 {!interactiveTemplate && (
                   <div>
-                    <Label className="mb-1.5 block">{t("בחר סגנון", "Choose a style")}</Label>
+                    <p className="mb-1.5 text-sm font-medium">{t("סגנון האיורים", "Illustration style")}</p>
                     <div className="flex gap-2">
                       {[
-                        { value: "new", label: t("סגנון 1", "Style 1"), preview: templateId === "kindergarten" ? `/icon-bank/social-stories/kindergarten-cover-${gender}.png` : `/icon-bank/social-stories/${templateId}-cover-${gender}.webp` },
+                        { value: "new", label: t("סגנון 1", "Style 1"), preview: templateId === "kindergarten" ? `/icon-bank/social-stories/kindergarten-cover-${gender}.webp` : `/icon-bank/social-stories/${templateId}-cover-${gender}.webp` },
                         { value: "old", label: t("סגנון 2", "Style 2"), preview: `/icon-bank/social-stories/${templateId}.webp` },
                       ].map((option) => (
                         <button
                           key={option.value}
                           type="button"
+                          aria-pressed={illustrationStyle === option.value}
                           onClick={() => setIllustrationStyle(option.value)}
                           className={cn("flex items-center gap-2 rounded-2xl border p-1.5 pe-3 text-sm", illustrationStyle === option.value ? "border-primary bg-primary text-primary-foreground" : "border-border")}
                         >
                           <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-0.5">
-                            <img src={option.preview} alt="" aria-hidden="true" className="h-full w-full object-contain" />
+                            <img src={storyImageSrc(option.preview)} alt="" aria-hidden="true" loading="lazy" className="h-full w-full object-contain" />
                           </span>
                           {option.label}
                         </button>
@@ -558,6 +596,7 @@ export default function SocialStories({ mode }) {
                       <button
                         key={option.value}
                         type="button"
+                        aria-pressed={kindergartenRest === option.value}
                         onClick={() => setKindergartenRest(option.value)}
                         className={cn("rounded-full border px-4 py-2 text-sm font-semibold", kindergartenRest === option.value ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background")}
                       >
@@ -568,35 +607,15 @@ export default function SocialStories({ mode }) {
                 </div>
               )}
 
-              <Button onClick={handleGenerate} disabled={generating} className="w-full rounded-full">
-                <WandSparkles className="h-4 w-4" />{" "}{t("יצירת הסיפור האישי", "Create personal story")}
+              <Button onClick={handleGenerate} disabled={generating} className="min-h-12 w-full rounded-full text-base">
+                <WandSparkles className="h-4 w-4" aria-hidden="true" />{" "}{t("יצירת הסיפור", "Create the story")}
               </Button>
+            </div>
             </div>
           )}
 
           {story && (
             <div data-social-story-result="true" className="scroll-mt-24">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-2 print:hidden">
-                <button type="button" onClick={() => setStory(null)} className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground">
-                  <ArrowRight className="h-4 w-4" />{" "}{t("סיפור חדש", "New story")}
-                </button>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    onClick={() => { setStoryMode(storyMode === "view" ? "edit" : "view"); setViewPage(0); }}
-                    variant={storyMode === "view" ? "default" : "outline"}
-                    className="rounded-full"
-                  >
-                    {storyMode === "view" ? <><Pencil className="h-4 w-4" />{" "}{t("חזרה לעריכה", "Back to Editing")}</> : <><Eye className="h-4 w-4" />{" "}{t("הצגת הסיפור", "View story")}</>}
-                  </Button>
-                  <Button onClick={handleSaveStory} variant="outline" className="rounded-full">
-                    <Save className="h-4 w-4" />{" "}{t("שמירה לספרייה", "Save to library")}
-                  </Button>
-                  <Button onClick={() => window.print()} variant="outline" className="rounded-full">
-                    <Printer className="h-4 w-4" />{" "}{t("הדפסה", "Print")}
-                  </Button>
-                </div>
-              </div>
-
               <div className="hidden print:block">
                 {story.pages.map((page, index) => (
                   <StoryBookPage
@@ -608,191 +627,425 @@ export default function SocialStories({ mode }) {
                     facePhotos={{ child: story.childPhoto, mother: story.motherPhoto }}
                     gender={story.gender}
                     wordless={story.wordless}
+                    faceAdjust={story.faceAdjust}
                   />
                 ))}
               </div>
 
-              {storyMode === "view" ? (
-                <div className="print:hidden">
-                  <h2 className="mb-4 text-center font-display text-2xl font-black">{story.title}</h2>
-                  <div className="mx-auto max-w-[540px] overflow-hidden rounded-sm shadow-xl">
-                    <StoryBookPage
-                      page={story.pages[viewPage]}
-                      index={viewPage}
-                      total={story.pages.length}
-                      photo={story.childPhoto}
-                      facePhotos={{ child: story.childPhoto, mother: story.motherPhoto }}
-                      gender={story.gender}
-                      wordless={story.wordless}
-                    />
-                  </div>
-                  {story.interactive && viewPage === 2 && (
-                    <div className="mx-auto mt-5 max-w-4xl"><StoryChoices story={story} onBranch={chooseBranch} /></div>
-                  )}
-                  {story.interactive && viewPage === 3 && story.interactiveChoice && (
-                    <div className="mx-auto mt-5 max-w-3xl"><StoryChoices story={story} onEnding={chooseEnding} endingsOnly /></div>
-                  )}
-                  <div className="mx-auto mt-5 flex max-w-[540px] items-center justify-between gap-3">
-                    <Button type="button" variant="outline" className="rounded-full" onClick={() => setViewPage((page) => Math.max(0, page - 1))} disabled={viewPage === 0}>
-                      <ChevronRight className="h-4 w-4" />{" "}{t("העמוד הקודם", "Previous page")}
+              <div className="print:hidden">
+                <StorySteps current={3} />
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                  <button type="button" onClick={startOver} className="inline-flex min-h-11 items-center gap-1 rounded-full px-3 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground">
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />{" "}{t("סיפור חדש", "New story")}
+                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button ref={readerButtonRef} onClick={() => openReader(0)} className="min-h-11 rounded-full px-5">
+                      <Play className="h-4 w-4" aria-hidden="true" />{" "}{t("הצגת הסיפור", "Show the story")}
                     </Button>
-                    <div className="flex flex-wrap justify-center gap-1.5" aria-label={t("בחירת עמוד", "Choose page")}>
-                      {story.pages.map((page, index) => (
+                    <Button onClick={handleSaveStory} variant="outline" className="min-h-11 rounded-full px-5">
+                      <Save className="h-4 w-4" aria-hidden="true" />{" "}{t("שמירה", "Save")}
+                    </Button>
+                    <Button onClick={() => window.print()} variant="outline" className="min-h-11 rounded-full px-5">
+                      <Printer className="h-4 w-4" aria-hidden="true" />{" "}{t("הדפסה", "Print")}
+                    </Button>
+                  </div>
+                </div>
+
+                <Label htmlFor="storyTitle" className="sr-only">{t("שם הסיפור", "Story title")}</Label>
+                <Input
+                  id="storyTitle"
+                  value={story.title}
+                  onChange={(e) => setStory({ ...story, title: e.target.value })}
+                  className="mb-4 h-auto border-none bg-transparent py-1 text-center font-display text-2xl font-black shadow-none focus-visible:ring-2 md:text-3xl"
+                />
+
+                {faceIndex >= 0 && (
+                  <FacePanel
+                    story={story}
+                    facePage={story.pages[faceIndex]}
+                    faceIndex={faceIndex}
+                    originalPhoto={originalChildPhoto}
+                    generating={generating}
+                    onUpload={handlePhotoUpload}
+                    onRemove={removePhoto}
+                    onRemoveBackground={() => removeBackground("child")}
+                    onRestoreOriginal={restoreOriginalPhoto}
+                    onAdjust={(faceAdjust) => setStory((prev) => ({ ...prev, faceAdjust }))}
+                  />
+                )}
+
+                {story.templateId === "kindergarten" && (
+                  <div className="mb-5 rounded-2xl border border-sage/30 bg-sage/10 p-4">
+                    <p className="font-bold">{t("האם ישנים בגן?", "Does your child take a nap at preschool?")}</p>
+                    <p className="mb-3 text-xs text-muted-foreground">{t("המשפט נשאר זהה ורק איור המנוחה מתחלף.", "The sentence stays the same; only the rest illustration changes.")}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {[{ value: "sleep", label: t("עם שינה", "With a nap") }, { value: "no-sleep", label: t("בלי שינה", "Without a nap") }].map((option) => (
                         <button
-                          key={page.id}
+                          key={option.value}
                           type="button"
-                          onClick={() => setViewPage(index)}
-                          aria-label={t(`עמוד ${index + 1}`, `Page ${index + 1}`)}
-                          className={cn("h-2.5 w-2.5 rounded-full transition", index === viewPage ? "bg-primary" : "bg-border")}
-                        />
+                          aria-pressed={(story.kindergartenRest || "sleep") === option.value}
+                          onClick={() => updateKindergartenRest(option.value)}
+                          className={cn("min-h-11 rounded-full border px-4 text-sm font-semibold", (story.kindergartenRest || "sleep") === option.value ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background")}
+                        >
+                          {option.label}
+                        </button>
                       ))}
                     </div>
-                    <Button type="button" variant="outline" className="rounded-full" onClick={() => setViewPage((page) => Math.min(story.pages.length - 1, page + 1))} disabled={viewPage === story.pages.length - 1}>
-                      {t("העמוד הבא", "Next page")}{" "}<ChevronLeft className="h-4 w-4" />
-                    </Button>
                   </div>
-                </div>
-              ) : (
-                <div className="print:hidden">
-                  <Input
-                    value={story.title}
-                    onChange={(e) => setStory({ ...story, title: e.target.value })}
-                    className="mb-4 border-none bg-transparent text-center font-display text-2xl font-black shadow-none focus-visible:ring-0"
-                  />
+                )}
 
-                  {!INTERACTIVE_STORIES.has(story.templateId) && !(story.templateId === "kindergarten" && story.gender === "girl") && (
-                    <div className="mb-5 flex flex-wrap items-center gap-4 rounded-2xl border border-sage/30 bg-sage/10 p-4">
-                      {story.templateId === "sibling" && story.pages?.[0] ? (
-                        <StoryScene
-                          photo={null}
-                          facePhotos={{ child: story.childPhoto }}
-                          faceLayout={story.pages[0].faceLayout || null}
-                          faceBase={story.pages[0].faceBase || null}
-                          gender={story.gender}
-                          illustration={story.pages[0].illustration}
-                          integrated
-                          className="w-[76px] shrink-0"
-                        />
-                      ) : (
-                        <StoryCharacter photo={story.childPhoto} gender={story.gender} size={76} />
-                      )}
-                      <div className="flex-1">
-                        <p className="font-bold">{t("פני הילד/ה בסיפור (רשות)", "Child's face in the story (optional)")}</p>
-                        <p className="mb-2 text-xs text-muted-foreground">
-                          {t("ללא תמונה יישארו הפנים המאוירות. בסיפור הגן, תמונה שהועלתה תשתלב בעמוד „בקרוב אני מתחילה ללכת לגן חדש”.", "Without a photo, the illustrated face remains. In the preschool story, an uploaded photo is used on the first page.")}
-                        </p>
-                        <PhotoActions
-                          photo={story.childPhoto}
-                          originalPhoto={originalChildPhoto}
-                          generating={generating}
-                          onUpload={handlePhotoUpload}
-                          onRemoveBackground={() => removeBackground("child")}
-                          onRestoreOriginal={restoreOriginalPhoto}
-                          onRemove={removePhoto}
-                          uploadLabel={story.childPhoto ? t("החלפת תמונה", "Replace photo") : t("הוספת תמונת הילד/ה", "Add the child's photo")}
-                          removeLabel={t("חזרה לראש המאויר", "Use illustrated face")}
-                        />
-                      </div>
-                    </div>
-                  )}
+                <PageEditor
+                  story={story}
+                  index={editIndex}
+                  onGo={setEditIndex}
+                  onText={(text) => updatePage(currentPage.id, { text })}
+                  onMove={(dir) => movePage(editIndex, dir)}
+                  onRemove={() => removePage(editIndex)}
+                  onAdd={addPage}
+                  choices={
+                    story.interactive && editIndex === 2 ? <StoryChoices story={story} onBranch={chooseBranch} />
+                    : story.interactive && editIndex === 3 ? <StoryChoices story={story} onEnding={chooseEnding} endingsOnly />
+                    : null
+                  }
+                />
+              </div>
 
-                  {story.templateId === "kindergarten" && story.gender === "girl" && (
-                    <div className="mb-5 overflow-hidden rounded-3xl border border-sage/30 bg-sage/10">
-                      <div className="border-b border-sage/25 px-5 py-4 text-center">
-                        <p className="font-display text-lg font-black">{t("התאמת הדמויות לסיפור (רשות)", "Customize story characters (optional)")}</p>
-                        <p className="mt-1 text-xs text-muted-foreground">{t("אפשר להחליף או להסיר כל תמונה בנפרד. בלי תמונה יוצגו הפנים המאוירות.", "You can replace or remove each photo separately. Without a photo, the illustrated face will be shown.")}</p>
-                      </div>
-                      <FaceUploadPanel
-                        title={t(`פני ${childLabel(story.gender)} בסיפור (רשות)`, "Child's face in the story (optional)")}
-                        description={t("התמונה תשתלב בעמוד הראשון בלבד, לאחר חיתוך הראש, השיער והצוואר.", "The photo appears on the first page only, cropped to the head, hair, and neck.")}
-                        photo={story.childPhoto}
-                        originalPhoto={originalChildPhoto}
-                        generating={generating}
-                        onUpload={handlePhotoUpload}
-                        onRemove={removePhoto}
-                        onRemoveBackground={() => removeBackground("child")}
-                        onRestoreOriginal={restoreOriginalPhoto}
-                        uploadLabel={t(`החלפת תמונת ${childLabel(story.gender)}`, "Replace the child's photo")}
-                        emptyLabel={t(`הוספת תמונת ${childLabel(story.gender)}`, "Add the child's photo")}
-                      />
-                      <div className="border-t border-sage/30 px-5 py-4">
-                        <p className="font-bold">{t("האם ישנים בגן?", "Does your child take a nap at preschool?")}</p>
-                        <p className="mb-3 text-xs text-muted-foreground">{t("אפשר לשנות גם אחרי יצירת הסיפור. המשפט נשאר זהה ורק איור המנוחה מתחלף.", "You can change this after creating the story. The sentence stays the same; only the rest illustration changes.")}</p>
-                        <div className="flex flex-wrap gap-2">
-                          {[{ value: "sleep", label: t("עם שינה", "With a nap") }, { value: "no-sleep", label: t("בלי שינה", "Without a nap") }].map((option) => (
-                            <button
-                              key={option.value}
-                              type="button"
-                              onClick={() => updateKindergartenRest(option.value)}
-                              className={cn("rounded-full border px-4 py-2 text-sm font-semibold", (story.kindergartenRest || "sleep") === option.value ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background")}
-                            >
-                              {option.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="space-y-6">
-                    {story.pages.map((page, index) => (
-                      <div key={page.id} className="space-y-6">
-                        {story.interactive && index === 3 && <StoryChoices story={story} onBranch={chooseBranch} />}
-                        <div className="relative grid items-center gap-5 rounded-3xl border border-border/60 bg-card p-5 md:grid-cols-[minmax(260px,360px)_1fr]">
-                          <StoryScene
-                            photo={index === 0 ? story.childPhoto : null}
-                            facePhotos={page.faceLayout ? { child: story.childPhoto, mother: story.motherPhoto } : {}}
-                            faceLayout={page.faceLayout || null}
-                            faceBase={page.faceBase || null}
-                            gender={story.gender}
-                            illustration={page.illustration}
-                            integrated={!!page.integrated}
-                            className="w-full"
-                          />
-                          <div>
-                            <span className="mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-sage/30 text-sm font-bold text-sage-foreground">{index + 1}</span>
-                            <Textarea value={page.text} onChange={(e) => updatePage(page.id, { text: e.target.value })} rows={4} />
-                          </div>
-                          <div className="absolute left-2 top-2 flex flex-col items-center gap-1">
-                            <button type="button" onClick={() => movePage(index, -1)} disabled={index === 0} className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted disabled:opacity-30">
-                              <ChevronUp className="h-3.5 w-3.5" />
-                            </button>
-                            <button type="button" onClick={() => movePage(index, 1)} disabled={index === story.pages.length - 1} className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted disabled:opacity-30">
-                              <ChevronDown className="h-3.5 w-3.5" />
-                            </button>
-                            <button type="button" onClick={() => removePage(page.id)} className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </div>
-                        {story.interactive && index === 3 && <StoryChoices story={story} onEnding={chooseEnding} endingsOnly />}
-                      </div>
-                    ))}
-                    {story.interactive && story.pages.length === 3 && <StoryChoices story={story} onBranch={chooseBranch} />}
-                  </div>
-
-                  <Button onClick={addPage} variant="outline" className="mt-4 w-full rounded-full">
-                    <Plus className="h-4 w-4" />{" "}{t("הוספת עמוד", "Add page")}
-                  </Button>
-
-                  <div className="mt-6 flex flex-wrap items-center justify-center gap-3 border-t border-border/60 pt-6">
-                    <Button onClick={() => { setStoryMode("view"); setViewPage(0); window.scrollTo({ top: 0, behavior: "smooth" }); }} variant="outline" className="rounded-full px-5">
-                      <Eye className="h-4 w-4" />{" "}{t("הצגת הסיפור", "View story")}
-                    </Button>
-                    <Button onClick={handleSaveStory} variant="outline" className="rounded-full px-5">
-                      <Save className="h-4 w-4" />{" "}{t("שמירה לספרייה", "Save to library")}
-                    </Button>
-                    <Button onClick={() => window.print()} variant="outline" className="rounded-full px-5">
-                      <Printer className="h-4 w-4" />{" "}{t("הדפסה", "Print")}
-                    </Button>
-                  </div>
-                </div>
+              {storyMode === "view" && (
+                <StoryReader
+                  story={story}
+                  page={viewPage}
+                  onPage={setViewPage}
+                  onClose={closeReader}
+                  onBranch={chooseBranch}
+                  onEnding={chooseEnding}
+                />
               )}
             </div>
           )}
         </>
       )}
     </AppShell>
+  );
+}
+
+// The page where the child's face appears: the first page drawn with a place for a face, or a
+// first page that shows the illustrated character. -1 when the story has no place for a face.
+function facePageIndex(pages) {
+  const drawn = pages.findIndex((page) => page.faceLayout && page.faceBase);
+  if (drawn >= 0) return drawn;
+  return pages[0] && !pages[0].integrated ? 0 : -1;
+}
+
+function StorySteps({ current }) {
+  const { t } = useTranslator();
+  const steps = [t("בחירת סיפור", "Choose a story"), t("התאמה אישית", "Make it personal"), t("עריכה", "Edit"), t("הצגה והדפסה", "Show and print")];
+  return (
+    <ol className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label={t("שלבי יצירת הסיפור", "Story steps")}>
+      {steps.map((label, index) => {
+        const step = index + 1;
+        const now = current === 1 ? step <= 2 : step === 3;
+        const done = current === 3 && step < 3;
+        return (
+          <li
+            key={label}
+            aria-current={now ? "step" : undefined}
+            className={cn(
+              "rounded-xl border px-3 py-2 text-center text-sm font-bold",
+              now ? "border-foreground bg-foreground text-background" : done ? "border-sage/40 bg-sage/15 text-sage-foreground" : "border-border bg-card text-muted-foreground",
+            )}
+          >
+            {done ? "✓ " : `${step}. `}{label}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+// One page at a time: the page as it will look, with its text right next to it, clear buttons,
+// and a row of small pages underneath to jump between them.
+function PageEditor({ story, index, onGo, onText, onMove, onRemove, onAdd, choices }) {
+  const { t } = useTranslator();
+  const listRef = useRef(null);
+  const safeIndex = Math.min(index, story.pages.length - 1);
+  const page = story.pages[safeIndex];
+  const last = story.pages.length - 1;
+  const showText = !story.wordless || page.isCover;
+
+  useEffect(() => {
+    listRef.current?.querySelector(`[data-page-thumb="${safeIndex}"]`)?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [safeIndex]);
+
+  const pageName = (i) => (i === 0 && story.pages[0]?.isCover ? t("השער", "the cover") : t(`עמוד ${i + 1}`, `page ${i + 1}`));
+
+  return (
+    <section aria-label={t("עריכת העמודים", "Edit the pages")}>
+      <div className="grid items-start gap-5 rounded-3xl border border-border/60 bg-card p-4 sm:p-5 md:grid-cols-[minmax(0,400px)_1fr]">
+        <div className="mx-auto w-full max-w-[320px] overflow-hidden rounded-sm shadow-lg md:max-w-none">
+          <StoryBookPage
+            page={page}
+            index={safeIndex}
+            total={story.pages.length}
+            photo={story.childPhoto}
+            facePhotos={{ child: story.childPhoto, mother: story.motherPhoto }}
+            gender={story.gender}
+            wordless={story.wordless}
+            faceAdjust={story.faceAdjust}
+          />
+        </div>
+        <div className="space-y-5">
+          {showText ? (
+            <div>
+              <Label htmlFor="storyPageText" className="mb-2 block text-base font-bold">{t(`הכיתוב של ${pageName(safeIndex)}`, `Text of ${pageName(safeIndex)}`)}</Label>
+              <Textarea id="storyPageText" value={page.text} onChange={(e) => onText(e.target.value)} rows={4} className="min-h-28 rounded-2xl border-2 text-lg leading-relaxed" />
+              <p className="mt-1.5 text-xs text-muted-foreground">{t("כותבים כאן, והעמוד מתעדכן מיד.", "Type here and the page updates right away.")}</p>
+            </div>
+          ) : (
+            <p className="rounded-2xl bg-sage/10 p-4 text-sm leading-relaxed">{t("זה סיפור בלי מילים: מתבוננים יחד באיור ומספרים. בדף המודפס יש שורות לכתיבה.", "This is a wordless story: look at the picture and tell it together. The printed page has lines to write on.")}</p>
+          )}
+          <div>
+            <p className="mb-2 text-sm font-bold">{t("העמוד הזה", "This page")}</p>
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="outline" className="min-h-11 rounded-full" onClick={() => onMove(-1)} disabled={safeIndex === 0}>
+                <ChevronRight className="h-4 w-4" aria-hidden="true" />{" "}{t("להזיז קודם", "Move earlier")}
+              </Button>
+              <Button type="button" variant="outline" className="min-h-11 rounded-full" onClick={() => onMove(1)} disabled={safeIndex === last}>
+                {t("להזיז אחר כך", "Move later")}{" "}<ChevronLeft className="h-4 w-4" aria-hidden="true" />
+              </Button>
+              <Button type="button" variant="outline" className="min-h-11 rounded-full border-destructive/40 text-destructive hover:bg-destructive/10" onClick={onRemove} disabled={story.pages.length <= 1}>
+                <Trash2 className="h-4 w-4" aria-hidden="true" />{" "}{t("מחיקת העמוד", "Delete page")}
+              </Button>
+            </div>
+          </div>
+          <div>
+            <p className="mb-2 text-sm font-bold">{t("מעבר בין עמודים", "Go to another page")}</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button type="button" variant="outline" className="min-h-11 rounded-full" onClick={() => onGo(safeIndex - 1)} disabled={safeIndex === 0}>
+                <ChevronRight className="h-4 w-4" aria-hidden="true" />{" "}{t("העמוד הקודם", "Previous page")}
+              </Button>
+              <Button type="button" variant="outline" className="min-h-11 rounded-full" onClick={() => onGo(safeIndex + 1)} disabled={safeIndex === last}>
+                {t("העמוד הבא", "Next page")}{" "}<ChevronLeft className="h-4 w-4" aria-hidden="true" />
+              </Button>
+              <span className="text-sm font-semibold text-muted-foreground" aria-live="polite">{safeIndex + 1} / {story.pages.length}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {choices && <div className="mt-5">{choices}</div>}
+
+      <ol ref={listRef} className="mt-4 flex gap-2 overflow-x-auto pb-2" aria-label={t("כל העמודים", "All pages")}>
+        {story.pages.map((item, i) => (
+          <li key={item.id} className="shrink-0">
+            <button
+              type="button"
+              data-page-thumb={i}
+              onClick={() => onGo(i)}
+              aria-current={i === safeIndex ? "page" : undefined}
+              aria-label={pageName(i)}
+              className={cn("block w-[72px] rounded-xl border-2 bg-white p-1 text-center text-xs font-bold text-muted-foreground transition sm:w-20", i === safeIndex ? "border-sage-foreground ring-2 ring-sage-foreground/30" : "border-border hover:border-primary/60")}
+            >
+              <span className="flex aspect-[210/297] items-center justify-center overflow-hidden rounded-md bg-[#fffaf1]">
+                {item.illustration ? <img src={storyImageSrc(item.illustration)} alt="" loading="lazy" decoding="async" className="w-full object-contain" /> : <span className="text-2xl" aria-hidden="true">{item.emoji || "✨"}</span>}
+              </span>
+              <span className="mt-1 block">{i === 0 && item.isCover ? t("שער", "Cover") : i + 1}</span>
+            </button>
+          </li>
+        ))}
+        <li className="shrink-0">
+          <button type="button" onClick={onAdd} className="flex h-full min-h-28 w-[72px] flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-border bg-card text-xs font-bold text-sage-foreground hover:border-primary/60 sm:w-20">
+            <Plus className="h-6 w-6" aria-hidden="true" />{t("עמוד חדש", "New page")}
+          </button>
+        </li>
+      </ol>
+    </section>
+  );
+}
+
+// The child's photo, seen on the page where it appears. Drag it, or use the buttons, until it sits well.
+function FacePanel({ story, facePage, faceIndex, originalPhoto, generating, onUpload, onRemove, onRemoveBackground, onRestoreOriginal, onAdjust }) {
+  const { t } = useTranslator();
+  const previewRef = useRef(null);
+  const drag = useRef(null);
+  const adjust = { x: 0, y: 0, scale: 1, ...(story.faceAdjust || {}) };
+  const photo = story.childPhoto;
+  const set = (patch) => onAdjust({ ...adjust, ...patch });
+  const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+  function pointerDown(event) {
+    if (!photo) return;
+    const box = previewRef.current?.querySelector("[data-face-box]")?.getBoundingClientRect();
+    if (!box) return;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    drag.current = { x: event.clientX, y: event.clientY, start: adjust, width: box.width, height: box.height };
+  }
+  function pointerMove(event) {
+    const current = drag.current;
+    if (!current) return;
+    set({
+      x: clamp(current.start.x + ((event.clientX - current.x) / current.width) * 100, -60, 60),
+      y: clamp(current.start.y + ((event.clientY - current.y) / current.height) * 100, -60, 60),
+    });
+  }
+  function nudge(key, amount) {
+    set({ [key]: clamp(adjust[key] + amount, -60, 60) });
+  }
+
+  return (
+    <section className="mb-5 grid gap-4 rounded-3xl border border-sage/30 bg-sage/10 p-4 sm:grid-cols-[240px_1fr] sm:p-5" aria-label={t("תמונת הילד/ה בסיפור", "The child's photo in the story")}>
+      <div
+        ref={previewRef}
+        className={cn("mx-auto w-full max-w-[240px] touch-none select-none", photo && "cursor-grab active:cursor-grabbing")}
+        onPointerDown={pointerDown}
+        onPointerMove={pointerMove}
+        onPointerUp={() => { drag.current = null; }}
+        onPointerCancel={() => { drag.current = null; }}
+      >
+        <StoryScene
+          photo={faceIndex === 0 ? photo : null}
+          facePhotos={facePage.faceLayout ? { child: photo, mother: story.motherPhoto } : {}}
+          faceLayout={facePage.faceLayout || null}
+          faceBase={facePage.faceBase || null}
+          gender={story.gender}
+          illustration={facePage.illustration}
+          integrated={!!facePage.integrated}
+          characterSize={120}
+          faceAdjust={adjust}
+          className="w-full border border-border/60"
+        />
+      </div>
+      <div className="min-w-0">
+        <p className="font-bold">{photo ? t("ככה הפנים ייראו בסיפור", "This is how the face will look") : t("תמונת הילד/ה (רשות)", "The child's photo (optional)")}</p>
+        <p className="mb-3 mt-1 text-xs leading-relaxed text-muted-foreground">
+          {photo
+            ? t("גוררים את התמונה באצבע או בעכבר כדי להזיז, או משתמשים בכפתורים.", "Drag the photo with a finger or the mouse, or use the buttons.")
+            : t("בלי תמונה נשארות הפנים המאוירות. עדיף צילום מלפנים, מואר, על רקע פשוט.", "Without a photo the illustrated face stays. A bright photo from the front on a plain background works best.")}
+        </p>
+        {photo && (
+          <div className="mb-3 flex flex-wrap gap-2" role="group" aria-label={t("התאמת התמונה", "Adjust the photo")}>
+            <Button type="button" variant="outline" className="min-h-11 rounded-full" onClick={() => set({ scale: clamp(adjust.scale + 0.08, 0.6, 2) })}>{t("＋ הגדלה", "＋ Bigger")}</Button>
+            <Button type="button" variant="outline" className="min-h-11 rounded-full" onClick={() => set({ scale: clamp(adjust.scale - 0.08, 0.6, 2) })}>{t("－ הקטנה", "－ Smaller")}</Button>
+            <Button type="button" variant="outline" className="min-h-11 min-w-11 rounded-full px-3" onClick={() => nudge("y", -4)} aria-label={t("להזיז למעלה", "Move up")}>↑</Button>
+            <Button type="button" variant="outline" className="min-h-11 min-w-11 rounded-full px-3" onClick={() => nudge("y", 4)} aria-label={t("להזיז למטה", "Move down")}>↓</Button>
+            <Button type="button" variant="outline" className="min-h-11 min-w-11 rounded-full px-3" onClick={() => nudge("x", 4)} aria-label={t("להזיז ימינה", "Move right")}>→</Button>
+            <Button type="button" variant="outline" className="min-h-11 min-w-11 rounded-full px-3" onClick={() => nudge("x", -4)} aria-label={t("להזיז שמאלה", "Move left")}>←</Button>
+            <Button type="button" variant="ghost" className="min-h-11 rounded-full underline" onClick={() => onAdjust({ x: 0, y: 0, scale: 1 })}>{t("איפוס", "Reset")}</Button>
+          </div>
+        )}
+        <PhotoActions
+          photo={photo}
+          originalPhoto={originalPhoto}
+          generating={generating}
+          onUpload={onUpload}
+          onRemoveBackground={onRemoveBackground}
+          onRestoreOriginal={onRestoreOriginal}
+          onRemove={onRemove}
+          uploadLabel={photo ? t("החלפת תמונה", "Replace photo") : t("הוספת תמונה", "Add a photo")}
+          removeLabel={t("חזרה לפנים המאוירות", "Use illustrated face")}
+        />
+        <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground"><ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />{t("התמונה נשארת במכשיר ולא נשמרת עם הסיפור.", "The photo stays on this device and is not saved with the story.")}</p>
+      </div>
+    </section>
+  );
+}
+
+// Showing the story: the whole page fits the screen, with big arrows, swiping, and the arrow keys.
+function StoryReader({ story, page, onPage, onClose, onBranch, onEnding }) {
+  const { t } = useTranslator();
+  const closeRef = useRef(null);
+  const swipe = useRef(null);
+  const last = story.pages.length - 1;
+  const current = Math.min(page, last);
+  const go = (next) => onPage(Math.max(0, Math.min(last, next)));
+  const branch = story.interactive && current === 2 && story.branchOptions?.length;
+  const ending = story.interactive && current === 3 && story.interactiveChoice && story.endingOptions?.length;
+  const options = branch ? story.branchOptions : ending ? story.endingOptions : null;
+
+  useEffect(() => {
+    closeRef.current?.focus();
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = overflow; };
+  }, []);
+  useEffect(() => {
+    function key(event) {
+      if (event.key === "Escape") onClose();
+      // Hebrew is read from right to left: the left arrow goes forward.
+      else if (event.key === "ArrowLeft") go(current + 1);
+      else if (event.key === "ArrowRight") go(current - 1);
+    }
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  });
+
+  return (
+    <div className="fixed inset-0 z-[1000] flex flex-col bg-[#2d2622] text-white print:hidden" role="dialog" aria-modal="true" aria-label={story.title}>
+      <div className="flex items-center justify-between gap-3 px-3 py-2 sm:px-5">
+        <button ref={closeRef} type="button" onClick={onClose} className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-white/15 px-4 text-sm font-bold hover:bg-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">
+          <X className="h-4 w-4" aria-hidden="true" />{t("סגירה", "Close")}
+        </button>
+        <p className="min-w-0 truncate text-center font-display font-bold">{story.title}</p>
+        <span className="rounded-full bg-white/15 px-3 py-1.5 text-sm font-bold" aria-live="polite">{current + 1} / {story.pages.length}</span>
+      </div>
+      <div
+        className="flex min-h-0 flex-1 touch-pan-y select-none items-center justify-center px-3"
+        onDragStart={(event) => event.preventDefault()}
+        onPointerDown={(event) => { swipe.current = event.clientX; }}
+        onPointerUp={(event) => {
+          if (swipe.current == null) return;
+          const dx = event.clientX - swipe.current;
+          swipe.current = null;
+          if (Math.abs(dx) > 50) go(current + (dx > 0 ? 1 : -1));
+        }}
+      >
+        <div
+          className="overflow-hidden rounded-sm shadow-2xl"
+          style={{ width: `min(100%, calc((100dvh - ${options ? 300 : 170}px) * 210 / 297))` }}
+        >
+          <StoryBookPage
+            page={story.pages[current]}
+            index={current}
+            total={story.pages.length}
+            photo={story.childPhoto}
+            facePhotos={{ child: story.childPhoto, mother: story.motherPhoto }}
+            gender={story.gender}
+            wordless={story.wordless}
+            faceAdjust={story.faceAdjust}
+          />
+        </div>
+      </div>
+      {options && (
+        <div className="px-3 pt-2">
+          <p className="mb-2 text-center text-sm font-bold">{branch ? story.branchPrompt : story.endingPrompt}</p>
+          <div className="mx-auto flex max-w-2xl justify-center gap-2">
+            {options.map((option) => {
+              const chosen = (branch ? story.interactiveChoice : story.endingChoice) === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={chosen}
+                  onClick={() => (branch ? onBranch(option) : onEnding(option))}
+                  className={cn("flex w-28 flex-col items-center gap-1 rounded-2xl border-2 bg-white p-1.5 text-xs font-semibold text-foreground", chosen ? "border-primary ring-2 ring-primary/40" : "border-transparent")}
+                >
+                  <img src={storyImageSrc(option.illustration)} alt="" className="h-16 w-16 object-contain" />
+                  <span className="line-clamp-2">{option.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      <div className="flex items-center justify-between gap-3 px-4 py-3">
+        <button type="button" onClick={() => go(current - 1)} disabled={current === 0} aria-label={t("העמוד הקודם", "Previous page")} className="grid h-16 w-16 place-items-center rounded-full bg-[#bfe6d1] text-[#315c47] disabled:opacity-30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">
+          <ChevronRight className="h-8 w-8" aria-hidden="true" />
+        </button>
+        <p className="text-center text-xs text-white/70">{t("אפשר גם להחליק באצבע או להשתמש בחיצים במקלדת", "You can also swipe or use the arrow keys")}</p>
+        <button type="button" onClick={() => go(current + 1)} disabled={current === last} aria-label={t("העמוד הבא", "Next page")} className="grid h-16 w-16 place-items-center rounded-full bg-[#bfe6d1] text-[#315c47] disabled:opacity-30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">
+          <ChevronLeft className="h-8 w-8" aria-hidden="true" />
+        </button>
+      </div>
+    </div>
   );
 }
 
