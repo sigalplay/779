@@ -108,4 +108,4 @@ export const ACTIVITY_SKILLS = {
 };
 
 // Activities taken out of the catalog. Their content and illustrations stay in the code for later use.
-export const REMOVED_ACTIVITY_IDS = ["seed-28", "seed-31", "seed-12", "seed-16", "seed-43", "seed-68", "seed-76", "seed-34"];
+export const REMOVED_ACTIVITY_IDS = ["seed-28", "seed-31", "seed-12", "seed-16", "seed-43", "seed-68", "seed-76"];
