@@ -101,9 +101,18 @@ export function Toolbox({ language, tools, storageKey, placement = "middle", hid
       : { top, right: window.innerWidth - position.x + 4, maxWidth: room });
   }, [view, position, opensRight, room]);
 
-  // When not every tool fits, the row is cut off with a fade and can be scrolled. The first time,
-  // it nudges sideways to show that.
+  // When not every tool fits, the row can be scrolled: an arrow at its end shows that there are more
+  // tools and scrolls to them, and the first time the row nudges sideways.
   const [overflowing, setOverflowing] = useState(false);
+  const [atEnd, setAtEnd] = useState(false);
+  useEffect(() => {
+    const strip = panelRef.current;
+    if (!view || !strip) return undefined;
+    const update = () => setAtEnd(Math.abs(strip.scrollLeft) + strip.clientWidth >= strip.scrollWidth - 4);
+    update();
+    strip.addEventListener("scroll", update, { passive: true });
+    return () => strip.removeEventListener("scroll", update);
+  }, [view, panelStyle]);
   useEffect(() => {
     const strip = panelRef.current;
     if (!view || !strip || !panelStyle) return undefined;
@@ -188,6 +197,17 @@ export function Toolbox({ language, tools, storageKey, placement = "middle", hid
               onClick={() => (tool.back ? setView("bank") : subTool ? (setView(null), tool.onSelect()) : select(tool))}
             />
           ))}
+          {!subTool && overflowing && !atEnd && (
+            <button
+              type="button"
+              className="toolbox-more"
+              aria-label={t("עוד כלים", "More tools")}
+              onClick={() => panelRef.current?.scrollBy({ left: opensRight ? 200 : -200, behavior: "smooth" })}
+            >
+              <span className="toolbox-more-circle" aria-hidden="true">{opensRight ? "›" : "‹"}</span>
+              <small>{t("עוד", "More")}</small>
+            </button>
+          )}
         </div>
       )}
     </>
