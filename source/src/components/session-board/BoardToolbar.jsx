@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { addPatient, hasCloudSession, listPatients } from "@/lib/session-board-cloud";
 import { BOARD_GAMES, EMOTIONS, VISUAL_SIGNS, localizedLabel } from "@/lib/session-board-tools";
 import { MOTOR_TRAIL_ITEMS } from "@/lib/motor-trail-items";
+import { getChosenGroup, groupIcon, groupName, loadPatientGroups, readPatientGroups, savePatientGroups, setChosenGroup } from "@/lib/patient-groups";
 
 // The tool row above the session board. Markup and class names follow the live site so the
 // existing board styles (therapist-session-board / signs / games CSS) apply unchanged.
@@ -55,6 +56,12 @@ export function BoardToolbar({
     return () => document.removeEventListener("click", close);
   }, [menuOpen]);
 
+  // The setting of the open client's board, shown next to the name.
+  const patientGroup = (() => {
+    if (!patientBoardId) return null;
+    const groups = readPatientGroups();
+    return groups.list.find((group) => group.id === groups.of[patientBoardId]) || null;
+  })();
   const statusText = cloudStatus === "saving" ? t("שומרת…", "Saving…") : cloudStatus === "error" ? t("השמירה נכשלה", "Save failed") : t("נשמר בענן", "Saved to cloud");
 
   function togglePen() {
@@ -83,7 +90,7 @@ export function BoardToolbar({
         <button className={patientBoardId ? "meeting-save-state" : "meeting-save-state guest"} type="button" data-treatment-planning="" aria-expanded={menuOpen} onClick={() => setMenuOpen((value) => !value)}>
           {patientBoardId && patientName ? (
             <>
-              <strong>{t("לוח המפגש של", "Session board for")} {patientName}</strong>
+              <strong>{t("לוח המפגש של", "Session board for")} {patientName}{patientGroup ? ` · ${groupIcon(patientGroup)} ${groupName(patientGroup, readPatientGroups().list, language)}` : ""}</strong>
               <small data-cloud-save-state="">{statusText}</small>
             </>
           ) : (
@@ -271,13 +278,15 @@ function PatientMenu({ language, returnUrl, onClose, onSelectPatient, onUseGuest
   const [name, setName] = useState("");
   const [adding, setAdding] = useState(false);
   const [message, setMessage] = useState("");
+  const [groups, setGroups] = useState(() => (signedIn ? readPatientGroups() : { list: [], of: {} }));
+  const [chosen, setChosen] = useState(getChosenGroup);
   const signInHref = `/auth?mode=login&intent=patients&redirect=${encodeURIComponent(returnUrl)}`;
 
   useEffect(() => {
     if (!signedIn) return undefined;
     let cancelled = false;
-    listPatients()
-      .then((rows) => { if (!cancelled) { setPatients(Array.isArray(rows) ? rows : []); setState("ready"); } })
+    Promise.all([listPatients(), loadPatientGroups()])
+      .then(([rows, loaded]) => { if (!cancelled) { setPatients(Array.isArray(rows) ? rows : []); setGroups(loaded); setState("ready"); } })
       .catch(() => { if (!cancelled) setState("error"); });
     return () => { cancelled = true; };
   }, [signedIn]);
@@ -288,7 +297,9 @@ function PatientMenu({ language, returnUrl, onClose, onSelectPatient, onUseGuest
     if (!displayName) return;
     setAdding(true);
     try {
-      onSelectPatient(await addPatient(displayName));
+      const id = await addPatient(displayName);
+      if (activeGroup) await savePatientGroups({ ...groups, of: { ...groups.of, [id]: activeGroup.id } }).catch(() => {});
+      onSelectPatient(id);
     } catch {
       setMessage(t("לא הצלחנו להוסיף את המטופל כרגע.", "We could not add the client right now."));
       setAdding(false);
@@ -323,16 +334,44 @@ function PatientMenu({ language, returnUrl, onClose, onSelectPatient, onUseGuest
       </>
     );
   }
+  // The same settings as on "My clients": one setting at a time, remembered on this device.
+  const activeGroup = groups.list.find((group) => group.id === chosen) || null;
+  const nameOf = (group) => groupName(group, groups.list, language);
+  const groupOf = (patient) => groups.list.find((group) => group.id === groups.of[patient.id]) || null;
+  const shown = activeGroup ? patients.filter((patient) => groups.of[patient.id] === activeGroup.id) : patients;
+  const choose = (id) => { setChosen(id); setChosenGroup(id); };
   return (
     <>
       <strong>{t("בחירת מטופל", "Choose a client")}</strong>
+      {groups.list.length > 0 && (
+        <div className="patient-menu-groups" role="group" aria-label={t("מסגרות", "Settings")}>
+          <button type="button" aria-pressed={!activeGroup} onClick={() => choose("all")}>{t("הכל", "All")} <small>{patients.length}</small></button>
+          {groups.list.map((group) => (
+            <button key={group.id} type="button" aria-pressed={activeGroup?.id === group.id} onClick={() => choose(group.id)}>
+              <span className="patient-group-dot" style={{ background: group.color }} aria-hidden="true" />
+              <span aria-hidden="true">{groupIcon(group)}</span> {nameOf(group)} <small>{patients.filter((patient) => groups.of[patient.id] === group.id).length}</small>
+            </button>
+          ))}
+        </div>
+      )}
       <div className="patient-menu-list">
-        {patients.length
-          ? patients.map((patient) => <button key={patient.id} type="button" data-select-patient={patient.id} onClick={() => onSelectPatient(patient.id)}>{patient.display_name}</button>)
-          : <p>{t("עדיין לא הוספת מטופלים.", "You have not added any clients yet.")}</p>}
+        {shown.length
+          ? shown.map((patient) => {
+            const group = groupOf(patient);
+            return (
+              <button key={patient.id} type="button" data-select-patient={patient.id} onClick={() => onSelectPatient(patient.id)} style={group ? { borderInlineStartColor: group.color } : undefined} className={group ? "has-group" : undefined}>
+                <span>{patient.display_name}</span>
+                {group && !activeGroup && <small>{groupIcon(group)} {nameOf(group)}</small>}
+              </button>
+            );
+          })
+          : <p>{patients.length ? t("אין מטופלים במסגרת הזאת.", "No clients in this setting.") : t("עדיין לא הוספת מטופלים.", "You have not added any clients yet.")}</p>}
       </div>
+      {groups.list.length === 0 && patients.length > 0 && (
+        <p className="patient-menu-hint">{t("אפשר לסדר את המטופלים לפי מסגרות (קליניקה, גן, בית ספר, מכון) ב\"ניהול המטופלים שלי\".", "You can sort clients into settings (clinic, kindergarten, school, center) under \"Manage my clients\".")}</p>
+      )}
       <form data-add-patient-form="" onSubmit={submit}>
-        <label htmlFor="quickPatientName">{t("הוספת מטופל", "Add a client")}</label>
+        <label htmlFor="quickPatientName">{activeGroup ? t(`הוספת מטופל ל${nameOf(activeGroup)}`, `Add a client to ${nameOf(activeGroup)}`) : t("הוספת מטופל", "Add a client")}</label>
         <div>
           <input id="quickPatientName" name="patientName" maxLength={80} required value={name} onChange={(e) => setName(e.target.value)} placeholder={t("שם פרטי, ראשי תיבות או כינוי", "First name, initials, or nickname")} />
           <button type="submit" disabled={adding}>{t("הוספה", "Add")}</button>
