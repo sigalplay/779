@@ -984,7 +984,6 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl font-black">{heading}</h1>
-          <p className="mt-1 text-muted-foreground">{t("בחרי פעילות כדי להתחיל בה. אפשר לחזור ללוח בכל רגע.", "Choose an activity to begin. You can return to the board at any time.")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {sessionId && <Button onClick={onFinishSession} className="rounded-full bg-foreground text-background"><Save className="h-4 w-4" /> {t("סיום טיפול", "Finish session")}</Button>}
