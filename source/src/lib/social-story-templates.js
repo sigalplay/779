@@ -1,5 +1,16 @@
 const n = (name) => name?.trim() || "אני";
 const ILLUSTRATIONS = "/icon-bank/social-stories";
+
+// The story pictures were PNG files of 2–3 MB; each now has a light WebP twin. Stories saved
+// before the change (and content from the site editor) still name the .png file, so every
+// picture goes through here. The boy's second toilet page has no drawing yet, so it borrows
+// the style-2 picture of the same page.
+const MISSING = { [`${ILLUSTRATIONS}/toilet-2-boy.webp`]: `${ILLUSTRATIONS}/toilet-2.webp` };
+export function storyImageSrc(path) {
+  if (typeof path !== "string" || !path.startsWith(ILLUSTRATIONS)) return path;
+  const webp = path.replace(/\.png$/i, ".webp");
+  return MISSING[webp] || webp;
+}
 const forms = (gender) => gender === "boy"
   ? { big: "אח גדול", can: "יכול", start: "מתחיל", go: "הולך", wear: "לובש", child: "ילד" }
   : { big: "אחות גדולה", can: "יכולה", start: "מתחילה", go: "הולכת", wear: "לובשת", child: "ילדה" };
@@ -17,7 +28,7 @@ function genderize(text, gender) {
 export const STORY_TEMPLATES = [
   { id: "toilet", title: "נפרדים מהחיתול", emoji: "🚽", illustration: `${ILLUSTRATIONS}/toilet-cover-girl.webp`, description: "סיפור רגוע על מעבר לתחתונים, בקשת עזרה ופספוסים.", titleEn: "Saying Goodbye to Diapers", descriptionEn: "A calm story about moving to underwear, asking for help, and accidents." },
   { id: "sibling", title: "נולד לי אח או אחות", emoji: "👶", illustration: `${ILLUSTRATIONS}/sibling-cover-girl.webp`, description: "מתכוננים לתינוק חדש ולשינויים בבית.", titleEn: "A New Baby in My Family", descriptionEn: "Preparing for a new baby and changes at home." },
-  { id: "kindergarten", title: "אני מתחיל/ה גן חדש", emoji: "🧸", illustration: `${ILLUSTRATIONS}/kindergarten-cover-girl.png`, description: "היכרות עם הגן, הפרידה והחזרה הביתה.", titleEn: "I Am Starting a New Preschool", descriptionEn: "Getting to know preschool, saying goodbye, and returning home." },
+  { id: "kindergarten", title: "אני מתחיל/ה גן חדש", emoji: "🧸", illustration: `${ILLUSTRATIONS}/kindergarten-cover-girl.webp`, description: "היכרות עם הגן, הפרידה והחזרה הביתה.", titleEn: "I Am Starting a New Preschool", descriptionEn: "Getting to know preschool, saying goodbye, and returning home." },
   { id: "school", title: "אני מתחיל/ה בית ספר חדש", emoji: "🎒", illustration: `${ILLUSTRATIONS}/school-cover-girl.webp`, description: "מתכוננים לכיתה, לצוות ולשגרה החדשה.", titleEn: "I Am Starting a New School", descriptionEn: "Preparing for the classroom, staff, and new routine." },
   { id: "losing-game", title: "לפעמים מפסידים במשחק", emoji: "🎲", illustration: `${ILLUSTRATIONS}/losing-game/girl/cover.webp`, description: "מבינים מה מרגישים כשמפסידים ואילו אפשרויות יכולות לעזור.", personalized: false, style1Only: true, titleEn: "Sometimes you lose the game", descriptionEn: "Understand how losing feels and which options can help." },
   { id: "not-getting-want", title: "כשלא מקבלים את מה שרוצים", emoji: "💭", illustration: `${ILLUSTRATIONS}/not-getting-want/girl/cover.webp`, description: "נותנים מקום לאכזבה ומכירים דרכים להתמודד איתה.", personalized: false, style1Only: true, titleEn: "When you don’t get what you want", descriptionEn: "Make room for disappointment and learn ways to cope with it." },
@@ -132,7 +143,7 @@ export function createTemplateStory(templateId, childName, gender = "girl", kind
     if (general) {
       // בסיפור "כשלא מקבלים" לבנות, שני העמודים הראשונים מאוירים בסצנת טלוויזיה.
       const illustration = templateId === "not-getting-want" && gender === "girl" && index < 2
-        ? `${ILLUSTRATIONS}/${templateId}/${gender}/page-${index + 1}-tv.png`
+        ? `${ILLUSTRATIONS}/${templateId}/${gender}/page-${index + 1}-tv.webp`
         : `${ILLUSTRATIONS}/${templateId}/${gender}/page-${index + 1}.webp`;
       return [text, emoji, illustration, [], null, null];
     }
@@ -142,29 +153,29 @@ export function createTemplateStory(templateId, childName, gender = "girl", kind
     const kindergartenArrival = templateId === "kindergarten" && index === 0;
     const kindergartenCustomIllustrations = templateId === "kindergarten"
       ? gender === "girl" ? {
-          1: `${ILLUSTRATIONS}/kindergarten/kindergarten-teachers-two-children.png`,
-          2: `${ILLUSTRATIONS}/kindergarten/kindergarten-arrival-with-parent.png`,
-          3: `${ILLUSTRATIONS}/kindergarten/kindergarten-missing-home.png`,
+          1: `${ILLUSTRATIONS}/kindergarten/kindergarten-teachers-two-children.webp`,
+          2: `${ILLUSTRATIONS}/kindergarten/kindergarten-arrival-with-parent.webp`,
+          3: `${ILLUSTRATIONS}/kindergarten/kindergarten-missing-home.webp`,
         } : {
-          1: `${ILLUSTRATIONS}/kindergarten/kindergarten-teachers-two-children.png`,
-          2: `${ILLUSTRATIONS}/kindergarten/kindergarten-arrival-boy.png`,
-          3: `${ILLUSTRATIONS}/kindergarten/boy-missing-home.png`,
-          5: `${ILLUSTRATIONS}/kindergarten/boy-visual-schedule.png`,
-          6: `${ILLUSTRATIONS}/kindergarten/boy-going-home.png`,
+          1: `${ILLUSTRATIONS}/kindergarten/kindergarten-teachers-two-children.webp`,
+          2: `${ILLUSTRATIONS}/kindergarten/kindergarten-arrival-boy.webp`,
+          3: `${ILLUSTRATIONS}/kindergarten/boy-missing-home.webp`,
+          5: `${ILLUSTRATIONS}/kindergarten/boy-visual-schedule.webp`,
+          6: `${ILLUSTRATIONS}/kindergarten/boy-going-home.webp`,
         }
       : {};
     // עמוד הפתיחה של בית הספר: הילד מול בית הספר, עם החלפת פנים לתמונת הילד.
     const schoolFront = templateId === "school" && index === 0;
-    const schoolFrontImage = gender === "girl" ? `${ILLUSTRATIONS}/school-front-girl.png` : `${ILLUSTRATIONS}/school-front-boy.png`;
-    const schoolFrontBase = gender === "girl" ? schoolFrontImage : `${ILLUSTRATIONS}/school-front-boy-headless.png`;
+    const schoolFrontImage = gender === "girl" ? `${ILLUSTRATIONS}/school-front-girl.webp` : `${ILLUSTRATIONS}/school-front-boy.webp`;
+    const schoolFrontBase = gender === "girl" ? schoolFrontImage : `${ILLUSTRATIONS}/school-front-boy-headless.webp`;
     const newIllustration = schoolFront
       ? schoolFrontImage
       : kindergartenArrival
-      ? `${ILLUSTRATIONS}/kindergarten/kindergarten-arrival-${gender}.png`
+      ? `${ILLUSTRATIONS}/kindergarten/kindergarten-arrival-${gender}.webp`
       : kindergartenCustomIllustrations[index]
       ? kindergartenCustomIllustrations[index]
       : kindergartenRoutine
-      ? `${ILLUSTRATIONS}/kindergarten/${gender === "boy" ? "boy-" : ""}daily-routine-${kindergartenRest === "no-sleep" ? "no-sleep" : "with-sleep"}.png`
+      ? `${ILLUSTRATIONS}/kindergarten/${gender === "boy" ? "boy-" : ""}daily-routine-${kindergartenRest === "no-sleep" ? "no-sleep" : "with-sleep"}.webp`
       : `${ILLUSTRATIONS}/${templateId}-${index + 1 + (templateId === "sibling" ? 1 : 0)}-${gender}.webp`;
     const illustration = illustrationStyle === "old" ? oldIllustration : newIllustration;
     return [
@@ -186,13 +197,13 @@ export function createTemplateStory(templateId, childName, gender = "girl", kind
       : illustrationStyle === "old"
       ? `${ILLUSTRATIONS}/${templateId}.webp`
       : templateId === "kindergarten"
-      ? `${ILLUSTRATIONS}/kindergarten-cover-${gender}.png`
+      ? `${ILLUSTRATIONS}/kindergarten-cover-${gender}.webp`
       : templateId === "toilet"
       ? `${ILLUSTRATIONS}/toilet-cover-${gender}.webp`
       : templateId === "sibling"
       ? `${ILLUSTRATIONS}/sibling-cover-${gender}.webp`
       : templateId === "school"
-      ? (gender === "girl" ? `${ILLUSTRATIONS}/school-front-girl.png` : `${ILLUSTRATIONS}/school-front-boy.png`)
+      ? (gender === "girl" ? `${ILLUSTRATIONS}/school-front-girl.webp` : `${ILLUSTRATIONS}/school-front-boy.webp`)
       : `${ILLUSTRATIONS}/${templateId}.webp`,
     coverIntegrated: general || illustrationStyle === "old" || ["kindergarten", "toilet", "school", "sibling"].includes(templateId),
     coverFaceReplacement: isNew && (templateId === "kindergarten" || (templateId === "toilet" && gender === "girl") || templateId === "school" || templateId === "sibling") ? ["child"] : [],
@@ -203,9 +214,9 @@ export function createTemplateStory(templateId, childName, gender = "girl", kind
       : templateId === "sibling" ? `sibling-cover-${gender}`
       : null,
     coverFaceBase: !isNew ? null
-      : templateId === "kindergarten" ? `${ILLUSTRATIONS}/kindergarten/kindergarten-cover-${gender}-headless.png`
+      : templateId === "kindergarten" ? `${ILLUSTRATIONS}/kindergarten/kindergarten-cover-${gender}-headless.webp`
       : templateId === "toilet" && gender === "girl" ? `${ILLUSTRATIONS}/toilet-cover-girl.webp`
-      : templateId === "school" ? (gender === "girl" ? `${ILLUSTRATIONS}/school-front-girl.png` : `${ILLUSTRATIONS}/school-front-boy-headless.png`)
+      : templateId === "school" ? (gender === "girl" ? `${ILLUSTRATIONS}/school-front-girl.webp` : `${ILLUSTRATIONS}/school-front-boy-headless.webp`)
       : templateId === "sibling" ? `${ILLUSTRATIONS}/sibling-cover-${gender}.webp`
       : null,
     pages,
