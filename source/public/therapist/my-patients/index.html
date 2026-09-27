@@ -56,8 +56,21 @@
       <section id="signedIn" hidden>
         <form id="patientForm" class="patient-form"><label for="patientName">שם, ראשי תיבות או כינוי</label><div><input id="patientName" maxlength="80" required placeholder="לדוגמה: נ׳ או כינוי לבחירתך"><button type="submit">הוספת מטופל</button></div><small>מומלץ לא להזין שם מלא או מידע רפואי.</small></form>
         <div class="patients-heading"><h2>הלוחות שלי</h2><a href="/therapist/build?view=session&guest=1">לוח ללא התחברות</a></div>
+        <div id="groupChips" class="group-chips" role="toolbar" aria-label="מסגרות"></div>
+        <input id="patientSearch" class="patient-search" type="search" placeholder="חיפוש לפי שם..." aria-label="חיפוש מטופל לפי שם" hidden>
         <div id="patientsList" class="patients-list" aria-live="polite"></div>
       </section>
+      <dialog id="groupDialog" class="group-dialog" aria-labelledby="groupDialogTitle">
+        <form method="dialog" id="groupForm">
+          <h2 id="groupDialogTitle">מסגרת חדשה</h2>
+          <p>אין צורך בשם של גן או בית ספר.</p>
+          <fieldset><legend>סוג</legend><div class="group-types" id="groupTypes"></div></fieldset>
+          <fieldset><legend>צבע</legend><div class="group-colors" id="groupColors"></div></fieldset>
+          <div class="group-preview" id="groupPreview"></div>
+          <p class="group-lock">🔒 נשמר רק הסוג והצבע. בלי שם ובלי כתובת, כך שמי שיראה את הרשימה לא יידע איפה הילדים.</p>
+          <div class="group-dialog-actions"><button type="submit" value="create" class="primary">יצירת המסגרת</button><button type="submit" value="cancel">ביטול</button></div>
+        </form>
+      </dialog>
       <p id="patientMessage" class="patient-message" role="status"></p>
     </main>
 <script defer src="/therapist/my-patients/patients.js"></script>

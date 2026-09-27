@@ -15,3 +15,38 @@
   .therapist-mobile-workflow-nav :is(a,button)>strong{overflow:hidden;width:100%;font:700 10px/1.2 Rubik,Arial,sans-serif;text-overflow:ellipsis;white-space:nowrap}
   .therapist-mobile-workflow-nav a[aria-current=page]{color:#438466}
 }
+
+/* patients-groups-v1.css */
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.group-dot{display:inline-block;width:13px;height:13px;border-radius:50%;flex:none}
+.group-chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.group-chips button{display:inline-flex;align-items:center;gap:7px;min-height:42px;padding:8px 14px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font:700 15px Rubik,Arial,sans-serif;cursor:pointer}
+.group-chips button small{color:var(--muted);font-weight:600}
+.group-chips button[aria-pressed=true]{border-color:var(--ink);background:var(--ink);color:#fff}
+.group-chips button[aria-pressed=true] small{color:#fff;opacity:.75}
+.group-chips .group-add{border-style:dashed;color:var(--sage-dark)}
+.group-chips .group-remove{margin-inline-start:auto;border-color:transparent;background:transparent;color:#9b3e3e;font-size:14px;text-decoration:underline}
+.group-chips button:focus-visible,.group-dialog button:focus-visible,.patient-group select:focus-visible{outline:3px solid #9dceb5;outline-offset:2px}
+.patient-search[hidden]{display:none}
+.patient-search{display:block;width:100%;margin:0 0 14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;font:16px Rubik,Arial,sans-serif}
+.patient-card{border-inline-start:6px solid var(--group-color,var(--line))}
+.patient-group{display:inline-flex;align-items:center;gap:6px;margin-top:6px}
+.patient-group select{max-width:100%;padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--muted);font:600 14px Rubik,Arial,sans-serif;cursor:pointer}
+.group-dialog{width:min(440px,calc(100vw - 32px));padding:22px;border:0;border-radius:20px;background:var(--cream);color:var(--ink);box-shadow:0 12px 40px rgba(0,0,0,.2)}
+.group-dialog::backdrop{background:rgba(64,54,47,.35)}
+.group-dialog h2{margin:0 0 4px}.group-dialog>form>p{margin:0 0 6px;color:var(--muted)}
+.group-dialog fieldset{margin:14px 0 0;padding:0;border:0}.group-dialog legend{margin-bottom:8px;padding:0;font-weight:800}
+.group-types{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.group-types button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);font:700 14px Rubik,Arial,sans-serif;cursor:pointer}
+.group-types button span{font-size:26px}
+.group-types button[aria-pressed=true]{border:2px solid var(--sage-dark);background:#eaf6ef}
+.group-colors{display:flex;flex-wrap:wrap;gap:10px}
+.group-colors button{width:36px;height:36px;border:0;border-radius:50%;cursor:pointer}
+.group-colors button[aria-pressed=true]{outline:3px solid var(--ink);outline-offset:3px}
+.group-preview{display:flex;align-items:center;gap:8px;margin-top:16px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:#fff;font-weight:800;font-size:18px}
+.group-preview .group-dot{width:18px;height:18px}
+.group-lock{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:#eaf6ef;color:var(--sage-dark);font-size:14px;line-height:1.5}
+.group-dialog-actions{display:flex;gap:8px;margin-top:16px}
+.group-dialog-actions button{flex:1;min-height:44px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);font:800 15px Rubik,Arial,sans-serif;cursor:pointer}
+.group-dialog-actions .primary{border-color:#9dceb5;background:var(--sage);color:var(--sage-dark)}
+@media(max-width:680px){.patient-card .patient-card-actions a{width:auto;min-width:0}.group-chips .group-remove{margin-inline-start:0}}
