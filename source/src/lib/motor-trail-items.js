@@ -21,14 +21,21 @@ export const MOTOR_TRAIL_ITEMS = [
   { id: "hoops", label: "חישוקים", labelEn: "Hoops", image: `${BASE}/hoops.webp`, action: "קופצים בשתי רגליים מחישוק לחישוק", actionEn: "Jump with both feet from one hoop to the next.", demo: demoFrames("hoops") },
 ];
 
-// A small curated picker of "creative station" images already used elsewhere on the
-// site, for therapists who want to end the motor trail at an art/creative activity.
+// Fine-motor stations (craft materials and table toys), to end the course at the table.
+// Pictures already used elsewhere on the site.
 export const CREATIVE_ACCESSORIES = [
   { id: "markers", label: "טושים", labelEn: "Markers", image: "/icon-bank/crafts-new/seed-100-independent/material-colored-markers.webp" },
   { id: "stickers", label: "מדבקות", labelEn: "Stickers", image: "/icon-bank/crafts-new/seed-33-independent/material-stickers.webp" },
   { id: "glue", label: "דבק", labelEn: "Glue", image: "/icon-bank/crafts-new/shared-independent/glue.webp" },
   { id: "scissors", label: "מספריים", labelEn: "Scissors", image: "/icon-bank/crafts-new/shared-independent/scissors.webp" },
   { id: "colored-paper", label: "דפי צבע", labelEn: "Colored Paper", image: "/icon-bank/crafts-new/seed-33-independent/material-poster-paper.webp" },
+  { id: "crayons", label: "צבעי שעווה", labelEn: "Crayons", image: "/icon-bank/embedded-v359/seed-71/material-crayons.webp" },
+  { id: "play-dough", label: "בצק", labelEn: "Play dough", image: "/icon-bank/crafts-new/seed-63-independent/material-plasticine.webp" },
+  { id: "therapy-putty", label: "פלסטלינה טיפולית", labelEn: "Therapy putty", image: "/icon-bank/toys/therapy-putty.webp" },
+  { id: "beads", label: "חרוזים ושרוך", labelEn: "Beads and lace", image: "/icon-bank/toys/beads.webp" },
+  { id: "puzzle", label: "פאזל", labelEn: "Puzzle", image: "/icon-bank/toys/puzzle.webp" },
+  { id: "lego", label: "לגו", labelEn: "Lego", image: "/icon-bank/toys/lego.webp" },
+  { id: "tweezers", label: "פינצטה", labelEn: "Tweezers", image: "/icon-bank/fine-motor-new/seed-37-tweezers-pompoms/material-tweezers.webp" },
 ];
 
 // Everyday household items for building a motor trail without special equipment -
