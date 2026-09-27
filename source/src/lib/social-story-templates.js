@@ -3,13 +3,10 @@ const ILLUSTRATIONS = "/icon-bank/social-stories";
 
 // The story pictures were PNG files of 2–3 MB; each now has a light WebP twin. Stories saved
 // before the change (and content from the site editor) still name the .png file, so every
-// picture goes through here. The boy's second toilet page has no drawing yet, so it borrows
-// the style-2 picture of the same page.
-const MISSING = { [`${ILLUSTRATIONS}/toilet-2-boy.webp`]: `${ILLUSTRATIONS}/toilet-2.webp` };
+// picture goes through here.
 export function storyImageSrc(path) {
   if (typeof path !== "string" || !path.startsWith(ILLUSTRATIONS)) return path;
-  const webp = path.replace(/\.png$/i, ".webp");
-  return MISSING[webp] || webp;
+  return path.replace(/\.png$/i, ".webp");
 }
 const forms = (gender) => gender === "boy"
   ? { big: "אח גדול", can: "יכול", start: "מתחיל", go: "הולך", wear: "לובש", child: "ילד" }
