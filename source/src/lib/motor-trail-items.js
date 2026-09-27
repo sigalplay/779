@@ -2,7 +2,8 @@ const BASE = "/icon-bank/motor-trail";
 const MANUAL = "/icon-bank/manual";
 const demoFrames = (id) => [1, 2, 3].map((frame) => `${BASE}/demos/${id}/frame-${frame}.webp`);
 
-export const MOTOR_TRAIL_HERO = `${BASE}/hero.webp`;
+// The picture of a whole course on the session board.
+export const MOTOR_TRAIL_HERO = `${BASE}/course.webp`;
 
 export const MOTOR_TRAIL_ITEMS = [
   { id: "swing", label: "נדנדה", labelEn: "Swing", image: `${BASE}/swing.webp`, action: "מתיישבים במרכז הנדנדה ונשארים יציבים", actionEn: "Sit in the center of the swing and keep your body steady.", demo: demoFrames("swing") },
