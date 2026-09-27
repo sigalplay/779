@@ -92,3 +92,40 @@
   .board-sticker small{font-size:12px}
 }
 @media print{.board-sticker,.board-sticker-bin{display:none!important}}
+
+/* Farewell window (FarewellDialog). */
+.farewell-card{width:min(720px,100%)}
+.farewell-tabs{display:flex;flex-wrap:wrap;gap:8px}
+.farewell-tabs button{flex:1 1 150px;min-height:44px;border:2px solid #ebe3da;border-radius:14px;background:#fff;color:#40362f;font:700 15px Rubik,Arial,sans-serif;cursor:pointer}
+.farewell-tabs button.active{border-color:#5f9f7c;background:#eef8f2}
+.farewell-total{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;font-weight:700}
+.farewell-total select{min-height:40px;padding:4px 10px;border:1px solid #d9d0c5;border-radius:10px;font:700 16px Rubik,Arial,sans-serif}
+.farewell-stars{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:14px 0 4px}
+.farewell-star{position:relative;display:grid;width:64px;height:64px;place-items:center;padding:0;border:0;background:none;cursor:pointer}
+.farewell-star svg{width:64px;height:64px;color:#e9dcc8;fill:#fbf6ee;stroke-width:1.4;transition:transform .2s ease,color .2s ease,fill .2s ease}
+.farewell-star.filled svg{color:#e2a92a;fill:#f8d34a;transform:scale(1.08)}
+.farewell-star small{position:absolute;top:50%;left:50%;transform:translate(-50%,-38%);color:#8a7d72;font:800 13px Rubik,Arial,sans-serif}
+.farewell-star.filled small{color:#7a5a10}
+.farewell-left{margin:4px 0 0;text-align:center;font-size:22px;font-weight:800}
+.farewell-chips{display:flex;flex-wrap:wrap;gap:8px}
+.farewell-chip{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:6px 14px;border:2px solid #ebe3da;border-radius:999px;background:#fff;color:#40362f;font:600 14px Rubik,Arial,sans-serif;cursor:pointer}
+.farewell-chip.on{border-color:#5f9f7c;background:#eef8f2}
+.farewell-chip svg{width:16px;height:16px;color:#3f8f67}
+.farewell-add{display:flex;gap:8px;margin-top:10px}
+.farewell-add input,.farewell-name input{flex:1;min-width:0;min-height:42px;padding:8px 12px;border:1px solid #d9d0c5;border-radius:12px;font:15px Rubik,Arial,sans-serif}
+.farewell-add button{display:inline-flex;align-items:center;gap:4px;min-height:42px;padding:6px 14px;border:1px solid #5f9f7c;border-radius:12px;background:#5f9f7c;color:#fff;font:700 14px Rubik,Arial,sans-serif;cursor:pointer}
+.farewell-add button:disabled{opacity:.45;cursor:not-allowed}
+.farewell-add button svg{width:16px;height:16px}
+.farewell-name{display:grid;gap:6px;font-weight:700}
+.farewell-cert-preview{display:grid;justify-items:center;gap:6px;margin:12px 0;padding:18px;border:6px solid #f8df9a;border-radius:20px;background:#fffdf9;outline:2px solid #bfe6d1;outline-offset:-12px;text-align:center}
+.farewell-cert-trophy{font-size:36px}
+.farewell-cert-preview strong{font-size:22px}
+.farewell-cert-name{color:#5f9f7c;font-size:28px;font-weight:800}
+.farewell-cert-preview ul{margin:4px 0 0;padding:0;list-style:none;text-align:start;line-height:1.8}
+.farewell-cert-preview em{color:#7a6d63;font-size:13px}
+.farewell-certificate .choice-primary{display:inline-flex;align-items:center;gap:6px}
+.farewell-certificate .choice-primary svg{width:18px;height:18px}
+@media(max-width:600px){
+  .farewell-star,.farewell-star svg{width:48px;height:48px}
+  .farewell-left{font-size:18px}
+}

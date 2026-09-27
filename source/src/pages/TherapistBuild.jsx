@@ -12,6 +12,7 @@ import { BoardCanvas } from "@/components/session-board/BoardCanvas";
 import { BoardPhotoPreview } from "@/components/session-board/BoardPhotoPreview";
 import { BoardToolbox } from "@/components/session-board/BoardToolbox";
 import { BoardStickers, stickerStartPosition } from "@/components/session-board/BoardStickers";
+import { FarewellDialog } from "@/components/session-board/FarewellDialog";
 import { ChoiceBoard } from "@/components/session-board/ChoiceBoard";
 import { BoardDayAppointments } from "@/components/session-board/BoardDayAppointments";
 import { HomePracticeShare } from "@/components/session-board/HomePracticeShare";
@@ -694,6 +695,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
   const boardRef = useRef(null);
   const [stickers, setStickers] = useState([]);
   const [controlsRow, setControlsRow] = useState(null);
+  const [farewellOpen, setFarewellOpen] = useState(false);
   const photoInputRef = useRef(null);
   const [timerOpen, setTimerOpen] = useState(false);
   const [choiceMode, setChoiceMode] = useState(null); // "choice" | "firstThen" | null
@@ -1001,6 +1003,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
         onOpenTimer={openTimer}
         onOpenFirstThen={() => { setPenEnabled(false); setChoiceMode("firstThen"); }}
         onShareWithParents={() => { setPenEnabled(false); setShareOpen(true); }}
+        onOpenFarewell={() => { setPenEnabled(false); setFarewellOpen(true); }}
         onOpenMyImages={() => { setPenEnabled(false); setMyImagesOpen(true); }}
         fullscreen={fullscreen}
         onToggleFullscreen={toggleFullscreen}
@@ -1065,6 +1068,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
           <VisualSessionTimer language={language} open={timerOpen} onOpenChange={setTimerOpen} hideTrigger />
           {fullscreen && <BoardToolbox language={language} pen={pen} onOpenTimer={openTimer} onAddSign={addSign} onOpenChoice={setChoiceMode} onAddMotorItem={addMotorItem} onAddEmotion={addEmotion} />}
           {myImagesOpen && <MyImagesDialog language={language} returnUrl={`${window.location.pathname}${window.location.search}`} onAdd={addMyImage} onChanged={setMyImages} onClose={() => setMyImagesOpen(false)} />}
+          {farewellOpen && <FarewellDialog language={language} patientKey={patientBoardId || "guest"} patientName={patientBoardId ? patientName : ""} onClose={() => setFarewellOpen(false)} />}
           {shareOpen && <HomePracticeShare language={language} onClose={() => setShareOpen(false)}
             activities={plan.filter((item) => item.kind === "activity" && getActivity(item.id)).map((item) => ({ id: item.id, title: boardItemView(item).title, image: boardItemView(item).hero }))} />}
           {choiceMode && <ChoiceBoard key={choiceMode} mode={choiceMode} language={language} options={pickerOptions} onStart={makeNext} onClose={() => setChoiceMode(null)} />}

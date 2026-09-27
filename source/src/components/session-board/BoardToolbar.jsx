@@ -24,6 +24,7 @@ export function BoardToolbar({
   onOpenTimer,
   onOpenFirstThen,
   onShareWithParents,
+  onOpenFarewell,
   onOpenMyImages,
   fullscreen,
   onToggleFullscreen,
@@ -176,6 +177,11 @@ export function BoardToolbar({
         <span className="meeting-action-icon" aria-hidden="true">⇠</span>
         <span className="meeting-action-label-desktop">{t("קודם - אחר כך", "First - then")}</span>
         <span className="meeting-action-label-mobile">{t("קודם-אחר כך", "First-then")}</span>
+      </button>
+      <button className="meeting-farewell" type="button" onClick={onOpenFarewell} title={t("פרידה - ספירה לאחור של המפגשים, מה למדנו ותעודת סיום", "Farewell - session countdown, what we learned, and a certificate")}>
+        <span className="meeting-action-icon" aria-hidden="true">👋</span>
+        <span className="meeting-action-label-desktop">{t("פרידה", "Farewell")}</span>
+        <span className="meeting-action-label-mobile">{t("פרידה", "Farewell")}</span>
       </button>
       <button className="meeting-share-parents" type="button" onClick={onShareWithParents} title={t("שליחת פעילויות מהלוח להורים לתרגול בבית", "Send board activities to parents to practice at home")}>
         <span className="meeting-action-icon" aria-hidden="true">🏠</span>
