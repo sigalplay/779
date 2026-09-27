@@ -117,15 +117,13 @@
 .farewell-add button:disabled{opacity:.45;cursor:not-allowed}
 .farewell-add button svg{width:16px;height:16px}
 .farewell-name{display:grid;gap:6px;font-weight:700}
-.farewell-cert-preview{display:grid;justify-items:center;gap:6px;margin:12px 0;padding:18px;border:6px solid #f8df9a;border-radius:20px;background:#fffdf9;outline:2px solid #bfe6d1;outline-offset:-12px;text-align:center}
-.farewell-cert-trophy{font-size:36px}
-.farewell-cert-preview strong{font-size:22px}
-.farewell-cert-name{color:#5f9f7c;font-size:28px;font-weight:800}
-.farewell-cert-preview ul{margin:4px 0 0;padding:0;list-style:none;text-align:start;line-height:1.8}
-.farewell-cert-preview em{color:#7a6d63;font-size:13px}
+.farewell-cert-preview{margin:10px 0;overflow:hidden;border-radius:14px;box-shadow:0 4px 16px rgba(64,54,47,.15)}
 .farewell-certificate .choice-primary{display:inline-flex;align-items:center;gap:6px}
 .farewell-certificate .choice-primary svg{width:18px;height:18px}
 @media(max-width:600px){
   .farewell-star,.farewell-star svg{width:48px;height:48px}
   .farewell-left{font-size:18px}
 }
+.farewell-gender{display:flex;gap:8px}
+.farewell-gender button{flex:1;min-height:42px;border:2px solid #ebe3da;border-radius:12px;background:#fff;color:#40362f;font:700 15px Rubik,Arial,sans-serif;cursor:pointer}
+.farewell-gender button.active{border-color:#5f9f7c;background:#eef8f2}

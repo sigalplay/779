@@ -19,30 +19,37 @@ function escapeHtml(text) {
   return String(text).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
-// Opens the certificate on its own page and prints it.
-function printCertificate({ language, name, learned }) {
+// The certificate: an illustrated background (boy or girl) with the title, name and what the child
+// learned written on it. Sizes are in container units so the preview and the printed page match.
+const CERT_STYLE = `
+.cert{position:relative;width:100%;aspect-ratio:1492/1054;container-type:inline-size;background:#fffdf7 center/100% 100% no-repeat;color:#40362f;font-family:Rubik,Arial,sans-serif}
+.cert-title{position:absolute;left:25%;width:50%;top:6.2%;height:10%;display:grid;place-items:center;font-size:4.4cqw;font-weight:800;color:#8a6414}
+.cert-body{position:absolute;left:22%;width:49%;top:25%;bottom:14%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2cqw;text-align:center}
+.cert-name{font-size:6cqw;font-weight:800;color:#4f9670;line-height:1.1}
+.cert-line{font-size:2.2cqw;font-weight:600}
+.cert-list{margin:0;padding:0;list-style:none;font-size:var(--cert-item,2cqw);line-height:1.55}
+`;
+
+function certificateHtml({ language, gender, name, learned }) {
   const he = language !== "en";
+  const line = he
+    ? (gender === "girl" ? "סיימת את הטיפול בהצלחה! עכשיו את יודעת:" : "סיימת את הטיפול בהצלחה! עכשיו אתה יודע:")
+    : "You finished therapy! Now you can:";
+  const itemSize = learned.length > 6 ? "1.6cqw" : learned.length > 4 ? "1.8cqw" : "2.1cqw";
+  const items = learned.map((item) => `<li>⭐ ${escapeHtml(item)}</li>`).join("");
+  return `<div class="cert" dir="${he ? "rtl" : "ltr"}" style="background-image:url('${window.location.origin}/icon-bank/certificate/${gender === "girl" ? "girl" : "boy"}.webp');--cert-item:${itemSize}">
+<div class="cert-title">${he ? "תעודת סיום" : "Certificate"}</div>
+<div class="cert-body"><div class="cert-name">${escapeHtml(name || (he ? "כל הכבוד!" : "Well done!"))}</div>
+<div class="cert-line">${line}</div>${items ? `<ul class="cert-list">${items}</ul>` : ""}</div></div>`;
+}
+
+// Opens the certificate on its own page, fitted to an A4 landscape sheet, and prints it.
+function printCertificate(options) {
   const win = window.open("", "_blank");
   if (!win) return;
-  const items = learned.map((item) => `<li>⭐ ${escapeHtml(item)}</li>`).join("");
-  win.document.write(`<!doctype html><html lang="${he ? "he" : "en"}" dir="${he ? "rtl" : "ltr"}"><head><meta charset="utf-8"><title>${he ? "תעודת סיום" : "Certificate"}</title>
-<style>
-@page{size:A4 landscape;margin:12mm}
-body{margin:0;font-family:Rubik,Arial,sans-serif;color:#40362f}
-.c{box-sizing:border-box;min-height:180mm;padding:16mm 20mm;border:6mm solid #f8df9a;border-radius:12mm;text-align:center;background:#fffdf9;outline:2mm solid #bfe6d1;outline-offset:-10mm}
-h1{margin:0 0 4mm;font-size:34pt}
-.n{margin:6mm 0;font-size:40pt;font-weight:800;color:#5f9f7c}
-p{margin:0 0 6mm;font-size:16pt}
-ul{display:inline-block;margin:0;padding:0;list-style:none;text-align:${he ? "right" : "left"};font-size:15pt;line-height:1.8}
-.s{margin-top:8mm;font-size:30pt}
-</style></head><body><div class="c">
-<div class="s">🏆</div>
-<h1>${he ? "תעודת סיום" : "Certificate of Completion"}</h1>
-<div class="n">${escapeHtml(name || (he ? "כל הכבוד!" : "Well done!"))}</div>
-<p>${he ? "סיימת את הטיפול בהצלחה! עכשיו את/ה יודע/ת:" : "You finished therapy! Now you can:"}</p>
-<ul>${items}</ul>
-<div class="s">🌟 🌟 🌟</div>
-</div><script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script></body></html>`);
+  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${options.language === "en" ? "Certificate" : "תעודת סיום"}</title>
+<style>@page{size:A4 landscape;margin:0}html,body{margin:0}body{display:grid;place-items:center;min-height:100vh;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{width:297mm;max-width:100vw}${CERT_STYLE}</style>
+</head><body><div class="page">${certificateHtml(options)}</div><script>const img=new Image();img.onload=()=>setTimeout(()=>window.print(),200);img.src=document.querySelector(".cert").style.backgroundImage.slice(5,-2);<\/script></body></html>`);
   win.document.close();
 }
 
@@ -65,6 +72,7 @@ export function FarewellDialog({ language, patientKey, patientName, onClose }) {
   }, [data, patientKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const left = Math.max(0, data.total - data.filled);
+  const gender = data.gender === "girl" ? "girl" : "boy";
   const presetLabel = (preset) => (language === "en" ? preset[1] : preset[0]);
   const toggleLearned = (label) => setData((d) => ({ ...d, learned: d.learned.includes(label) ? d.learned.filter((x) => x !== label) : [...d.learned, label] }));
   function addCustom(event) {
@@ -140,17 +148,17 @@ export function FarewellDialog({ language, patientKey, patientName, onClose }) {
               {t("שם על התעודה (שם פרטי)", "Name on the certificate (first name)")}
               <input value={name} maxLength={30} onChange={(e) => setName(e.target.value)} />
             </label>
-            <div className="farewell-cert-preview" aria-label={t("תצוגה מקדימה של התעודה", "Certificate preview")}>
-              <div className="farewell-cert-trophy" aria-hidden="true">🏆</div>
-              <strong>{t("תעודת סיום", "Certificate of Completion")}</strong>
-              <span className="farewell-cert-name">{name || t("כל הכבוד!", "Well done!")}</span>
-              <span>{t("סיימת את הטיפול בהצלחה! עכשיו את/ה יודע/ת:", "You finished therapy! Now you can:")}</span>
-              {data.learned.length
-                ? <ul>{data.learned.map((item) => <li key={item}>⭐ {item}</li>)}</ul>
-                : <em>{t("עוד לא סימנתם מה הילד למד. אפשר לסמן בלשונית \"מה למדנו\".", "Nothing is marked yet. Mark it under \"What we learned\".")}</em>}
+            <div className="farewell-gender" role="radiogroup" aria-label={t("תעודה לבן או לבת", "Certificate for a boy or a girl")}>
+              {[["boy", t("בן", "Boy")], ["girl", t("בת", "Girl")]].map(([value, label]) => (
+                <button key={value} type="button" role="radio" aria-checked={gender === value} className={gender === value ? "active" : ""} onClick={() => setData((d) => ({ ...d, gender: value }))}>{label}</button>
+              ))}
             </div>
+            <style>{CERT_STYLE}</style>
+            <div className="farewell-cert-preview" aria-label={t("תצוגה מקדימה של התעודה", "Certificate preview")}
+              dangerouslySetInnerHTML={{ __html: certificateHtml({ language, gender, name, learned: data.learned }) }} />
+            {!data.learned.length && <p className="choice-board-hint">{t("עוד לא סימנתם מה הילד למד. אפשר לסמן בלשונית \"מה למדנו\".", "Nothing is marked yet. Mark it under \"What we learned\".")}</p>}
             <div className="choice-board-actions">
-              <button type="button" className="choice-primary" onClick={() => printCertificate({ language, name, learned: data.learned })}>
+              <button type="button" className="choice-primary" onClick={() => printCertificate({ language, gender, name, learned: data.learned })}>
                 <Printer aria-hidden="true" /> {t("הדפסת התעודה", "Print the certificate")}
               </button>
             </div>
