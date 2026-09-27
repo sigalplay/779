@@ -762,42 +762,39 @@ function StorySteps({ current }) {
   );
 }
 
-// Turning pages with a finger: the page follows the finger, and a long enough swipe slides it
-// away and brings the next page in from the other side. Hebrew books turn to the right, so a
-// swipe to the right goes forward. turn() plays the same slide for the arrows and the keyboard.
-function usePageSwipe({ canGo, onGo }) {
-  const pageRef = useRef(null);
+// Turning pages like a book. The page lifts from its outer edge and turns over the spine with the
+// finger: in Hebrew the spine is on the right, so a swipe to the right turns forward and a swipe to
+// the left turns back; in English it is the other way round. A short swipe lets the page fall back.
+// The arrows and keys play the same turn; people who ask for less motion get a plain page change.
+const FLIP_MS = 380;
+
+function usePageFlip({ index, count, onIndex, rtl }) {
+  const boxRef = useRef(null);
   const start = useRef(null);
   const timers = useRef([]);
-  const [offset, setOffset] = useState(0);
-  const [moving, setMoving] = useState(false);
-  const busy = useRef(false);
+  const [flip, setFlip] = useState(null); // { dir: 1 | -1, progress: 0..1, animate: bool }
   const later = (fn, ms) => timers.current.push(window.setTimeout(fn, ms));
   useEffect(() => () => timers.current.forEach(window.clearTimeout), []);
+  const canGo = (dir) => index + dir >= 0 && index + dir < count;
+  const reduceMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-  function turn(dir) {
-    if (busy.current || !canGo(dir)) return;
-    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) { setOffset(0); onGo(dir); return; }
-    const width = (pageRef.current?.offsetWidth || 300) * 1.15;
-    busy.current = true;
-    setMoving(true);
-    setOffset(dir * width);
+  function settle(dir, done) {
+    setFlip({ dir, progress: done ? 1 : 0, animate: true });
     later(() => {
-      onGo(dir);
-      setMoving(false);
-      setOffset(-dir * width);
-      window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
-        setMoving(true);
-        setOffset(0);
-        later(() => { setMoving(false); busy.current = false; }, 230);
-      }));
-    }, 200);
+      setFlip(null);
+      if (done) onIndex(index + dir);
+    }, FLIP_MS);
+  }
+  function turn(dir) {
+    if (flip || !canGo(dir)) return;
+    if (reduceMotion()) { onIndex(index + dir); return; }
+    setFlip({ dir, progress: 0, animate: false });
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => settle(dir, true)));
   }
 
   function onPointerDown(event) {
-    if (busy.current || (event.pointerType === "mouse" && event.button !== 0)) return;
-    start.current = { x: event.clientX, y: event.clientY, horizontal: null };
+    if (flip || (event.pointerType === "mouse" && event.button !== 0)) return;
+    start.current = { x: event.clientX, y: event.clientY, horizontal: null, dir: 0 };
   }
   function onPointerMove(event) {
     const current = start.current;
@@ -807,46 +804,89 @@ function usePageSwipe({ canGo, onGo }) {
     if (current.horizontal === null) {
       if (Math.hypot(dx, dy) < 8) return;
       current.horizontal = Math.abs(dx) > Math.abs(dy);
-      if (current.horizontal) event.currentTarget.setPointerCapture?.(event.pointerId);
+      if (!current.horizontal) { start.current = null; return; }
+      event.currentTarget.setPointerCapture?.(event.pointerId);
     }
-    if (!current.horizontal) return;
-    // At the first or last page the page only gives a little, to show there is nothing more.
-    setOffset(canGo(dx > 0 ? 1 : -1) ? dx : dx * 0.25);
+    const dir = (dx > 0) === rtl ? 1 : -1;
+    if (!canGo(dir) || reduceMotion()) { current.dir = 0; setFlip(null); return; }
+    current.dir = dir;
+    const width = boxRef.current?.offsetWidth || 300;
+    setFlip({ dir, progress: Math.min(1, Math.abs(dx) / width), animate: false });
   }
-  function finish(event, cancelled) {
+  function onPointerEnd(event) {
     const current = start.current;
     start.current = null;
     if (!current?.horizontal) return;
-    const dx = cancelled ? 0 : event.clientX - current.x;
-    const dir = dx > 0 ? 1 : -1;
-    const width = pageRef.current?.offsetWidth || 300;
-    if (Math.abs(dx) >= Math.min(80, width * 0.2) && canGo(dir)) { turn(dir); return; }
-    setMoving(true);
-    setOffset(0);
-    later(() => setMoving(false), 220);
+    if (!current.dir) {
+      // No motion wanted, or nothing to turn to: a clear swipe still changes the page.
+      const dx = event.clientX - current.x;
+      const dir = (dx > 0) === rtl ? 1 : -1;
+      if (Math.abs(dx) > 60 && canGo(dir)) onIndex(index + dir);
+      return;
+    }
+    const width = boxRef.current?.offsetWidth || 300;
+    const done = Math.abs(event.clientX - current.x) / width > 0.25;
+    settle(current.dir, done);
   }
 
   return {
-    pageRef,
+    boxRef,
+    flip,
     turn,
     handlers: {
       onPointerDown,
       onPointerMove,
-      onPointerUp: (event) => finish(event, false),
-      onPointerCancel: (event) => finish(event, true),
+      onPointerUp: onPointerEnd,
+      onPointerCancel: () => { start.current = null; if (flip) settle(flip.dir, false); },
       onDragStart: (event) => event.preventDefault(),
     },
-    pageStyle: {
-      transform: offset ? `translateX(${offset}px) rotate(${offset / 45}deg)` : undefined,
-      transition: moving ? "transform 200ms ease-out" : "none",
-    },
   };
+}
+
+// Two layers: underneath, the page that will show when the turn ends; on top, the page that turns.
+// Turning forward, the current page lifts and turns away; turning back, the previous page turns
+// back over the current one.
+function FlipPages({ pager, index, rtl, renderPage, className = "", style }) {
+  const { flip } = pager;
+  const target = flip ? index + flip.dir : index;
+  const under = flip && flip.dir > 0 ? target : index;
+  const turning = flip ? (flip.dir > 0 ? index : target) : null;
+  const full = rtl ? 180 : -180;
+  const angle = flip ? (flip.dir > 0 ? full * flip.progress : full * (1 - flip.progress)) : 0;
+  return (
+    <div
+      ref={pager.boxRef}
+      className={cn("relative touch-pan-y select-none [-webkit-touch-callout:none]", className)}
+      style={{ perspective: "2000px", ...style }}
+      {...pager.handlers}
+    >
+      <div className="overflow-hidden rounded-sm bg-white shadow-xl">{renderPage(under)}</div>
+      {flip && (
+        <div
+          className="absolute inset-0 overflow-hidden rounded-sm bg-white shadow-2xl"
+          style={{
+            transformOrigin: rtl ? "right center" : "left center",
+            transform: `rotateY(${angle}deg)`,
+            transition: flip.animate ? `transform ${FLIP_MS}ms ease-out` : "none",
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
+          }}
+        >
+          {renderPage(turning)}
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{ background: `linear-gradient(${rtl ? "to left" : "to right"}, rgba(0,0,0,${0.18 * Math.sin((Math.abs(angle) * Math.PI) / 180)}), transparent 60%)` }}
+          />
+        </div>
+      )}
+    </div>
+  );
 }
 
 // One page at a time: the page as it will look, with its text right next to it, clear buttons,
 // and a row of small pages underneath to jump between them.
 function PageEditor({ story, index, onGo, onText, onMove, onRemove, onAdd, choices }) {
-  const { t } = useTranslator();
+  const { language, t } = useTranslator();
   const listRef = useRef(null);
   const safeIndex = Math.min(index, story.pages.length - 1);
   const page = story.pages[safeIndex];
@@ -858,25 +898,25 @@ function PageEditor({ story, index, onGo, onText, onMove, onRemove, onAdd, choic
   }, [safeIndex]);
 
   const pageName = (i) => (i === 0 && story.pages[0]?.isCover ? t("השער", "the cover") : t(`עמוד ${i + 1}`, `page ${i + 1}`));
-  const swipe = usePageSwipe({ canGo: (dir) => safeIndex + dir >= 0 && safeIndex + dir <= last, onGo: (dir) => onGo(safeIndex + dir) });
+  const rtl = language !== "en";
+  const pager = usePageFlip({ index: safeIndex, count: story.pages.length, onIndex: onGo, rtl });
+  const renderPage = (i) => (
+    <StoryBookPage
+      page={story.pages[i]}
+      index={i}
+      total={story.pages.length}
+      photo={story.childPhoto}
+      facePhotos={{ child: story.childPhoto, mother: story.motherPhoto }}
+      gender={story.gender}
+      wordless={story.wordless}
+      faceAdjust={story.faceAdjust}
+    />
+  );
 
   return (
     <section aria-label={t("עריכת העמודים", "Edit the pages")}>
       <div className="grid items-start gap-5 rounded-3xl border border-border/60 bg-card p-4 sm:p-5 md:grid-cols-[minmax(0,400px)_1fr]">
-        <div className="mx-auto w-full max-w-[320px] touch-pan-y select-none md:max-w-none" {...swipe.handlers}>
-          <div ref={swipe.pageRef} className="overflow-hidden rounded-sm shadow-lg" style={swipe.pageStyle}>
-          <StoryBookPage
-            page={page}
-            index={safeIndex}
-            total={story.pages.length}
-            photo={story.childPhoto}
-            facePhotos={{ child: story.childPhoto, mother: story.motherPhoto }}
-            gender={story.gender}
-            wordless={story.wordless}
-            faceAdjust={story.faceAdjust}
-          />
-          </div>
-        </div>
+        <FlipPages pager={pager} index={safeIndex} rtl={rtl} renderPage={renderPage} className="mx-auto w-full max-w-[320px] md:max-w-none" />
         <div className="space-y-5">
           {showText ? (
             <div>
@@ -904,10 +944,10 @@ function PageEditor({ story, index, onGo, onText, onMove, onRemove, onAdd, choic
           <div>
             <p className="mb-2 text-sm font-bold">{t("מעבר בין עמודים", "Go to another page")}</p>
             <div className="flex flex-wrap items-center gap-2">
-              <Button type="button" variant="outline" className="min-h-11 rounded-full" onClick={() => swipe.turn(-1)} disabled={safeIndex === 0}>
+              <Button type="button" variant="outline" className="min-h-11 rounded-full" onClick={() => pager.turn(-1)} disabled={safeIndex === 0}>
                 <ChevronRight className="h-4 w-4" aria-hidden="true" />{" "}{t("העמוד הקודם", "Previous page")}
               </Button>
-              <Button type="button" variant="outline" className="min-h-11 rounded-full" onClick={() => swipe.turn(1)} disabled={safeIndex === last}>
+              <Button type="button" variant="outline" className="min-h-11 rounded-full" onClick={() => pager.turn(1)} disabled={safeIndex === last}>
                 {t("העמוד הבא", "Next page")}{" "}<ChevronLeft className="h-4 w-4" aria-hidden="true" />
               </Button>
               <span className="text-sm font-semibold text-muted-foreground" aria-live="polite">{safeIndex + 1} / {story.pages.length}</span>
@@ -1036,12 +1076,13 @@ function FacePanel({ story, facePage, faceIndex, originalPhoto, generating, onUp
 
 // Showing the story: the whole page fits the screen, with big arrows, swiping, and the arrow keys.
 function StoryReader({ story, page, onPage, onClose, onBranch, onEnding }) {
-  const { t } = useTranslator();
+  const { language, t } = useTranslator();
   const closeRef = useRef(null);
   const last = story.pages.length - 1;
   const current = Math.min(page, last);
-  const swipe = usePageSwipe({ canGo: (dir) => current + dir >= 0 && current + dir <= last, onGo: (dir) => onPage(current + dir) });
-  const go = (next) => swipe.turn(next > current ? 1 : -1);
+  const rtl = language !== "en";
+  const pager = usePageFlip({ index: current, count: story.pages.length, onIndex: onPage, rtl });
+  const go = (next) => pager.turn(next > current ? 1 : -1);
   const branch = story.interactive && current === 2 && story.branchOptions?.length;
   const ending = story.interactive && current === 3 && story.interactiveChoice && story.endingOptions?.length;
   const options = branch ? story.branchOptions : ending ? story.endingOptions : null;
@@ -1055,9 +1096,9 @@ function StoryReader({ story, page, onPage, onClose, onBranch, onEnding }) {
   useEffect(() => {
     function key(event) {
       if (event.key === "Escape") onClose();
-      // Hebrew is read from right to left: the left arrow goes forward.
-      else if (event.key === "ArrowLeft") go(current + 1);
-      else if (event.key === "ArrowRight") go(current - 1);
+      // Hebrew is read from right to left, so the left arrow goes forward; in English the right one.
+      else if (event.key === "ArrowLeft") go(current + (rtl ? 1 : -1));
+      else if (event.key === "ArrowRight") go(current + (rtl ? -1 : 1));
     }
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
@@ -1072,26 +1113,25 @@ function StoryReader({ story, page, onPage, onClose, onBranch, onEnding }) {
         <p className="min-w-0 truncate text-center font-display font-bold">{story.title}</p>
         <span className="rounded-full bg-white/15 px-3 py-1.5 text-sm font-bold" aria-live="polite">{current + 1} / {story.pages.length}</span>
       </div>
-      <div
-        className="flex min-h-0 flex-1 touch-pan-y select-none items-center justify-center overflow-hidden px-3"
-        {...swipe.handlers}
-      >
-        <div
-          ref={swipe.pageRef}
-          className="overflow-hidden rounded-sm shadow-2xl"
-          style={{ width: `min(100%, calc((100dvh - ${options ? 300 : 170}px) * 210 / 297))`, ...swipe.pageStyle }}
-        >
-          <StoryBookPage
-            page={story.pages[current]}
-            index={current}
-            total={story.pages.length}
-            photo={story.childPhoto}
-            facePhotos={{ child: story.childPhoto, mother: story.motherPhoto }}
-            gender={story.gender}
-            wordless={story.wordless}
-            faceAdjust={story.faceAdjust}
-          />
-        </div>
+      <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden px-3">
+        <FlipPages
+          pager={pager}
+          index={current}
+          rtl={rtl}
+          style={{ width: `min(100%, calc((100dvh - ${options ? 300 : 170}px) * 210 / 297))` }}
+          renderPage={(i) => (
+            <StoryBookPage
+              page={story.pages[i]}
+              index={i}
+              total={story.pages.length}
+              photo={story.childPhoto}
+              facePhotos={{ child: story.childPhoto, mother: story.motherPhoto }}
+              gender={story.gender}
+              wordless={story.wordless}
+              faceAdjust={story.faceAdjust}
+            />
+          )}
+        />
       </div>
       {options && (
         <div className="px-3 pt-2">
@@ -1117,11 +1157,11 @@ function StoryReader({ story, page, onPage, onClose, onBranch, onEnding }) {
       )}
       <div className="flex items-center justify-between gap-3 px-4 py-3">
         <button type="button" onClick={() => go(current - 1)} disabled={current === 0} aria-label={t("העמוד הקודם", "Previous page")} className="grid h-16 w-16 place-items-center rounded-full bg-[#bfe6d1] text-[#315c47] disabled:opacity-30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">
-          <ChevronRight className="h-8 w-8" aria-hidden="true" />
+          {rtl ? <ChevronRight className="h-8 w-8" aria-hidden="true" /> : <ChevronLeft className="h-8 w-8" aria-hidden="true" />}
         </button>
         <p className="text-center text-xs text-white/70">{t("אפשר גם להחליק באצבע או להשתמש בחיצים במקלדת", "You can also swipe or use the arrow keys")}</p>
         <button type="button" onClick={() => go(current + 1)} disabled={current === last} aria-label={t("העמוד הבא", "Next page")} className="grid h-16 w-16 place-items-center rounded-full bg-[#bfe6d1] text-[#315c47] disabled:opacity-30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">
-          <ChevronLeft className="h-8 w-8" aria-hidden="true" />
+          {rtl ? <ChevronLeft className="h-8 w-8" aria-hidden="true" /> : <ChevronRight className="h-8 w-8" aria-hidden="true" />}
         </button>
       </div>
     </div>
