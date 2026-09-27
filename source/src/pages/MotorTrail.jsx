@@ -72,6 +72,7 @@ export default function MotorTrail({ mode }) {
   const sessionReturn = new URLSearchParams({ view: "session" });
   if (hasBoardDate) sessionReturn.set("boardDate", boardDate);
   if (patientBoard) { sessionReturn.set("patientBoard", patientBoard); sessionReturn.set("cloudBoardReady", "1"); }
+  if (searchParams.get("fullscreen") === "1") sessionReturn.set("fullscreen", "1");
   const fallbackReturnPath = returnTo === "session" ? `/therapist/build?${sessionReturn.toString()}` : "/therapist/build";
   const returnPath = requestedReturnPath?.startsWith("/") && !requestedReturnPath.startsWith("//")
     ? requestedReturnPath

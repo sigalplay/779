@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { addPatient, hasCloudSession, listPatients } from "@/lib/session-board-cloud";
 import { BOARD_GAMES, EMOTIONS, VISUAL_SIGNS, localizedLabel } from "@/lib/session-board-tools";
 import { MOTOR_TRAIL_ITEMS } from "@/lib/motor-trail-items";
+import { getChosenGroup, groupIcon, groupName, loadPatientGroups, readPatientGroups, savePatientGroups, setChosenGroup } from "@/lib/patient-groups";
 
 // The tool row above the session board. Markup and class names follow the live site so the
 // existing board styles (therapist-session-board / signs / games CSS) apply unchanged.
@@ -33,6 +34,14 @@ export function BoardToolbar({
   const [collapsed, setCollapsed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [palette, setPalette] = useState(null); // "signs" | "games" | "motor" | "emotions" | null
+  const [group, setGroup] = useState(null); // "add" | "tools" | null
+  // While the pen is on, its controls stay in view.
+  const openGroup = pen.enabled ? "tools" : group;
+  function toggleGroup(name) {
+    setPalette(null);
+    if (pen.enabled) pen.setEnabled(false);
+    setGroup(openGroup === name ? null : name);
+  }
   const planningRef = useRef(null);
 
   useEffect(() => {
@@ -47,6 +56,12 @@ export function BoardToolbar({
     return () => document.removeEventListener("click", close);
   }, [menuOpen]);
 
+  // The setting of the open client's board, shown next to the name.
+  const patientGroup = (() => {
+    if (!patientBoardId) return null;
+    const groups = readPatientGroups();
+    return groups.list.find((group) => group.id === groups.of[patientBoardId]) || null;
+  })();
   const statusText = cloudStatus === "saving" ? t("שומרת…", "Saving…") : cloudStatus === "error" ? t("השמירה נכשלה", "Save failed") : t("נשמר בענן", "Saved to cloud");
 
   function togglePen() {
@@ -75,7 +90,7 @@ export function BoardToolbar({
         <button className={patientBoardId ? "meeting-save-state" : "meeting-save-state guest"} type="button" data-treatment-planning="" aria-expanded={menuOpen} onClick={() => setMenuOpen((value) => !value)}>
           {patientBoardId && patientName ? (
             <>
-              <strong>{t("לוח המפגש של", "Session board for")} {patientName}</strong>
+              <strong>{t("לוח המפגש של", "Session board for")} {patientName}{patientGroup ? ` · ${groupIcon(patientGroup)} ${groupName(patientGroup, readPatientGroups().list, language)}` : ""}</strong>
               <small data-cloud-save-state="">{statusText}</small>
             </>
           ) : (
@@ -99,135 +114,154 @@ export function BoardToolbar({
         </div>
       </div>
 
-      <a className="meeting-add-activity" href={addActivityHref}>{t("הוסף פעילות ללוח המפגש", "Add an activity to the session board")}</a>
-      <a className="meeting-board-link" href={motorTrailHref}>
-        <img className="meeting-tool-image-icon" src="/icon-bank/tools/motor-trail.webp" alt="" />
-        <span className="meeting-action-label-desktop">{t("הוספת מסלול מוטורי", "Add an obstacle course")}</span>
-        <span className="meeting-action-label-mobile">{t("מסלול מוטורי", "Obstacle Course Builder")}</span>
-      </a>
-
-      <div className="meeting-drawing-tools" data-drawing-tools="true">
-        <button type="button" className={pen.enabled ? "meeting-pen-button active" : "meeting-pen-button"} data-board-pen="" aria-pressed={pen.enabled} title={t("עט — כתיבה וציור על הלוח", "Pen — write and draw on the board")} onClick={togglePen}>
-          <img className="meeting-tool-image-icon" src="/icon-bank/tools/pen.webp" alt="" />
-          <span className="meeting-action-label-desktop">{t("עט", "Pen")}</span>
-          <span className="meeting-action-label-mobile">{t("עט", "Pen")}</span>
-        </button>
-        <div className="meeting-drawing-controls" data-drawing-controls="" hidden={!pen.enabled}>
-          <label>{t("צבע", "Color")} <input type="color" value={pen.color} data-pen-color="" onChange={(e) => pen.setColor(e.target.value)} /></label>
-          <label>{t("עובי", "Width")} <input type="range" min="2" max="14" step="1" value={pen.width} data-pen-width="" onChange={(e) => pen.setWidth(Number(e.target.value))} /><output data-width-output="">{pen.width}</output></label>
-          <button type="button" data-pen-mode="" className={pen.tool === "pen" ? "active" : undefined} onClick={() => pen.setTool("pen")}>{t("עט", "Pen")}</button>
-          <button type="button" data-eraser-mode="" className={pen.tool === "eraser" ? "active" : undefined} onClick={() => pen.setTool("eraser")}>{t("מחק", "Eraser")}</button>
-          <button type="button" data-clear-drawing="" onClick={pen.onClear}>{t("מחיקת הכתיבה", "Clear drawing")}</button>
-          <small data-drawing-status="">{pen.status}</small>
-          <button type="button" className="meeting-drawing-close" data-close-drawing="" onClick={() => pen.setEnabled(false)}>{t("סגירה", "Close")}</button>
+      {/* Everything else sits in two groups under the dates: what goes onto the board, and the
+          tools used during the session. Only one group is open at a time. */}
+      <div className="meeting-groups">
+        <div className="meeting-group-tabs">
+          <button type="button" className="meeting-group-tab primary" aria-expanded={openGroup === "add"} aria-controls="meetingGroupAdd" onClick={() => toggleGroup("add")}>
+            <span aria-hidden="true">＋</span>{t("הוספה ללוח", "Add to the board")}
+          </button>
+          <button type="button" className="meeting-group-tab" aria-expanded={openGroup === "tools"} aria-controls="meetingGroupTools" onClick={() => toggleGroup("tools")}>
+            <img className="meeting-tool-image-icon" src="/icon-bank/tools/timer.webp" alt="" />{t("כלים", "Tools")}
+          </button>
         </div>
-      </div>
-
-      <div className="meeting-signs-tools" data-signs-tools="true">
-        <button type="button" className="meeting-signs-button" data-board-signs="" aria-expanded={palette === "signs"} title={t("הוספת סימנים מוסכמים ללוח", "Add visual signs to the board")} onClick={() => togglePalette("signs")}>
-          <img className="meeting-tool-image-icon" src="/icon-bank/tools/signs.webp" alt="" />
-          <span className="meeting-action-label-desktop">{t("סימנים מוסכמים", "Visual signs")}</span>
-          <span className="meeting-action-label-mobile">{t("סימנים", "Signs")}</span>
-        </button>
-        {palette === "signs" && (
-          <div className="meeting-signs-palette" data-signs-palette="true" role="dialog" aria-label={t("בחירת סימן מוסכם", "Choose a visual sign")}>
-            <strong>{t("בחירת סימן ללוח", "Choose a sign for the board")}</strong>
-            <div>
-              {VISUAL_SIGNS.map((sign) => (
-                <button key={sign.id} type="button" data-add-visual-sign={sign.id} aria-label={t(`הוספת ${sign.label} ללוח`, `Add ${sign.labelEn} to the board`)} onClick={() => { setPalette(null); onAddSign(sign); }}>
-                  <span className="visual-sign-card"><span className="visual-sign-art"><img src={sign.asset} alt="" /></span><strong>{localizedLabel(sign, language)}</strong></span>
-                </button>
-              ))}
-            </div>
-            <button type="button" className="meeting-signs-close" data-close-signs="" onClick={() => setPalette(null)}>{t("סגירה", "Close")}</button>
+        {openGroup === "add" && (
+          <div className="meeting-group" id="meetingGroupAdd" role="group" aria-label={t("הוספה ללוח", "Add to the board")}>
+          <a className="meeting-add-activity" href={addActivityHref}>
+            <span className="meeting-group-plus" aria-hidden="true">＋</span>
+            <span>{t("פעילות מהמאגר", "Activity from the catalog")}</span>
+          </a>
+          <a className="meeting-board-link" href={motorTrailHref}>
+            <img className="meeting-tool-image-icon" src="/icon-bank/tools/motor-trail.webp" alt="" />
+            <span className="meeting-action-label-desktop">{t("הוספת מסלול מוטורי", "Add an obstacle course")}</span>
+            <span className="meeting-action-label-mobile">{t("מסלול מוטורי", "Obstacle Course Builder")}</span>
+          </a>
+          <div className="meeting-games-tools" data-games-tools="true">
+            <button type="button" className="meeting-games-button" data-board-games="" aria-expanded={palette === "games"} title={t("הוספת צעצוע או חומר ללוח", "Add a toy or material to the board")} onClick={() => togglePalette("games")}>
+              <img className="meeting-tool-image-icon" src="/icon-bank/toys/lego.webp" alt="" />
+              <span>{t("צעצועים וחומרים", "Toys and materials")}</span>
+            </button>
+            {palette === "games" && (
+              <div className="meeting-games-palette" data-games-palette="true" role="dialog" aria-label={t("בחירת צעצוע או חומר ללוח", "Choose a toy or material for the board")}>
+                <strong>{t("בחירת צעצוע או חומר ללוח", "Choose a toy or material for the board")}</strong>
+                <div>
+                  {BOARD_GAMES.map((game) => (
+                    <button key={game.id} type="button" data-add-board-game={game.id} aria-label={t(`הוספת ${game.label} ללוח`, `Add ${game.labelEn} to the board`)} onClick={() => { setPalette(null); onAddGame(game); }}>
+                      <span className="board-game-choice"><span><img src={game.asset} alt="" /></span><strong>{localizedLabel(game, language)}</strong></span>
+                    </button>
+                  ))}
+                </div>
+                <button type="button" className="meeting-games-close" data-close-games="" onClick={() => setPalette(null)}>{t("סגירה", "Close")}</button>
+              </div>
+            )}
+          </div>
+          <div className="meeting-games-tools meeting-picture-tools meeting-motor-tools" data-motor-tools="true">
+            <button type="button" className="meeting-games-button meeting-motor-button" aria-expanded={palette === "motor"} title={t("הוספת אביזר מהמסלול המוטורי ללוח", "Add obstacle-course equipment to the board")} onClick={() => togglePalette("motor")}>
+              <img className="meeting-tool-image-icon" src="/icon-bank/motor-trail/trampoline.webp" alt="" />
+              <span>{t("אביזרים מוטוריים", "Motor equipment")}</span>
+            </button>
+            {palette === "motor" && (
+              <div className="meeting-games-palette" role="dialog" aria-label={t("בחירת אביזר מוטורי ללוח", "Choose motor equipment for the board")}>
+                <strong>{t("בחירת אביזר מוטורי ללוח", "Choose motor equipment for the board")}</strong>
+                <div>
+                  {MOTOR_TRAIL_ITEMS.map((item) => (
+                    <button key={item.id} type="button" data-add-board-game={`motor-${item.id}`} aria-label={t(`הוספת ${item.label} ללוח`, `Add ${item.labelEn} to the board`)} onClick={() => { setPalette(null); onAddMotorItem(item); }}>
+                      <span className="board-game-choice"><span><img src={item.image} alt="" /></span><strong>{localizedLabel(item, language)}</strong></span>
+                    </button>
+                  ))}
+                </div>
+                <button type="button" className="meeting-games-close" onClick={() => setPalette(null)}>{t("סגירה", "Close")}</button>
+              </div>
+            )}
+          </div>
+          <div className="meeting-games-tools meeting-picture-tools meeting-emotions-tools" data-emotions-tools="true">
+            <button type="button" className="meeting-games-button meeting-emotions-button" aria-expanded={palette === "emotions"} title={t("הוספת רגש ללוח", "Add an emotion to the board")} onClick={() => togglePalette("emotions")}>
+              <img className="meeting-tool-image-icon" src="/icon-bank/emotions/happy.webp" alt="" />
+              <span>{t("רגשות", "Emotions")}</span>
+            </button>
+            {palette === "emotions" && (
+              <div className="meeting-games-palette" role="dialog" aria-label={t("בחירת רגש ללוח", "Choose an emotion for the board")}>
+                <strong>{t("בחירת רגש ללוח", "Choose an emotion for the board")}</strong>
+                <div>
+                  {EMOTIONS.map((emotion) => (
+                    <button key={emotion.id} type="button" data-add-board-game={`emotion-${emotion.id}`} aria-label={t(`הוספת ${emotion.label} ללוח`, `Add ${emotion.labelEn} to the board`)} onClick={() => { setPalette(null); onAddEmotion(emotion); }}>
+                      <span className="board-game-choice"><span><img src={emotion.asset} alt="" /></span><strong>{localizedLabel(emotion, language)}</strong></span>
+                    </button>
+                  ))}
+                </div>
+                <button type="button" className="meeting-games-close" onClick={() => setPalette(null)}>{t("סגירה", "Close")}</button>
+              </div>
+            )}
+          </div>
+          <div className="meeting-signs-tools" data-signs-tools="true">
+            <button type="button" className="meeting-signs-button" data-board-signs="" aria-expanded={palette === "signs"} title={t("הוספת סימנים מוסכמים ללוח", "Add visual signs to the board")} onClick={() => togglePalette("signs")}>
+              <img className="meeting-tool-image-icon" src="/icon-bank/tools/signs.webp" alt="" />
+              <span className="meeting-action-label-desktop">{t("סימנים מוסכמים", "Visual signs")}</span>
+              <span className="meeting-action-label-mobile">{t("סימנים", "Signs")}</span>
+            </button>
+            {palette === "signs" && (
+              <div className="meeting-signs-palette" data-signs-palette="true" role="dialog" aria-label={t("בחירת סימן מוסכם", "Choose a visual sign")}>
+                <strong>{t("בחירת סימן ללוח", "Choose a sign for the board")}</strong>
+                <div>
+                  {VISUAL_SIGNS.map((sign) => (
+                    <button key={sign.id} type="button" data-add-visual-sign={sign.id} aria-label={t(`הוספת ${sign.label} ללוח`, `Add ${sign.labelEn} to the board`)} onClick={() => { setPalette(null); onAddSign(sign); }}>
+                      <span className="visual-sign-card"><span className="visual-sign-art"><img src={sign.asset} alt="" /></span><strong>{localizedLabel(sign, language)}</strong></span>
+                    </button>
+                  ))}
+                </div>
+                <button type="button" className="meeting-signs-close" data-close-signs="" onClick={() => setPalette(null)}>{t("סגירה", "Close")}</button>
+              </div>
+            )}
+          </div>
+          <button className="meeting-first-then" type="button" onClick={onOpenFirstThen} title={t("קודם - אחר כך", "First - then")}>
+            <img className="meeting-tool-image-icon" src="/icon-bank/tools/first-then.webp" alt="" />
+            <span className="meeting-action-label-desktop">{t("קודם - אחר כך", "First - then")}</span>
+            <span className="meeting-action-label-mobile">{t("קודם-אחר כך", "First-then")}</span>
+          </button>
+          <button className="meeting-my-images" type="button" onClick={onOpenMyImages} title={t("התמונות שלי - העלאת תמונות של משחקים וציוד", "My images - upload photos of games and equipment")}>
+            <img className="meeting-tool-image-icon" src="/icon-bank/tools/upload-images.webp" alt="" />
+            <span className="meeting-action-label-desktop">{t("העלאת תמונות", "Upload images")}</span>
+            <span className="meeting-action-label-mobile">{t("העלאת תמונות", "My images")}</span>
+          </button>
           </div>
         )}
-      </div>
-
-      <div className="meeting-games-tools" data-games-tools="true">
-        <button type="button" className="meeting-games-button" data-board-games="" aria-expanded={palette === "games"} title={t("הוספת צעצוע או חומר ללוח", "Add a toy or material to the board")} onClick={() => togglePalette("games")}>
-          <img className="meeting-tool-image-icon" src="/icon-bank/toys/lego.webp" alt="" />
-          <span>{t("צעצועים וחומרים", "Toys and materials")}</span>
-        </button>
-        {palette === "games" && (
-          <div className="meeting-games-palette" data-games-palette="true" role="dialog" aria-label={t("בחירת צעצוע או חומר ללוח", "Choose a toy or material for the board")}>
-            <strong>{t("בחירת צעצוע או חומר ללוח", "Choose a toy or material for the board")}</strong>
-            <div>
-              {BOARD_GAMES.map((game) => (
-                <button key={game.id} type="button" data-add-board-game={game.id} aria-label={t(`הוספת ${game.label} ללוח`, `Add ${game.labelEn} to the board`)} onClick={() => { setPalette(null); onAddGame(game); }}>
-                  <span className="board-game-choice"><span><img src={game.asset} alt="" /></span><strong>{localizedLabel(game, language)}</strong></span>
-                </button>
-              ))}
+        {openGroup === "tools" && (
+          <div className="meeting-group" id="meetingGroupTools" role="group" aria-label={t("כלים", "Tools")}>
+          <div className="meeting-drawing-tools" data-drawing-tools="true">
+            <button type="button" className={pen.enabled ? "meeting-pen-button active" : "meeting-pen-button"} data-board-pen="" aria-pressed={pen.enabled} title={t("עט — כתיבה וציור על הלוח", "Pen — write and draw on the board")} onClick={togglePen}>
+              <img className="meeting-tool-image-icon" src="/icon-bank/tools/pen.webp" alt="" />
+              <span className="meeting-action-label-desktop">{t("עט", "Pen")}</span>
+              <span className="meeting-action-label-mobile">{t("עט", "Pen")}</span>
+            </button>
+            <div className="meeting-drawing-controls" data-drawing-controls="" hidden={!pen.enabled}>
+              <label>{t("צבע", "Color")} <input type="color" value={pen.color} data-pen-color="" onChange={(e) => pen.setColor(e.target.value)} /></label>
+              <label>{t("עובי", "Width")} <input type="range" min="2" max="14" step="1" value={pen.width} data-pen-width="" onChange={(e) => pen.setWidth(Number(e.target.value))} /><output data-width-output="">{pen.width}</output></label>
+              <button type="button" data-pen-mode="" className={pen.tool === "pen" ? "active" : undefined} onClick={() => pen.setTool("pen")}>{t("עט", "Pen")}</button>
+              <button type="button" data-eraser-mode="" className={pen.tool === "eraser" ? "active" : undefined} onClick={() => pen.setTool("eraser")}>{t("מחק", "Eraser")}</button>
+              <button type="button" data-clear-drawing="" onClick={pen.onClear}>{t("מחיקת הכתיבה", "Clear drawing")}</button>
+              <small data-drawing-status="">{pen.status}</small>
+              <button type="button" className="meeting-drawing-close" data-close-drawing="" onClick={() => pen.setEnabled(false)}>{t("סגירה", "Close")}</button>
             </div>
-            <button type="button" className="meeting-games-close" data-close-games="" onClick={() => setPalette(null)}>{t("סגירה", "Close")}</button>
           </div>
-        )}
-      </div>
-
-      <button className="meeting-timer" type="button" onClick={onOpenTimer}>
-        <img className="meeting-tool-image-icon" src="/icon-bank/tools/timer.webp" alt="" />
-        <span className="meeting-action-label-desktop">{t("טיימר חזותי", "Visual timer")}</span>
-        <span className="meeting-action-label-mobile">{t("טיימר", "Timer")}</span>
-      </button>
-      <button className="meeting-fullscreen" type="button" aria-pressed={fullscreen} onClick={onToggleFullscreen}>
-        <img className="meeting-tool-image-icon" src="/icon-bank/tools/fullscreen.webp" alt="" />
-        <span data-fullscreen-label="">{fullscreen ? t("יציאה ממסך מלא", "Exit full screen") : t("מסך מלא", "Full screen")}</span>
-      </button>
-      <button className="meeting-first-then" type="button" onClick={onOpenFirstThen} title={t("קודם - אחר כך", "First - then")}>
-        <img className="meeting-tool-image-icon" src="/icon-bank/tools/first-then.webp" alt="" />
-        <span className="meeting-action-label-desktop">{t("קודם - אחר כך", "First - then")}</span>
-        <span className="meeting-action-label-mobile">{t("קודם-אחר כך", "First-then")}</span>
-      </button>
-      <button className="meeting-farewell" type="button" onClick={onOpenFarewell} title={t("פרידה - ספירה לאחור של המפגשים, מה למדנו ותעודת סיום", "Farewell - session countdown, what we learned, and a certificate")}>
-        <img className="meeting-tool-image-icon" src="/icon-bank/tools/farewell.webp" alt="" />
-        <span className="meeting-action-label-desktop">{t("פרידה", "Farewell")}</span>
-        <span className="meeting-action-label-mobile">{t("פרידה", "Farewell")}</span>
-      </button>
-      <button className="meeting-share-parents" type="button" onClick={onShareWithParents} title={t("שליחת פעילויות מהלוח להורים לתרגול בבית", "Send board activities to parents to practice at home")}>
-        <img className="meeting-tool-image-icon" src="/icon-bank/tools/share-parents.webp" alt="" />
-        <span className="meeting-action-label-desktop">{t("שליחה להורים", "Send to parents")}</span>
-        <span className="meeting-action-label-mobile">{t("שליחה להורים", "To parents")}</span>
-      </button>
-      <button className="meeting-my-images" type="button" onClick={onOpenMyImages} title={t("התמונות שלי - העלאת תמונות של משחקים וציוד", "My images - upload photos of games and equipment")}>
-        <img className="meeting-tool-image-icon" src="/icon-bank/tools/upload-images.webp" alt="" />
-        <span className="meeting-action-label-desktop">{t("העלאת תמונות", "Upload images")}</span>
-        <span className="meeting-action-label-mobile">{t("העלאת תמונות", "My images")}</span>
-      </button>
-      <div className="meeting-games-tools meeting-picture-tools meeting-motor-tools" data-motor-tools="true">
-        <button type="button" className="meeting-games-button meeting-motor-button" aria-expanded={palette === "motor"} title={t("הוספת אביזר מהמסלול המוטורי ללוח", "Add obstacle-course equipment to the board")} onClick={() => togglePalette("motor")}>
-          <img className="meeting-tool-image-icon" src="/icon-bank/motor-trail/trampoline.webp" alt="" />
-          <span>{t("אביזרים מוטוריים", "Motor equipment")}</span>
-        </button>
-        {palette === "motor" && (
-          <div className="meeting-games-palette" role="dialog" aria-label={t("בחירת אביזר מוטורי ללוח", "Choose motor equipment for the board")}>
-            <strong>{t("בחירת אביזר מוטורי ללוח", "Choose motor equipment for the board")}</strong>
-            <div>
-              {MOTOR_TRAIL_ITEMS.map((item) => (
-                <button key={item.id} type="button" data-add-board-game={`motor-${item.id}`} aria-label={t(`הוספת ${item.label} ללוח`, `Add ${item.labelEn} to the board`)} onClick={() => { setPalette(null); onAddMotorItem(item); }}>
-                  <span className="board-game-choice"><span><img src={item.image} alt="" /></span><strong>{localizedLabel(item, language)}</strong></span>
-                </button>
-              ))}
-            </div>
-            <button type="button" className="meeting-games-close" onClick={() => setPalette(null)}>{t("סגירה", "Close")}</button>
-          </div>
-        )}
-      </div>
-      <div className="meeting-games-tools meeting-picture-tools meeting-emotions-tools" data-emotions-tools="true">
-        <button type="button" className="meeting-games-button meeting-emotions-button" aria-expanded={palette === "emotions"} title={t("הוספת רגש ללוח", "Add an emotion to the board")} onClick={() => togglePalette("emotions")}>
-          <img className="meeting-tool-image-icon" src="/icon-bank/emotions/happy.webp" alt="" />
-          <span>{t("רגשות", "Emotions")}</span>
-        </button>
-        {palette === "emotions" && (
-          <div className="meeting-games-palette" role="dialog" aria-label={t("בחירת רגש ללוח", "Choose an emotion for the board")}>
-            <strong>{t("בחירת רגש ללוח", "Choose an emotion for the board")}</strong>
-            <div>
-              {EMOTIONS.map((emotion) => (
-                <button key={emotion.id} type="button" data-add-board-game={`emotion-${emotion.id}`} aria-label={t(`הוספת ${emotion.label} ללוח`, `Add ${emotion.labelEn} to the board`)} onClick={() => { setPalette(null); onAddEmotion(emotion); }}>
-                  <span className="board-game-choice"><span><img src={emotion.asset} alt="" /></span><strong>{localizedLabel(emotion, language)}</strong></span>
-                </button>
-              ))}
-            </div>
-            <button type="button" className="meeting-games-close" onClick={() => setPalette(null)}>{t("סגירה", "Close")}</button>
+          <button className="meeting-timer" type="button" onClick={onOpenTimer}>
+            <img className="meeting-tool-image-icon" src="/icon-bank/tools/timer.webp" alt="" />
+            <span className="meeting-action-label-desktop">{t("טיימר חזותי", "Visual timer")}</span>
+            <span className="meeting-action-label-mobile">{t("טיימר", "Timer")}</span>
+          </button>
+          <button className="meeting-fullscreen" type="button" aria-pressed={fullscreen} onClick={onToggleFullscreen}>
+            <img className="meeting-tool-image-icon" src="/icon-bank/tools/fullscreen.webp" alt="" />
+            <span data-fullscreen-label="">{fullscreen ? t("יציאה ממסך מלא", "Exit full screen") : t("מסך מלא", "Full screen")}</span>
+          </button>
+          <button className="meeting-farewell" type="button" onClick={onOpenFarewell} title={t("פרידה - ספירה לאחור של המפגשים, מה למדנו ותעודת סיום", "Farewell - session countdown, what we learned, and a certificate")}>
+            <img className="meeting-tool-image-icon" src="/icon-bank/tools/farewell.webp" alt="" />
+            <span className="meeting-action-label-desktop">{t("פרידה", "Farewell")}</span>
+            <span className="meeting-action-label-mobile">{t("פרידה", "Farewell")}</span>
+          </button>
+          <button className="meeting-share-parents" type="button" onClick={onShareWithParents} title={t("שליחת פעילויות מהלוח להורים לתרגול בבית", "Send board activities to parents to practice at home")}>
+            <img className="meeting-tool-image-icon" src="/icon-bank/tools/share-parents.webp" alt="" />
+            <span className="meeting-action-label-desktop">{t("שליחה להורים", "Send to parents")}</span>
+            <span className="meeting-action-label-mobile">{t("שליחה להורים", "To parents")}</span>
+          </button>
           </div>
         )}
       </div>
@@ -244,13 +278,15 @@ function PatientMenu({ language, returnUrl, onClose, onSelectPatient, onUseGuest
   const [name, setName] = useState("");
   const [adding, setAdding] = useState(false);
   const [message, setMessage] = useState("");
+  const [groups, setGroups] = useState(() => (signedIn ? readPatientGroups() : { list: [], of: {} }));
+  const [chosen, setChosen] = useState(getChosenGroup);
   const signInHref = `/auth?mode=login&intent=patients&redirect=${encodeURIComponent(returnUrl)}`;
 
   useEffect(() => {
     if (!signedIn) return undefined;
     let cancelled = false;
-    listPatients()
-      .then((rows) => { if (!cancelled) { setPatients(Array.isArray(rows) ? rows : []); setState("ready"); } })
+    Promise.all([listPatients(), loadPatientGroups()])
+      .then(([rows, loaded]) => { if (!cancelled) { setPatients(Array.isArray(rows) ? rows : []); setGroups(loaded); setState("ready"); } })
       .catch(() => { if (!cancelled) setState("error"); });
     return () => { cancelled = true; };
   }, [signedIn]);
@@ -261,7 +297,9 @@ function PatientMenu({ language, returnUrl, onClose, onSelectPatient, onUseGuest
     if (!displayName) return;
     setAdding(true);
     try {
-      onSelectPatient(await addPatient(displayName));
+      const id = await addPatient(displayName);
+      if (activeGroup) await savePatientGroups({ ...groups, of: { ...groups.of, [id]: activeGroup.id } }).catch(() => {});
+      onSelectPatient(id);
     } catch {
       setMessage(t("לא הצלחנו להוסיף את המטופל כרגע.", "We could not add the client right now."));
       setAdding(false);
@@ -296,16 +334,44 @@ function PatientMenu({ language, returnUrl, onClose, onSelectPatient, onUseGuest
       </>
     );
   }
+  // The same settings as on "My clients": one setting at a time, remembered on this device.
+  const activeGroup = groups.list.find((group) => group.id === chosen) || null;
+  const nameOf = (group) => groupName(group, groups.list, language);
+  const groupOf = (patient) => groups.list.find((group) => group.id === groups.of[patient.id]) || null;
+  const shown = activeGroup ? patients.filter((patient) => groups.of[patient.id] === activeGroup.id) : patients;
+  const choose = (id) => { setChosen(id); setChosenGroup(id); };
   return (
     <>
       <strong>{t("בחירת מטופל", "Choose a client")}</strong>
+      {groups.list.length > 0 && (
+        <div className="patient-menu-groups" role="group" aria-label={t("מסגרות", "Settings")}>
+          <button type="button" aria-pressed={!activeGroup} onClick={() => choose("all")}>{t("הכל", "All")} <small>{patients.length}</small></button>
+          {groups.list.map((group) => (
+            <button key={group.id} type="button" aria-pressed={activeGroup?.id === group.id} onClick={() => choose(group.id)}>
+              <span className="patient-group-dot" style={{ background: group.color }} aria-hidden="true" />
+              <span aria-hidden="true">{groupIcon(group)}</span> {nameOf(group)} <small>{patients.filter((patient) => groups.of[patient.id] === group.id).length}</small>
+            </button>
+          ))}
+        </div>
+      )}
       <div className="patient-menu-list">
-        {patients.length
-          ? patients.map((patient) => <button key={patient.id} type="button" data-select-patient={patient.id} onClick={() => onSelectPatient(patient.id)}>{patient.display_name}</button>)
-          : <p>{t("עדיין לא הוספת מטופלים.", "You have not added any clients yet.")}</p>}
+        {shown.length
+          ? shown.map((patient) => {
+            const group = groupOf(patient);
+            return (
+              <button key={patient.id} type="button" data-select-patient={patient.id} onClick={() => onSelectPatient(patient.id)} style={group ? { borderInlineStartColor: group.color } : undefined} className={group ? "has-group" : undefined}>
+                <span>{patient.display_name}</span>
+                {group && !activeGroup && <small>{groupIcon(group)} {nameOf(group)}</small>}
+              </button>
+            );
+          })
+          : <p>{patients.length ? t("אין מטופלים במסגרת הזאת.", "No clients in this setting.") : t("עדיין לא הוספת מטופלים.", "You have not added any clients yet.")}</p>}
       </div>
+      {groups.list.length === 0 && patients.length > 0 && (
+        <p className="patient-menu-hint">{t("אפשר לסדר את המטופלים לפי מסגרות (קליניקה, גן, בית ספר, מכון) ב\"ניהול המטופלים שלי\".", "You can sort clients into settings (clinic, kindergarten, school, center) under \"Manage my clients\".")}</p>
+      )}
       <form data-add-patient-form="" onSubmit={submit}>
-        <label htmlFor="quickPatientName">{t("הוספת מטופל", "Add a client")}</label>
+        <label htmlFor="quickPatientName">{activeGroup ? t(`הוספת מטופל ל${nameOf(activeGroup)}`, `Add a client to ${nameOf(activeGroup)}`) : t("הוספת מטופל", "Add a client")}</label>
         <div>
           <input id="quickPatientName" name="patientName" maxLength={80} required value={name} onChange={(e) => setName(e.target.value)} placeholder={t("שם פרטי, ראשי תיבות או כינוי", "First name, initials, or nickname")} />
           <button type="submit" disabled={adding}>{t("הוספה", "Add")}</button>

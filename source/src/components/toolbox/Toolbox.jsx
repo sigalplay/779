@@ -117,6 +117,31 @@ export function Toolbox({ language, tools, storageKey, placement = "middle", hid
     return () => { window.clearTimeout(out); window.clearTimeout(back); };
   }, [view, panelStyle, opensRight]);
 
+  // Small dots under the row, like a photo gallery: one per screenful of tools, the current one
+  // darker. A dot also scrolls the row to its tools.
+  const [dots, setDots] = useState(null); // { count, active, top, left, width }
+  useEffect(() => {
+    const strip = panelRef.current;
+    if (!view || !strip || !overflowing) { setDots(null); return undefined; }
+    const update = () => {
+      const rect = strip.getBoundingClientRect();
+      const count = Math.ceil(strip.scrollWidth / strip.clientWidth);
+      const travel = strip.scrollWidth - strip.clientWidth;
+      const active = travel > 0 ? Math.round((Math.abs(strip.scrollLeft) / travel) * (count - 1)) : 0;
+      setDots({ count, active, top: rect.bottom + 2, left: rect.left, width: rect.width });
+    };
+    update();
+    strip.addEventListener("scroll", update, { passive: true });
+    return () => strip.removeEventListener("scroll", update);
+  }, [view, overflowing, panelStyle]);
+  function scrollToDot(index) {
+    const strip = panelRef.current;
+    if (!strip || !dots) return;
+    const travel = strip.scrollWidth - strip.clientWidth;
+    const target = (travel * index) / Math.max(1, dots.count - 1);
+    strip.scrollTo({ left: opensRight ? target : -target, behavior: "smooth" });
+  }
+
   if (hidden) return null;
 
   function toggle() {
@@ -188,6 +213,15 @@ export function Toolbox({ language, tools, storageKey, placement = "middle", hid
               onClick={() => (tool.back ? setView("bank") : subTool ? (setView(null), tool.onSelect()) : select(tool))}
             />
           ))}
+        </div>
+      )}
+      {view && !subTool && dots && (
+        <div className="toolbox-dots" style={{ top: dots.top, left: dots.left, width: dots.width, direction: opensRight ? "ltr" : "rtl" }} role="group" aria-label={t("עוד כלים", "More tools")}>
+          <span className="toolbox-dots-pill">
+            {Array.from({ length: dots.count }, (_, index) => (
+              <button key={index} type="button" aria-current={index === dots.active ? "true" : undefined} aria-label={t(`כלים, חלק ${index + 1} מתוך ${dots.count}`, `Tools, part ${index + 1} of ${dots.count}`)} onClick={() => scrollToDot(index)} />
+            ))}
+          </span>
         </div>
       )}
     </>

@@ -35,6 +35,7 @@ export const BOARD_GAMES = [
   { id: "board-game", label: "משחק קופסה", labelEn: "Board game", asset: "/icon-bank/social-new/seed-35-turn-draw/material-board-game.webp" },
   { id: "cards", label: "קלפים", labelEn: "Cards", asset: `${TOYS}/cards.webp` },
   { id: "bubbles", label: "בועות סבון", labelEn: "Bubbles", asset: `${TOYS}/bubbles.webp` },
+  { id: "music-instruments", label: "כלי נגינה", labelEn: "Musical instruments", asset: `${TOYS}/music-instruments.webp` },
   { id: "ball", label: "כדור", labelEn: "Ball", asset: "/icon-bank/movement-new/seed-90-illustrated/material-soft-ball.webp" },
   { id: "paper-pencil", label: "עיפרון", labelEn: "Pencil", asset: "/icon-bank/embedded-v359/seed-71/material-pencil.webp" },
   { id: "markers", label: "טושים", labelEn: "Markers", asset: "/icon-bank/crafts-new/seed-100-independent/material-colored-markers.webp" },
