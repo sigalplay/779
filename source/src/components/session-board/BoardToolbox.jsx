@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { ArrowLeftRight, Hand, Pencil, Timer } from "lucide-react";
 import { TherapistPostureScissorsTips } from "@/components/TherapistPostureScissorsTips";
 import { PenBar } from "@/components/toolbox/PenBar";
 import { Toolbox, tipTools } from "@/components/toolbox/Toolbox";
@@ -20,12 +19,12 @@ export function BoardToolbox({ language, pen, onOpenTimer, onAddSign, onOpenChoi
   }, [tipPanel]);
 
   const byId = Object.fromEntries([
-    { id: "timer", color: "#bcdcf2", icon: <Timer />, label: t("טיימר", "Timer"), onSelect: onOpenTimer },
-    { id: "pen", color: "#f6c3b5", icon: <Pencil />, label: t("עט", "Pen"), onSelect: () => { pen.setTool("pen"); pen.setEnabled(true); } },
+    { id: "timer", color: "#bcdcf2", image: "/icon-bank/tools/timer.webp", label: t("טיימר", "Timer"), onSelect: onOpenTimer },
+    { id: "pen", color: "#f6c3b5", image: "/icon-bank/tools/pen.webp", label: t("עט", "Pen"), onSelect: () => { pen.setTool("pen"); pen.setEnabled(true); } },
     {
       id: "signs",
       color: "#f8df9a",
-      icon: <Hand />,
+      image: "/icon-bank/tools/signs.webp",
       label: t("סימנים", "Signs"),
       items: VISUAL_SIGNS.map((sign) => ({
         id: sign.id,
@@ -50,7 +49,7 @@ export function BoardToolbox({ language, pen, onOpenTimer, onAddSign, onOpenChoi
         onSelect: () => { pen.setEnabled(false); onAddEmotion(emotion); },
       })),
     },
-    { id: "first-then", color: "#e6dcf5", icon: <ArrowLeftRight />, label: t("קודם-אחר כך", "First-then"), onSelect: () => { pen.setEnabled(false); onOpenChoice("firstThen"); } },
+    { id: "first-then", color: "#e6dcf5", image: "/icon-bank/tools/first-then.webp", label: t("קודם-אחר כך", "First-then"), onSelect: () => { pen.setEnabled(false); onOpenChoice("firstThen"); } },
     {
       id: "motor",
       color: "#bfe6d1",

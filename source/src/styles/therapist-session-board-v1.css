@@ -262,3 +262,10 @@
 @media(max-width:760px){
   .meeting-board-page .meeting-board-actions>*:not(.meeting-planning-wrap):not(.meeting-tools-toggle){margin-inline:3px!important;width:calc(100% - 6px)!important}
 }
+/* Illustrated icons on the tool buttons. */
+.meeting-board-page .meeting-board-actions .meeting-tool-image-icon{width:30px;height:30px;object-fit:contain}
+.meeting-board-page .meeting-board-actions>.meeting-board-link .meeting-tool-image-icon{width:40px;height:40px}
+@media(max-width:760px){
+  .meeting-board-page .meeting-board-actions .meeting-tool-image-icon{width:24px;height:24px}
+  .meeting-board-page .meeting-board-actions>.meeting-board-link .meeting-tool-image-icon{width:30px;height:30px}
+}

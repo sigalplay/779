@@ -67,3 +67,5 @@ body.board-tip-open .meeting-board-surface .meeting-fullscreen-exit{display:none
 /* A picture that fills its circle (the emotion faces). */
 .toolbox-tool-circle.toolbox-tool-fill img,.toolbox-grid-large .toolbox-tool-circle.toolbox-tool-fill img{width:100%;height:100%;object-fit:cover;mix-blend-mode:multiply}
 .toolbox-grid-large button.toolbox-tool{cursor:pointer}
+/* Long names wrap to two lines instead of running into the next tool. */
+.toolbox-tool small{white-space:normal;line-height:1.15;text-align:center}
