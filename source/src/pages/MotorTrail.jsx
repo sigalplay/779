@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { normalizeBoardDate, saveGuestBoard } from "@/lib/session-board-storage";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
-import { Route, Printer, RotateCcw, X, ChevronUp, ChevronDown, Plus, ArrowRight, ListPlus, Play, Pause, Trash2, Undo2, Archive } from "lucide-react";
+import { Route, Printer, RotateCcw, X, ChevronUp, ChevronDown, ArrowRight, ListPlus, Play, Pause, Trash2, Undo2, Archive } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -89,16 +89,17 @@ export default function MotorTrail({ mode }) {
     const existing = getDraftPlan().find((p) => p.kind === "motor-trail" && p.uid === editUid);
     return existing?.customItems ?? [];
   });
-  const [pickerOpen, setPickerOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
-  const [bankTab, setBankTab] = useState("clinic"); // "clinic" | "home"
+  const [bankFilter, setBankFilter] = useState("all"); // "all" | "clinic" | "home" | "fine"
+  const [editBank, setEditBank] = useState(false);
+  const [selected, setSelected] = useState(null); // id of the station whose tools are open
+  const [lastAdded, setLastAdded] = useState(null);
   const [hiddenEquipment, setHiddenEquipment] = useState(loadHiddenEquipment);
   const [demoItem, setDemoItem] = useState(null);
   const [demoFrame, setDemoFrame] = useState(0);
   const [demoPlaying, setDemoPlaying] = useState(true);
 
   const allItems = useMemo(() => [...MOTOR_TRAIL_ITEMS, ...customItems], [customItems]);
-  const available = useMemo(() => MOTOR_TRAIL_ITEMS.filter((it) => !order.includes(it.id) && !hiddenEquipment.has(it.id)), [order, hiddenEquipment]);
   const removedEquipment = useMemo(() => MOTOR_TRAIL_ITEMS.filter((it) => hiddenEquipment.has(it.id)), [hiddenEquipment]);
   const scheduled = useMemo(() => order.map((id) => allItems.find((it) => it.id === id)).filter(Boolean), [order, allItems]);
 
@@ -116,26 +117,36 @@ export default function MotorTrail({ mode }) {
     setDemoPlaying(true);
   }
 
-  function addItem(id) {
-    setOrder((prev) => [...prev, id]);
+  // Each bank item is either clinic equipment (added by its id) or a household / fine-motor item
+  // (added as its own copy, remembering which bank item it came from).
+  function stationIdFor(bankItem) {
+    if (MOTOR_TRAIL_ITEMS.some((it) => it.id === bankItem.id)) return order.includes(bankItem.id) ? bankItem.id : null;
+    return customItems.find((it) => it.source === bankItem.id && order.includes(it.id))?.id ?? null;
   }
-  function addAccessory(accessory) {
-    const id = `custom-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-    const item = { id, label: accessory.label, image: accessory.image };
-    setCustomItems((prev) => [...prev, item]);
+  function addStation(bankItem) {
+    let id = bankItem.id;
+    if (!MOTOR_TRAIL_ITEMS.some((it) => it.id === bankItem.id)) {
+      id = `custom-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+      setCustomItems((prev) => [...prev, { id, label: bankItem.label, image: bankItem.image, emoji: bankItem.emoji, source: bankItem.id }]);
+    }
     setOrder((prev) => [...prev, id]);
-    setPickerOpen(false);
-    toast.success(t(`"${accessory.label}" נוסף למסלול`, `"${itemLabel(accessory)}" added to the course`));
+    setLastAdded(id);
+    setSelected(null);
   }
-  function addHomeItem(homeItem) {
-    const id = `custom-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-    const item = { id, label: homeItem.label, emoji: homeItem.emoji, image: homeItem.image };
-    setCustomItems((prev) => [...prev, item]);
-    setOrder((prev) => [...prev, id]);
-    toast.success(t(`"${homeItem.label}" נוסף למסלול`, `"${itemLabel(homeItem)}" added to the course`));
+  function toggleStation(bankItem) {
+    const existing = stationIdFor(bankItem);
+    if (existing) removeItem(existing);
+    else addStation(bankItem);
   }
+  useEffect(() => {
+    if (!lastAdded) return undefined;
+    document.querySelector(`[data-station="${lastAdded}"]`)?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+    const timer = window.setTimeout(() => setLastAdded(null), 1600);
+    return () => window.clearTimeout(timer);
+  }, [lastAdded]);
   function removeItem(id) {
     setOrder((prev) => prev.filter((x) => x !== id));
+    setSelected((current) => (current === id ? null : current));
   }
   function saveHiddenEquipment(next) {
     setHiddenEquipment(next);
@@ -169,6 +180,7 @@ export default function MotorTrail({ mode }) {
   }
   function resetAll() {
     setOrder([]);
+    setSelected(null);
   }
 
   function handleAddToPlan() {
@@ -229,6 +241,18 @@ export default function MotorTrail({ mode }) {
     );
   }
 
+  const bankItems = [
+    ...(bankFilter === "all" || bankFilter === "clinic" ? MOTOR_TRAIL_ITEMS.filter((it) => !hiddenEquipment.has(it.id)).map((it) => ({ ...it, group: "clinic" })) : []),
+    ...(bankFilter === "all" || bankFilter === "home" ? HOME_ITEMS.map((it) => ({ ...it, group: "home" })) : []),
+    ...(bankFilter === "all" || bankFilter === "fine" ? CREATIVE_ACCESSORIES.map((it) => ({ ...it, group: "fine" })) : []),
+  ];
+  const filters = [
+    ["all", t("הכל", "All")],
+    ["clinic", t("קליניקה", "Clinic")],
+    ["home", t("🏠 בית", "🏠 Home")],
+    ["fine", t("✋ מוטוריקה עדינה", "✋ Fine motor")],
+  ];
+
   return (
     <AppShell mode={mode}>
       {returnTo && (
@@ -240,230 +264,112 @@ export default function MotorTrail({ mode }) {
         </Link>
       )}
 
-      <div className="mb-6 flex flex-col-reverse items-center gap-4 sm:flex-row print:hidden">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 text-sage">
-            <Route className="h-5 w-5" />
-            <span className="text-sm font-bold">{t("כלי יצירה", "Creative tool")}</span>
-          </div>
-          <h1 className="mt-1 font-display text-3xl font-black md:text-4xl">{t("מסלול מוטורי", "Obstacle Course")}</h1>
-          <p className="mt-1 text-muted-foreground">
-            {t("לוחצים על המתקנים מהבנק בסדר הרצוי לבניית המסלול - ומקבלים רשימה ממוספרת מוכנה להדפסה.", "Choose equipment from the bank in the order you want to build a obstacle course and get a numbered list ready to print.")}
-            <br />{t("ניתן ללחוץ על סימן המשולש כדי לראות כיצד להשתמש במתקן.", "Select the triangle icon to see how to use each piece of equipment.")}
-          </p>
+      <div className="mb-4 print:hidden">
+        <div className="flex items-center gap-2 text-sage">
+          <Route className="h-5 w-5" />
+          <span className="text-sm font-bold">{t("כלי יצירה", "Creative tool")}</span>
         </div>
-        <div className="flex h-32 w-32 shrink-0 items-center justify-center rounded-3xl bg-gradient-to-br from-sage/20 to-sky/20 p-2 sm:h-36 sm:w-36">
-          <img src="/icon-bank/motor-trail/hero.webp" alt="" className="max-h-full max-w-full object-contain" />
-        </div>
+        <h1 className="mt-1 font-display text-3xl font-black md:text-4xl">{t("מסלול מוטורי", "Obstacle Course")}</h1>
+        <p className="mt-1 text-muted-foreground">{t("בוחרים מתקנים מהבנק, והם נכנסים לשביל לפי הסדר.", "Choose equipment from the bank, and it joins the trail in order.")}</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-[1fr_1.2fr] print:!grid-cols-1">
-        {/* ---------- Bank of available equipment images ---------- */}
-        <section className="print:hidden rounded-3xl border border-border/60 bg-card p-5 md:p-6">
-          <div className="mb-1 flex items-center justify-between gap-2">
-            <h2 className="font-display text-lg font-bold">{t("בנק מתקנים", "Equipment Library")}</h2>
-            {mode === "therapist" && (
-              <button type="button" onClick={() => setArchiveOpen(true)} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-bold text-muted-foreground transition hover:border-sage hover:text-foreground">
-                <Archive className="h-3.5 w-3.5" />{" "}{t("ארכיון מתקנים", "Equipment Archive")}
-                {removedEquipment.length > 0 && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-sage/25 px-1 text-[10px] text-sage-foreground">{removedEquipment.length}</span>}
-              </button>
-            )}
-          </div>
-          <p className="mb-3 text-xs text-muted-foreground">{t("לוחצים על מתקן כדי להוסיף אותו למסלול, בסדר שרוצים.", "Select a piece of equipment to add it to the trail in the order you want.")}</p>
-
-          <div className="mb-4 inline-flex rounded-full bg-muted p-1">
-            <button
-              type="button"
-              onClick={() => setBankTab("clinic")}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                bankTab === "clinic" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
-              }`}
-            >
-              {t("ציוד בקליניקה", "Clinic Equipment")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setBankTab("home")}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                bankTab === "home" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
-              }`}
-            >
-              {t("🏠 מה יש לנו בבית?", "🏠 What do we have at home?")}
-            </button>
-          </div>
-
-          {bankTab === "clinic" ? (
-            <div>
-            <div className="grid grid-cols-3 gap-3">
-              {available.map((it) => (
-                <div key={it.id} className="group relative flex aspect-square flex-col overflow-hidden rounded-3xl border border-border/60 bg-cream transition-colors hover:border-sage/60">
-                  <button type="button" onClick={() => addItem(it.id)} className="flex min-h-0 flex-1 items-center justify-center p-2" aria-label={t(`הוספת ${it.label} למסלול`, `Add ${itemLabel(it)} to the course`)}>
-                    <img src={it.image} alt="" className="max-h-full max-w-full object-contain" />
-                  </button>
-                  {it.demo ? <button type="button" onClick={() => openDemo(it)} className="absolute left-1.5 top-1.5 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sage-foreground shadow-md transition hover:scale-105" aria-label={t(`הדגמת ${it.label}`, `${itemLabel(it)} demo`)} title={t("איך עושים?", "How Does It Work?")}>
-                    <Play className="h-4 w-4 fill-current" />
-                  </button> : null}
-                  {mode === "therapist" && <button type="button" onClick={() => deleteFromBank(it)} className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-white/95 text-muted-foreground shadow-sm transition hover:bg-destructive/10 hover:text-destructive" aria-label={t(`מחיקת ${it.label} מהמאגר`, `Remove ${itemLabel(it)} from the bank`)} title={t("מחיקה מהמאגר", "Delete from the library")}>
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>}
-                  <button type="button" onClick={() => addItem(it.id)} className="w-full bg-background/90 px-1 py-1.5 text-center text-[11px] font-semibold leading-tight text-blue-600">
-                    {t(it.label, itemLabel(it))}
-                  </button>
-                </div>
-              ))}
-              {available.length === 0 && (
-                <p className="col-span-3 py-6 text-center text-sm text-muted-foreground">{t("כל המתקנים נוספו למסלול 🎉", "All equipment has been added to the trail 🎉")}</p>
-              )}
-              <button
-                type="button"
-                onClick={() => setPickerOpen(true)}
-                className="group relative flex aspect-square flex-col items-center justify-center gap-1.5 overflow-hidden rounded-3xl border-2 border-dashed border-sage/50 bg-sage/5 text-sage-foreground transition-colors hover:bg-sage/15"
-              >
-                <span className="text-4xl" aria-hidden>
-                  🎨
-                </span>
-                <span className="px-1 text-center text-[11px] font-semibold leading-tight">{t("הוסף אביזר יצירה", "Add a Creative Item")}</span>
-              </button>
-            </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-3 gap-3">
-              {HOME_ITEMS.map((it) => (
-                <button
-                  key={it.id}
-                  type="button"
-                  onClick={() => addHomeItem(it)}
-                  className="group relative flex aspect-square flex-col overflow-hidden rounded-3xl border border-border/60 bg-cream transition-colors hover:border-sky/60"
-                >
-                  <div className="relative flex min-h-0 w-full flex-1 items-center justify-center p-2 text-5xl" aria-hidden>
-                    {it.image ? <img src={it.image} alt="" className="max-h-full max-w-full object-contain" /> : it.emoji}
-                    <span className="absolute left-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-sage text-sage-foreground opacity-0 transition-opacity group-hover:opacity-100">
-                      <Plus className="h-3 w-3" />
-                    </span>
-                  </div>
-                  <span className="w-full bg-background/90 px-1 py-1.5 text-center text-[11px] font-semibold leading-tight text-blue-600">
-                    {t(it.label, itemLabel(it))}
-                  </span>
+      {/* ---------- The trail: stations in order, always in view ---------- */}
+      <section className="trail-panel print:hidden" aria-label={t("המסלול שלנו", "Our obstacle course")}>
+        <div className="trail-head">
+          <h2>{t("המסלול שלנו", "Our obstacle course")}{scheduled.length ? ` · ${t(`${scheduled.length} תחנות`, `${scheduled.length} stations`)}` : ""}</h2>
+          {scheduled.length > 0 && <span>{t("לחיצה על תחנה: שינוי סדר או מחיקה", "Tap a station to move or remove it")}</span>}
+        </div>
+        {scheduled.length === 0 ? (
+          <p className="trail-empty">{t("עוד אין תחנות. בוחרים מתקן מהבנק למטה.", "No stations yet. Choose equipment from the bank below.")}</p>
+        ) : (
+          <ol className="trail-path">
+            {scheduled.map((it, i) => (
+              <li key={it.id} data-station={it.id} className={["trail-station", lastAdded === it.id && "new", selected === it.id && "selected"].filter(Boolean).join(" ")}>
+                <button type="button" className="trail-circle" aria-expanded={selected === it.id} aria-label={t(`תחנה ${i + 1}: ${it.label}`, `Station ${i + 1}: ${itemLabel(it)}`)} onClick={() => setSelected((current) => (current === it.id ? null : it.id))}>
+                  {it.image ? <img src={it.image} alt="" /> : <span aria-hidden>{it.emoji}</span>}
+                  <span className="trail-num">{i + 1}</span>
                 </button>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* ---------- Scheduled order / printable list ---------- */}
-        <section className="rounded-3xl border border-border/60 bg-card p-5 md:p-6 print:!rounded-none print:!border-none print:!p-0">
-          <div className="mb-4 flex items-center justify-between print:hidden">
-            <h2 className="font-display text-lg font-bold">{t("המסלול שלנו", "Our obstacle course")}</h2>
-            {scheduled.length > 0 && (
-              <Button variant="ghost" size="sm" onClick={resetAll} className="rounded-full text-muted-foreground">
-                <RotateCcw className="h-3.5 w-3.5" />{" "}{t("איפוס", "Reset")}
-              </Button>
-            )}
-          </div>
-
-          <h3 className="mb-3 hidden text-center font-display text-xl font-bold print:!mb-1 print:block print:text-sm">{t("מסלול מוטורי", "Obstacle Course")}</h3>
-
-          {scheduled.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground print:hidden">{t("בחרו מתקנים מהבנק בצד כדי לבנות את המסלול.", "Choose equipment from the bank to build your obstacle course.")}</p>
-          ) : (
-            <ol className="space-y-2 print:!space-y-0.5">
-              {scheduled.map((it, i) => (
-                <li
-                  key={it.id}
-                  className="flex items-center gap-3 rounded-xl border border-border/60 bg-background px-3 py-2 print:break-inside-avoid print:!gap-1.5 print:border print:border-border print:!px-1.5 print:!py-0.5"
-                >
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sage/70 text-sm font-bold text-sage-foreground print:!h-4 print:!w-4 print:text-[9px]">
-                    {i + 1}
-                  </span>
-                  <div className="flex h-24 w-24 shrink-0 items-center justify-center print:!h-[92px] print:!w-[92px]">
-                    {it.image ? (
-                      <img src={it.image} alt="" className="max-h-full max-w-full object-contain" />
-                    ) : (
-                      <span className="text-5xl print:text-3xl" aria-hidden>
-                        {it.emoji}
-                      </span>
-                    )}
+                <small>{t(it.label, itemLabel(it))}</small>
+                {it.demo && selected !== it.id ? (
+                  <button type="button" className="trail-demo" onClick={() => openDemo(it)} aria-label={t(`איך משתמשים ב${it.label}`, `How to use ${itemLabel(it)}`)}><Play className="h-3.5 w-3.5 fill-current" /></button>
+                ) : null}
+                {selected === it.id && (
+                  <div className="trail-tools">
+                    <button type="button" onClick={() => move(i, -1)} disabled={i === 0} aria-label={t("תחנה אחת קודם", "One station earlier")}><ChevronUp className="rotate-90 h-4 w-4" /></button>
+                    <button type="button" onClick={() => removeItem(it.id)} aria-label={t("הסרה מהמסלול", "Remove from the course")} className="danger"><X className="h-4 w-4" /></button>
+                    <button type="button" onClick={() => move(i, 1)} disabled={i === scheduled.length - 1} aria-label={t("תחנה אחת אחר כך", "One station later")}><ChevronDown className="rotate-90 h-4 w-4" /></button>
                   </div>
-                  <span className="flex-1 text-lg font-medium leading-snug print:text-xs">{t(it.label, itemLabel(it))}</span>
-                  <div className="flex shrink-0 items-center gap-1 print:hidden">
-                    {it.demo ? <button type="button" onClick={() => openDemo(it)} aria-label={t(`איך משתמשים ב${it.label}`, `How to use ${itemLabel(it)}`)} className="me-1 flex h-8 items-center gap-1 rounded-full bg-sage/15 px-2.5 text-xs font-bold text-sage-foreground hover:bg-sage/25">
-                      <Play className="h-3.5 w-3.5 fill-current" />{" "}{t("איך עושים?", "How Does It Work?")}
-                    </button> : null}
-                    <button
-                      type="button"
-                      onClick={() => move(i, -1)}
-                      disabled={i === 0}
-                      aria-label={t("הזז למעלה", "Move up")}
-                      className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted disabled:opacity-30"
-                    >
-                      <ChevronUp className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => move(i, 1)}
-                      disabled={i === scheduled.length - 1}
-                      aria-label={t("הזז למטה", "Move down")}
-                      className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted disabled:opacity-30"
-                    >
-                      <ChevronDown className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeItem(it.id)}
-                      aria-label={t("הסרה", "Remove")}
-                      className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          )}
-
-          {scheduled.length > 0 && (
-            <div className="mt-5 space-y-2 print:hidden">
-              <Button onClick={() => setStarted(true)} className="w-full rounded-full bg-sage text-sage-foreground">
-                <Play className="h-4 w-4" />{" "}{t("התחל מסלול", "Start Course")}
-              </Button>
-              {mode === "therapist" && (
-                <Button onClick={handleAddToPlan} variant="outline" className="w-full rounded-full">
-                  <ListPlus className="h-4 w-4" /> {editUid ? t("עדכון המסלול בתוכנית", "Update Trail in session plan") : t("הוסף לתכנית הטיפול", "Add to Session Plan")}
-                </Button>
-              )}
-              <Button onClick={() => window.print()} variant="outline" className="w-full rounded-full">
-                <Printer className="h-4 w-4" />{" "}{t("הדפסה / שמירה כ-PDF", "Print / Save as PDF")}
-              </Button>
-            </div>
-          )}
-        </section>
-      </div>
-
-      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("הוספת אביזר יצירה למסלול", "Add a Creative Item to the Trail")}</DialogTitle>
-          </DialogHeader>
-          <p className="mb-4 text-sm text-muted-foreground">{t("בוחרים תחנת יצירה לסיום המסלול, מתוך מאגר התמונות של האתר.", "Choose a creative station from the site's image library to finish the trail.")}</p>
-          <div className="grid grid-cols-3 gap-3">
-            {CREATIVE_ACCESSORIES.map((acc) => (
-              <button
-                key={acc.id}
-                type="button"
-                onClick={() => addAccessory(acc)}
-                className="flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-cream transition-colors hover:border-sage/60"
-              >
-                <div className="flex aspect-square w-full items-center justify-center p-2">
-                  <img src={acc.image} alt="" className="max-h-full max-w-full object-contain" />
-                </div>
-                <span className="w-full bg-background/90 px-1 py-1.5 text-center text-[11px] font-semibold leading-tight text-blue-600">
-                  {t(acc.label, itemLabel(acc))}
-                </span>
-              </button>
+                )}
+              </li>
             ))}
+          </ol>
+        )}
+        {scheduled.length > 0 && (
+          <div className="trail-actions">
+            <button type="button" className="primary" onClick={() => setStarted(true)}><Play className="h-4 w-4" />{t("התחלת מסלול", "Start the course")}</button>
+            <button type="button" onClick={() => window.print()} aria-label={t("הדפסה", "Print")}><Printer className="h-4 w-4" /><span className="print-label">{t("הדפסה", "Print")}</span></button>
+            {mode === "therapist" && <button type="button" onClick={handleAddToPlan}><ListPlus className="h-4 w-4" />{editUid ? t("עדכון בתכנית", "Update plan") : t("לתכנית", "To the plan")}</button>}
+            <button type="button" className="ghost" onClick={resetAll} aria-label={t("איפוס המסלול", "Reset the course")}><RotateCcw className="h-4 w-4" /></button>
           </div>
-        </DialogContent>
-      </Dialog>
+        )}
+      </section>
+
+      {/* ---------- The bank: one list with filters ---------- */}
+      <section className="trail-bank print:hidden">
+        <div className="trail-bank-head">
+          <h2>{t("בוחרים תחנה", "Choose a station")}</h2>
+          {mode === "therapist" && (
+            <div className="flex items-center gap-1.5">
+              <button type="button" onClick={() => setEditBank((v) => !v)} aria-pressed={editBank} className={editBank ? "trail-small on" : "trail-small"}>
+                <Trash2 className="h-3.5 w-3.5" />{editBank ? t("סיום עריכה", "Done") : t("עריכת הבנק", "Edit the bank")}
+              </button>
+              <button type="button" onClick={() => setArchiveOpen(true)} className="trail-small">
+                <Archive className="h-3.5 w-3.5" />{t("ארכיון", "Archive")}
+                {removedEquipment.length > 0 && <span className="trail-count">{removedEquipment.length}</span>}
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="trail-filters" role="tablist">
+          {filters.map(([value, label]) => (
+            <button key={value} type="button" role="tab" aria-selected={bankFilter === value} className={bankFilter === value ? "on" : ""} onClick={() => setBankFilter(value)}>{label}</button>
+          ))}
+        </div>
+        <div className="trail-grid">
+          {bankItems.map((it) => {
+            const inTrail = Boolean(stationIdFor(it));
+            return (
+              <div key={`${it.group}-${it.id}`} className={inTrail ? "trail-tile in" : "trail-tile"}>
+                <button type="button" onClick={() => toggleStation(it)} aria-pressed={inTrail}
+                  aria-label={inTrail ? t(`הסרת ${it.label} מהמסלול`, `Remove ${itemLabel(it)} from the course`) : t(`הוספת ${it.label} למסלול`, `Add ${itemLabel(it)} to the course`)}>
+                  <span className="trail-tile-img">{it.image ? <img src={it.image} alt="" /> : <span aria-hidden>{it.emoji}</span>}</span>
+                  <small>{t(it.label, itemLabel(it))}</small>
+                  {inTrail && <em>{t("✓ במסלול", "✓ In the course")}</em>}
+                </button>
+                {editBank && it.group === "clinic" && (
+                  <button type="button" className="trail-tile-delete" onClick={() => deleteFromBank(it)} aria-label={t(`מחיקת ${it.label} מהמאגר`, `Remove ${itemLabel(it)} from the bank`)}><Trash2 className="h-3.5 w-3.5" /></button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ---------- Printed list ---------- */}
+      <section className="hidden print:block">
+        <h3 className="mb-1 text-center font-display text-sm font-bold">{t("מסלול מוטורי", "Obstacle Course")}</h3>
+        <ol className="space-y-0.5">
+          {scheduled.map((it, i) => (
+            <li key={it.id} className="flex break-inside-avoid items-center gap-1.5 border border-border px-1.5 py-0.5">
+              <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sage/70 text-[9px] font-bold">{i + 1}</span>
+              <div className="flex h-[92px] w-[92px] shrink-0 items-center justify-center">
+                {it.image ? <img src={it.image} alt="" className="max-h-full max-w-full object-contain" /> : <span className="text-3xl" aria-hidden>{it.emoji}</span>}
+              </div>
+              <span className="flex-1 text-xs font-medium">{t(it.label, itemLabel(it))}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
 
       <Dialog open={archiveOpen} onOpenChange={setArchiveOpen}>
         <DialogContent className="max-w-2xl">
