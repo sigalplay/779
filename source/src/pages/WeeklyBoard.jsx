@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ShareLinkField } from "@/components/ShareLinkField";
+import { ShareLinkActions } from "@/components/ShareLinkActions";
 import { toast } from "sonner";
 import {
   CalendarDays,
@@ -924,6 +925,7 @@ export default function WeeklyBoard({ mode }) {
               {copied ? t("הועתק", "Copied") : t("העתקה", "Copy")}
             </Button>
           </div>
+          {!shareCompressing && <ShareLinkActions url={shareUrlToShow} message={t("הלוח השבועי:", "The weekly board:")} />}
         </DialogContent>
       </Dialog>
     </AppShell>

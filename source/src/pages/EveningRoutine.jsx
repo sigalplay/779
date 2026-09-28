@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { ShareLinkField } from "@/components/ShareLinkField";
+import { ShareLinkActions } from "@/components/ShareLinkActions";
 import { Printer, RotateCcw, X, ChevronUp, ChevronDown, Plus, Smartphone, Copy, Check } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useTranslator } from "@/lib/language";
@@ -100,7 +101,7 @@ export default function EveningRoutine({ mode }) {
         </section>
       </div>
 
-      <Dialog open={shareOpen} onOpenChange={setShareOpen}><DialogContent><DialogHeader><DialogTitle>{t("קישור ללוח האינטראקטיבי", "Link to the interactive visual schedule")}</DialogTitle></DialogHeader><p className="mb-4 text-sm text-muted-foreground">{t("שלחו את הקישור לפלאפון של הילד/ה. מסמנים כל שלב לאחר שסיימו אותו.", "Send the link to the child's phone and check off each step when it is complete.")}</p>{childUrl && <><div className="mb-4 flex justify-center"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(childUrl)}`} alt={t("קוד QR ללוח הערב", "QR code for the evening board")} width={180} height={180} className="rounded-2xl border bg-white p-2" /></div><div className="flex items-center gap-2 rounded-xl border bg-muted/50 p-2"><ShareLinkField value={childUrl} className="flex-1 bg-transparent px-2 text-sm" /><Button size="sm" variant="ghost" onClick={copyLink} className="rounded-full">{copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{copied ? t("הועתק", "Copied") : t("העתקה", "Copy")}</Button></div></>}</DialogContent></Dialog>
+      <Dialog open={shareOpen} onOpenChange={setShareOpen}><DialogContent><DialogHeader><DialogTitle>{t("קישור ללוח האינטראקטיבי", "Link to the interactive visual schedule")}</DialogTitle></DialogHeader><p className="mb-4 text-sm text-muted-foreground">{t("שלחו את הקישור לפלאפון של הילד/ה. מסמנים כל שלב לאחר שסיימו אותו.", "Send the link to the child's phone and check off each step when it is complete.")}</p>{childUrl && <><div className="mb-4 flex justify-center"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(childUrl)}`} alt={t("קוד QR ללוח הערב", "QR code for the evening board")} width={180} height={180} className="rounded-2xl border bg-white p-2" /></div><div className="flex items-center gap-2 rounded-xl border bg-muted/50 p-2"><ShareLinkField value={childUrl} className="flex-1 bg-transparent px-2 text-sm" /><Button size="sm" variant="ghost" onClick={copyLink} className="rounded-full">{copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{copied ? t("הועתק", "Copied") : t("העתקה", "Copy")}</Button></div><ShareLinkActions url={childUrl} message={t("לוח ההתארגנות של הערב:", "Your evening routine board:")} /></>}</DialogContent></Dialog>
     </AppShell>
   );
 }
