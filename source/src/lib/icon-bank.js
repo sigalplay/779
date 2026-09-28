@@ -8,12 +8,15 @@
 
 const BASE = "/icon-bank";
 
-// בנק המזון: פירות, ירקות, מוצרי חלב ומצרכי אפייה שצוירו לבנק. מילה שלמה בלבד,
+// בנק המזון: פירות, ירקות, מצרכים וכלי מטבח שצוירו לבנק. מילה שלמה בלבד,
 // כדי ש"גזרו" לא יקבל גזר ו"תפוח אדמה" לא יקבל תפוח.
 const W = "(?<![א-ת])";
 const E = "(?![א-ת])";
 export const FOOD_ITEMS = [
   // ריבה ראשונה, כדי ש"ריבת תות" תקבל ריבה ולא תות.
+  // עגבניות שרי לפני עגבנייה, וחמאת בוטנים לפני חמאה.
+  { label: "עגבניות שרי", image: `${BASE}/food/cherry-tomatoes.webp`, re: new RegExp(`${W}עגבני(ות|יות|ית|יית) שרי${E}`) },
+  { label: "חמאת בוטנים", image: `${BASE}/food/peanut-butter.webp`, re: new RegExp(`${W}חמאת בוטנים${E}`) },
   { label: "ריבה", image: `${BASE}/food/jam.webp`, re: new RegExp(`${W}ריב(ה|ת|ות)${E}`) },
   { label: "תפוח", image: `${BASE}/food/apple.webp`, re: new RegExp(`${W}תפוח(ים)?${E}(?! אדמה)`) },
   { label: "תפוז", image: `${BASE}/food/orange.webp`, re: new RegExp(`${W}תפוז(ים)?${E}`) },
@@ -46,6 +49,26 @@ export const FOOD_ITEMS = [
   { label: "טחינה", image: `${BASE}/food/tahini.webp`, re: new RegExp(`${W}טחינה${E}`) },
   { label: "קוקוס", image: `${BASE}/food/coconut.webp`, re: new RegExp(`${W}(קוקוס|אגוז קוקוס)${E}`) },
   { label: "שקדים", image: `${BASE}/food/almonds.webp`, re: new RegExp(`${W}שקד(ים)?${E}`) },
+  { label: "קולפן", image: `${BASE}/food/peeler.webp`, re: new RegExp(`${W}קולפן${E}`) },
+  { label: "סיר", image: `${BASE}/food/pot.webp`, re: new RegExp(`${W}סיר(ים)?${E}`) },
+  { label: "מחבת", image: `${BASE}/food/frying-pan.webp`, re: new RegExp(`${W}מחבת${E}`) },
+  { label: "כוס מדידה", image: `${BASE}/food/measuring-cup.webp`, re: new RegExp(`${W}כו(ס|סות) מדידה${E}`) },
+  { label: "מזלג", image: `${BASE}/food/fork.webp`, re: new RegExp(`${W}מזלג(ות)?${E}`) },
+  { label: "בטטה", image: `${BASE}/food/sweet-potato.webp`, re: new RegExp(`${W}בטט(ה|ות)${E}`) },
+  { label: "קישוא", image: `${BASE}/food/zucchini.webp`, re: new RegExp(`${W}קישוא(ים)?${E}`) },
+  { label: "חציל", image: `${BASE}/food/eggplant.webp`, re: new RegExp(`${W}חציל(ים)?${E}`) },
+  { label: "כרובית", image: `${BASE}/food/cauliflower.webp`, re: new RegExp(`${W}כרובית${E}`) },
+  // "שום" לבד הוא גם "שום דבר", אז רק בצירופים של מטבח.
+  { label: "שום", image: `${BASE}/food/garlic.webp`, re: new RegExp(`${W}((שן|שיני|ראש|ראשי) שום|שום (כתוש|קצוץ|טחון))${E}|^שום$`) },
+  { label: "רימון", image: `${BASE}/food/pomegranate.webp`, re: new RegExp(`${W}רימו(ן|נים)${E}`) },
+  { label: "מלון", image: `${BASE}/food/melon.webp`, re: new RegExp(`${W}מלו(ן|נים)${E}`) },
+  { label: "אפרסק", image: `${BASE}/food/peach.webp`, re: new RegExp(`${W}אפרסק(ים)?${E}`) },
+  // "תמר" לבד הוא גם שם, אז רק ברבים.
+  { label: "תמרים", image: `${BASE}/food/dates.webp`, re: new RegExp(`${W}תמרים${E}`) },
+  { label: "פריכיות", image: `${BASE}/food/rice-cakes.webp`, re: new RegExp(`${W}פריכי(ה|ת|ות)${E}`) },
+  { label: "קצפת", image: `${BASE}/food/whipped-cream.webp`, re: new RegExp(`${W}קצפת${E}`) },
+  { label: "לחמנייה", image: `${BASE}/food/bun.webp`, re: new RegExp(`${W}לחמני(ה|יה|ות|יות)${E}`) },
+  { label: "חומוס", image: `${BASE}/food/chickpeas.webp`, re: new RegExp(`${W}חומוס${E}`) },
 ];
 
 // מיפוי ישיר: מילת מפתח (regex) -> נתיב קובץ תמונה
