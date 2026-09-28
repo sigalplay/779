@@ -15,7 +15,8 @@ const W = "(?<![א-ת])[והבלכ]?";
 const E = "(?![א-ת])";
 export const FOOD_ITEMS = [
   // ריבה ראשונה, כדי ש"ריבת תות" תקבל ריבה ולא תות.
-  // עגבניות שרי לפני עגבנייה, חמאת בוטנים לפני חמאה, מסחטה לפני לימון.
+  // עגבניות שרי לפני עגבנייה, חמאת בוטנים לפני חמאה, מסחטה לפני לימון, תבנית ביצים לפני ביצה.
+  { label: "תבנית ביצים", image: `${BASE}/equipment/egg-carton.webp`, re: new RegExp(`${W}(תבני(ת|ות)|קרטון) ביצים${E}`) },
   { label: "עגבניות שרי", image: `${BASE}/food/cherry-tomatoes.webp`, re: new RegExp(`${W}עגבני(ות|יות|ית|יית) שרי${E}`) },
   { label: "חמאת בוטנים", image: `${BASE}/food/peanut-butter.webp`, re: new RegExp(`${W}חמאת בוטנים${E}`) },
   { label: "מסחטת לימון", image: `${BASE}/food/lemon-squeezer.webp`, re: new RegExp(`${W}מסחט(ה|ת)${E}`) },
@@ -125,6 +126,13 @@ export const EQUIPMENT_ITEMS = [
   { label: "מנקי מקטרות", image: `${BASE}/equipment/pipe-cleaners.webp`, re: new RegExp(`${W}מנק(ה|י) מקטר(ת|ות)${E}`) },
   { label: "צמר גפן", image: `${BASE}/equipment/cotton-balls.webp`, re: new RegExp(`${W}(כדורי )?צמר גפן${E}`) },
   { label: "מחורר", image: `${BASE}/equipment/hole-punch.webp`, re: new RegExp(`${W}(מחורר|מנקב)${E}`) },
+  { label: "כוסות נייר", image: `${BASE}/equipment/paper-cups.webp`, re: new RegExp(`${W}כו(ס|סות) (נייר|חד[ -־]?פעמי(ת|ות))${E}`) },
+  { label: "גלילי נייר טואלט", image: `${BASE}/equipment/toilet-rolls.webp`, re: new RegExp(`${W}גליל(י|ים)? (נייר( טואלט)?|קרטון)${E}`) },
+  { label: "בלון", image: `${BASE}/equipment/balloon.webp`, re: new RegExp(`${W}בלו(ן|נים)${E}`) },
+  { label: "גומיות", image: `${BASE}/equipment/rubber-bands.webp`, re: new RegExp(`${W}גומי(ה|יה|ות|יות)${E}`) },
+  { label: "פקקים", image: `${BASE}/equipment/bottle-caps.webp`, re: new RegExp(`${W}פק(ק|קים)${E}`) },
+  { label: "מזרן", image: `${BASE}/equipment/mat.webp`, re: new RegExp(`${W}מזר(ן|ון|נים)${E}`) },
+  { label: "דלי", image: `${BASE}/equipment/bucket.webp`, re: new RegExp(`${W}דלי(ים)?${E}`) },
 ];
 
 // מיפוי ישיר: מילת מפתח (regex) -> נתיב קובץ תמונה
