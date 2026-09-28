@@ -57,8 +57,9 @@ function PostCard({ post, language, t }) {
   const content = post[language];
   return (
     <Link to={`/blog/${post.slug}`} className="group flex flex-col overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-      <div className="grid aspect-[16/9] place-items-center" style={{ background: category?.color }}>
-        <img src={post.image} alt="" loading="lazy" className="h-4/5 w-auto object-contain transition group-hover:scale-105" />
+      {/* Multiply blends the white background of an illustration into the category color. */}
+      <div className="relative aspect-[16/9] overflow-hidden" style={{ background: category?.color }}>
+        <img src={post.image} alt="" loading="lazy" className="absolute inset-0 m-auto h-4/5 max-w-[90%] object-contain mix-blend-multiply transition group-hover:scale-105" />
       </div>
       <div className="flex flex-1 flex-col gap-2 p-5">
         <span className="text-xs font-bold text-primary">{category ? t(category.he, category.en) : ""}</span>
@@ -160,8 +161,8 @@ export function BlogPost() {
           </div>
         </header>
 
-        <div className="grid aspect-[16/8] place-items-center rounded-3xl" style={{ background: category?.color }}>
-          <img src={post.image} alt={content.title} className="h-4/5 w-auto object-contain" />
+        <div className="relative aspect-[16/8] overflow-hidden rounded-3xl" style={{ background: category?.color }}>
+          <img src={post.image} alt={content.title} className="absolute inset-0 m-auto h-4/5 max-w-[90%] object-contain mix-blend-multiply" />
         </div>
 
         <div className="space-y-4 text-[1.05rem] leading-8 text-foreground/90">
