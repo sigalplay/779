@@ -55,6 +55,8 @@ const Profile = lazyRoute(() => import("@/pages/Profile"));
 const Auth = lazyRoute(() => import("@/pages/Auth"));
 const CmsAdmin = lazyRoute(() => import("@/pages/CmsAdmin"));
 const About = lazyRoute(() => import("@/pages/About"));
+const BlogIndex = lazyRoute(() => import("@/pages/Blog").then((module) => ({ default: module.BlogIndex })));
+const BlogPost = lazyRoute(() => import("@/pages/Blog").then((module) => ({ default: module.BlogPost })));
 const SharedHomePractice = lazyRoute(() => import("@/pages/SharedHomePractice"));
 const TherapistDiary = lazyRoute(() => import("@/pages/TherapistDiary"));
 const HebrewCalendarGenerator = lazyRoute(() => import("@/pages/HebrewCalendarGenerator"));
@@ -176,6 +178,8 @@ export default function App() {
         <Route path="/auth" element={<Auth />} />
         <Route path="/admin/cms" element={<CmsAdmin />} />
         <Route path="/about" element={<About />} />
+        <Route path="/blog" element={<BlogIndex />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
         <Route path="/privacy" element={<LegalPage type="privacy" />} />
         <Route path="/terms" element={<LegalPage type="terms" />} />
         <Route path="/cookies" element={<LegalPage type="cookies" />} />

@@ -75,6 +75,8 @@ const content = {
   experiments: (await load("/src/pages/TherapistExperiments.jsx")).EXPERIMENTS,
   experimentHero: (await load("/src/pages/TherapistExperiments.jsx")).experimentHero,
   experimentsEnglish: (await load("/src/lib/experiment-content-en.js")).EXPERIMENT_EN,
+  // Only articles whose date has come (Israel time); the daily build publishes the next ones.
+  blog: await load("/src/lib/blog.js"),
 };
 await vite.close();
 
@@ -84,6 +86,7 @@ const pagePaths = [
   ...content.boardGames.map((item) => `/board-game/${item.id}`),
   ...content.recipes.map((item) => `/parent/recipes/${item.id}`),
   ...content.experiments.map((item) => `/parent/experiments/${item.id}`),
+  ...content.blog.publishedPosts().map((post) => `/blog/${post.slug}`),
 ];
 const pages = pagePaths.flatMap((pagePath) => LANGUAGES.map((language) => {
   const seo = seoLib.resolveSeo(pagePath, language, content);
@@ -200,7 +203,9 @@ const lastmod = lastChangeDate();
 const xml = (value) => String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const entries = [];
 for (const page of pages.filter((item) => item.seo.robots.startsWith("index"))) {
-  entries.push({ loc: page.seo.url, alternates: seoLib.alternates(page.seo), image: page.seo.heroImage ? { loc: seoLib.absoluteUrl(page.seo.heroImage), title: page.seo.imageAlt } : null });
+  // A blog article changed on its own date; the blog's list changes with its newest article.
+  const changed = page.seo.schema?.dateModified || (page.pagePath === "/blog" ? content.blog.publishedPosts()[0]?.date : null);
+  entries.push({ loc: page.seo.url, lastmod: changed, alternates: seoLib.alternates(page.seo), image: page.seo.heroImage ? { loc: seoLib.absoluteUrl(page.seo.heroImage), title: page.seo.imageAlt } : null });
 }
 for (const [he, en] of STANDALONE_PAGES) {
   const pair = [["he", seoLib.absoluteUrl(he)], ...(en ? [["en", seoLib.absoluteUrl(en)]] : []), ["x-default", seoLib.absoluteUrl(he)]];
@@ -213,7 +218,7 @@ const sitemap = [
   ...entries.map((entry) => [
     "  <url>",
     `    <loc>${xml(entry.loc)}</loc>`,
-    `    <lastmod>${lastmod}</lastmod>`,
+    `    <lastmod>${entry.lastmod || lastmod}</lastmod>`,
     ...entry.alternates.map(([lang, href]) => `    <xhtml:link rel="alternate" hreflang="${lang}" href="${xml(href)}"/>`),
     ...(entry.image ? [`    <image:image><image:loc>${xml(entry.image.loc)}</image:loc></image:image>`] : []),
     "  </url>",
