@@ -150,6 +150,13 @@ export function getActivity(id) {
   return allActivities().find((a) => a.id === id) ?? null;
 }
 
+// Changes an activity the therapist saved herself (the generator's "save" after editing).
+export function updateCustomActivity(id, patch) {
+  const list = customActivities().map((activity) => (activity.id === id ? { ...activity, ...patch, id } : activity));
+  write(KEYS.activities, list);
+  return list.find((activity) => activity.id === id) ?? null;
+}
+
 export function addActivity(a) {
   const activity = { ...a, id: uid(), created_at: new Date().toISOString() };
   const list = customActivities();

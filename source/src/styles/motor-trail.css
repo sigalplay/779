@@ -65,3 +65,6 @@
   .trail-actions button{min-height:38px;padding:4px 10px;font-size:13px}
   .trail-actions .print-label{display:none}
 }
+/* In "All", a title opens each group of the bank (clinic, home, fine motor). */
+.trail-group-title{grid-column:1/-1;margin:10px 2px 0;font-size:15px;font-weight:800;color:#40362f}
+.trail-group-title:first-child{margin-top:0}

@@ -47,6 +47,7 @@ const TherapistPlans = lazyRoute(() => import("@/pages/TherapistPlans"));
 const BoardGames = lazyRoute(() => import("@/pages/BoardGames"));
 const BoardGameDetail = lazyRoute(() => import("@/pages/BoardGameDetail"));
 const SocialStories = lazyRoute(() => import("@/pages/SocialStories"));
+const ActivityGenerator = lazyRoute(() => import("@/pages/ActivityGenerator"));
 const AllActivities = lazyRoute(() => import("@/pages/AllActivities"));
 const ActivityDetail = lazyRoute(() => import("@/pages/ActivityDetail"));
 const Favorites = lazyRoute(() => import("@/pages/Favorites"));
@@ -54,6 +55,8 @@ const Profile = lazyRoute(() => import("@/pages/Profile"));
 const Auth = lazyRoute(() => import("@/pages/Auth"));
 const CmsAdmin = lazyRoute(() => import("@/pages/CmsAdmin"));
 const About = lazyRoute(() => import("@/pages/About"));
+const BlogIndex = lazyRoute(() => import("@/pages/Blog").then((module) => ({ default: module.BlogIndex })));
+const BlogPost = lazyRoute(() => import("@/pages/Blog").then((module) => ({ default: module.BlogPost })));
 const SharedHomePractice = lazyRoute(() => import("@/pages/SharedHomePractice"));
 const TherapistDiary = lazyRoute(() => import("@/pages/TherapistDiary"));
 const HebrewCalendarGenerator = lazyRoute(() => import("@/pages/HebrewCalendarGenerator"));
@@ -153,6 +156,7 @@ export default function App() {
         <Route path="/parent/board-games" element={<BoardGames mode="parent" />} />
         <Route path="/board-game/:id" element={<BoardGameDetail />} />
         <Route path="/therapist/social-stories" element={<SocialStories mode="therapist" />} />
+        <Route path="/therapist/activity-generator" element={<ActivityGenerator />} />
         <Route path="/parent/social-stories" element={<SocialStories mode="parent" />} />
         <Route path="/parent/morning-routine" element={<MorningRoutine mode="parent" />} />
         <Route path="/parent/evening-routine" element={<EveningRoutine mode="parent" />} />
@@ -174,6 +178,8 @@ export default function App() {
         <Route path="/auth" element={<Auth />} />
         <Route path="/admin/cms" element={<CmsAdmin />} />
         <Route path="/about" element={<About />} />
+        <Route path="/blog" element={<BlogIndex />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
         <Route path="/privacy" element={<LegalPage type="privacy" />} />
         <Route path="/terms" element={<LegalPage type="terms" />} />
         <Route path="/cookies" element={<LegalPage type="cookies" />} />

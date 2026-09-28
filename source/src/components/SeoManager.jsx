@@ -11,6 +11,9 @@ async function loadContent(path) {
     ]);
     return { activities: SEED_ACTIVITIES, activityHero, activityEnglish: activityEnglishContent, activityTitle };
   }
+  if (path.startsWith("/blog/")) {
+    return { blog: await import("@/lib/blog") };
+  }
   if (path.startsWith("/board-game/")) {
     const [{ BOARD_GAMES }, { BOARD_GAMES_EN }] = await Promise.all([import("@/lib/board-games-data"), import("@/lib/board-games-en")]);
     return { boardGames: BOARD_GAMES, boardGamesEnglish: BOARD_GAMES_EN };

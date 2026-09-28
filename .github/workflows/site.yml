@@ -11,6 +11,10 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+  # Every night just after midnight in Israel (22:07 UTC): blog articles whose date has come
+  # are published without a new commit.
+  schedule:
+    - cron: "7 22 * * *"
 
 permissions:
   contents: read

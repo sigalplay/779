@@ -27,6 +27,7 @@ const MENU_GROUPS = [
     links: [
       ["/parent/play", "במה נשחק היום?", "What should we play today?"],
       ["/parent/all", "כל הפעילויות", "All activities"],
+      ["/blog", "הבלוג", "Blog"],
     ],
   },
   {
@@ -37,6 +38,7 @@ const MENU_GROUPS = [
       ["/therapist/diary", "יומן מטפל", "Therapist Calendar"],
       ["/therapist/plans", "התכניות השמורות שלי", "Saved Plans"],
       ["/therapist/motor-trail", "מסלול מוטורי", "Obstacle Course Builder"],
+      ["/therapist/activity-generator", "מחולל פעילויות", "Activity generator"],
     ],
   },
   {
@@ -170,6 +172,7 @@ export function AppShell({ mode = "parent", children, pageClassName, fullScreen 
         // בעמודי ההורים לא מציגים את הקישור למטפלים.
         ...(location.pathname.startsWith("/parent") ? [] : [["/therapist/build?view=session", t("למטפלים", "Therapists")]]),
         [allActivitiesPath, t("כל הפעילויות", "All activities")],
+        ["/blog", t("בלוג", "Blog")],
         ["/favorites", t("מועדפים", "Favorites")],
         ["/about", t("אודות", "About")],
       ];
@@ -366,6 +369,7 @@ function SiteFooter() {
         </div>
         <nav className="flex flex-wrap gap-x-4 gap-y-3 text-sm font-semibold text-muted-foreground" aria-label={t("מידע משפטי", "Legal information")}>
           <Link className="hover:text-foreground" to="/about">{t("אודות", "About")}</Link>
+          <Link className="hover:text-foreground" to="/blog">{t("בלוג", "Blog")}</Link>
           <Link className="hover:text-foreground" to="/privacy">{t("מדיניות פרטיות", "Privacy Policy")}</Link>
           <Link className="hover:text-foreground" to="/terms">{t("תנאי שימוש", "Terms of Use")}</Link>
           <Link className="hover:text-foreground" to="/cookies">{t("מדיניות Cookies", "Cookie Policy")}</Link>

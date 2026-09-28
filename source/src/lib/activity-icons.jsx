@@ -793,7 +793,7 @@ export const ACTIVITY_ICON_SETS = {
   "seed-69": {
     hero: "/icon-bank/manual/whisk-pompoms.webp",
     materials: {
-      "מטרפה (וויסק) מטבח": "/icon-bank/manual/whisk-tool.webp",
+      "מטרפה (וויסק) מטבח": "/icon-bank/food/whisk.webp",
       "פומפונים רכים בצבעים שונים": "/icon-bank/manual/pompoms-sorting-step.webp",
     },
     steps: {

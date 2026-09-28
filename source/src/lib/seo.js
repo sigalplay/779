@@ -23,6 +23,7 @@ const PAGE_META = {
   "/parent/weekly-board": [["לוח שבועי לילדים – מערכת שבועית חזותית | בואו נשחק", "הכינו לוח שבועי לילדים והציגו בתמונות חוגים, טיפולים, מסגרות ואירועים. צרו מערכת שבועית חזותית המותאמת למשפחה שלכם."], ["Weekly Visual Planner for Children — Let's Play", "Create a clear weekly planner using child-friendly illustrations."]],
   "/parent/hebrew-calendar": [["לוח שנה עברי לילדים – בואו נשחק", "לוח שנה עברי אינטראקטיבי לילדים עם חגים, עונות וימי השבוע."], ["Printable Family Calendar — Let's Play", "Create and print a family calendar with personal events and a family photo."]],
   "/parent/social-stories": [["סיפורים חברתיים לילדים – בואו נשחק", "סיפורים חברתיים להכנה למצבים יומיומיים: גן, רופא, פרידה, אורחים ועוד."], ["Social Stories for Children — Let's Play", "Illustrated social stories that help children understand routines and everyday situations."]],
+  "/blog": [["בלוג להורים ולמטפלים – מאמרים של מרפאה בעיסוק | בואו נשחק", "מאמרים מעשיים של מרפאה בעיסוק התפתחותית: מוטוריקה עדינה, ויסות חושי, שגרה, סיפורים חברתיים ומשחק, עם רעיונות שאפשר לנסות בבית."], ["Blog for Parents and Therapists — Articles by an Occupational Therapist | Let's Play", "Practical articles by a developmental occupational therapist: fine motor skills, sensory regulation, routines, social stories and play, with ideas to try at home."]],
   "/about": [["אודות – בואו נשחק", "הכירו את בואו נשחק: פעילויות מעשיות, משחקים וכלים ויזואליים לילדים, להורים ולמטפלים."], ["About Let's Play", "Learn about Let's Play, a collection of practical activities and visual tools for children, parents, and therapists."]],
   "/privacy": [["מדיניות פרטיות – בואו נשחק", "כיצד בואו נשחק אוספת, שומרת ומגנה על המידע שלכם."], ["Privacy Policy — Let's Play", "How Let's Play collects, uses, and protects information."]],
   "/terms": [["תנאי שימוש – בואו נשחק", "תנאי השימוש באתר בואו נשחק עבור הורים, מטפלים ומשתמשים נוספים."], ["Terms of Use — Let's Play", "Terms for parents, therapists, and other users of the Let's Play website."]],
@@ -126,6 +127,40 @@ export function resolveSeo(path, language, content) {
       heroImage: hero,
       imageAlt: `${name} – ${contextLabel(context, language)}`,
       schema: howTo({ name, description, image: hero, url, language, supplies: english?.materials || activity.materials || [], steps, minutes: activity.duration_min }),
+    };
+  }
+
+  match = bare.match(/^\/blog\/([^/]+)$/);
+  if (match && content?.blog) {
+    const post = content.blog.findPost(decodeURIComponent(match[1]));
+    if (!post) return null;
+    const text = post[language];
+    const category = content.blog.blogCategory(post.category);
+    return {
+      ...base,
+      title: `${text.title} | ${SITE_NAME[language]}`,
+      description: clean(text.description),
+      type: "article",
+      heroImage: post.image,
+      imageAlt: text.title,
+      schema: {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        headline: text.title,
+        description: clean(text.description),
+        image: absoluteUrl(post.image),
+        inLanguage: language,
+        url,
+        mainEntityOfPage: url,
+        datePublished: post.date,
+        dateModified: post.updated || post.date,
+        keywords: post.keyword[language],
+        ...(category ? { articleSection: pick(language, category.he, category.en) } : {}),
+        wordCount: content.blog.postText(post, language).split(/\s+/).length,
+        author: { "@type": "Person", name: pick(language, "סיגל ששון־ספקטור", "Sigal Sasson-Spector"), jobTitle: pick(language, "מרפאה בעיסוק התפתחותית", "Developmental occupational therapist"), url: pageUrl("/about", language) },
+        publisher,
+        isPartOf: { "@type": "Blog", name: pick(language, "הבלוג של בואו נשחק", "The Let's Play Blog"), url: pageUrl("/blog", language) },
+      },
     };
   }
 

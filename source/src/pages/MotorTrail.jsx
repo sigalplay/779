@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { normalizeBoardDate, saveGuestBoard } from "@/lib/session-board-storage";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -337,10 +337,16 @@ export default function MotorTrail({ mode }) {
           ))}
         </div>
         <div className="trail-grid">
-          {bankItems.map((it) => {
+          {bankItems.map((it, index) => {
             const inTrail = Boolean(stationIdFor(it));
+            // In "All", a title opens each group: the clinic first, then home, then fine motor.
+            const groupTitle = bankFilter === "all" && it.group !== bankItems[index - 1]?.group
+              ? { clinic: t("🏥 בקליניקה", "🏥 In the clinic"), home: t("🏠 בבית", "🏠 At home"), fine: t("✋ מוטוריקה עדינה", "✋ Fine motor") }[it.group]
+              : null;
             return (
-              <div key={`${it.group}-${it.id}`} className={inTrail ? "trail-tile in" : "trail-tile"}>
+              <Fragment key={`${it.group}-${it.id}`}>
+              {groupTitle && <h3 className="trail-group-title">{groupTitle}</h3>}
+              <div className={inTrail ? "trail-tile in" : "trail-tile"}>
                 <button type="button" onClick={() => toggleStation(it)} aria-pressed={inTrail}
                   aria-label={inTrail ? t(`הסרת ${it.label} מהמסלול`, `Remove ${itemLabel(it)} from the course`) : t(`הוספת ${it.label} למסלול`, `Add ${itemLabel(it)} to the course`)}>
                   <span className="trail-tile-img">{it.image ? <img src={it.image} alt="" /> : <span aria-hidden>{it.emoji}</span>}</span>
@@ -351,6 +357,7 @@ export default function MotorTrail({ mode }) {
                   <button type="button" className="trail-tile-delete" onClick={() => deleteFromBank(it)} aria-label={t(`מחיקת ${it.label} מהמאגר`, `Remove ${itemLabel(it)} from the bank`)}><Trash2 className="h-3.5 w-3.5" /></button>
                 )}
               </div>
+              </Fragment>
             );
           })}
         </div>

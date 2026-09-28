@@ -534,7 +534,7 @@ const NEW_EXPERIMENT_MATERIALS = {
     `${ROOT}/new-experiments-cotton-swabs.webp`,
   ],
   "ice-crack-magic": [
-    "/icon-bank/kitchen-toast-steps/bowl-2.webp",
+    "/icon-bank/embedded-v358/seed-84/material-bowl.webp",
     "/icon-bank/shared-new/material-water-cup.webp",
     `${ROOT}/lava-lamp-material-5.webp`,
     "/icon-bank/embedded-v358/seed-84/material-cornstarch.webp",
