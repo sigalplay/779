@@ -26,7 +26,7 @@ const PRIVATE_ROUTES = [
   "/therapist/build", "/therapist/all", "/therapist/recipes", "/therapist/experiments", "/therapist/cipher",
   "/therapist/morning-routine", "/therapist/evening-routine", "/therapist/weekly-board", "/therapist/motor-trail",
   "/therapist/plans", "/therapist/diary", "/therapist/board-games",
-  "/therapist/social-stories", "/therapist/hebrew-calendar", "/parent/cipher",
+  "/therapist/social-stories", "/therapist/hebrew-calendar", "/therapist/community-activities", "/parent/cipher",
   "/child/morning-routine", "/child/evening-routine", "/shared/weekly-board", "/shared/hebrew-calendar", "/shared/home-practice",
 ];
 

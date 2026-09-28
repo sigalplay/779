@@ -3,6 +3,7 @@
 // A signed-in therapist describes the activity she needs; Claude writes it in the site's activity
 // format and picks illustrations only from the site's own catalog (public/ai/illustration-catalog.json,
 // written by scripts/build-ai-catalog.mjs). Each therapist has a daily limit (table ai_activity_requests).
+// Every activity it writes is also added to the shared bank (table community_activities).
 //
 // Deploy:   supabase functions deploy generate-activity
 // Secrets:  supabase secrets set ANTHROPIC_API_KEY=...
@@ -123,6 +124,26 @@ async function requestsToday(userId: string) {
   return Number(response.headers.get("content-range")?.split("/")[1] ?? 0);
 }
 
+// The shared bank of generated activities, without who asked for them.
+async function shareActivity(activity: Record<string, unknown>, equipment: string, language: string) {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/community_activities`, {
+    method: "POST",
+    headers: { ...serviceHeaders, Prefer: "return=representation" },
+    body: JSON.stringify({
+      activity,
+      title: activity.title,
+      goals: activity.goals ?? [],
+      age_min: activity.age_min ?? null,
+      age_max: activity.age_max ?? null,
+      equipment,
+      language,
+    }),
+  });
+  if (!response.ok) return null;
+  const [row] = await response.json();
+  return row?.id ?? null;
+}
+
 async function recordRequest(userId: string, usage: unknown) {
   await fetch(`${SUPABASE_URL}/rest/v1/ai_activity_requests`, {
     method: "POST",
@@ -189,7 +210,11 @@ Deno.serve(async (request) => {
     }));
 
     await recordRequest(user.id, response.usage);
-    return reply(200, { activity, remaining: Math.max(0, DAILY_LIMIT - used - 1) });
+    // A request that was not an activity comes back without a title and is not shared.
+    const communityId = activity.title
+      ? await shareActivity(activity, input.equipment === "clinic" ? "clinic" : "home", input.language === "en" ? "en" : "he").catch(() => null)
+      : null;
+    return reply(200, { activity, communityId, remaining: Math.max(0, DAILY_LIMIT - used - 1) });
   } catch (error) {
     if (error instanceof Anthropic.RateLimitError) return reply(503, { error: "busy" });
     if (error instanceof Anthropic.AuthenticationError) return reply(500, { error: "not-configured" });
