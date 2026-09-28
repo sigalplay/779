@@ -89,6 +89,17 @@ export const FOOD_ITEMS = [
   { label: "גלידה", image: `${BASE}/food/ice-cream.webp`, re: new RegExp(`${W}גליד(ה|ות)${E}`) },
   { label: "מאפין", image: `${BASE}/food/muffin.webp`, re: new RegExp(`${W}(?<!תבנית )מאפי(ן|נים|נס)${E}`) },
   { label: "עוגה", image: `${BASE}/food/cake-slice.webp`, re: new RegExp(`${W}עוג(ה|ת|ות)${E}`) },
+  { label: "כיריים", image: `${BASE}/food/stove.webp`, re: new RegExp(`${W}(כיריים|גז)${E}`) },
+  { label: "כיור", image: `${BASE}/food/sink.webp`, re: new RegExp(`${W}כיור(ים)?${E}`) },
+  { label: "מדיח כלים", image: `${BASE}/food/dishwasher.webp`, re: new RegExp(`${W}מדיח${E}`) },
+  { label: "קומקום", image: `${BASE}/food/kettle.webp`, re: new RegExp(`${W}קומקום${E}`) },
+  { label: "מעבד מזון", image: `${BASE}/food/food-processor.webp`, re: new RegExp(`${W}מעבד מזון${E}`) },
+  { label: "מלחייה", image: `${BASE}/food/salt-shaker.webp`, re: new RegExp(`${W}מלחי(ה|יה)${E}`) },
+  { label: "ספוג", image: `${BASE}/food/sponge.webp`, re: new RegExp(`${W}ספוג(ים)?${E}`) },
+  { label: "מגבונים", image: `${BASE}/food/wet-wipes.webp`, re: new RegExp(`${W}מגבו(ן|נים)${E}`) },
+  { label: "קופסת אוכל", image: `${BASE}/food/lunch-box.webp`, re: new RegExp(`${W}קופס(ת|אות) (אוכל|אחסון)${E}`) },
+  { label: "טיימר", image: `${BASE}/food/kitchen-timer.webp`, re: new RegExp(`${W}טיימר${E}`) },
+  { label: "קמח", image: `${BASE}/manual/mug-cake-new/mug-cake-flour.webp`, re: new RegExp(`${W}קמח${E}`) },
 ];
 
 // מיפוי ישיר: מילת מפתח (regex) -> נתיב קובץ תמונה
