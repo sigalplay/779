@@ -2,18 +2,18 @@
 //
 // A signed-in therapist describes the activity she needs; Claude writes it in the site's activity
 // format and picks illustrations only from the site's own catalog (public/ai/illustration-catalog.json,
-// written by scripts/build-ai-catalog.mjs). Each therapist has a daily limit (table ai_activity_requests).
+// written by scripts/build-ai-catalog.mjs). Each therapist has a monthly limit (table ai_activity_requests).
 // Every activity it writes is also added to the shared bank (table community_activities).
 //
 // Deploy:   supabase functions deploy generate-activity
 // Secrets:  supabase secrets set ANTHROPIC_API_KEY=...
-//           optional: AI_DAILY_LIMIT (default 10), AI_CATALOG_URL (default: the live site's catalog)
+//           optional: AI_MONTHLY_LIMIT (default 20), AI_CATALOG_URL (default: the live site's catalog)
 import Anthropic from "npm:@anthropic-ai/sdk";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const DAILY_LIMIT = Number(Deno.env.get("AI_DAILY_LIMIT") ?? 10);
+const MONTHLY_LIMIT = Number(Deno.env.get("AI_MONTHLY_LIMIT") ?? 20);
 const CATALOG_URL = Deno.env.get("AI_CATALOG_URL") ?? "https://letsplayot.com/ai/illustration-catalog.json";
 
 const client = new Anthropic(); // reads the ANTHROPIC_API_KEY secret
@@ -114,8 +114,15 @@ async function currentUser(authorization: string) {
 
 const serviceHeaders = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, "Content-Type": "application/json" };
 
-async function requestsToday(userId: string) {
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+// Activities since the first of this month (Israel time), so the limit renews on the 1st.
+function startOfMonthInIsrael() {
+  const [year, month] = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jerusalem", year: "numeric", month: "2-digit" }).format(new Date()).split("-");
+  // Midnight in Israel is 21:00 or 22:00 UTC of the day before; the earlier one never misses a request.
+  return new Date(Date.UTC(Number(year), Number(month) - 1, 1) - 3 * 60 * 60 * 1000).toISOString();
+}
+
+async function requestsThisMonth(userId: string) {
+  const since = startOfMonthInIsrael();
   const response = await fetch(
     `${SUPABASE_URL}/rest/v1/ai_activity_requests?select=id&user_id=eq.${encodeURIComponent(userId)}&created_at=gte.${encodeURIComponent(since)}`,
     { headers: { ...serviceHeaders, Prefer: "count=exact", Range: "0-0" } },
@@ -166,8 +173,8 @@ Deno.serve(async (request) => {
   if (wish.length < 5) return reply(400, { error: "empty" });
 
   try {
-    const used = await requestsToday(user.id);
-    if (used >= DAILY_LIMIT) return reply(429, { error: "daily-limit", limit: DAILY_LIMIT });
+    const used = await requestsThisMonth(user.id);
+    if (used >= MONTHLY_LIMIT) return reply(429, { error: "monthly-limit", limit: MONTHLY_LIMIT });
 
     const { catalog, system } = await loadCatalog();
     const details = [
@@ -214,7 +221,7 @@ Deno.serve(async (request) => {
     const communityId = activity.title
       ? await shareActivity(activity, input.equipment === "clinic" ? "clinic" : "home", input.language === "en" ? "en" : "he").catch(() => null)
       : null;
-    return reply(200, { activity, communityId, remaining: Math.max(0, DAILY_LIMIT - used - 1) });
+    return reply(200, { activity, communityId, remaining: Math.max(0, MONTHLY_LIMIT - used - 1) });
   } catch (error) {
     if (error instanceof Anthropic.RateLimitError) return reply(503, { error: "busy" });
     if (error instanceof Anthropic.AuthenticationError) return reply(500, { error: "not-configured" });

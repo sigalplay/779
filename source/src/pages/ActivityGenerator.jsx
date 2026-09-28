@@ -36,7 +36,7 @@ export default function ActivityGenerator() {
 
   const errors = {
     "sign-in": t("צריך להתחבר כדי ליצור פעילות.", "Please sign in to create an activity."),
-    "daily-limit": t("הגעת למספר הפעילויות להיום. אפשר ליצור עוד מחר.", "You have reached today's limit. You can create more tomorrow."),
+    "monthly-limit": t("הגעת ל־20 הפעילויות של החודש. המכסה מתחדשת ב־1 לחודש.", "You have reached this month's 20 activities. The limit renews on the 1st."),
     refused: t("לא הצלחנו ליצור פעילות לבקשה הזאת. נסי לנסח אותה אחרת.", "We couldn't create an activity for this request. Try wording it differently."),
     busy: t("השירות עמוס כרגע. נסי שוב בעוד דקה.", "The service is busy. Please try again in a minute."),
     "not-deployed": t("מחולל הפעילויות עוד לא הופעל באתר.", "The activity generator is not switched on yet."),
@@ -302,7 +302,7 @@ function GeneratedActivity({ activity, editing, onEdit, onChange, onChangeItem, 
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
         <button type="button" onClick={onNew} className="min-h-11 rounded-full px-3 font-semibold underline">{t("בקשה חדשה", "New request")}</button>
-        {remaining != null && <span>{t(`נשארו לך היום ${remaining} פעילויות`, `${remaining} activities left today`)}</span>}
+        {remaining != null && <span>{t(`נשארו לך החודש ${remaining} פעילויות`, `${remaining} activities left this month`)}</span>}
       </div>
     </article>
   );

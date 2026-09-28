@@ -160,7 +160,7 @@ create policy "own images" on public.therapist_images for all to authenticated
   with check (user_id = auth.uid() and split_part(path, '/', 1) = auth.uid()::text);
 
 -- The activity generator (supabase/functions/generate-activity): one row per generated activity,
--- for each therapist's daily limit. Only the function writes and reads it (with the service key);
+-- for each therapist's monthly limit. Only the function writes and reads it (with the service key);
 -- a therapist can see her own rows.
 create table if not exists public.ai_activity_requests (
   id uuid primary key default gen_random_uuid(),
