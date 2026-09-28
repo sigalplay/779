@@ -121,6 +121,10 @@ export const EQUIPMENT_ITEMS = [
   { label: "ספוג", image: `${BASE}/equipment/sponge.webp`, re: new RegExp(`${W}ספוג(ים)?${E}`) },
   { label: "מראה", image: `${BASE}/equipment/hand-mirror.webp`, re: new RegExp(`${W}מרא(ה|ות)( יד| קטנה)?${E}`) },
   { label: "שעון חול", image: `${BASE}/equipment/hourglass.webp`, re: new RegExp(`${W}שעו(ן|ני) חול${E}`) },
+  { label: "צבעי עיפרון", image: `${BASE}/equipment/colored-pencils.webp`, re: new RegExp(`${W}(צבעי עיפרון|צבעי עפרון|עפרונות צבעוניים)${E}`) },
+  { label: "מנקי מקטרות", image: `${BASE}/equipment/pipe-cleaners.webp`, re: new RegExp(`${W}מנק(ה|י) מקטר(ת|ות)${E}`) },
+  { label: "צמר גפן", image: `${BASE}/equipment/cotton-balls.webp`, re: new RegExp(`${W}(כדורי )?צמר גפן${E}`) },
+  { label: "מחורר", image: `${BASE}/equipment/hole-punch.webp`, re: new RegExp(`${W}(מחורר|מנקב)${E}`) },
 ];
 
 // מיפוי ישיר: מילת מפתח (regex) -> נתיב קובץ תמונה

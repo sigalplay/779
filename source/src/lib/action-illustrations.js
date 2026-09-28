@@ -19,4 +19,8 @@ export const ACTION_ILLUSTRATIONS = [
   { image: `${BASE}/push-box.webp`, he: "דוחפים קופסה גדולה", en: "Push a big box" },
   { image: `${BASE}/wash-hands.webp`, he: "שוטפים ידיים עם סבון", en: "Wash hands with soap" },
   { image: `${BASE}/wipe-table.webp`, he: "מנגבים את השולחן בספוג", en: "Wipe the table with a sponge" },
+  { image: `${BASE}/dropper.webp`, he: "מטפטפים מים בטפטפת לכוס", en: "Drip water into a cup with a dropper" },
+  { image: `${BASE}/cut-banana.webp`, he: "חותכים בננה בסכין שולחן על קרש", en: "Cut a banana with a table knife on a board" },
+  { image: `${BASE}/walk-line.webp`, he: "הולכים על קו מסומן ברצפה", en: "Walk along a line on the floor" },
+  { image: `${BASE}/jump-hoop.webp`, he: "קופצים לתוך חישוק", en: "Jump into a hoop" },
 ];
