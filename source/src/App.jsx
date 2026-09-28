@@ -47,6 +47,7 @@ const TherapistPlans = lazyRoute(() => import("@/pages/TherapistPlans"));
 const BoardGames = lazyRoute(() => import("@/pages/BoardGames"));
 const BoardGameDetail = lazyRoute(() => import("@/pages/BoardGameDetail"));
 const SocialStories = lazyRoute(() => import("@/pages/SocialStories"));
+const ActivityGenerator = lazyRoute(() => import("@/pages/ActivityGenerator"));
 const AllActivities = lazyRoute(() => import("@/pages/AllActivities"));
 const ActivityDetail = lazyRoute(() => import("@/pages/ActivityDetail"));
 const Favorites = lazyRoute(() => import("@/pages/Favorites"));
@@ -153,6 +154,7 @@ export default function App() {
         <Route path="/parent/board-games" element={<BoardGames mode="parent" />} />
         <Route path="/board-game/:id" element={<BoardGameDetail />} />
         <Route path="/therapist/social-stories" element={<SocialStories mode="therapist" />} />
+        <Route path="/therapist/activity-generator" element={<ActivityGenerator />} />
         <Route path="/parent/social-stories" element={<SocialStories mode="parent" />} />
         <Route path="/parent/morning-routine" element={<MorningRoutine mode="parent" />} />
         <Route path="/parent/evening-routine" element={<EveningRoutine mode="parent" />} />

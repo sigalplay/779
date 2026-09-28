@@ -158,3 +158,18 @@ drop policy if exists "own images" on public.therapist_images;
 create policy "own images" on public.therapist_images for all to authenticated
   using (user_id = auth.uid())
   with check (user_id = auth.uid() and split_part(path, '/', 1) = auth.uid()::text);
+
+-- The activity generator (supabase/functions/generate-activity): one row per generated activity,
+-- for each therapist's daily limit. Only the function writes and reads it (with the service key);
+-- a therapist can see her own rows.
+create table if not exists public.ai_activity_requests (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users on delete cascade,
+  usage jsonb,
+  created_at timestamptz not null default now()
+);
+create index if not exists ai_activity_requests_user_time on public.ai_activity_requests (user_id, created_at desc);
+alter table public.ai_activity_requests enable row level security;
+drop policy if exists "own ai requests" on public.ai_activity_requests;
+create policy "own ai requests" on public.ai_activity_requests for select to authenticated
+  using (user_id = auth.uid());

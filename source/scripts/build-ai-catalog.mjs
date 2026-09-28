@@ -1,0 +1,58 @@
+// Writes public/ai/illustration-catalog.json: the site's own illustrations with the Hebrew words
+// they show, for the activity generator. The generator offers Claude only these illustrations, so
+// a generated activity is drawn with pictures the site already has.
+//
+//   node scripts/build-ai-catalog.mjs      (runs as part of `npm run build`)
+//
+// Materials: every named material picture of the activities, plus the board's toys, motor
+// equipment and fine-motor items. Steps: every step picture of the activities, with that step's text.
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { createServer as createViteServer } from "vite";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const vite = await createViteServer({ root, server: { middlewareMode: true }, appType: "custom", logLevel: "error" });
+try {
+  const { ACTIVITY_ICON_SETS } = await vite.ssrLoadModule("/src/lib/activity-icons.jsx");
+  const { SEED_ACTIVITIES } = await vite.ssrLoadModule("/src/lib/activities-data.js");
+  const { BOARD_GAMES } = await vite.ssrLoadModule("/src/lib/session-board-tools.js");
+  const { MOTOR_TRAIL_ITEMS, CREATIVE_ACCESSORIES, HOME_ITEMS } = await vite.ssrLoadModule("/src/lib/motor-trail-items.js");
+
+  const exists = (image) => typeof image === "string" && image.startsWith("/") && fs.existsSync(path.join(root, "public", decodeURI(image)));
+  const clean = (text) => String(text || "").replace(/\s+/g, " ").trim();
+
+  const materials = new Map(); // name -> image (first picture wins)
+  const addMaterial = (name, image) => {
+    const key = clean(name);
+    if (key && exists(image) && !materials.has(key)) materials.set(key, image);
+  };
+  const steps = new Map(); // image -> text
+  const addStep = (text, image) => {
+    const words = clean(text);
+    if (words && exists(image) && !steps.has(image)) steps.set(image, words.length > 140 ? `${words.slice(0, 137)}…` : words);
+  };
+
+  for (const activity of SEED_ACTIVITIES) {
+    const icons = ACTIVITY_ICON_SETS[activity.id] || {};
+    for (const [name, image] of Object.entries(icons.materials || {})) addMaterial(name, image);
+    for (const [name, image] of Object.entries(activity.material_images || {})) addMaterial(name, image);
+    for (const step of activity.steps || []) {
+      const text = typeof step === "string" ? step : step.text;
+      const image = (typeof step === "object" && (step.image || step.images?.[0])) || icons.steps?.[step.n];
+      addStep(text, image);
+    }
+  }
+  for (const item of [...BOARD_GAMES]) addMaterial(item.label, item.asset);
+  for (const item of [...MOTOR_TRAIL_ITEMS, ...CREATIVE_ACCESSORIES, ...HOME_ITEMS]) addMaterial(item.label, item.image);
+
+  const catalog = {
+    materials: [...materials].map(([name, image], index) => ({ id: `m${index + 1}`, name, image })),
+    steps: [...steps].map(([image, text], index) => ({ id: `s${index + 1}`, text, image })),
+  };
+  fs.mkdirSync(path.join(root, "public/ai"), { recursive: true });
+  fs.writeFileSync(path.join(root, "public/ai/illustration-catalog.json"), `${JSON.stringify(catalog)}\n`);
+  console.log(`illustration catalog: ${catalog.materials.length} materials, ${catalog.steps.length} steps`);
+} finally {
+  await vite.close();
+}

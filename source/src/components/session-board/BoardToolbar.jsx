@@ -131,6 +131,10 @@ export function BoardToolbar({
             <span className="meeting-group-plus" aria-hidden="true">＋</span>
             <span>{t("פעילות מהמאגר", "Activity from the catalog")}</span>
           </a>
+          <a className="meeting-add-activity meeting-generate-activity" href="/therapist/activity-generator">
+            <span className="meeting-group-plus" aria-hidden="true">✨</span>
+            <span>{t("פעילות חדשה עם AI", "New activity with AI")}</span>
+          </a>
           <a className="meeting-board-link" href={motorTrailHref}>
             <img className="meeting-tool-image-icon" src="/icon-bank/tools/motor-trail.webp" alt="" />
             <span className="meeting-action-label-desktop">{t("הוספת מסלול מוטורי", "Add an obstacle course")}</span>
