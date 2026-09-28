@@ -10,7 +10,8 @@ const BASE = "/icon-bank";
 
 // בנק המזון: פירות, ירקות, מצרכים וכלי מטבח שצוירו לבנק. מילה שלמה בלבד,
 // כדי ש"גזרו" לא יקבל גזר ו"תפוח אדמה" לא יקבל תפוח.
-const W = "(?<![א-ת])";
+// אפשר אות שימוש אחת לפני המילה: "ומחק", "הקמח", "בסיר", "לגזר", "כחמאה".
+const W = "(?<![א-ת])[והבלכ]?";
 const E = "(?![א-ת])";
 export const FOOD_ITEMS = [
   // ריבה ראשונה, כדי ש"ריבת תות" תקבל ריבה ולא תות.
@@ -99,7 +100,10 @@ export const FOOD_ITEMS = [
   { label: "מגבונים", image: `${BASE}/food/wet-wipes.webp`, re: new RegExp(`${W}מגבו(ן|נים)${E}`) },
   { label: "קופסת אוכל", image: `${BASE}/food/lunch-box.webp`, re: new RegExp(`${W}קופס(ת|אות) (אוכל|אחסון)${E}`) },
   { label: "טיימר", image: `${BASE}/food/kitchen-timer.webp`, re: new RegExp(`${W}טיימר${E}`) },
-  { label: "קמח", image: `${BASE}/manual/mug-cake-new/mug-cake-flour.webp`, re: new RegExp(`${W}קמח${E}`) },
+  { label: "קמח", image: `${BASE}/food/flour.webp`, re: new RegExp(`${W}קמח${E}`) },
+  { label: "מלח", image: `${BASE}/food/salt-jar.webp`, re: new RegExp(`${W}מלח${E}`) },
+  { label: "שמן", image: `${BASE}/food/oil.webp`, re: new RegExp(`${W}שמן${E}`) },
+  { label: "מחק", image: `${BASE}/food/eraser.webp`, re: new RegExp(`${W}מחק(ים)?${E}`) },
 ];
 
 // מיפוי ישיר: מילת מפתח (regex) -> נתיב קובץ תמונה
@@ -118,7 +122,6 @@ const MATERIAL_BANK_RULES = [
   [/ביסקוויט|עוגיות/, `${BASE}/manual/chocolate-balls-new/chocolate-balls-biscuits.webp`],
   [/חבילת שוקולד|שוקולד\b/, `${BASE}/manual/chocolate-chunks.webp`],
   [/סודה לשתייה|אבקת סודה/, `${BASE}/manual/experiments/lava-lamp-material-2.webp`],
-  [/שמן צמחי|שמן\b/, `${BASE}/manual/experiments/lava-lamp-material-3.webp`],
   [/חומץ/, `${BASE}/manual/experiments/lava-lamp-material-4.webp`],
   [/צבעי? מאכל/, `${BASE}/manual/experiments/lava-lamp-material-5.webp`],
   [/סבון כלים|סבון נוזלי/, `${BASE}/embedded-v358/seed-84/material-soap.webp`],
