@@ -7,13 +7,13 @@
 //
 // Deploy:   supabase functions deploy generate-activity
 // Secrets:  supabase secrets set ANTHROPIC_API_KEY=...
-//           optional: AI_MONTHLY_LIMIT (default 20), AI_CATALOG_URL (default: the live site's catalog)
+//           optional: AI_MONTHLY_LIMIT (default 10), AI_CATALOG_URL (default: the live site's catalog)
 import Anthropic from "npm:@anthropic-ai/sdk";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const MONTHLY_LIMIT = Number(Deno.env.get("AI_MONTHLY_LIMIT") ?? 20);
+const MONTHLY_LIMIT = Number(Deno.env.get("AI_MONTHLY_LIMIT") ?? 10);
 const CATALOG_URL = Deno.env.get("AI_CATALOG_URL") ?? "https://letsplayot.com/ai/illustration-catalog.json";
 
 const client = new Anthropic(); // reads the ANTHROPIC_API_KEY secret
