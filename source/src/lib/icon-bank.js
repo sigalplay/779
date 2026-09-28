@@ -80,7 +80,7 @@ export const FOOD_ITEMS = [
   { label: "קיסמים", image: `${BASE}/food/toothpicks.webp`, re: new RegExp(`${W}קיס(ם|מים)${E}`) },
   { label: "צנצנת", image: `${BASE}/food/empty-jar.webp`, re: new RegExp(`${W}צנצנ(ת|ות)${E}`) },
   { label: "מגש", image: `${BASE}/food/tray.webp`, re: new RegExp(`${W}מגש(ים)?${E}`) },
-  { label: "אפונה", image: `${BASE}/food/peas.webp`, re: new RegExp(`${W}אפונה${E}`) },
+  { label: "אפונה", image: `${BASE}/food/peas.webp`, re: new RegExp(`(?<!שק(ית|יות|י)? )${W}אפונה${E}`) },
   { label: "פטריות", image: `${BASE}/food/mushrooms.webp`, re: new RegExp(`${W}פטרי(ה|ות)${E}`) },
   { label: "דלעת", image: `${BASE}/food/pumpkin.webp`, re: new RegExp(`${W}דלע(ת|ות)${E}`) },
   { label: "פטרוזיליה", image: `${BASE}/food/parsley.webp`, re: new RegExp(`${W}פטרוזיליה${E}`) },
@@ -96,7 +96,7 @@ export const FOOD_ITEMS = [
   { label: "קומקום", image: `${BASE}/food/kettle.webp`, re: new RegExp(`${W}קומקום${E}`) },
   { label: "מעבד מזון", image: `${BASE}/food/food-processor.webp`, re: new RegExp(`${W}מעבד מזון${E}`) },
   { label: "מלחייה", image: `${BASE}/food/salt-shaker.webp`, re: new RegExp(`${W}מלחי(ה|יה)${E}`) },
-  { label: "ספוג", image: `${BASE}/food/sponge.webp`, re: new RegExp(`${W}ספוג(ים)?${E}`) },
+  { label: "ספוג", image: `${BASE}/food/sponge.webp`, re: new RegExp(`${W}ספוג(י)? (כלים|מטבח)${E}`) },
   { label: "מגבונים", image: `${BASE}/food/wet-wipes.webp`, re: new RegExp(`${W}מגבו(ן|נים)${E}`) },
   { label: "קופסת אוכל", image: `${BASE}/food/lunch-box.webp`, re: new RegExp(`${W}קופס(ת|אות) (אוכל|אחסון)${E}`) },
   { label: "טיימר", image: `${BASE}/food/kitchen-timer.webp`, re: new RegExp(`${W}טיימר${E}`) },
@@ -104,6 +104,23 @@ export const FOOD_ITEMS = [
   { label: "מלח", image: `${BASE}/food/salt-jar.webp`, re: new RegExp(`${W}מלח${E}`) },
   { label: "שמן", image: `${BASE}/food/oil.webp`, re: new RegExp(`${W}שמן${E}`) },
   { label: "מחק", image: `${BASE}/food/eraser.webp`, re: new RegExp(`${W}מחק(ים)?${E}`) },
+  // בצק מרודד לפני בצק. "בצק משחק" נשאר פלסטלינה (הכלל שלו למעלה, קודם לבנק הזה).
+  { label: "בצק מרודד", image: `${BASE}/food/rolled-dough.webp`, re: new RegExp(`${W}בצק מרודד${E}`) },
+  { label: "בצק", image: `${BASE}/food/dough.webp`, re: new RegExp(`${W}בצק${E}`) },
+  { label: "חותכני עוגיות", image: `${BASE}/food/cookie-cutters.webp`, re: new RegExp(`${W}(חותכ(ן|נים|ני)|קורצנים)${E}`) },
+  { label: "שמרים", image: `${BASE}/food/yeast.webp`, re: new RegExp(`${W}שמרים${E}`) },
+];
+
+// ציוד טיפולי: כלים שחוזרים בפעילויות מוטוריקה וויסות.
+export const EQUIPMENT_ITEMS = [
+  { label: "קורת שיווי משקל", image: `${BASE}/equipment/balance-beam.webp`, re: new RegExp(`${W}קור(ת|ות) (שיווי משקל|איזון)${E}`) },
+  { label: "שק משקל", image: `${BASE}/equipment/weighted-bag.webp`, re: new RegExp(`${W}(שק(ית|יות|י)? (חול|אפונה|גרעינים|משקל|משקולת)|שק משוקלל|כרית משקל)${E}`) },
+  { label: "קוביות בנייה", image: `${BASE}/equipment/blocks.webp`, re: new RegExp(`${W}קוביות (בנייה|בניה|עץ)${E}`) },
+  { label: "אטבי כביסה", image: `${BASE}/equipment/clothespins.webp`, re: new RegExp(`${W}אטב(ים|י כביסה)?${E}`) },
+  { label: "טבעות", image: `${BASE}/equipment/rings.webp`, re: new RegExp(`${W}טבעות${E}`) },
+  { label: "ספוג", image: `${BASE}/equipment/sponge.webp`, re: new RegExp(`${W}ספוג(ים)?${E}`) },
+  { label: "מראה", image: `${BASE}/equipment/hand-mirror.webp`, re: new RegExp(`${W}מרא(ה|ות)( יד| קטנה)?${E}`) },
+  { label: "שעון חול", image: `${BASE}/equipment/hourglass.webp`, re: new RegExp(`${W}שעו(ן|ני) חול${E}`) },
 ];
 
 // מיפוי ישיר: מילת מפתח (regex) -> נתיב קובץ תמונה
@@ -119,7 +136,7 @@ const MATERIAL_BANK_RULES = [
   [/פלסטלינה|בצק משחק/, `${BASE}/crafts-new/seed-63-independent/material-plasticine.webp`],
   [/מקרר/, `${BASE}/manual/chocolate-lollipops-fridge-tool.webp`],
   [/קער(ה|ות)/, `${BASE}/embedded-v358/seed-84/material-bowl.webp`],
-  [/ביסקוויט|עוגיות/, `${BASE}/manual/chocolate-balls-new/chocolate-balls-biscuits.webp`],
+  [/ביסקוויט|(?<!חותכ(ן|ני) )עוגיות/, `${BASE}/manual/chocolate-balls-new/chocolate-balls-biscuits.webp`],
   [/חבילת שוקולד|שוקולד\b/, `${BASE}/manual/chocolate-chunks.webp`],
   [/סודה לשתייה|אבקת סודה/, `${BASE}/manual/experiments/lava-lamp-material-2.webp`],
   [/חומץ/, `${BASE}/manual/experiments/lava-lamp-material-4.webp`],
@@ -132,6 +149,7 @@ const MATERIAL_BANK_RULES = [
   [/דבש/, `${BASE}/manual/fruit-popsicles/honey.webp`],
   [/קורנפלור|אבקת טלק/, `${BASE}/embedded-v358/seed-84/material-cornstarch.webp`],
   ...FOOD_ITEMS.map((item) => [item.re, item.image]),
+  ...EQUIPMENT_ITEMS.map((item) => [item.re, item.image]),
 ];
 
 const STEP_BANK_RULES = [

@@ -20,7 +20,7 @@ try {
   const { BOARD_GAMES } = await vite.ssrLoadModule("/src/lib/session-board-tools.js");
   const { MOTOR_TRAIL_ITEMS, CREATIVE_ACCESSORIES, HOME_ITEMS } = await vite.ssrLoadModule("/src/lib/motor-trail-items.js");
   const { RECIPES } = await vite.ssrLoadModule("/src/pages/TherapistRecipes.jsx");
-  const { FOOD_ITEMS } = await vite.ssrLoadModule("/src/lib/icon-bank.js");
+  const { FOOD_ITEMS, EQUIPMENT_ITEMS } = await vite.ssrLoadModule("/src/lib/icon-bank.js");
 
   const exists = (image) => typeof image === "string" && image.startsWith("/") && fs.existsSync(path.join(root, "public", decodeURI(image)));
   const clean = (text) => String(text || "").replace(/\s+/g, " ").trim();
@@ -48,7 +48,7 @@ try {
   }
   for (const item of [...BOARD_GAMES]) addMaterial(item.label, item.asset);
   for (const item of [...MOTOR_TRAIL_ITEMS, ...CREATIVE_ACCESSORIES, ...HOME_ITEMS]) addMaterial(item.label, item.image);
-  for (const item of FOOD_ITEMS) addMaterial(item.label, item.image);
+  for (const item of [...FOOD_ITEMS, ...EQUIPMENT_ITEMS]) addMaterial(item.label, item.image);
   // Recipe ingredients and tools, without the amounts ("200 גרם שוקולד" -> "שוקולד").
   const bare = (text) => clean(text).replace(/^[\d½¼¾.,/–-]+\s*/, "").replace(/^(גרם|כוס(ות)?|כפ(ות|ית|יות)?|מ"ל|ליטר|יחידות|חבילת|קופסת)\s+/, "");
   for (const recipe of RECIPES) {
