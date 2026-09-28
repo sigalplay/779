@@ -8,6 +8,25 @@
 
 const BASE = "/icon-bank";
 
+// בנק המזון: פירות, ירקות ומוצרי חלב שצוירו לבנק. מילה שלמה בלבד,
+// כדי ש"גזרו" לא יקבל גזר ו"תפוח אדמה" לא יקבל תפוח.
+const W = "(?<![א-ת])";
+const E = "(?![א-ת])";
+export const FOOD_ITEMS = [
+  { label: "תפוח", image: `${BASE}/food/apple.webp`, re: new RegExp(`${W}תפוח(ים)?${E}(?! אדמה)`) },
+  { label: "תפוז", image: `${BASE}/food/orange.webp`, re: new RegExp(`${W}תפוז(ים)?${E}`) },
+  { label: "גזר", image: `${BASE}/food/carrot.webp`, re: new RegExp(`${W}גזר(ים)?${E}`) },
+  { label: "עגבנייה", image: `${BASE}/food/tomato.webp`, re: new RegExp(`${W}עגבני(ה|יה|ות|יות|ת שרי)${E}`) },
+  { label: "ענבים", image: `${BASE}/food/grapes.webp`, re: new RegExp(`${W}ענב(ים)?${E}`) },
+  { label: "תות", image: `${BASE}/food/strawberry.webp`, re: new RegExp(`${W}תות(ים)?${E}`) },
+  { label: "אבטיח", image: `${BASE}/food/watermelon.webp`, re: new RegExp(`${W}אבטיח(ים)?${E}`) },
+  { label: "פלפל", image: `${BASE}/food/red-pepper.webp`, re: new RegExp(`${W}פלפל(ים)?${E}(?! שחור)`) },
+  { label: "גבינה", image: `${BASE}/food/cheese.webp`, re: new RegExp(`${W}גבינ(ה|ת|ות)${E}`) },
+  { label: "יוגורט", image: `${BASE}/food/yogurt.webp`, re: new RegExp(`${W}יוגורט(ים)?${E}`) },
+  { label: "ביצה", image: `${BASE}/food/egg.webp`, re: new RegExp(`${W}ביצ(ה|ים)${E}`) },
+  { label: "פסטה", image: `${BASE}/food/pasta.webp`, re: new RegExp(`${W}פסטה${E}`) },
+];
+
 // מיפוי ישיר: מילת מפתח (regex) -> נתיב קובץ תמונה
 const MATERIAL_BANK_RULES = [
 
@@ -34,7 +53,7 @@ const MATERIAL_BANK_RULES = [
   [/מצית/, `${BASE}/manual/experiments/vacuum-lift-material-6.webp`],
   [/דבש/, `${BASE}/manual/fruit-popsicles/honey.webp`],
   [/קורנפלור|אבקת טלק/, `${BASE}/embedded-v358/seed-84/material-cornstarch.webp`],
-
+  ...FOOD_ITEMS.map((item) => [item.re, item.image]),
 ];
 
 const STEP_BANK_RULES = [

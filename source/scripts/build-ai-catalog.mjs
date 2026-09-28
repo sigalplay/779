@@ -5,7 +5,8 @@
 //   node scripts/build-ai-catalog.mjs      (runs as part of `npm run build`)
 //
 // Materials: every named material picture of the activities, plus the board's toys, motor
-// equipment and fine-motor items. Steps: every step picture of the activities, with that step's text.
+// equipment and fine-motor items, the food bank and the recipes' ingredients and tools.
+// Steps: every step picture of the activities, with that step's text.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,6 +19,8 @@ try {
   const { SEED_ACTIVITIES } = await vite.ssrLoadModule("/src/lib/activities-data.js");
   const { BOARD_GAMES } = await vite.ssrLoadModule("/src/lib/session-board-tools.js");
   const { MOTOR_TRAIL_ITEMS, CREATIVE_ACCESSORIES, HOME_ITEMS } = await vite.ssrLoadModule("/src/lib/motor-trail-items.js");
+  const { RECIPES } = await vite.ssrLoadModule("/src/pages/TherapistRecipes.jsx");
+  const { FOOD_ITEMS } = await vite.ssrLoadModule("/src/lib/icon-bank.js");
 
   const exists = (image) => typeof image === "string" && image.startsWith("/") && fs.existsSync(path.join(root, "public", decodeURI(image)));
   const clean = (text) => String(text || "").replace(/\s+/g, " ").trim();
@@ -45,6 +48,14 @@ try {
   }
   for (const item of [...BOARD_GAMES]) addMaterial(item.label, item.asset);
   for (const item of [...MOTOR_TRAIL_ITEMS, ...CREATIVE_ACCESSORIES, ...HOME_ITEMS]) addMaterial(item.label, item.image);
+  for (const item of FOOD_ITEMS) addMaterial(item.label, item.image);
+  // Recipe ingredients and tools, without the amounts ("200 גרם שוקולד" -> "שוקולד").
+  const bare = (text) => clean(text).replace(/^[\d½¼¾.,/–-]+\s*/, "").replace(/^(גרם|כוס(ות)?|כפ(ות|ית|יות)?|מ"ל|ליטר|יחידות|חבילת|קופסת)\s+/, "");
+  for (const recipe of RECIPES) {
+    for (const item of [...(recipe.ingredients || []), ...(recipe.tools || [])]) {
+      if (typeof item.img === "string") addMaterial(bare(item.text), item.img);
+    }
+  }
 
   const catalog = {
     materials: [...materials].map(([name, image], index) => ({ id: `m${index + 1}`, name, image })),
