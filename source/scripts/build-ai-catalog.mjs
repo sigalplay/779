@@ -32,9 +32,13 @@ try {
     if (key && exists(image) && !materials.has(key)) materials.set(key, image);
   };
   const steps = new Map(); // image -> text
-  const addStep = (text, image) => {
-    const words = clean(text);
-    if (words && exists(image) && !steps.has(image)) steps.set(image, words.length > 140 ? `${words.slice(0, 137)}…` : words);
+  // A step's text alone often leaves out what the picture shows ("takes one pom-pom and moves it"
+  // is drawn with tweezers), so the activity's name goes with it.
+  const addStep = (text, image, from = "") => {
+    let words = clean(text);
+    if (words.length > 120) words = `${words.slice(0, 117)}…`;
+    if (words && from) words = `${words} (מתוך: ${clean(from)})`;
+    if (words && exists(image) && !steps.has(image)) steps.set(image, words);
   };
 
   for (const activity of SEED_ACTIVITIES) {
@@ -44,7 +48,7 @@ try {
     for (const step of activity.steps || []) {
       const text = typeof step === "string" ? step : step.text;
       const image = (typeof step === "object" && (step.image || step.images?.[0])) || icons.steps?.[step.n];
-      addStep(text, image);
+      addStep(text, image, activity.title);
     }
   }
   for (const item of [...BOARD_GAMES]) addMaterial(item.label, item.asset);
