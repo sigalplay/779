@@ -28,18 +28,16 @@ export default function Landing() {
   const [seasonalTopic, setSeasonalTopic] = useState("sukkot");
   const seasonalActivities = SEASONAL_TOPICS[seasonalTopic] || SEASONAL_TOPICS.sukkot;
   const pinkCaption = "!border-rose/45 !bg-secondary/95";
+  // Order on the home page: stories, routine boards, ADL; then recipes, experiments, game builder;
+  // the family calendar last, on its own row.
   const quickLinks = [
     ["/parent/social-stories", "/icon-bank/navigation-v2/social-stories-flat.webp", "מחולל סיפורים חברתיים", "Social Story Builder"],
     [language === "en" ? "/en/parent/routine-boards/" : "/parent/routine-boards/", "/icon-bank/navigation-v2/daily-routine-checklist.webp", "לוחות התארגנות לילדים", "Routine Boards for Children"],
-    ["/parent/hebrew-calendar", "/icon-bank/navigation-v2/family-calendar-illustrated-v2.webp", "יצירת לוח שנה", "Create a Family Calendar"],
+    [language === "en" ? "/en/parent/daily-sequences/" : "/parent/daily-sequences/", "/icon-bank/daily-sequences/hands/rub.webp", "רצפי ADL", "ADL Visual Sequences"],
     ["/parent/recipes", "/icon-bank/navigation-v2/recipes-flat.webp", "מתכונים", "Kid-Friendly Recipes"],
     ["/parent/experiments", "/icon-bank/navigation-v2/experiments-flat.webp", "ניסויים", "Kids’ Science Experiments"],
-    ...(language === "he"
-      ? [
-          ["/parent/card-games-generator/", "/assets/card-generator-home-v2.png", "מחולל משחקים", "Printable Game Builder"],
-          ["/parent/daily-sequences/", "/icon-bank/daily-sequences/hands/rub.webp", "רצפי ADL", "ADL Visual Sequences"],
-        ]
-      : [["/en/parent/daily-sequences/", "/icon-bank/daily-sequences/hands/rub.webp", "רצפי ADL", "ADL Visual Sequences"]]),
+    ...(language === "he" ? [["/parent/card-games-generator/", "/assets/card-generator-home-v2.png", "מחולל משחקים", "Printable Game Builder"]] : []),
+    ["/parent/hebrew-calendar", "/icon-bank/navigation-v2/family-calendar-illustrated-v2.webp", "יצירת לוח שנה", "Create a Family Calendar"],
   ];
 
   return (
