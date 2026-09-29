@@ -210,6 +210,9 @@ Deno.serve(async (request) => {
     if (!text || text.type !== "text") return reply(502, { error: "no-answer" });
     const activity = JSON.parse(text.text);
 
+    // Only goals from the site's list, so the bank's goal filter stays clean.
+    activity.goals = (activity.goals ?? []).filter((goal: string) => GOALS.includes(goal));
+
     // Ids become picture addresses; anything not in the catalog is dropped.
     const materialImage = new Map(catalog.materials.map((item) => [item.id, item.image]));
     const stepImage = new Map(catalog.steps.map((item) => [item.id, item.image]));
