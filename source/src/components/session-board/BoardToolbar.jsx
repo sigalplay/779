@@ -34,9 +34,9 @@ export function BoardToolbar({
   const [collapsed, setCollapsed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [palette, setPalette] = useState(null); // "signs" | "games" | "motor" | "emotions" | null
-  const [group, setGroup] = useState(null); // "add" | "tools" | null
+  const [group, setGroup] = useState(null); // "add" | null
   // While the pen is on, its controls stay in view.
-  const openGroup = pen.enabled ? "tools" : group;
+  const openGroup = pen.enabled ? "add" : group;
   function toggleGroup(name) {
     setPalette(null);
     if (pen.enabled) pen.setEnabled(false);
@@ -114,15 +114,19 @@ export function BoardToolbar({
         </div>
       </div>
 
-      {/* Everything else sits in two groups under the dates: what goes onto the board, and the
-          tools used during the session. Only one group is open at a time. */}
+      {/* Under the dates: "Add to the board" (what goes onto the board and the session tools),
+          the AI activity generator, and full screen. */}
       <div className="meeting-groups">
         <div className="meeting-group-tabs">
           <button type="button" className="meeting-group-tab primary" aria-expanded={openGroup === "add"} aria-controls="meetingGroupAdd" onClick={() => toggleGroup("add")}>
             <span aria-hidden="true">＋</span>{t("הוספה ללוח", "Add to the board")}
           </button>
-          <button type="button" className="meeting-group-tab" aria-expanded={openGroup === "tools"} aria-controls="meetingGroupTools" onClick={() => toggleGroup("tools")}>
-            <img className="meeting-tool-image-icon" src="/icon-bank/tools/timer.webp" alt="" />{t("כלים", "Tools")}
+          <a className="meeting-group-tab ai" href={language === "en" ? "/en/therapist/activity-generator" : "/therapist/activity-generator"}>
+            <span aria-hidden="true">✨</span>{t("מחולל AI", "AI generator")}
+          </a>
+          {/* Full screen is what a session runs in, so it stands on its own next to the groups. */}
+          <button type="button" className="meeting-group-tab fullscreen" aria-pressed={fullscreen} onClick={onToggleFullscreen}>
+            <span aria-hidden="true">⛶</span>{fullscreen ? t("יציאה ממסך מלא", "Exit full screen") : t("מסך מלא", "Full screen")}
           </button>
         </div>
         {openGroup === "add" && (
@@ -130,10 +134,6 @@ export function BoardToolbar({
           <a className="meeting-add-activity" href={addActivityHref}>
             <span className="meeting-group-plus" aria-hidden="true">＋</span>
             <span>{t("פעילות מהמאגר", "Activity from the catalog")}</span>
-          </a>
-          <a className="meeting-add-activity meeting-generate-activity" href="/therapist/activity-generator">
-            <span className="meeting-group-plus" aria-hidden="true">✨</span>
-            <span>{t("פעילות חדשה עם AI", "New activity with AI")}</span>
           </a>
           <a className="meeting-board-link" href={motorTrailHref}>
             <img className="meeting-tool-image-icon" src="/icon-bank/tools/motor-trail.webp" alt="" />
@@ -227,10 +227,7 @@ export function BoardToolbar({
             <span className="meeting-action-label-desktop">{t("העלאת תמונות", "Upload images")}</span>
             <span className="meeting-action-label-mobile">{t("העלאת תמונות", "My images")}</span>
           </button>
-          </div>
-        )}
-        {openGroup === "tools" && (
-          <div className="meeting-group" id="meetingGroupTools" role="group" aria-label={t("כלים", "Tools")}>
+          <p className="meeting-group-subtitle">{t("כלים למפגש", "Session tools")}</p>
           <div className="meeting-drawing-tools" data-drawing-tools="true">
             <button type="button" className={pen.enabled ? "meeting-pen-button active" : "meeting-pen-button"} data-board-pen="" aria-pressed={pen.enabled} title={t("עט — כתיבה וציור על הלוח", "Pen — write and draw on the board")} onClick={togglePen}>
               <img className="meeting-tool-image-icon" src="/icon-bank/tools/pen.webp" alt="" />
@@ -251,10 +248,6 @@ export function BoardToolbar({
             <img className="meeting-tool-image-icon" src="/icon-bank/tools/timer.webp" alt="" />
             <span className="meeting-action-label-desktop">{t("טיימר חזותי", "Visual timer")}</span>
             <span className="meeting-action-label-mobile">{t("טיימר", "Timer")}</span>
-          </button>
-          <button className="meeting-fullscreen" type="button" aria-pressed={fullscreen} onClick={onToggleFullscreen}>
-            <img className="meeting-tool-image-icon" src="/icon-bank/tools/fullscreen.webp" alt="" />
-            <span data-fullscreen-label="">{fullscreen ? t("יציאה ממסך מלא", "Exit full screen") : t("מסך מלא", "Full screen")}</span>
           </button>
           <button className="meeting-farewell" type="button" onClick={onOpenFarewell} title={t("פרידה - ספירה לאחור של המפגשים, מה למדנו ותעודת סיום", "Farewell - session countdown, what we learned, and a certificate")}>
             <img className="meeting-tool-image-icon" src="/icon-bank/tools/farewell.webp" alt="" />

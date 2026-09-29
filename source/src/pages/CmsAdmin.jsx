@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Save, Trash2, Plus, ShieldCheck } from "lucide-react";
+import { Save, Trash2, Plus, ShieldCheck, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,10 @@ import { EXPERIMENTS } from "@/pages/TherapistExperiments";
 import { STORY_TEMPLATES } from "@/lib/social-story-templates";
 import { deleteCmsRow, getCmsAdminRows, isCmsAdmin, saveCmsRow } from "@/lib/cms-content";
 import { toast } from "sonner";
+
+// The activity generator's monthly allowance per therapist. The generate-activity function reads it.
+const GENERATOR_SETTINGS_ID = "ai-generator";
+const DEFAULT_GENERATOR_LIMIT = 5;
 
 const TYPES = [
   { id: "activity", label: "פעילויות", items: SEED_ACTIVITIES },
@@ -70,6 +74,7 @@ export default function CmsAdmin() {
 
   return <AppShell mode="therapist"><div className="space-y-5">
     <div><h1 className="font-display text-3xl font-black">ניהול תוכן</h1><p className="text-muted-foreground">פעילויות, מתכונים, ניסויים וסיפורים בלבד. היומן אינו מחובר למסך זה.</p></div>
+    <GeneratorLimit rows={rows} onSaved={async () => setRows(await getCmsAdminRows())} />
     <div className="flex flex-wrap gap-2">{TYPES.map((item) => <button key={item.id} onClick={() => { setType(item.id); setSelectedId(""); setDraft(""); }} className={`rounded-full border px-4 py-2 text-sm font-bold ${type === item.id ? "border-sage bg-sage/20" : "bg-card"}`}>{item.label}</button>)}</div>
     <div className="grid gap-5 lg:grid-cols-[320px_1fr]">
       <section className="rounded-3xl border bg-card p-4">
@@ -81,4 +86,38 @@ export default function CmsAdmin() {
       </section>
     </div>
   </div></AppShell>;
+}
+
+function GeneratorLimit({ rows, onSaved }) {
+  const saved = rows.find((row) => row.content_type === "settings" && row.content_id === GENERATOR_SETTINGS_ID)?.payload?.monthly_limit;
+  const current = Number.isInteger(saved) ? saved : DEFAULT_GENERATOR_LIMIT;
+  const [value, setValue] = useState(String(current));
+  const [saving, setSaving] = useState(false);
+  useEffect(() => { setValue(String(current)); }, [current]);
+  const number = Number(value);
+  const valid = value.trim() !== "" && Number.isInteger(number) && number >= 0 && number <= 500;
+
+  async function save(event) {
+    event.preventDefault();
+    if (!valid) return;
+    setSaving(true);
+    try {
+      await saveCmsRow({ content_type: "settings", content_id: GENERATOR_SETTINGS_ID, payload: { id: GENERATOR_SETTINGS_ID, monthly_limit: number }, status: "published" });
+      await onSaved();
+      toast.success(`נשמר: ${number} פעילויות בחודש לכל מטפלת`);
+    } catch {
+      toast.error("לא ניתן לשמור. נסי שוב.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return <form onSubmit={save} className="flex flex-wrap items-end gap-3 rounded-3xl border bg-card p-5">
+    <div className="min-w-0 flex-1 basis-64">
+      <h2 className="flex items-center gap-2 text-lg font-black"><Sparkles className="h-5 w-5 text-sage-foreground" aria-hidden="true" />מחולל הפעילויות</h2>
+      <label htmlFor="generator-limit" className="mt-1 block text-sm text-muted-foreground">כמה פעילויות כל מטפלת רשומה יכולה ליצור בחודש. המכסה מתחדשת ב־1 לחודש. 0 סוגר את המחולל.</label>
+    </div>
+    <Input id="generator-limit" type="number" inputMode="numeric" min={0} max={500} step={1} value={value} onChange={(event) => setValue(event.target.value)} className="h-11 w-28 text-center text-lg font-bold" aria-invalid={!valid} />
+    <Button type="submit" disabled={!valid || saving || number === current} className="min-h-11 rounded-full bg-sage text-sage-foreground"><Save className="h-4 w-4" aria-hidden="true" /> שמירה</Button>
+  </form>;
 }

@@ -893,8 +893,16 @@ function PageEditor({ story, index, onGo, onText, onMove, onRemove, onAdd, choic
   const last = story.pages.length - 1;
   const showText = !story.wordless || page.isCover;
 
+  // Keep the current small page in view by scrolling only the row sideways. scrollIntoView would
+  // also scroll the whole page down to the row every time a page is turned.
   useEffect(() => {
-    listRef.current?.querySelector(`[data-page-thumb="${safeIndex}"]`)?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    const list = listRef.current;
+    const thumb = list?.querySelector(`[data-page-thumb="${safeIndex}"]`);
+    if (!list || !thumb) return;
+    const box = list.getBoundingClientRect();
+    const item = thumb.getBoundingClientRect();
+    if (item.left < box.left) list.scrollLeft -= box.left - item.left + 8;
+    else if (item.right > box.right) list.scrollLeft += item.right - box.right + 8;
   }, [safeIndex]);
 
   const pageName = (i) => (i === 0 && story.pages[0]?.isCover ? t("השער", "the cover") : t(`עמוד ${i + 1}`, `page ${i + 1}`));

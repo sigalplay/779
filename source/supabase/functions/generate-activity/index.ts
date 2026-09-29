@@ -7,14 +7,14 @@
 //
 // Deploy:   supabase functions deploy generate-activity
 // Secrets:  supabase secrets set ANTHROPIC_API_KEY=...
-//           optional: AI_MONTHLY_LIMIT (default 10), AI_MODEL (default claude-sonnet-5), AI_EFFORT (default low),
+//           optional: AI_MONTHLY_LIMIT (default 5; the number set on /admin/cms wins), AI_MODEL (default claude-sonnet-5), AI_EFFORT (default low),
 //                     AI_CATALOG_URL (default: the live site's catalog)
 import Anthropic from "npm:@anthropic-ai/sdk";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const MONTHLY_LIMIT = Number(Deno.env.get("AI_MONTHLY_LIMIT") ?? 10);
+const DEFAULT_MONTHLY_LIMIT = Number(Deno.env.get("AI_MONTHLY_LIMIT") ?? 5);
 // Sonnet 5 costs about 2.5 times less than Opus 5 and writes these activities well.
 // AI_MODEL=claude-opus-5 switches back without a code change.
 const MODEL = Deno.env.get("AI_MODEL") ?? "claude-sonnet-5";
@@ -127,6 +127,17 @@ function startOfMonthInIsrael() {
   return new Date(Date.UTC(Number(year), Number(month) - 1, 1) - 3 * 60 * 60 * 1000).toISOString();
 }
 
+// Activities per therapist per month. The site admin sets it on /admin/cms (cms_content settings/ai-generator).
+async function monthlyLimit() {
+  const response = await fetch(
+    `${SUPABASE_URL}/rest/v1/cms_content?select=payload&content_type=eq.settings&content_id=eq.ai-generator&status=eq.published`,
+    { headers: serviceHeaders },
+  ).catch(() => null);
+  const [row] = response?.ok ? await response.json() : [];
+  const limit = Number(row?.payload?.monthly_limit);
+  return Number.isInteger(limit) && limit >= 0 ? limit : DEFAULT_MONTHLY_LIMIT;
+}
+
 async function requestsThisMonth(userId: string) {
   const since = startOfMonthInIsrael();
   const response = await fetch(
@@ -179,8 +190,8 @@ Deno.serve(async (request) => {
   if (wish.length < 5) return reply(400, { error: "empty" });
 
   try {
-    const used = await requestsThisMonth(user.id);
-    if (used >= MONTHLY_LIMIT) return reply(429, { error: "monthly-limit", limit: MONTHLY_LIMIT });
+    const [used, limit] = await Promise.all([requestsThisMonth(user.id), monthlyLimit()]);
+    if (used >= limit) return reply(429, { error: "monthly-limit", limit });
 
     const { catalog, system } = await loadCatalog();
     const details = [
@@ -210,6 +221,9 @@ Deno.serve(async (request) => {
     if (!text || text.type !== "text") return reply(502, { error: "no-answer" });
     const activity = JSON.parse(text.text);
 
+    // Only goals from the site's list, so the bank's goal filter stays clean.
+    activity.goals = (activity.goals ?? []).filter((goal: string) => GOALS.includes(goal));
+
     // Ids become picture addresses; anything not in the catalog is dropped.
     const materialImage = new Map(catalog.materials.map((item) => [item.id, item.image]));
     const stepImage = new Map(catalog.steps.map((item) => [item.id, item.image]));
@@ -227,7 +241,7 @@ Deno.serve(async (request) => {
     const communityId = activity.title
       ? await shareActivity(activity, input.equipment === "clinic" ? "clinic" : "home", input.language === "en" ? "en" : "he").catch(() => null)
       : null;
-    return reply(200, { activity, communityId, remaining: Math.max(0, MONTHLY_LIMIT - used - 1) });
+    return reply(200, { activity, communityId, remaining: Math.max(0, limit - used - 1) });
   } catch (error) {
     if (error instanceof Anthropic.RateLimitError) return reply(503, { error: "busy" });
     if (error instanceof Anthropic.AuthenticationError) return reply(500, { error: "not-configured" });

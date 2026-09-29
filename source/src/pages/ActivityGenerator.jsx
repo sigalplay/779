@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Camera, Check, Pencil, Plus, Printer, Save, Sparkles, Trash2, X } from "lucide-react";
+import { Camera, Check, Pencil, Plus, Printer, RefreshCw, Save, Sparkles, Trash2, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useTranslator } from "@/lib/language";
+import { translatedTerm } from "@/lib/content-translations";
 import { isCloudSignedIn } from "@/lib/cloud-auth";
 import { addActivity, addToDraftPlan, getCustomActivities, updateCustomActivity } from "@/lib/storage";
 import { readPhotoFile } from "@/lib/session-board-tools";
@@ -36,7 +37,6 @@ export default function ActivityGenerator() {
 
   const errors = {
     "sign-in": t("צריך להתחבר כדי ליצור פעילות.", "Please sign in to create an activity."),
-    "monthly-limit": t("הגעת ל־10 הפעילויות של החודש. המכסה מתחדשת ב־1 לחודש.", "You have reached this month's 10 activities. The limit renews on the 1st."),
     refused: t("לא הצלחנו ליצור פעילות לבקשה הזאת. נסי לנסח אותה אחרת.", "We couldn't create an activity for this request. Try wording it differently."),
     busy: t("השירות עמוס כרגע. נסי שוב בעוד דקה.", "The service is busy. Please try again in a minute."),
     "not-deployed": t("מחולל הפעילויות עוד לא הופעל באתר.", "The activity generator is not switched on yet."),
@@ -61,6 +61,11 @@ export default function ActivityGenerator() {
       setEditing(false);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (failure) {
+      if (failure.code === "monthly-limit") {
+        if (failure.limit === 0) setError(t("מחולל הפעילויות סגור כרגע.", "The activity generator is closed right now."));
+        else setError(t(`הגעת ל־${failure.limit} הפעילויות של החודש. המכסה מתחדשת ב־1 לחודש.`, `You have reached this month's ${failure.limit} activities. The limit renews on the 1st.`));
+        return;
+      }
       setError(errors[failure.code] || t("משהו השתבש. נסי שוב.", "Something went wrong. Please try again."));
     } finally {
       setLoading(false);
@@ -209,7 +214,7 @@ function ChoiceRow({ label, options, value, onChange }) {
 }
 
 function GeneratedActivity({ activity, editing, onEdit, onChange, onChangeItem, onRemoveItem, onAddItem, onPick, onSave, onAddToBoard, onPrint, onNew, remaining }) {
-  const { t } = useTranslator();
+  const { language, t } = useTranslator();
   const texts = [
     ["preparation", t("הכנה", "Preparation")],
     ["adaptations", t("התאמות", "Adaptations")],
@@ -234,17 +239,21 @@ function GeneratedActivity({ activity, editing, onEdit, onChange, onChangeItem, 
         <div className="mt-3 flex flex-wrap gap-2 text-sm font-semibold">
           <span className="rounded-full border border-border bg-card px-3 py-1">{t(`גיל ${activity.age_min}–${activity.age_max}`, `Ages ${activity.age_min}–${activity.age_max}`)}</span>
           <span className="rounded-full border border-border bg-card px-3 py-1">{t(`${activity.duration_min} דקות`, `${activity.duration_min} minutes`)}</span>
-          {activity.goals.map((goal) => <span key={goal} className="rounded-full border border-border bg-card px-3 py-1">{goal}</span>)}
+          {activity.goals.map((goal) => <span key={goal} className="rounded-full border border-border bg-card px-3 py-1">{translatedTerm(goal, language)}</span>)}
         </div>
       </div>
 
       <section>
-        <h3 className="mb-2 font-bold">{t("ציוד", "Materials")}</h3>
+        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+          <h3 className="font-bold">{t("ציוד", "Materials")}</h3>
+          <p className="text-xs text-muted-foreground">{t("איור לא מתאים? נוגעים בו ובוחרים אחר, או מעלים תמונה.", "Picture doesn't fit? Tap it to choose another or upload a photo.")}</p>
+        </div>
         <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
           {activity.materials.map((item, index) => (
             <li key={index} className="relative flex flex-col rounded-2xl border border-border/60 bg-card p-1.5 text-center">
-              <button type="button" onClick={() => onPick({ kind: "material", index })} aria-label={t(`איור ל${item.name}`, `Picture for ${item.name}`)} className={cn("grid aspect-square place-items-center overflow-hidden rounded-xl", item.image ? "bg-white" : "border-2 border-dashed border-border bg-muted/40 text-sage-foreground")}>
+              <button type="button" onClick={() => onPick({ kind: "material", index })} aria-label={t(`איור ל${item.name}`, `Picture for ${item.name}`)} className={cn("relative grid aspect-square place-items-center overflow-hidden rounded-xl", item.image ? "bg-white" : "border-2 border-dashed border-border bg-muted/40 text-sage-foreground")}>
                 {item.image ? <img src={item.image} alt="" className="h-full w-full object-contain" /> : <span className="grid place-items-center gap-1 text-xs font-bold"><Camera className="h-6 w-6" aria-hidden="true" />{t("איור / תמונה", "Picture")}</span>}
+                {item.image && <SwapBadge />}
               </button>
               {editing ? (
                 <div className="mt-1 flex items-center gap-1">
@@ -268,8 +277,9 @@ function GeneratedActivity({ activity, editing, onEdit, onChange, onChangeItem, 
           {activity.steps.map((step, index) => (
             <li key={index} className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-2">
               <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-sage/30 text-sm font-bold">{index + 1}</span>
-              <button type="button" onClick={() => onPick({ kind: "step", index })} aria-label={t(`איור לשלב ${index + 1}`, `Picture for step ${index + 1}`)} className={cn("grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-xl", step.image ? "bg-white" : "border-2 border-dashed border-border bg-muted/40 text-sage-foreground")}>
+              <button type="button" onClick={() => onPick({ kind: "step", index })} aria-label={t(`איור לשלב ${index + 1}`, `Picture for step ${index + 1}`)} className={cn("relative grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-xl", step.image ? "bg-white" : "border-2 border-dashed border-border bg-muted/40 text-sage-foreground")}>
                 {step.image ? <img src={step.image} alt="" className="h-full w-full object-contain" /> : <span className="grid place-items-center gap-1 text-[11px] font-bold"><Camera className="h-5 w-5" aria-hidden="true" />{t("איור / תמונה", "Picture")}</span>}
+                {step.image && <SwapBadge />}
               </button>
               {editing ? (
                 <>
@@ -310,6 +320,16 @@ function GeneratedActivity({ activity, editing, onEdit, onChange, onChangeItem, 
 
 // Another picture for a material or step: suggestions from the site's catalog, a search, the
 // therapist's own photo, or no picture.
+// A small "change" mark on a picture, so it is clear that tapping it chooses another.
+function SwapBadge() {
+  const { t } = useTranslator();
+  return (
+    <span className="absolute bottom-1 start-1 inline-flex items-center gap-1 rounded-full border border-border bg-white/95 px-1.5 py-0.5 text-[10px] font-bold text-sage-foreground shadow-sm" aria-hidden="true">
+      <RefreshCw className="h-3 w-3" />{t("החלפה", "Change")}
+    </span>
+  );
+}
+
 function IllustrationPicker({ text, kind, title, current, onChoose, onClose }) {
   const { t } = useTranslator();
   const [catalog, setCatalog] = useState(null);
