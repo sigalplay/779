@@ -36,7 +36,6 @@ export default function ActivityGenerator() {
 
   const errors = {
     "sign-in": t("צריך להתחבר כדי ליצור פעילות.", "Please sign in to create an activity."),
-    "monthly-limit": t("הגעת ל־10 הפעילויות של החודש. המכסה מתחדשת ב־1 לחודש.", "You have reached this month's 10 activities. The limit renews on the 1st."),
     refused: t("לא הצלחנו ליצור פעילות לבקשה הזאת. נסי לנסח אותה אחרת.", "We couldn't create an activity for this request. Try wording it differently."),
     busy: t("השירות עמוס כרגע. נסי שוב בעוד דקה.", "The service is busy. Please try again in a minute."),
     "not-deployed": t("מחולל הפעילויות עוד לא הופעל באתר.", "The activity generator is not switched on yet."),
@@ -61,6 +60,11 @@ export default function ActivityGenerator() {
       setEditing(false);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (failure) {
+      if (failure.code === "monthly-limit") {
+        if (failure.limit === 0) setError(t("מחולל הפעילויות סגור כרגע.", "The activity generator is closed right now."));
+        else setError(t(`הגעת ל־${failure.limit} הפעילויות של החודש. המכסה מתחדשת ב־1 לחודש.`, `You have reached this month's ${failure.limit} activities. The limit renews on the 1st.`));
+        return;
+      }
       setError(errors[failure.code] || t("משהו השתבש. נסי שוב.", "Something went wrong. Please try again."));
     } finally {
       setLoading(false);
