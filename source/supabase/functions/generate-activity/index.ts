@@ -1,9 +1,10 @@
 // Supabase Edge Function: the activity generator on /therapist/activity-generator.
 //
-// A signed-in therapist describes the activity she needs; Claude writes it in the site's activity
-// format and picks illustrations only from the site's own catalog (public/ai/illustration-catalog.json,
-// written by scripts/build-ai-catalog.mjs). Each therapist has a monthly limit (table ai_activity_requests).
-// Every activity it writes is also added to the shared bank (table community_activities).
+// A signed-in therapist describes the activity (or kids' recipe, kind "recipe") she needs; Claude writes
+// it in the site's format and picks illustrations only from the site's own catalog
+// (public/ai/illustration-catalog.json, written by scripts/build-ai-catalog.mjs). Activities and recipes
+// share one monthly limit (table ai_activity_requests). Everything it writes is also added to the
+// shared bank (table community_activities; recipes carry kind: "recipe" inside the activity json).
 //
 // Deploy:   supabase functions deploy generate-activity
 // Secrets:  supabase secrets set ANTHROPIC_API_KEY=...
@@ -39,10 +40,10 @@ const GOALS = [
 
 type CatalogItem = { id: string; name?: string; text?: string; image: string };
 type Catalog = { materials: CatalogItem[]; steps: CatalogItem[] };
-let catalogCache: { catalog: Catalog; system: string } | null = null;
+let catalogCache: { catalog: Catalog; pictures: string } | null = null;
 
-// The catalog and the system prompt built from it stay the same between requests, so the prompt
-// is cached by the API and only the first request after a deploy pays for it in full.
+// The catalog part of the system prompt is the same for activities and recipes and between requests,
+// so it comes first and is cached by the API; only the first request after a deploy pays for it in full.
 async function loadCatalog() {
   if (catalogCache) return catalogCache;
   const response = await fetch(CATALOG_URL);
@@ -50,12 +51,28 @@ async function loadCatalog() {
   const catalog = (await response.json()) as Catalog;
   const materials = catalog.materials.map((item) => `${item.id} | ${item.name}`).join("\n");
   const steps = catalog.steps.map((item) => `${item.id} | ${item.text}`).join("\n");
-  catalogCache = { catalog, system: systemPrompt(materials, steps) };
+  catalogCache = { catalog, pictures: picturesPrompt(materials, steps) };
   return catalogCache;
 }
 
-function systemPrompt(materials: string, steps: string) {
-  return `You write therapy activities for "בואו נשחק" (letsplayot.com), a site for pediatric occupational therapists in Israel. A therapist describes what she needs, and you write one activity she can use in a session tomorrow.
+function picturesPrompt(materials: string, steps: string) {
+  return `You write for "בואו נשחק" (letsplayot.com), a site for pediatric occupational therapists and parents in Israel.
+
+Illustrations. The site has its own illustrations, listed below as "id | what it shows". Only these can be used.
+- For each material, ingredient or tool, set "illustration" to the id of a material picture that shows the same object (the same thing, or an obvious equivalent such as "קערה" for "קערה קטנה"). Otherwise null.
+- For each step, set "illustration" to the id of a step picture that shows the same action with the same kind of materials, so a child looking at it would understand the step. A loosely related picture is worse than none - use null.
+- Never invent ids.
+
+Material pictures:
+${materials}
+
+Step pictures:
+${steps}`;
+}
+
+const PRIVACY = `Privacy: therapists are asked not to include identifying details. If the request contains a child's name or other identifying details anyway, do not repeat them anywhere.`;
+
+const ACTIVITY_RULES = `Task: a therapist describes what she needs, and you write one activity she can use in a session tomorrow.
 
 What makes a good activity here:
 - Practical and safe for the stated age, with materials that are easy to get (at home or in a typical clinic, as the therapist chose). Think about safety like an experienced OT: small parts for young children, anything hot or sharp only with an adult. If there is something to watch for, say it in "safety"; otherwise leave it empty.
@@ -66,21 +83,24 @@ What makes a good activity here:
 
 Language: write in Hebrew, in the site's style - plural present tense ("מניחים", "מעבירים", "בונים"), warm and simple, no niqqud. If the request says language "en", write in English instead.
 
-Privacy: therapists are asked not to include identifying details. If the request contains a child's name or other identifying details anyway, do not repeat them anywhere in the activity.
+${PRIVACY}
 
-If the request is not a request for a children's activity (or cannot be done safely), return an empty "title", put a one-sentence explanation in "description", and leave the lists empty.
+If the request is not a request for a children's activity (or cannot be done safely), return an empty "title", put a one-sentence explanation in "description", and leave the lists empty.`;
 
-Illustrations. The site has its own illustrations, listed below as "id | what it shows". Only these can be used.
-- For each material, set "illustration" to the id of a material picture that shows the same object (the same thing, or an obvious equivalent such as "קערה" for "קערה קטנה"). Otherwise null.
-- For each step, set "illustration" to the id of a step picture that shows the same action with the same kind of materials, so a child looking at it would understand the step. A loosely related picture is worse than none - use null.
-- Never invent ids.
+const RECIPE_RULES = `Task: a therapist or parent describes what she wants to cook with a child, and you write one simple kids' recipe that a child can do most of, with an adult nearby.
 
-Material pictures:
-${materials}
+What makes a good recipe here:
+- Safe for the stated age. Anything hot or sharp is marked for an adult, in the tool itself ("סכין – לשימוש מבוגר", "תנור – בהשגחת מבוגר", "מיקרוגל – בהשגחת מבוגר"). Put anything else to watch for (allergies, choking, heat) in "safety"; otherwise leave it empty.
+- Respect every "Without" item completely: none of those foods, and no ingredient that usually contains them. "No oven" means nothing is baked in an oven (no-bake, fridge, freezer, microwave or toaster with an adult are fine).
+- Few, common ingredients (3-8), each with its amount first, as on a shopping list ("200 גרם ביסקוויטים", "2 כפות קקאו", "חצי כוס שמנת מתוקה"). Tools 2-6, short nouns.
+- 4-8 steps, each one action in one short sentence a child can follow (up to about 16 words). Hands-on steps the child does (mixing, pouring, rolling, spreading, decorating) are the heart of the recipe.
+- A short, inviting title (2-4 words), a one-sentence "description", "duration_min" for the whole recipe, and one fitting "emoji".
 
-Step pictures:
-${steps}`;
-}
+Language: write in Hebrew, in the site's style - plural present tense ("מערבבים", "יוצקים", "מגלגלים"), warm and simple. Every text field has a twin ending in N ("titleN", "textN") with the SAME Hebrew text written with full, correct niqqud (the text without niqqud goes in "title"/"text"). If the request says language "en", write in English instead and copy each text into its N twin unchanged.
+
+${PRIVACY}
+
+If the request is not a request for food to make with a child (or cannot be done safely), return an empty "title", put a one-sentence explanation in "description", and leave the lists empty.`;
 
 const nullableId = { anyOf: [{ type: "string" }, { type: "null" }] };
 const ACTIVITY_SCHEMA = {
@@ -107,6 +127,31 @@ const ACTIVITY_SCHEMA = {
     },
     adaptations: { type: "string" },
     extensions: { type: "string" },
+    safety: { type: "string" },
+  },
+};
+
+const voweled = (extra: Record<string, unknown> = {}) => ({
+  type: "object",
+  additionalProperties: false,
+  required: ["text", "textN", ...Object.keys(extra)],
+  properties: { text: { type: "string" }, textN: { type: "string" }, ...extra },
+});
+const RECIPE_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["title", "titleN", "description", "emoji", "age_min", "age_max", "duration_min", "ingredients", "tools", "steps", "safety"],
+  properties: {
+    title: { type: "string" },
+    titleN: { type: "string" },
+    description: { type: "string" },
+    emoji: { type: "string" },
+    age_min: { type: "integer" },
+    age_max: { type: "integer" },
+    duration_min: { type: "integer" },
+    ingredients: { type: "array", items: voweled({ illustration: nullableId }) },
+    tools: { type: "array", items: voweled({ illustration: nullableId }) },
+    steps: { type: "array", items: voweled({ illustration: nullableId }) },
     safety: { type: "string" },
   },
 };
@@ -184,21 +229,26 @@ Deno.serve(async (request) => {
   const user = authorization ? await currentUser(authorization) : null;
   if (!user) return reply(401, { error: "sign-in" });
 
-  let input: { request?: string; age?: string; equipment?: string; duration?: number; language?: string };
+  let input: { kind?: string; request?: string; age?: string; equipment?: string; duration?: number; without?: string[]; oven?: boolean; language?: string };
   try { input = await request.json(); } catch { return reply(400, { error: "bad-request" }); }
   const wish = String(input.request ?? "").trim().slice(0, 800);
   if (wish.length < 5) return reply(400, { error: "empty" });
+  const recipe = input.kind === "recipe";
+  const WITHOUT: Record<string, string> = { nuts: "nuts and peanuts", gluten: "gluten (wheat flour, regular biscuits, bread)", dairy: "milk and dairy", eggs: "eggs" };
+  const without = (Array.isArray(input.without) ? input.without : []).map((item) => WITHOUT[item]).filter(Boolean);
 
   try {
     const [used, limit] = await Promise.all([requestsThisMonth(user.id), monthlyLimit()]);
     if (used >= limit) return reply(429, { error: "monthly-limit", limit });
 
-    const { catalog, system } = await loadCatalog();
+    const { catalog, pictures } = await loadCatalog();
     const details = [
       `Request: ${wish}`,
       input.age ? `Age: ${input.age}` : "",
-      input.equipment ? `Equipment: ${input.equipment === "clinic" ? "a typical OT clinic" : "things found at home"}` : "",
-      input.duration ? `Duration: about ${Number(input.duration)} minutes` : "",
+      !recipe && input.equipment ? `Equipment: ${input.equipment === "clinic" ? "a typical OT clinic" : "things found at home"}` : "",
+      !recipe && input.duration ? `Duration: about ${Number(input.duration)} minutes` : "",
+      recipe && without.length ? `Without: ${without.join("; ")}` : "",
+      recipe ? `Oven: ${input.oven ? "an oven may be used, with an adult" : "no oven"}` : "",
       `Language: ${input.language === "en" ? "en" : "he"}`,
     ].filter(Boolean).join("\n");
 
@@ -209,8 +259,11 @@ Deno.serve(async (request) => {
       max_tokens: 16000,
       ...fallback,
       thinking: { type: "adaptive" },
-      output_config: { effort: EFFORT, format: { type: "json_schema", schema: ACTIVITY_SCHEMA } },
-      system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
+      output_config: { effort: EFFORT, format: { type: "json_schema", schema: recipe ? RECIPE_SCHEMA : ACTIVITY_SCHEMA } },
+      system: [
+        { type: "text", text: pictures, cache_control: { type: "ephemeral" } },
+        { type: "text", text: recipe ? RECIPE_RULES : ACTIVITY_RULES },
+      ],
       messages: [{ role: "user", content: details }],
     };
     const response = await client.beta.messages.create(params as never);
@@ -221,12 +274,20 @@ Deno.serve(async (request) => {
     if (!text || text.type !== "text") return reply(502, { error: "no-answer" });
     const activity = JSON.parse(text.text);
 
-    // Only goals from the site's list, so the bank's goal filter stays clean.
-    activity.goals = (activity.goals ?? []).filter((goal: string) => GOALS.includes(goal));
-
     // Ids become picture addresses; anything not in the catalog is dropped.
     const materialImage = new Map(catalog.materials.map((item) => [item.id, item.image]));
     const stepImage = new Map(catalog.steps.map((item) => [item.id, item.image]));
+    type Voweled = { text: string; textN: string; illustration: string | null };
+    const picture = (map: Map<string, string>) => (item: Voweled) => ({ text: item.text, textN: item.textN || item.text, image: (item.illustration && map.get(item.illustration)) || null });
+    if (recipe) {
+      activity.kind = "recipe";
+      activity.goals = ["התנסות במאכלים"];
+      activity.ingredients = (activity.ingredients ?? []).map(picture(materialImage));
+      activity.tools = (activity.tools ?? []).map(picture(materialImage));
+      activity.steps = (activity.steps ?? []).map(picture(stepImage));
+    } else {
+    // Only goals from the site's list, so the bank's goal filter stays clean.
+    activity.goals = (activity.goals ?? []).filter((goal: string) => GOALS.includes(goal));
     activity.materials = (activity.materials ?? []).map((item: { name: string; illustration: string | null }) => ({
       name: item.name,
       image: (item.illustration && materialImage.get(item.illustration)) || null,
@@ -235,9 +296,10 @@ Deno.serve(async (request) => {
       text: item.text,
       image: (item.illustration && stepImage.get(item.illustration)) || null,
     }));
+    }
 
     await recordRequest(user.id, response.usage);
-    // A request that was not an activity comes back without a title and is not shared.
+    // A request that was not an activity or recipe comes back without a title and is not shared.
     const communityId = activity.title
       ? await shareActivity(activity, input.equipment === "clinic" ? "clinic" : "home", input.language === "en" ? "en" : "he").catch(() => null)
       : null;

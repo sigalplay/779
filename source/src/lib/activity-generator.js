@@ -2,13 +2,13 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL, freshCloudSession, isCloudAuthConfigur
 
 // The activity generator: the request goes to the generate-activity Edge Function (Supabase), which
 // asks Claude for an activity drawn only with the site's own illustrations.
-export async function generateActivity({ request, age, equipment, duration, language }) {
+export async function generateActivity({ kind, request, age, equipment, duration, without, oven, language }) {
   const session = await freshCloudSession();
   if (!isCloudAuthConfigured() || !session?.access_token) throw Object.assign(new Error("sign-in"), { code: "sign-in" });
   const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-activity`, {
     method: "POST",
     headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ request, age, equipment, duration, language }),
+    body: JSON.stringify({ kind, request, age, equipment, duration, without, oven, language }),
   });
   const body = await response.json().catch(() => ({}));
   if (!response.ok) throw Object.assign(new Error(body.error || "server"), { code: body.error || (response.status === 404 ? "not-deployed" : "server"), limit: body.limit });
@@ -49,6 +49,28 @@ export function suggestIllustrations(catalog, text, kind, count = 9) {
 }
 
 // A generated activity in the shape of the site's own activities, for "My activities".
+// A generated recipe in the format of the site's recipes (pages/TherapistRecipes.jsx), so it opens in
+// the same recipe page: pictures, niqqud, handwriting, printing and batch sizes.
+export function toSiteRecipe(recipe, language) {
+  const en = language === "en";
+  const item = (fallback) => (x) => ({ text: x.text, ...(en ? {} : { textN: x.textN || x.text }), ...(x.image ? { img: x.image } : { emoji: fallback }) });
+  return {
+    title: recipe.title,
+    ...(en ? {} : { titleN: recipe.titleN || recipe.title }),
+    description: recipe.description,
+    coverEmoji: recipe.emoji || "🍪",
+    duration: en ? `About ${recipe.duration_min} minutes` : `כ־${recipe.duration_min} דקות`,
+    ingredients: (recipe.ingredients || []).map(item("🛒")),
+    tools: (recipe.tools || []).map(item("🍴")),
+    steps: (recipe.steps || []).map((step, index) => ({ n: index + 1, ...item(recipe.emoji || "🍪")(step) })),
+    safety: recipe.safety || "",
+    age_min: recipe.age_min,
+    age_max: recipe.age_max,
+    language: en ? "en" : "he",
+    ai_generated: true,
+  };
+}
+
 export function toSiteActivity(activity, { equipment, language }) {
   const materials = activity.materials.map((item) => item.name);
   return {

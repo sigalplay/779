@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { useBodyClass } from "@/lib/use-body-class";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { ChefHat, Clock, ArrowLeft, RotateCcw, ListPlus, Check, Printer, X } from "lucide-react";
+import { ChefHat, Clock, ArrowLeft, RotateCcw, ListPlus, Check, Printer, X, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { PageToolbox } from "@/components/toolbox/PageToolbox";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { addToDraftPlan } from "@/lib/storage";
+import { addToDraftPlan, deleteCustomRecipe, getCustomRecipes } from "@/lib/storage";
 import { useTranslator } from "@/lib/language";
 import { PrintSheet, PrintTable } from "@/components/PrintSheet";
 import { RECIPE_EN } from "@/lib/recipe-content-en";
@@ -1903,7 +1903,13 @@ export default function TherapistRecipes({ mode = "therapist" }) {
   const listPath = mode === "parent" ? "/parent/recipes" : "/therapist/recipes";
   // Older links used ?r=<id>; they still open the recipe.
   const activeId = recipeId || searchParams.get("r");
-  const active = cmsRecipes.find((r) => r.id === activeId) ?? null;
+  const [myRecipes, setMyRecipes] = useState(getCustomRecipes);
+  const active = cmsRecipes.find((r) => r.id === activeId) ?? myRecipes.find((r) => r.id === activeId) ?? null;
+  const removeMine = (recipe) => {
+    if (!window.confirm(t(`למחוק את "${recipe.title}" מהמתכונים שלי?`, `Delete "${recipe.title}" from My recipes?`))) return;
+    deleteCustomRecipe(recipe.id);
+    setMyRecipes(getCustomRecipes());
+  };
 
   if (active) return <RecipeDetail recipe={active} mode={mode} onBack={() => navigate(listPath)} />;
 
@@ -1916,6 +1922,42 @@ export default function TherapistRecipes({ mode = "therapist" }) {
           <p className="text-muted-foreground">{t("מתכונים קלים לילדים עם שלבים ואיורים.", "Simple, child-friendly recipes for sessions or home.")}</p>
         </div>
       </div>
+
+      {mode !== "parent" && (
+        <Link to="/therapist/activity-generator?kind=recipe" className="mb-5 flex items-center gap-3 rounded-3xl border-2 border-[#cdbde8] bg-[#f5f0fd] p-4 text-[#4a3a73] hover:bg-[#efe8fb]">
+          <Sparkles className="h-8 w-8 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 flex-1">
+            <strong className="block text-lg">{t("מחולל מתכונים", "Recipe generator")}</strong>
+            <span className="text-sm">{t("מתארים מה רוצים להכין ומקבלים מתכון מאויר, עם ניקוד", "Describe what you'd like to make and get an illustrated recipe")}</span>
+          </span>
+          <span className="shrink-0 rounded-full bg-[#4a3a73] px-4 py-2 text-sm font-bold text-white">{t("ליצירה", "Create")}</span>
+        </Link>
+      )}
+
+      {myRecipes.length > 0 && (
+        <section className="mb-6" aria-labelledby="my-recipes-title">
+          <h2 id="my-recipes-title" className="mb-3 font-display text-xl font-black">{t("המתכונים שלי", "My recipes")}</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 compact-catalog-grid-v95">
+            {myRecipes.map((r) => (
+              <div key={r.id} className="group relative overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm compact-catalog-card-v95">
+                <AddToPlanButton kind="recipe" id={r.id} mode={mode} />
+                <Link to={`${listPath}/${r.id}`} className="block w-full text-right">
+                  <div className="flex h-44 items-center justify-center bg-white"><div aria-hidden="true" style={{ fontSize: "4.5rem", lineHeight: 1 }}>{r.coverEmoji}</div></div>
+                  <div className="p-4 pb-2">
+                    <h3 className="font-display text-xl font-bold group-hover:text-primary">{r.title}</h3>
+                    <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-sm text-muted-foreground"><Clock className="h-3.5 w-3.5" /> {r.duration}</span>
+                  </div>
+                </Link>
+                <div className="px-3 pb-3">
+                  <button type="button" onClick={() => removeMine(r)} className="inline-flex min-h-9 items-center gap-1 rounded-full px-2 text-sm font-semibold text-destructive hover:bg-destructive/10">
+                    <Trash2 className="h-4 w-4" aria-hidden="true" /> {t("מחיקה", "Delete")}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 compact-catalog-grid-v95">
         {cmsRecipes.map((original) => {
@@ -2063,6 +2105,12 @@ function RecipeDetail({ recipe, mode, onBack }) {
       </div>
 
       <h1 className="font-display text-4xl font-black md:text-5xl print:hidden">{language === "en" ? title : pick(recipe.title, recipe.titleN)}</h1>
+      {recipe.ai_generated && (
+        <p className="mt-2 rounded-xl bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-900 print:hidden">
+          {t("⚠️ נוצר בעזרת AI. כדאי לעבור על המתכון לפני ההכנה.", "⚠️ Created with AI. Please review the recipe before cooking.")}
+          {recipe.safety ? ` ${recipe.safety}` : ""}
+        </p>
+      )}
       <div className="mt-3 flex flex-wrap items-center gap-2 print:hidden">
         <button
           type="button"

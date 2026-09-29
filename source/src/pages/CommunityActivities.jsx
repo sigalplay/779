@@ -8,8 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { cn } from "@/lib/utils";
 import { useTranslator } from "@/lib/language";
 import { translatedTerm } from "@/lib/content-translations";
-import { addActivity, addToDraftPlan } from "@/lib/storage";
-import { toSiteActivity } from "@/lib/activity-generator";
+import { addActivity, addCustomRecipe, addToDraftPlan } from "@/lib/storage";
+import { toSiteActivity, toSiteRecipe } from "@/lib/activity-generator";
 import { deleteCommunityActivity, listCommunityActivities } from "@/lib/community-activities";
 import { isCmsAdmin } from "@/lib/cms-content";
 
@@ -56,6 +56,8 @@ export default function CommunityActivities() {
     });
   }, [mine, query, goal, age]);
 
+  const isRecipe = open?.activity?.kind === "recipe";
+  const saveRecipe = (row) => addCustomRecipe(toSiteRecipe(row.activity, row.language));
   const saveToMine = (row) => addActivity(toSiteActivity(row.activity, { equipment: row.equipment, language: row.language }));
 
   async function remove(row) {
@@ -116,6 +118,7 @@ export default function CommunityActivities() {
                           : <span className="absolute inset-0 grid place-items-center text-5xl" aria-hidden="true">{activity.emoji || "✨"}</span>}
                       </span>
                       <span className="flex flex-1 flex-col gap-1 p-4">
+                        {activity.kind === "recipe" && <span className="w-fit rounded-full bg-[#f5f0fd] px-2.5 py-0.5 text-xs font-bold text-[#4a3a73]">{t("🍪 מתכון", "🍪 Recipe")}</span>}
                         <span className="font-display text-lg font-black leading-snug">{activity.title}</span>
                         <span className="line-clamp-2 text-sm text-muted-foreground">{activity.description}</span>
                         <span className="mt-auto pt-2 text-xs font-semibold text-muted-foreground">
@@ -145,18 +148,25 @@ export default function CommunityActivities() {
             </DialogHeader>
             <p className="text-muted-foreground">{open.activity.description}</p>
             <p className="text-xs font-semibold text-muted-foreground">
-              {t(`גיל ${open.activity.age_min}–${open.activity.age_max}`, `Age ${open.activity.age_min}–${open.activity.age_max}`)} · {t(`${open.activity.duration_min} דק׳`, `${open.activity.duration_min} min`)} · {open.equipment === "clinic" ? t("קליניקה", "Clinic") : t("מהבית", "At home")}
+              {t(`גיל ${open.activity.age_min}–${open.activity.age_max}`, `Age ${open.activity.age_min}–${open.activity.age_max}`)} · {t(`${open.activity.duration_min} דק׳`, `${open.activity.duration_min} min`)}{isRecipe ? "" : ` · ${open.equipment === "clinic" ? t("קליניקה", "Clinic") : t("מהבית", "At home")}`}
             </p>
 
-            <h3 className="mt-2 font-bold">{t("ציוד", "Materials")}</h3>
-            <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-              {open.activity.materials.map((item) => (
-                <li key={item.name} className="rounded-2xl border border-border/60 bg-background p-2 text-center text-xs font-semibold">
-                  {item.image ? <img src={item.image} alt="" className="mx-auto aspect-square w-full object-contain" /> : <span className="grid aspect-square place-items-center text-2xl" aria-hidden="true">•</span>}
-                  {item.name}
-                </li>
-              ))}
-            </ul>
+            {(isRecipe
+              ? [[t("מצרכים", "Ingredients"), open.activity.ingredients], [t("כלים", "Tools"), open.activity.tools]]
+              : [[t("ציוד", "Materials"), open.activity.materials]]
+            ).map(([heading, items]) => (
+              <div key={heading}>
+                <h3 className="mb-2 mt-2 font-bold">{heading}</h3>
+                <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {(items || []).map((item, index) => (
+                    <li key={index} className="rounded-2xl border border-border/60 bg-background p-2 text-center text-xs font-semibold">
+                      {item.image ? <img src={item.image} alt="" className="mx-auto aspect-square w-full object-contain" /> : <span className="grid aspect-square place-items-center text-2xl" aria-hidden="true">•</span>}
+                      {item.name ?? item.text}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
 
             <h3 className="mt-2 font-bold">{t("שלבים", "Steps")}</h3>
             <ol className="space-y-2">
@@ -170,6 +180,16 @@ export default function CommunityActivities() {
             </ol>
             {open.activity.safety && <p className="rounded-xl bg-amber-50 px-3 py-2 text-sm">⚠️ {open.activity.safety}</p>}
 
+            {isRecipe ? (
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+              <Button className="min-h-11 rounded-full" onClick={() => { addToDraftPlan("recipe", saveRecipe(open).id); navigate("/therapist/build?view=session"); }}>
+                <Plus className="h-4 w-4" aria-hidden="true" /> {t("ללוח המובנה", "Add to session board")}
+              </Button>
+              <Button variant="outline" className="min-h-11 rounded-full" onClick={() => { const saved = saveRecipe(open); toast.success(t("נשמר במתכונים שלי", "Saved to my recipes")); navigate(`/therapist/recipes/${saved.id}`); }}>
+                <Save className="h-4 w-4" aria-hidden="true" /> {t("שמירה למתכונים שלי", "Save to my recipes")}
+              </Button>
+            </div>
+            ) : (
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
               <Button className="min-h-11 rounded-full" onClick={() => { addToDraftPlan("activity", saveToMine(open).id); navigate("/therapist/build?view=session"); }}>
                 <Plus className="h-4 w-4" aria-hidden="true" /> {t("ללוח המובנה", "Add to session board")}
@@ -178,6 +198,7 @@ export default function CommunityActivities() {
                 <Save className="h-4 w-4" aria-hidden="true" /> {t("שמירה לפעילויות שלי", "Save to my activities")}
               </Button>
             </div>
+            )}
             {admin && (
               <button type="button" onClick={() => remove(open)} className="mx-auto mt-1 inline-flex items-center gap-1 text-sm font-semibold text-destructive">
                 <Trash2 className="h-4 w-4" aria-hidden="true" /> {t("מחיקה מהבנק (מנהלת)", "Delete from the bank (admin)")}

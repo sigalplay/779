@@ -119,14 +119,14 @@ export function BoardToolbar({
       <div className="meeting-groups">
         <div className="meeting-group-tabs">
           <button type="button" className="meeting-group-tab primary" aria-expanded={openGroup === "add"} aria-controls="meetingGroupAdd" onClick={() => toggleGroup("add")}>
-            <span aria-hidden="true">＋</span>{t("הוספה ללוח", "Add to the board")}
+            <span className="meeting-tab-icon plus" aria-hidden="true">＋</span><span>{t("הוספה ללוח", "Add to the board")}</span>
           </button>
           <a className="meeting-group-tab ai" href={language === "en" ? "/en/therapist/activity-generator" : "/therapist/activity-generator"}>
-            <span aria-hidden="true">✨</span>{t("מחולל AI", "AI generator")}
+            <span className="meeting-tab-icon" aria-hidden="true">✨</span><span>{t("מחולל AI", "AI generator")}</span>
           </a>
           {/* Full screen is what a session runs in, so it stands on its own next to the groups. */}
           <button type="button" className="meeting-group-tab fullscreen" aria-pressed={fullscreen} onClick={onToggleFullscreen}>
-            <span aria-hidden="true">⛶</span>{fullscreen ? t("יציאה ממסך מלא", "Exit full screen") : t("מסך מלא", "Full screen")}
+            <img className="meeting-tab-icon" src="/icon-bank/tools/fullscreen.webp" alt="" /><span>{fullscreen ? t("יציאה ממסך מלא", "Exit full screen") : t("מסך מלא", "Full screen")}</span>
           </button>
         </div>
         {openGroup === "add" && (
