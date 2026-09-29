@@ -42,7 +42,8 @@ const ACTIVE_PATIENT_KEY = "boo_active_cloud_patient";
 const GUEST_BACKUP_KEY = "boo_guest_board_backup";
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const GAME_MAKING_ACTIVITY_IDS = ["seed-100", "seed-50", "seed-47", "seed-73", "seed-10", "seed-64"];
-const THERAPIST_TABS = new Set(["search", "all", "creative", "game-making", "sensory", "movement", "social", "experiments", "recipes"]);
+// "All activities" is gone from the therapists' search; an old ?tab=all link opens the search.
+const THERAPIST_TABS = new Set(["search", "creative", "game-making", "sensory", "movement", "social", "experiments", "recipes"]);
 
 function scoreActivity(activity, expandedGoals) {
   return expandedGoals.filter((g) => activity.goals?.includes(g)).length;
@@ -379,14 +380,13 @@ export default function TherapistBuild() {
       <div className="space-y-4">
         <div className="mobile-search-category-tabs search-category-row">
           <SideTabBtn active={mainTab === "search"} onClick={() => setMainTab("search")}>{t("מנוע חיפוש", "Find Activities")}</SideTabBtn>
-          <SideTabBtn active={mainTab === "all"} onClick={() => setMainTab("all")}>{t("כל הפעילויות", "All activities")}</SideTabBtn>
+          <SideTabBtn active={mainTab === "recipes"} onClick={() => setMainTab("recipes")}>{t("מתכונים", "Kid-Friendly Recipes")}</SideTabBtn>
+          <SideTabBtn active={mainTab === "experiments"} onClick={() => setMainTab("experiments")}>{t("ניסויים", "Kids’ Science Experiments")}</SideTabBtn>
           <SideTabBtn active={mainTab === "creative"} onClick={() => setMainTab("creative")}>{t("🎨 פעילויות יצירה", "🎨 Creative activities")}</SideTabBtn>
           <SideTabBtn active={mainTab === "game-making"} onClick={() => setMainTab("game-making")}>{t("🧩 הכנת משחקים", "🧩 Make-and-play games")}</SideTabBtn>
           <SideTabBtn active={mainTab === "sensory"} onClick={() => setMainTab("sensory")}>{t("🌈 פעילויות סנסוריות", "🌈 Sensory activities")}</SideTabBtn>
           <SideTabBtn active={mainTab === "movement"} onClick={() => setMainTab("movement")}>{t("🤸 פעילויות תנועה", "🤸 Movement activities")}</SideTabBtn>
           <SideTabBtn active={mainTab === "social"} onClick={() => setMainTab("social")}>{t("🎉 משחקי חברה", "🎉 Social games")}</SideTabBtn>
-          <SideTabBtn active={mainTab === "experiments"} onClick={() => setMainTab("experiments")}>{t("ניסויים", "Kids’ Science Experiments")}</SideTabBtn>
-          <SideTabBtn active={mainTab === "recipes"} onClick={() => setMainTab("recipes")}>{t("מתכונים", "Kid-Friendly Recipes")}</SideTabBtn>
         </div>
 
         <div className="space-y-6">
@@ -426,13 +426,7 @@ export default function TherapistBuild() {
             </div>
           )}
 
-          {mainTab === "all" ? (
-            <div>
-              <p className="mb-3 text-sm text-muted-foreground">{t("כל הפעילויות בבנק, בלי סינון -", "All activities in the library, without filtering —")}{" "}{therapistActivities.length}{" "}{t("בסך הכל.", "in total.")}</p>
-              {cardSearch(activityTitles(therapistActivities), "all")}
-              <div className="search-tile-grid">{activityCards(therapistActivities)}</div>
-            </div>
-          ) : mainTab === "creative" ? (
+          {mainTab === "creative" ? (
             <div>
               <div className="mb-6 inline-flex flex-wrap rounded-full bg-muted p-1">
                 <SmallTabBtn active={creativeMode === "browse"} onClick={() => setCreativeMode("browse")}>{t("כל פעילויות היצירה", "All creative activities")}</SmallTabBtn>
