@@ -1,4 +1,4 @@
-/* Session board tools in two groups under the dates: "Add to the board" and "Tools". */
+/* Session board tools under the dates: "Add to the board" (with the session tools) and the AI generator. */
 .meeting-board-actions>.meeting-groups{grid-column:1/-1;grid-row:auto!important;display:flex;flex-direction:column;gap:10px;min-width:0}
 .meeting-group-tabs{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:8px}
 .meeting-board-actions .meeting-group-tabs .meeting-group-tab{display:flex!important;width:100%!important;min-height:56px!important;align-items:center;justify-content:center;gap:8px!important;padding:8px 12px!important;border-radius:16px!important;font-size:16px!important;font-weight:800!important}
