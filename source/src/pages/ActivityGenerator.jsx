@@ -129,7 +129,7 @@ export default function ActivityGenerator() {
                   maxLength={800}
                   value={form.request}
                   onChange={(e) => setForm({ ...form, request: e.target.value })}
-                  placeholder={t("לדוגמה: חיזוק אחיזה עדינה עם פינצטה, עם משהו עם סיפור קטן שיעניין את הילד", "For example: strengthening a fine pincer grasp with tweezers, with a little story to keep the child interested")}
+                  placeholder={t("לדוגמה: משחק עם פינצטה לחיזוק האחיזה העדינה, עם סיפור קצר שיעניין את הילד/ה", "For example: a tweezers game to strengthen the pincer grasp, with a short story to keep the child interested")}
                   className="rounded-2xl border-2 text-base leading-relaxed"
                 />
               </div>
