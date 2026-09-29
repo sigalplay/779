@@ -634,21 +634,10 @@ export default function SocialStories({ mode }) {
 
               <div className="print:hidden">
                 <StorySteps current={3} />
-                <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                <div className="mb-4">
                   <button type="button" onClick={startOver} className="inline-flex min-h-11 items-center gap-1 rounded-full px-3 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground">
                     <ArrowRight className="h-4 w-4" aria-hidden="true" />{" "}{t("סיפור חדש", "New story")}
                   </button>
-                  <div className="flex flex-wrap gap-2">
-                    <Button ref={readerButtonRef} onClick={() => openReader(0)} className="min-h-11 rounded-full px-5">
-                      <Play className="h-4 w-4" aria-hidden="true" />{" "}{t("הצגת הסיפור", "Show the story")}
-                    </Button>
-                    <Button onClick={handleSaveStory} variant="outline" className="min-h-11 rounded-full px-5">
-                      <Save className="h-4 w-4" aria-hidden="true" />{" "}{t("שמירה", "Save")}
-                    </Button>
-                    <Button onClick={() => window.print()} variant="outline" className="min-h-11 rounded-full px-5">
-                      <Printer className="h-4 w-4" aria-hidden="true" />{" "}{t("הדפסה", "Print")}
-                    </Button>
-                  </div>
                 </div>
 
                 <Label htmlFor="storyTitle" className="sr-only">{t("שם הסיפור", "Story title")}</Label>
@@ -708,6 +697,22 @@ export default function SocialStories({ mode }) {
                     : null
                   }
                 />
+
+                {/* The last step, after editing: show, save or print the story. */}
+                <section className="mt-6 rounded-3xl border border-sage/40 bg-sage/10 p-4 text-center sm:p-5" aria-labelledby="story-done-title">
+                  <h2 id="story-done-title" className="mb-3 font-display text-xl font-black">{t("הסיפור מוכן", "The story is ready")}</h2>
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    <Button ref={readerButtonRef} onClick={() => openReader(0)} className="min-h-12 rounded-full px-5 text-base">
+                      <Play className="h-4 w-4" aria-hidden="true" />{" "}{t("הצגת הסיפור", "Show the story")}
+                    </Button>
+                    <Button onClick={() => window.print()} variant="outline" className="min-h-12 rounded-full bg-background px-5 text-base">
+                      <Printer className="h-4 w-4" aria-hidden="true" />{" "}{t("הדפסה", "Print")}
+                    </Button>
+                    <Button onClick={handleSaveStory} variant="outline" className="min-h-12 rounded-full bg-background px-5 text-base">
+                      <Save className="h-4 w-4" aria-hidden="true" />{" "}{t("שמירה", "Save")}
+                    </Button>
+                  </div>
+                </section>
               </div>
 
               {storyMode === "view" && (
