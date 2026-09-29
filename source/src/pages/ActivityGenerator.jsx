@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Camera, Check, Pencil, Plus, Printer, Save, Sparkles, Trash2, X } from "lucide-react";
+import { Camera, Check, Pencil, Plus, Printer, RefreshCw, Save, Sparkles, Trash2, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -239,12 +239,16 @@ function GeneratedActivity({ activity, editing, onEdit, onChange, onChangeItem, 
       </div>
 
       <section>
-        <h3 className="mb-2 font-bold">{t("ציוד", "Materials")}</h3>
+        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+          <h3 className="font-bold">{t("ציוד", "Materials")}</h3>
+          <p className="text-xs text-muted-foreground">{t("איור לא מתאים? נוגעים בו ובוחרים אחר, או מעלים תמונה.", "Picture doesn't fit? Tap it to choose another or upload a photo.")}</p>
+        </div>
         <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
           {activity.materials.map((item, index) => (
             <li key={index} className="relative flex flex-col rounded-2xl border border-border/60 bg-card p-1.5 text-center">
-              <button type="button" onClick={() => onPick({ kind: "material", index })} aria-label={t(`איור ל${item.name}`, `Picture for ${item.name}`)} className={cn("grid aspect-square place-items-center overflow-hidden rounded-xl", item.image ? "bg-white" : "border-2 border-dashed border-border bg-muted/40 text-sage-foreground")}>
+              <button type="button" onClick={() => onPick({ kind: "material", index })} aria-label={t(`איור ל${item.name}`, `Picture for ${item.name}`)} className={cn("relative grid aspect-square place-items-center overflow-hidden rounded-xl", item.image ? "bg-white" : "border-2 border-dashed border-border bg-muted/40 text-sage-foreground")}>
                 {item.image ? <img src={item.image} alt="" className="h-full w-full object-contain" /> : <span className="grid place-items-center gap-1 text-xs font-bold"><Camera className="h-6 w-6" aria-hidden="true" />{t("איור / תמונה", "Picture")}</span>}
+                {item.image && <SwapBadge />}
               </button>
               {editing ? (
                 <div className="mt-1 flex items-center gap-1">
@@ -268,8 +272,9 @@ function GeneratedActivity({ activity, editing, onEdit, onChange, onChangeItem, 
           {activity.steps.map((step, index) => (
             <li key={index} className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-2">
               <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-sage/30 text-sm font-bold">{index + 1}</span>
-              <button type="button" onClick={() => onPick({ kind: "step", index })} aria-label={t(`איור לשלב ${index + 1}`, `Picture for step ${index + 1}`)} className={cn("grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-xl", step.image ? "bg-white" : "border-2 border-dashed border-border bg-muted/40 text-sage-foreground")}>
+              <button type="button" onClick={() => onPick({ kind: "step", index })} aria-label={t(`איור לשלב ${index + 1}`, `Picture for step ${index + 1}`)} className={cn("relative grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-xl", step.image ? "bg-white" : "border-2 border-dashed border-border bg-muted/40 text-sage-foreground")}>
                 {step.image ? <img src={step.image} alt="" className="h-full w-full object-contain" /> : <span className="grid place-items-center gap-1 text-[11px] font-bold"><Camera className="h-5 w-5" aria-hidden="true" />{t("איור / תמונה", "Picture")}</span>}
+                {step.image && <SwapBadge />}
               </button>
               {editing ? (
                 <>
@@ -310,6 +315,16 @@ function GeneratedActivity({ activity, editing, onEdit, onChange, onChangeItem, 
 
 // Another picture for a material or step: suggestions from the site's catalog, a search, the
 // therapist's own photo, or no picture.
+// A small "change" mark on a picture, so it is clear that tapping it chooses another.
+function SwapBadge() {
+  const { t } = useTranslator();
+  return (
+    <span className="absolute bottom-1 start-1 inline-flex items-center gap-1 rounded-full border border-border bg-white/95 px-1.5 py-0.5 text-[10px] font-bold text-sage-foreground shadow-sm" aria-hidden="true">
+      <RefreshCw className="h-3 w-3" />{t("החלפה", "Change")}
+    </span>
+  );
+}
+
 function IllustrationPicker({ text, kind, title, current, onChoose, onClose }) {
   const { t } = useTranslator();
   const [catalog, setCatalog] = useState(null);
