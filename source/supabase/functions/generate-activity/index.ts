@@ -7,7 +7,7 @@
 //
 // Deploy:   supabase functions deploy generate-activity
 // Secrets:  supabase secrets set ANTHROPIC_API_KEY=...
-//           optional: AI_MONTHLY_LIMIT (default 10), AI_MODEL (default claude-sonnet-5),
+//           optional: AI_MONTHLY_LIMIT (default 10), AI_MODEL (default claude-sonnet-5), AI_EFFORT (default low),
 //                     AI_CATALOG_URL (default: the live site's catalog)
 import Anthropic from "npm:@anthropic-ai/sdk";
 
@@ -18,6 +18,8 @@ const MONTHLY_LIMIT = Number(Deno.env.get("AI_MONTHLY_LIMIT") ?? 10);
 // Sonnet 5 costs about 2.5 times less than Opus 5 and writes these activities well.
 // AI_MODEL=claude-opus-5 switches back without a code change.
 const MODEL = Deno.env.get("AI_MODEL") ?? "claude-sonnet-5";
+// A short activity needs little thinking; "low" about halves the cost. AI_EFFORT=medium for more.
+const EFFORT = Deno.env.get("AI_EFFORT") ?? "low";
 const CATALOG_URL = Deno.env.get("AI_CATALOG_URL") ?? "https://letsplayot.com/ai/illustration-catalog.json";
 
 const client = new Anthropic(); // reads the ANTHROPIC_API_KEY secret
@@ -196,7 +198,7 @@ Deno.serve(async (request) => {
       max_tokens: 16000,
       ...fallback,
       thinking: { type: "adaptive" },
-      output_config: { effort: "medium", format: { type: "json_schema", schema: ACTIVITY_SCHEMA } },
+      output_config: { effort: EFFORT, format: { type: "json_schema", schema: ACTIVITY_SCHEMA } },
       system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
       messages: [{ role: "user", content: details }],
     };
