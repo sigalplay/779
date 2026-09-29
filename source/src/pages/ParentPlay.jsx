@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DURATIONS, FUNCTIONAL_DIFFICULTIES, DIFFICULTY_GUIDANCE, ACTIVITY_GROUPS, expandGoals } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { useMediaQuery } from "@/lib/use-media-query";
 import { searchActivitiesSmart, markSeen, resetSeen, filterUnseen, allActivities, isSearchActive } from "@/lib/storage";
 import { CRAFT_SUPPLIES, matchByCraftSupplies } from "@/lib/craft-supplies";
 import { useSearchParams } from "react-router-dom";
@@ -153,7 +152,7 @@ export default function ParentPlay() {
               <p className="mb-4 text-sm text-muted-foreground">
                 {t("בחרו גיל, תחום התפתחות וזמן, ונמצא רעיון מתאים. אפשר לבחור גם רק מסנן אחד.", "Choose an age, developmental area, and duration to find a suitable activity. You can also use just one filter.")}
               </p>
-              <Section chipClass="search-age-chip" title={t("1. גיל (אפשר לבחור כמה טווחים)", "1. Age (choose one or more ranges)")}>
+              <Section chipClass="search-age-chip" title={t("1. גיל (אפשר לבחור כמה טווחים)", "1. Age (choose one or more ranges)")} summary={selectedAges.length ? selectedAges.map((label) => t(`גיל ${label}`, `Ages ${AGE_RANGES.find((range) => range.label === label)?.labelEn || label}`)).join(", ") : ""}>
                 <div className="flex flex-wrap gap-2">
                   {AGE_RANGES.map((range) => (
                     <Chip
@@ -166,7 +165,7 @@ export default function ParentPlay() {
                   ))}
                 </div>
               </Section>
-              <Section chipClass="search-development-chip" title={t("2. תחום שתרצו לחזק (בחירה אחת)", "2. Developmental area (choose one)")}>
+              <Section chipClass="search-development-chip" title={t("2. תחום שתרצו לחזק (בחירה אחת)", "2. Developmental area (choose one)")} summary={difficulty ? translatedTerm(difficulty, language) : ""}>
                 <div className="space-y-2">
                   {FUNCTIONAL_DIFFICULTIES.map((group) => (
                     <div key={group.category}>
@@ -201,7 +200,7 @@ export default function ParentPlay() {
                 </div>
               </Section>
 
-              <Section chipClass="search-time-chip" title={t("3. כמה זמן יש?", "3. How much time do you have?")}>
+              <Section chipClass="search-time-chip" title={t("3. כמה זמן יש?", "3. How much time do you have?")} summary={maxDur ? translatedTerm(DURATIONS.find((d) => d.mode === maxDur)?.label || "", language) : ""}>
                 <div className="flex flex-wrap gap-2">
                   {DURATIONS.map((d) => (
                     <Chip key={d.mode} active={maxDur === d.mode} onClick={() => setMaxDur(d.mode)}>
@@ -450,30 +449,26 @@ function TabBtn({ active, children, onClick }) {
   );
 }
 
-// A group of search filters. On a narrow phone each group folds up under its title to keep the search short.
-function Section({ title, chipClass, children }) {
-  const phone = useMediaQuery("(max-width: 760px)");
+// A group of search filters. On every screen it folds up under its title, like on the phone, so the
+// parents' search stays short; the choice made shows next to the title while it is folded.
+function Section({ title, summary, chipClass, children }) {
   const [open, setOpen] = useState(false);
-  const expanded = !phone || open;
   const toggle = () => setOpen((value) => !value);
   return (
     <div className="mb-3">
-      {phone ? (
-        <div
-          role="button"
-          tabIndex={0}
-          aria-expanded={expanded}
-          onClick={toggle}
-          onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggle(); } }}
-          className="parent-filter-accordion-title mb-1 text-xs font-semibold text-muted-foreground"
-        >
-          {title}
-          <span className="parent-filter-accordion-arrow" aria-hidden="true">⌄</span>
-        </div>
-      ) : (
-        <div className="mb-1 text-xs font-semibold text-muted-foreground">{title}</div>
-      )}
-      <div className={phone ? "parent-filter-accordion-content" : undefined} hidden={!expanded}>
+      <div
+        role="button"
+        tabIndex={0}
+        aria-expanded={open}
+        onClick={toggle}
+        onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggle(); } }}
+        className="parent-filter-accordion-title mb-1 text-xs font-semibold text-muted-foreground"
+      >
+        <span className="min-w-0">{title}</span>
+        {summary && !open && <span className="parent-filter-accordion-summary">{summary}</span>}
+        <span className="parent-filter-accordion-arrow" aria-hidden="true">⌄</span>
+      </div>
+      <div className="parent-filter-accordion-content" hidden={!open}>
         <ChipClassContext.Provider value={chipClass}>{children}</ChipClassContext.Provider>
       </div>
     </div>
