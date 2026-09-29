@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useTranslator } from "@/lib/language";
+import { translatedTerm } from "@/lib/content-translations";
 import { addActivity, addToDraftPlan } from "@/lib/storage";
 import { toSiteActivity } from "@/lib/activity-generator";
 import { deleteCommunityActivity, listCommunityActivities } from "@/lib/community-activities";
@@ -34,23 +35,26 @@ export default function CommunityActivities() {
     isCmsAdmin().then(setAdmin).catch(() => setAdmin(false));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Hebrew and English activities are separate banks: each site language shows its own.
+  const mine = useMemo(() => (rows || []).filter((row) => (row.language || "he") === (language === "en" ? "en" : "he")), [rows, language]);
+
   const goals = useMemo(() => {
     const count = new Map();
-    for (const row of rows || []) for (const item of row.activity.goals || []) count.set(item, (count.get(item) || 0) + 1);
+    for (const row of mine) for (const item of row.activity.goals || []) count.set(item, (count.get(item) || 0) + 1);
     return [...count].sort((a, b) => b[1] - a[1]).map(([name]) => name);
-  }, [rows]);
+  }, [mine]);
 
   const shown = useMemo(() => {
     const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
     const range = AGES.find(([id]) => id === age);
-    return (rows || []).filter(({ activity }) => {
+    return mine.filter(({ activity }) => {
       if (goal && !(activity.goals || []).includes(goal)) return false;
       if (range && (activity.age_max < range[1] || activity.age_min > range[2])) return false;
       if (!words.length) return true;
       const text = [activity.title, activity.description, ...(activity.materials || []).map((item) => item.name), ...(activity.steps || []).map((step) => step.text)].join(" ").toLowerCase();
       return words.every((word) => text.includes(word));
     });
-  }, [rows, query, goal, age]);
+  }, [mine, query, goal, age]);
 
   const saveToMine = (row) => addActivity(toSiteActivity(row.activity, { equipment: row.equipment, language: row.language }));
 
@@ -88,7 +92,7 @@ export default function CommunityActivities() {
           {goals.length > 1 && (
             <div className="flex flex-wrap gap-2" role="group" aria-label={t("מטרה", "Goal")}>
               <button type="button" aria-pressed={!goal} className={chip(!goal)} onClick={() => setGoal(null)}>{t("הכול", "All")}</button>
-              {goals.map((name) => <button key={name} type="button" aria-pressed={goal === name} className={chip(goal === name)} onClick={() => setGoal(goal === name ? null : name)}>{name}</button>)}
+              {goals.map((name) => <button key={name} type="button" aria-pressed={goal === name} className={chip(goal === name)} onClick={() => setGoal(goal === name ? null : name)}>{translatedTerm(name, language)}</button>)}
             </div>
           )}
         </div>
@@ -116,7 +120,7 @@ export default function CommunityActivities() {
                         <span className="line-clamp-2 text-sm text-muted-foreground">{activity.description}</span>
                         <span className="mt-auto pt-2 text-xs font-semibold text-muted-foreground">
                           {t(`גיל ${activity.age_min}–${activity.age_max}`, `Age ${activity.age_min}–${activity.age_max}`)} · {t(`${activity.duration_min} דק׳`, `${activity.duration_min} min`)}
-                          {(activity.goals || []).length > 0 && ` · ${activity.goals.join(", ")}`}
+                          {(activity.goals || []).length > 0 && ` · ${activity.goals.map((item) => translatedTerm(item, language)).join(", ")}`}
                         </span>
                       </span>
                     </button>
@@ -127,7 +131,7 @@ export default function CommunityActivities() {
           </>
         ) : (
           <div className="rounded-3xl border border-dashed border-border p-8 text-center">
-            <p className="mb-4 text-muted-foreground">{(rows || []).length ? t("לא נמצאו פעילויות. נסו חיפוש אחר.", "No activities found. Try another search.") : t("עוד אין כאן פעילויות. הפעילות הראשונה יכולה להיות שלך!", "No activities yet. The first one could be yours!")}</p>
+            <p className="mb-4 text-muted-foreground">{mine.length ? t("לא נמצאו פעילויות. נסו חיפוש אחר.", "No activities found. Try another search.") : t("עוד אין כאן פעילויות. הפעילות הראשונה יכולה להיות שלך!", "No activities yet. The first one could be yours!")}</p>
             <Link to="/therapist/activity-generator" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-6 font-semibold text-primary-foreground"><Sparkles className="h-4 w-4" />{t("ליצירת פעילות", "Create an activity")}</Link>
           </div>
         )}

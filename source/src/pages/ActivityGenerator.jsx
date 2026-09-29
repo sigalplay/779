@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useTranslator } from "@/lib/language";
+import { translatedTerm } from "@/lib/content-translations";
 import { isCloudSignedIn } from "@/lib/cloud-auth";
 import { addActivity, addToDraftPlan, getCustomActivities, updateCustomActivity } from "@/lib/storage";
 import { readPhotoFile } from "@/lib/session-board-tools";
@@ -213,7 +214,7 @@ function ChoiceRow({ label, options, value, onChange }) {
 }
 
 function GeneratedActivity({ activity, editing, onEdit, onChange, onChangeItem, onRemoveItem, onAddItem, onPick, onSave, onAddToBoard, onPrint, onNew, remaining }) {
-  const { t } = useTranslator();
+  const { language, t } = useTranslator();
   const texts = [
     ["preparation", t("הכנה", "Preparation")],
     ["adaptations", t("התאמות", "Adaptations")],
@@ -238,7 +239,7 @@ function GeneratedActivity({ activity, editing, onEdit, onChange, onChangeItem, 
         <div className="mt-3 flex flex-wrap gap-2 text-sm font-semibold">
           <span className="rounded-full border border-border bg-card px-3 py-1">{t(`גיל ${activity.age_min}–${activity.age_max}`, `Ages ${activity.age_min}–${activity.age_max}`)}</span>
           <span className="rounded-full border border-border bg-card px-3 py-1">{t(`${activity.duration_min} דקות`, `${activity.duration_min} minutes`)}</span>
-          {activity.goals.map((goal) => <span key={goal} className="rounded-full border border-border bg-card px-3 py-1">{goal}</span>)}
+          {activity.goals.map((goal) => <span key={goal} className="rounded-full border border-border bg-card px-3 py-1">{translatedTerm(goal, language)}</span>)}
         </div>
       </div>
 
