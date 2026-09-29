@@ -6,7 +6,7 @@
 //
 // Materials: every named material picture of the activities, plus the board's toys, motor
 // equipment and fine-motor items, the food bank and the recipes' ingredients and tools.
-// Steps: every step picture of the activities, with that step's text.
+// Steps: every step picture of the activities, with that step's text, and the action illustrations.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -21,6 +21,7 @@ try {
   const { MOTOR_TRAIL_ITEMS, CREATIVE_ACCESSORIES, HOME_ITEMS } = await vite.ssrLoadModule("/src/lib/motor-trail-items.js");
   const { RECIPES } = await vite.ssrLoadModule("/src/pages/TherapistRecipes.jsx");
   const { FOOD_ITEMS, EQUIPMENT_ITEMS } = await vite.ssrLoadModule("/src/lib/icon-bank.js");
+  const { ACTION_ILLUSTRATIONS } = await vite.ssrLoadModule("/src/lib/action-illustrations.js");
 
   const exists = (image) => typeof image === "string" && image.startsWith("/") && fs.existsSync(path.join(root, "public", decodeURI(image)));
   const clean = (text) => String(text || "").replace(/\s+/g, " ").trim();
@@ -56,6 +57,9 @@ try {
       if (typeof item.img === "string") addMaterial(bare(item.text), item.img);
     }
   }
+
+  // Single actions (pour, throw, sort...) fit steps of any activity.
+  for (const action of ACTION_ILLUSTRATIONS) addStep(action.he, action.image);
 
   const catalog = {
     materials: [...materials].map(([name, image], index) => ({ id: `m${index + 1}`, name, image })),

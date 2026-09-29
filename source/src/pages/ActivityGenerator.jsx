@@ -36,7 +36,7 @@ export default function ActivityGenerator() {
 
   const errors = {
     "sign-in": t("צריך להתחבר כדי ליצור פעילות.", "Please sign in to create an activity."),
-    "daily-limit": t("הגעת למספר הפעילויות להיום. אפשר ליצור עוד מחר.", "You have reached today's limit. You can create more tomorrow."),
+    "monthly-limit": t("הגעת ל־10 הפעילויות של החודש. המכסה מתחדשת ב־1 לחודש.", "You have reached this month's 10 activities. The limit renews on the 1st."),
     refused: t("לא הצלחנו ליצור פעילות לבקשה הזאת. נסי לנסח אותה אחרת.", "We couldn't create an activity for this request. Try wording it differently."),
     busy: t("השירות עמוס כרגע. נסי שוב בעוד דקה.", "The service is busy. Please try again in a minute."),
     "not-deployed": t("מחולל הפעילויות עוד לא הופעל באתר.", "The activity generator is not switched on yet."),
@@ -103,7 +103,10 @@ export default function ActivityGenerator() {
     <AppShell mode="therapist">
       <div className="mx-auto max-w-3xl">
         <h1 className="font-display text-3xl font-black md:text-4xl">{t("מחולל פעילויות", "Activity generator")}</h1>
-        <p className="mb-6 mt-1 text-muted-foreground">{t("מתארים מה צריך, ומקבלים פעילות מוכנה עם איורים מהמאגר של בואו נשחק.", "Describe what you need and get a ready activity with illustrations from the site.")}</p>
+        <p className="mb-6 mt-1 text-muted-foreground">
+          {t("מתארים מה צריך, ומקבלים פעילות מוכנה עם איורים מהמאגר של בואו נשחק.", "Describe what you need and get a ready activity with illustrations from the site.")}
+          {" "}<Link to="/therapist/community-activities" className="font-bold text-primary underline underline-offset-4">{t("לפעילויות שמשתמשים יצרו", "Activities users created")}</Link>
+        </p>
 
         {!signedIn ? (
           <div className="rounded-3xl border border-border/60 bg-card p-6 text-center">
@@ -128,7 +131,7 @@ export default function ActivityGenerator() {
               <ChoiceRow label={t("גיל", "Age")} options={AGES.map((value) => [value, value])} value={form.age} onChange={(age) => setForm({ ...form, age })} />
               <ChoiceRow label={t("ציוד", "Equipment")} options={[["home", t("🏠 מהבית", "🏠 At home")], ["clinic", t("🏥 קליניקה", "🏥 Clinic")]]} value={form.equipment} onChange={(equipment) => setForm({ ...form, equipment })} />
               <ChoiceRow label={t("משך", "Duration")} options={DURATIONS.map((value) => [value, t(`${value} דק׳`, `${value} min`)])} value={form.duration} onChange={(duration) => setForm({ ...form, duration })} />
-              <p className="rounded-xl bg-sage/15 px-3 py-2 text-xs text-sage-foreground">{t("🔒 בלי שם הילד ובלי פרטים מזהים. מספיק לתאר גיל ומטרה.", "🔒 No child's name or identifying details. Age and goal are enough.")}</p>
+              <p className="rounded-xl bg-sage/15 px-3 py-2 text-xs text-sage-foreground">{t("🔒 בלי שם הילד ובלי פרטים מזהים. מספיק לתאר גיל ומטרה. הפעילות שתיווצר תתווסף גם ל„פעילויות שמשתמשים יצרו”, בלי שם היוצרת.", "🔒 No child's name or identifying details. Age and goal are enough. The activity will also be added to \"Activities users created\", without your name.")}</p>
             </div>
             {error && <p className="rounded-xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive" role="alert">{error}</p>}
             <Button type="submit" disabled={loading} className="min-h-12 w-full rounded-full text-base">
@@ -299,7 +302,7 @@ function GeneratedActivity({ activity, editing, onEdit, onChange, onChangeItem, 
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
         <button type="button" onClick={onNew} className="min-h-11 rounded-full px-3 font-semibold underline">{t("בקשה חדשה", "New request")}</button>
-        {remaining != null && <span>{t(`נשארו לך היום ${remaining} פעילויות`, `${remaining} activities left today`)}</span>}
+        {remaining != null && <span>{t(`נשארו לך החודש ${remaining} פעילויות`, `${remaining} activities left this month`)}</span>}
       </div>
     </article>
   );

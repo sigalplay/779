@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { ShareLinkField } from "@/components/ShareLinkField";
+import { ShareLinkActions } from "@/components/ShareLinkActions";
 import { Printer, RotateCcw, X, ChevronUp, ChevronDown, Plus, Smartphone, Copy, Check } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useTranslator } from "@/lib/language";
@@ -262,6 +263,7 @@ export default function MorningRoutine({ mode }) {
                   {copied ? t("הועתק", "Copied") : t("העתקה", "Copy")}
                 </Button>
               </div>
+              <ShareLinkActions url={childUrl} message={t("לוח ההתארגנות של הבוקר:", "Your morning routine board:")} />
             </>
           )}
         </DialogContent>

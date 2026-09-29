@@ -39,6 +39,7 @@ const MENU_GROUPS = [
       ["/therapist/plans", "התכניות השמורות שלי", "Saved Plans"],
       ["/therapist/motor-trail", "מסלול מוטורי", "Obstacle Course Builder"],
       ["/therapist/activity-generator", "מחולל פעילויות", "Activity generator"],
+      ["/therapist/community-activities", "פעילויות שמשתמשים יצרו", "Activities users created"],
     ],
   },
   {
