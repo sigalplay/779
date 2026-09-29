@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Camera, Check, Pencil, Plus, Printer, RefreshCw, Save, Sparkles, Trash2, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
@@ -11,21 +11,27 @@ import { cn } from "@/lib/utils";
 import { useTranslator } from "@/lib/language";
 import { translatedTerm } from "@/lib/content-translations";
 import { isCloudSignedIn } from "@/lib/cloud-auth";
-import { addActivity, addToDraftPlan, getCustomActivities, updateCustomActivity } from "@/lib/storage";
+import { addActivity, addCustomRecipe, addToDraftPlan, getCustomActivities, updateCustomActivity } from "@/lib/storage";
 import { readPhotoFile } from "@/lib/session-board-tools";
-import { generateActivity, loadIllustrationCatalog, suggestIllustrations, toSiteActivity } from "@/lib/activity-generator";
+import { generateActivity, loadIllustrationCatalog, suggestIllustrations, toSiteActivity, toSiteRecipe } from "@/lib/activity-generator";
 
 const AGES = ["3-4", "5-6", "7-9", "10+"];
 const DURATIONS = [10, 15, 25];
+const WITHOUT = [["nuts", "אגוזים", "Nuts"], ["gluten", "גלוטן", "Gluten"], ["dairy", "חלב", "Dairy"], ["eggs", "ביצים", "Eggs"]];
 
 // The activity generator: the therapist describes what she needs and gets an activity in the site's
 // format, drawn with the site's own illustrations; where none fits she can choose another or upload
 // her own photo. The result can be edited, saved to "My activities", added to the session board and printed.
+// In recipe mode (?kind=recipe) it writes a kids' recipe instead, saves it under "My recipes" and opens it
+// on the recipes page. Activities and recipes share one monthly limit.
 export default function ActivityGenerator() {
   const { language, t } = useTranslator();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const signedIn = isCloudSignedIn();
-  const [form, setForm] = useState({ request: "", age: "5-6", equipment: "home", duration: 15 });
+  const [form, setForm] = useState(() => ({ kind: searchParams.get("kind") === "recipe" ? "recipe" : "activity", request: "", age: "5-6", equipment: "home", duration: 15, without: [], oven: false }));
+  const recipeMode = form.kind === "recipe";
+  const setKind = (kind) => { setForm((current) => ({ ...current, kind })); setError(""); setSearchParams(kind === "recipe" ? { kind } : {}, { replace: true }); };
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [activity, setActivity] = useState(null);
@@ -37,11 +43,11 @@ export default function ActivityGenerator() {
 
   const errors = {
     "sign-in": t("צריך להתחבר כדי ליצור פעילות.", "Please sign in to create an activity."),
-    refused: t("לא הצלחנו ליצור פעילות לבקשה הזאת. נסי לנסח אותה אחרת.", "We couldn't create an activity for this request. Try wording it differently."),
+    refused: recipeMode ? t("לא הצלחנו ליצור מתכון לבקשה הזאת. נסי לנסח אותה אחרת.", "We couldn't create a recipe for this request. Try wording it differently.") : t("לא הצלחנו ליצור פעילות לבקשה הזאת. נסי לנסח אותה אחרת.", "We couldn't create an activity for this request. Try wording it differently."),
     busy: t("השירות עמוס כרגע. נסי שוב בעוד דקה.", "The service is busy. Please try again in a minute."),
     "not-deployed": t("מחולל הפעילויות עוד לא הופעל באתר.", "The activity generator is not switched on yet."),
     "not-configured": t("מחולל הפעילויות עוד לא הופעל באתר.", "The activity generator is not switched on yet."),
-    empty: t("כתבי בכמה מילים מה הפעילות צריכה לתרגל.", "Describe in a few words what the activity should practice."),
+    empty: recipeMode ? t("כתבי בכמה מילים מה רוצים להכין.", "Describe in a few words what you'd like to make.") : t("כתבי בכמה מילים מה הפעילות צריכה לתרגל.", "Describe in a few words what the activity should practice."),
   };
 
   async function create(event) {
@@ -55,6 +61,12 @@ export default function ActivityGenerator() {
         setError(result.activity?.description || errors.refused);
         return;
       }
+      if (result.activity.kind === "recipe") {
+        const saved = addCustomRecipe(toSiteRecipe(result.activity, language));
+        toast.success(result.remaining != null ? t(`המתכון נשמר ב"המתכונים שלי". נשארו לך החודש ${result.remaining}.`, `Saved to "My recipes". ${result.remaining} left this month.`) : t("המתכון נשמר ב\"המתכונים שלי\"", "Saved to \"My recipes\""));
+        navigate(`/therapist/recipes/${saved.id}`);
+        return;
+      }
       setActivity(result.activity);
       setRemaining(result.remaining ?? null);
       setSavedId(null);
@@ -63,7 +75,7 @@ export default function ActivityGenerator() {
     } catch (failure) {
       if (failure.code === "monthly-limit") {
         if (failure.limit === 0) setError(t("מחולל הפעילויות סגור כרגע.", "The activity generator is closed right now."));
-        else setError(t(`הגעת ל־${failure.limit} הפעילויות של החודש. המכסה מתחדשת ב־1 לחודש.`, `You have reached this month's ${failure.limit} activities. The limit renews on the 1st.`));
+        else setError(t(`הגעת ל־${failure.limit} היצירות של החודש (פעילויות ומתכונים יחד). המכסה מתחדשת ב־1 לחודש.`, `You have reached this month's ${failure.limit} creations (activities and recipes together). The limit renews on the 1st.`));
         return;
       }
       setError(errors[failure.code] || t("משהו השתבש. נסי שוב.", "Something went wrong. Please try again."));
@@ -107,9 +119,9 @@ export default function ActivityGenerator() {
   return (
     <AppShell mode="therapist">
       <div className="mx-auto max-w-3xl">
-        <h1 className="font-display text-3xl font-black md:text-4xl">{t("מחולל פעילויות", "Activity generator")}</h1>
+        <h1 className="font-display text-3xl font-black md:text-4xl">{recipeMode ? t("מחולל מתכונים", "Recipe generator") : t("מחולל פעילויות", "Activity generator")}</h1>
         <p className="mb-6 mt-1 text-muted-foreground">
-          {t("מתארים מה צריך, ומקבלים פעילות מוכנה עם איורים מהמאגר של בואו נשחק.", "Describe what you need and get a ready activity with illustrations from the site.")}
+          {recipeMode ? t("מתארים מה רוצים להכין, ומקבלים מתכון לילדים עם איורים וניקוד.", "Describe what you'd like to make and get a kids' recipe with illustrations.") : t("מתארים מה צריך, ומקבלים פעילות מוכנה עם איורים מהמאגר של בואו נשחק.", "Describe what you need and get a ready activity with illustrations from the site.")}
           {" "}<Link to="/therapist/community-activities" className="font-bold text-primary underline underline-offset-4">{t("לפעילויות שמשתמשים יצרו", "Activities users created")}</Link>
         </p>
 
@@ -120,28 +132,47 @@ export default function ActivityGenerator() {
           </div>
         ) : !activity ? (
           <form onSubmit={create} className="space-y-4">
+            <div className="grid grid-cols-2 gap-2" role="group" aria-label={t("מה ליצור", "What to create")}>
+              {[["activity", t("🧩 פעילות", "🧩 Activity")], ["recipe", t("🍪 מתכון", "🍪 Recipe")]].map(([kind, label]) => (
+                <button key={kind} type="button" aria-pressed={form.kind === kind} onClick={() => setKind(kind)} className={cn("min-h-12 rounded-2xl border text-base font-bold", form.kind === kind ? "border-foreground bg-foreground text-background" : "border-border bg-card")}>{label}</button>
+              ))}
+            </div>
             <div className="space-y-4 rounded-3xl border border-border/60 bg-card p-5">
               <div>
-                <Label htmlFor="generatorRequest" className="mb-2 block text-base font-bold">{t("מה הפעילות צריכה לתרגל?", "What should the activity practice?")}</Label>
+                <Label htmlFor="generatorRequest" className="mb-2 block text-base font-bold">{recipeMode ? t("מה רוצים להכין?", "What would you like to make?") : t("מה הפעילות צריכה לתרגל?", "What should the activity practice?")}</Label>
                 <Textarea
                   id="generatorRequest"
                   rows={4}
                   maxLength={800}
                   value={form.request}
                   onChange={(e) => setForm({ ...form, request: e.target.value })}
-                  placeholder={t("לדוגמה: הכנת עוגיות קורנפלקס", "For example: making cornflake cookies")}
+                  placeholder={recipeMode ? t("לדוגמה: הכנת עוגיות קורנפלקס", "For example: making cornflake cookies") : t("לדוגמה: משחק עם פינצטה לחיזוק האחיזה", "For example: a tweezers game to strengthen grasp")}
                   className="rounded-2xl border-2 text-base leading-relaxed"
                 />
               </div>
               <ChoiceRow label={t("גיל", "Age")} options={AGES.map((value) => [value, value])} value={form.age} onChange={(age) => setForm({ ...form, age })} />
-              <ChoiceRow label={t("ציוד", "Equipment")} options={[["home", t("🏠 מהבית", "🏠 At home")], ["clinic", t("🏥 קליניקה", "🏥 Clinic")]]} value={form.equipment} onChange={(equipment) => setForm({ ...form, equipment })} />
-              <ChoiceRow label={t("משך", "Duration")} options={DURATIONS.map((value) => [value, t(`${value} דק׳`, `${value} min`)])} value={form.duration} onChange={(duration) => setForm({ ...form, duration })} />
-              <p className="rounded-xl bg-sage/15 px-3 py-2 text-xs text-sage-foreground">{t("🔒 בלי שם הילד ובלי פרטים מזהים. מספיק לתאר גיל ומטרה. הפעילות שתיווצר תתווסף גם ל„פעילויות שמשתמשים יצרו”, בלי שם היוצרת.", "🔒 No child's name or identifying details. Age and goal are enough. The activity will also be added to \"Activities users created\", without your name.")}</p>
+              {recipeMode ? (
+                <>
+                  <MultiChoiceRow label={t("בלי", "Without")} options={WITHOUT.map(([value, he, en]) => [value, t(he, en)])} values={form.without} onChange={(without) => setForm({ ...form, without })} />
+                  <ChoiceRow label={t("ציוד", "Equipment")} options={[[false, t("בלי תנור", "No oven")], [true, t("עם תנור", "With an oven")]]} value={form.oven} onChange={(oven) => setForm({ ...form, oven })} />
+                </>
+              ) : (
+                <>
+                  <ChoiceRow label={t("ציוד", "Equipment")} options={[["home", t("🏠 מהבית", "🏠 At home")], ["clinic", t("🏥 קליניקה", "🏥 Clinic")]]} value={form.equipment} onChange={(equipment) => setForm({ ...form, equipment })} />
+                  <ChoiceRow label={t("משך", "Duration")} options={DURATIONS.map((value) => [value, t(`${value} דק׳`, `${value} min`)])} value={form.duration} onChange={(duration) => setForm({ ...form, duration })} />
+                </>
+              )}
+              <p className="rounded-xl bg-sage/15 px-3 py-2 text-xs text-sage-foreground">{recipeMode
+                ? t("🔒 בלי שם הילד ובלי פרטים מזהים. המתכון יישמר ב„המתכונים שלי” ויתווסף גם ל„פעילויות שמשתמשים יצרו”, בלי שם היוצרת.", "🔒 No child's name or identifying details. The recipe is saved to \"My recipes\" and also added to \"Activities users created\", without your name.")
+                : t("🔒 בלי שם הילד ובלי פרטים מזהים. מספיק לתאר גיל ומטרה. הפעילות שתיווצר תתווסף גם ל„פעילויות שמשתמשים יצרו”, בלי שם היוצרת.", "🔒 No child's name or identifying details. Age and goal are enough. The activity will also be added to \"Activities users created\", without your name.")}</p>
+              <p className="text-xs text-muted-foreground">{t("המכסה החודשית משותפת לפעילויות ולמתכונים.", "The monthly limit is shared by activities and recipes.")}</p>
             </div>
             {error && <p className="rounded-xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive" role="alert">{error}</p>}
             <Button type="submit" disabled={loading} className="min-h-12 w-full rounded-full text-base">
               <Sparkles className="h-4 w-4" aria-hidden="true" />{" "}
-              {loading ? t("מכינה את הפעילות… זה לוקח כחצי דקה", "Creating the activity… about half a minute") : t("יצירת פעילות", "Create activity")}
+              {loading
+                ? (recipeMode ? t("מכינה את המתכון… זה לוקח כדקה", "Creating the recipe… about a minute") : t("מכינה את הפעילות… זה לוקח כחצי דקה", "Creating the activity… about half a minute"))
+                : (recipeMode ? t("יצירת מתכון", "Create recipe") : t("יצירת פעילות", "Create activity"))}
             </Button>
           </form>
         ) : (
@@ -189,6 +220,24 @@ export default function ActivityGenerator() {
         />
       )}
     </AppShell>
+  );
+}
+
+function MultiChoiceRow({ label, options, values, onChange }) {
+  return (
+    <div>
+      <p className="mb-2 text-sm font-bold">{label}</p>
+      <div className="flex flex-wrap gap-2" role="group" aria-label={label}>
+        {options.map(([optionValue, optionLabel]) => {
+          const on = values.includes(optionValue);
+          return (
+            <button key={optionValue} type="button" aria-pressed={on} onClick={() => onChange(on ? values.filter((item) => item !== optionValue) : [...values, optionValue])} className={cn("min-h-11 rounded-full border px-4 text-sm font-semibold", on ? "border-foreground bg-foreground text-background" : "border-border bg-background")}>
+              {optionLabel}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 

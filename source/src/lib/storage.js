@@ -11,6 +11,7 @@ import { getCachedCmsCollection } from "./cms-content";
 const KEYS = {
   profile: "pp_profile",
   activities: "pp_activities_custom",
+  recipes: "pp_recipes_custom",
   favorites: "pp_favorites",
   folders: "pp_folders",
   plans: "pp_plans",
@@ -155,6 +156,21 @@ export function updateCustomActivity(id, patch) {
   const list = customActivities().map((activity) => (activity.id === id ? { ...activity, ...patch, id } : activity));
   write(KEYS.activities, list);
   return list.find((activity) => activity.id === id) ?? null;
+}
+
+// Recipes the therapist made with the recipe generator, shown under "My recipes" on the recipes page.
+export function getCustomRecipes() {
+  return [...read(KEYS.recipes, [])].sort(newestActivitiesFirst);
+}
+
+export function addCustomRecipe(recipe) {
+  const saved = { ...recipe, id: `my-recipe-${uid()}`, created_at: new Date().toISOString() };
+  write(KEYS.recipes, [saved, ...read(KEYS.recipes, [])]);
+  return saved;
+}
+
+export function deleteCustomRecipe(id) {
+  write(KEYS.recipes, read(KEYS.recipes, []).filter((recipe) => recipe.id !== id));
 }
 
 export function addActivity(a) {

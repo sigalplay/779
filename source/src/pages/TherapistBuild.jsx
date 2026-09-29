@@ -29,7 +29,7 @@ import { therapistGoalIcon } from "@/lib/therapist-goal-icons";
 import { MOTOR_TRAIL_ITEMS, MOTOR_TRAIL_HERO } from "@/lib/motor-trail-items";
 import { RECIPES } from "@/pages/TherapistRecipes";
 import { EXPERIMENTS, experimentHero, PANTRY_CATEGORIES, PANTRY_TAGS } from "@/pages/TherapistExperiments";
-import { allActivities, getActivity, getTreatmentPlan, saveTreatmentPlan, updateTreatmentPlan, isSignedIn, getDraftPlan, setDraftPlan, isSearchActive, newestActivitiesFirst } from "@/lib/storage";
+import { allActivities, getActivity, getCustomRecipes, getTreatmentPlan, saveTreatmentPlan, updateTreatmentPlan, isSignedIn, getDraftPlan, setDraftPlan, isSearchActive, newestActivitiesFirst } from "@/lib/storage";
 import { CRAFT_SUPPLIES, matchByCraftSupplies } from "@/lib/craft-supplies";
 import { attachPlanToSession, completeClinicSession, getPatient, getSession, startClinicSession } from "@/lib/therapist-clinic";
 import { activityTitle, translatedTerm } from "@/lib/content-translations";
@@ -54,7 +54,7 @@ function motorTrailItem(id, planItem) {
   return MOTOR_TRAIL_ITEMS.find((it) => it.id === id) ?? planItem?.customItems?.find((it) => it.id === id);
 }
 function getRecipe(id) {
-  return RECIPES.find((r) => r.id === id) ?? null;
+  return RECIPES.find((r) => r.id === id) ?? getCustomRecipes().find((r) => r.id === id) ?? null;
 }
 function getExperiment(id) {
   return EXPERIMENTS.find((e) => e.id === id) ?? null;
