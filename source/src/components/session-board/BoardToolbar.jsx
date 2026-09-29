@@ -124,6 +124,10 @@ export function BoardToolbar({
           <button type="button" className="meeting-group-tab" aria-expanded={openGroup === "tools"} aria-controls="meetingGroupTools" onClick={() => toggleGroup("tools")}>
             <img className="meeting-tool-image-icon" src="/icon-bank/tools/timer.webp" alt="" />{t("כלים", "Tools")}
           </button>
+          {/* Full screen is what a session runs in, so it stands on its own next to the groups. */}
+          <button type="button" className="meeting-group-tab fullscreen" aria-pressed={fullscreen} onClick={onToggleFullscreen}>
+            <span aria-hidden="true">⛶</span>{fullscreen ? t("יציאה ממסך מלא", "Exit full screen") : t("מסך מלא", "Full screen")}
+          </button>
         </div>
         {openGroup === "add" && (
           <div className="meeting-group" id="meetingGroupAdd" role="group" aria-label={t("הוספה ללוח", "Add to the board")}>
@@ -251,10 +255,6 @@ export function BoardToolbar({
             <img className="meeting-tool-image-icon" src="/icon-bank/tools/timer.webp" alt="" />
             <span className="meeting-action-label-desktop">{t("טיימר חזותי", "Visual timer")}</span>
             <span className="meeting-action-label-mobile">{t("טיימר", "Timer")}</span>
-          </button>
-          <button className="meeting-fullscreen" type="button" aria-pressed={fullscreen} onClick={onToggleFullscreen}>
-            <img className="meeting-tool-image-icon" src="/icon-bank/tools/fullscreen.webp" alt="" />
-            <span data-fullscreen-label="">{fullscreen ? t("יציאה ממסך מלא", "Exit full screen") : t("מסך מלא", "Full screen")}</span>
           </button>
           <button className="meeting-farewell" type="button" onClick={onOpenFarewell} title={t("פרידה - ספירה לאחור של המפגשים, מה למדנו ותעודת סיום", "Farewell - session countdown, what we learned, and a certificate")}>
             <img className="meeting-tool-image-icon" src="/icon-bank/tools/farewell.webp" alt="" />

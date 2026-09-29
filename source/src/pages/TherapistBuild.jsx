@@ -1031,7 +1031,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
           const inner = (
             <>
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sage/30 text-sm font-bold">{i + 1}</span>
-              <div className="flex h-40 w-40 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2">
+              <div className="meeting-board-thumb flex h-40 w-40 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2">
                 {hero ? <img src={hero} alt={sign ? itemTitle : ""} className={`max-h-full max-w-full drop-shadow-md ${item.kind === "photo" && !item.motorItem && !item.emotion ? "h-full w-full object-cover" : "object-contain"}`} />
                   : item.kind === "motor-trail" ? <Route className="h-8 w-8 text-muted-foreground" />
                     : item.kind === "recipe" ? (recipe?.coverIcon ? <recipe.coverIcon /> : <span className="text-4xl">{recipe?.coverEmoji ?? "🍳"}</span>)

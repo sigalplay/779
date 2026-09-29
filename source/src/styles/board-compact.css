@@ -1,0 +1,36 @@
+/* Session board on tablet and computer: smaller tiles and pictures, so more fits on the screen
+   (an iPad in landscape showed four huge tiles and two activity rows). Phones keep the big tiles. */
+
+/* Full screen next to "Add to the board" and "Tools", in the site's dark ink so it stands out. */
+.meeting-group-tabs{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr)}
+.meeting-board-actions .meeting-group-tabs .meeting-group-tab.fullscreen{border-color:#40362f!important;background:#40362f!important;color:#fff!important}
+.meeting-board-actions .meeting-group-tab.fullscreen>span{font-size:22px;line-height:1}
+.meeting-board-actions .meeting-group-tab.fullscreen[aria-pressed=true]{background:#fff!important;color:#40362f!important}
+
+@media (min-width:760px){
+  .meeting-board-actions .meeting-group-tabs .meeting-group-tab{min-height:48px!important;font-size:15px!important}
+
+  /* Tiles: picture beside the words, one short row each. */
+  .meeting-group{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;padding:8px}
+  .meeting-board-actions .meeting-group>a,
+  .meeting-board-actions .meeting-group>button,
+  .meeting-board-actions .meeting-group>div>button:first-child{min-height:48px!important;flex-direction:row!important;justify-content:flex-start!important;gap:8px!important;padding:6px 10px!important;font-size:13px!important;text-align:start!important;border-radius:12px!important}
+  .meeting-board-actions .meeting-group>.meeting-add-activity,
+  .meeting-board-actions .meeting-group>.meeting-board-link{grid-column:auto;font-size:13px!important}
+  .meeting-board-actions .meeting-group .meeting-tool-image-icon{width:26px!important;height:26px!important}
+  .meeting-group-plus{font-size:20px}
+
+  /* Toys, motor equipment, emotions and signs: small cards, many in a row, across the whole group. */
+  .meeting-board-page .meeting-group .meeting-games-palette,
+  .meeting-board-page .meeting-group .meeting-signs-palette{left:8px!important;right:8px!important;width:auto!important;max-width:none!important;transform:none!important}
+  .meeting-board-page .meeting-games-palette>div,
+  .meeting-board-page .meeting-signs-palette>div{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(96px,1fr))!important;gap:8px!important}
+  .meeting-board-page .meeting-games-palette .board-game-choice{grid-template-rows:64px auto!important;aspect-ratio:auto!important;border-radius:12px!important;border-width:1px!important}
+  .meeting-board-page .meeting-signs-palette .visual-sign-card{grid-template-rows:64px auto!important;aspect-ratio:auto!important;border-radius:12px!important}
+  .meeting-board-page .meeting-picture-tools .board-game-choice>span,
+  .meeting-board-page [data-games-tools] .board-game-choice>span{height:64px!important;padding:6px 6px 0!important}
+  .meeting-board-page .meeting-games-palette .board-game-choice>strong{font-size:12px!important;padding:3px 3px 6px!important}
+
+  /* Activity rows on the board (the full-screen board keeps its big pictures for the child). */
+  body:not(.meeting-board-fullscreen) .meeting-board-thumb{width:88px!important;height:88px!important;padding:4px!important;border-radius:14px!important}
+}
