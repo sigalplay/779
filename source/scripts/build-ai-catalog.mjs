@@ -60,6 +60,7 @@ try {
     for (const item of [...(recipe.ingredients || []), ...(recipe.tools || [])]) {
       if (typeof item.img === "string") addMaterial(bare(item.text), item.img);
     }
+    for (const step of recipe.steps || []) if (typeof step.img === "string") addStep(step.text, step.img, recipe.title);
   }
 
   // Single actions (pour, throw, sort...) fit steps of any activity.
