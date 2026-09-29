@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { Check, ChevronDown, ChevronUp, Clock, ExternalLink, FlaskConical, FolderOpen, Play, Plus, Printer, RotateCcw, Route, Save, Search, Shuffle, X } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Clock, ExternalLink, FlaskConical, FolderOpen, Play, Plus, Printer, RotateCcw, Route, Save, Search, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { PageToolbox } from "@/components/toolbox/PageToolbox";
 import { VisualSessionTimer } from "@/components/VisualSessionTimer";
@@ -106,7 +106,6 @@ export default function TherapistBuild() {
   const [goals, setGoals] = useState(() => linkedSession?.treatmentGoals || loadedTreatmentPlan?.params?.goals || linkedPatient?.goals || []);
   const [contentType] = useState("activities");
   const [durationMode, setDurationMode] = useState(() => loadedTreatmentPlan?.params?.durationMode || null);
-  const [index, setIndex] = useState(0);
   const [plan, setPlan] = useState(() => {
     if (view === "session" && !patientBoardId) return openGuestBoard(boardDate, hasDateParam);
     if (view === "session" && patientBoardId && !patientBoardInDraft) return [];
@@ -122,6 +121,8 @@ export default function TherapistBuild() {
   const [experimentsMode, setExperimentsMode] = useState("browse");
   const [pantryHave, setPantryHave] = useState(new Set());
   const [nameQuery, setNameQuery] = useState("");
+  // The plan opens as a sheet from the bar at the bottom of the page.
+  const [planOpen, setPlanOpen] = useState(false);
 
   useEffect(() => {
     setDraftPlan(plan);
@@ -147,7 +148,6 @@ export default function TherapistBuild() {
 
   function toggleGoal(v) {
     setGoals((prev) => (prev.includes(v) ? prev.filter((g) => g !== v) : [...prev, v]));
-    setIndex(0);
   }
 
   const candidates = useMemo(() => {
@@ -223,40 +223,9 @@ export default function TherapistBuild() {
     });
   }
 
-  const remaining = useMemo(() => {
-    if (contentType === "recipes") return candidates.filter((r) => !planRecipeIds.has(r.id));
-    if (contentType === "experiments") return candidates.filter((e) => !planExperimentIds.has(e.id));
-    return candidates.filter((a) => !planActivityIds.has(a.id));
-  }, [candidates, planActivityIds, planRecipeIds, planExperimentIds, contentType]);
-
-  const displayed = useMemo(() => {
-    if (remaining.length === 0) return [];
-    const count = Math.min(3, remaining.length);
-    const list = [];
-    for (let i = 0; i < count; i++) list.push(remaining[(index + i) % remaining.length]);
-    return [...new Map(list.map((item) => [item.id, item])).values()];
-  }, [remaining, index]);
-
-  function goToNext() {
-    if (remaining.length === 0) return;
-    setIndex((i) => (i + 3) % remaining.length);
-  }
-
-  // On a phone, after adding from the search page for the session board, show the plan panel.
-  function scrollToTreatmentPlan() {
-    if (!boardMode || !window.matchMedia("(max-width: 760px)").matches) return;
-    window.setTimeout(() => {
-      const panel = document.querySelector("[data-treatment-plan-panel]");
-      if (!panel) return;
-      panel.style.scrollMarginTop = "76px";
-      panel.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 120);
-  }
-
   function handleAdd(item, kind = "activity") {
     if (!item) return;
     const alreadyInPlan = kind === "activity" ? planActivityIds.has(item.id) : kind === "recipe" ? planRecipeIds.has(item.id) : planExperimentIds.has(item.id);
-    scrollToTreatmentPlan();
     if (alreadyInPlan) {
       toast.info(kind === "activity" ? t("הפעילות כבר בתוכנית", "The activity is already in the plan") : kind === "recipe" ? t("המתכון כבר בתוכנית", "The recipe is already in the plan") : t("הניסוי כבר בתוכנית", "The experiment is already in the plan"));
       return;
@@ -264,6 +233,13 @@ export default function TherapistBuild() {
     setPlan((prev) => [...prev, { kind, id: item.id }]);
     if (!title) setTitle("מפגש טיפולי");
     toast.success(kind === "activity" ? t("נוספה לתוכנית הטיפול", "Added to the session plan") : kind === "recipe" ? t("המתכון נוסף לתוכנית", "Recipe added to the plan") : t("הניסוי נוסף לתוכנית", "Experiment added to the plan"));
+  }
+
+  // The + on a tile adds the item; on an item already in the plan (✓) it takes it out again.
+  function toggleInPlan(item, kind) {
+    const inPlan = kind === "activity" ? planActivityIds.has(item.id) : kind === "recipe" ? planRecipeIds.has(item.id) : planExperimentIds.has(item.id);
+    if (inPlan) removeFromPlan({ kind, id: item.id });
+    else handleAdd(item, kind);
   }
 
   function removeFromPlan(item) {
@@ -387,22 +363,21 @@ export default function TherapistBuild() {
     : null);
   const activityTitles = (list) => list.map((activity) => activityTitle(activity, language));
   const activityCards = (list) => list.map((activity) => (
-    <ActivityCandidateCard key={activity.id} activity={activity} addLabel={addLabel} boardMode={boardMode} hidden={!nameVisible(activityTitle(activity, language))} onAdd={() => handleAdd(activity, "activity")} />
+    <ActivityCandidateCard key={activity.id} activity={activity} addLabel={addLabel} boardMode={boardMode} added={planActivityIds.has(activity.id)} hidden={!nameVisible(activityTitle(activity, language))} onAdd={() => toggleInPlan(activity, "activity")} />
   ));
 
   return (
     <AppShell mode="therapist">
       <div className="mb-4">
-        {/* The live site shows "לוח המפגש" as the Hebrew heading here as well. */}
-        <h1 className="font-display text-3xl font-black">{t("לוח המפגש", "Build a Structured Session Plan")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t("בחרו תחום התפתחות וזמן, ותכננו מפגש מובנה.", "Choose a skill area and session length to find activities that support your therapy goals.")}</p>
+        <h1 className="font-display text-3xl font-black">{t("מנוע חיפוש", "Find Activities")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t("בוחרים תחום, ונוגעים ב־+ כדי להוסיף פעילות למפגש.", "Choose a skill area and tap + to add an activity to the session.")}</p>
         {linkedPatient && <p className="mt-1 font-bold text-sage-foreground">{t("עבור", "For")} {linkedPatient.name}{linkedSession ? ` · ${linkedSession.date} · ${linkedSession.time || t("שעה לא נקבעה", "Time not set")}` : ""}</p>}
       </div>
 
       <PageToolbox />
 
-      <div className="grid gap-6 lg:grid-cols-[180px_1fr_320px]">
-        <div className="mobile-search-category-tabs flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+      <div className="space-y-4">
+        <div className="mobile-search-category-tabs search-category-row">
           <SideTabBtn active={mainTab === "search"} onClick={() => setMainTab("search")}>{t("מנוע חיפוש", "Find Activities")}</SideTabBtn>
           <SideTabBtn active={mainTab === "all"} onClick={() => setMainTab("all")}>{t("כל הפעילויות", "All activities")}</SideTabBtn>
           <SideTabBtn active={mainTab === "creative"} onClick={() => setMainTab("creative")}>{t("🎨 פעילויות יצירה", "🎨 Creative activities")}</SideTabBtn>
@@ -415,58 +390,47 @@ export default function TherapistBuild() {
         </div>
 
         <div className="space-y-6">
-          {mainTab === "search" ? (
-            <div className="space-y-5 rounded-3xl border border-border/60 bg-card p-6">
-              <div>
-                <Label className="mb-2 block">{t("תחום התפתחות", "Skill Area")}</Label>
-                <div className="flex flex-wrap gap-2">
-                  {THERAPIST_GOALS.map((g) => (
-                    <button key={g} onClick={() => toggleGoal(g)} className={cn("inline-flex min-h-10 items-center gap-1.5 rounded-full border px-2.5 py-1 text-sm", goals.includes(g) ? "border-primary bg-primary text-primary-foreground" : "border-border", boardMode && "meeting-development-chip")}>
-                      <img src={therapistGoalIcon(g)} alt="" aria-hidden="true" className="h-7 w-7 shrink-0 rounded-full bg-white object-contain" />
-                      {translatedTerm(g, language)}
-                    </button>
-                  ))}
-                </div>
+          {mainTab === "search" && (
+            <div className="space-y-3">
+              <div className="search-goal-strip" role="group" aria-label={t("תחום התפתחות", "Skill Area")}>
+                {THERAPIST_GOALS.map((g) => (
+                  <button key={g} type="button" aria-pressed={goals.includes(g)} onClick={() => toggleGoal(g)} className="search-goal">
+                    <span><img src={therapistGoalIcon(g)} alt="" aria-hidden="true" /></span>
+                    {translatedTerm(g, language)}
+                  </button>
+                ))}
               </div>
-              <div>
-                <Label className="mb-2 block">{t("משך הפעילות", "Activity Length")}</Label>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm text-muted-foreground">
+                  <strong className="text-base text-foreground">{t(`${candidates.length} פעילויות`, `${candidates.length} activities`)}</strong>
+                  {goals.length ? ` · ${goals.map((g) => translatedTerm(g, language)).join(", ")}` : ` · ${t("כל התחומים", "All skill areas")}`}
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {DURATIONS.map((d) => (
-                    <button key={d.mode} onClick={() => { setDurationMode(durationMode === d.mode ? null : d.mode); setIndex(0); }} className={cn("search-filter-chip search-time-chip rounded-full border px-4 py-1.5 text-sm", durationMode === d.mode ? "border-primary bg-primary text-primary-foreground" : "border-border")}>
+                    <button key={d.mode} type="button" aria-pressed={durationMode === d.mode} onClick={() => setDurationMode(durationMode === d.mode ? null : d.mode)} className={cn("search-filter-chip search-time-chip rounded-full border px-3 py-1 text-sm font-semibold", durationMode === d.mode ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card")}>
                       {translatedTerm(d.label, language)}
                     </button>
                   ))}
                 </div>
               </div>
+              {candidates.length > 0 ? (
+                <>
+                  {cardSearch(activityTitles(candidates), "search")}
+                  <div className="search-tile-grid">{activityCards(candidates)}</div>
+                </>
+              ) : (
+                <div className="rounded-3xl border border-dashed border-border p-10 text-center text-muted-foreground">
+                  {t("לא נמצאו פעילויות תואמות לסינון שבחרת. נסי פחות תחומים או משך זמן אחר.", "No activities match your filters. Try fewer skill areas or a different length.")}
+                </div>
+              )}
             </div>
-          ) : null}
-
-          {mainTab === "search" && (displayed.length > 0 ? (
-            <div>
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <h2 className="font-display text-lg font-bold">{contentType === "recipes" ? t("מתכונים מתאימים", "Matching recipes") : contentType === "experiments" ? t("ניסויים מתאימים", "Matching experiments") : t("פעילויות מתאימות", "Matching Activities")}</h2>
-                <Button variant="outline" onClick={goToNext} className="rounded-full">
-                  <Shuffle className="h-4 w-4" /> 3 {contentType === "recipes" ? t("מתכונים אחרים", "Other recipes") : contentType === "experiments" ? t("ניסויים אחרים", "Other experiments") : t("פעילויות אחרות", "Other activities")}
-                </Button>
-              </div>
-              {cardSearch(activityTitles(displayed), "search")}
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">
-                {displayed.map((activity) => (
-                  <SuggestedActivityCard key={activity.id} activity={activity} language={language} t={t} addLabel={addLabel} boardMode={boardMode} hidden={!nameVisible(activityTitle(activity, language))} onAdd={() => handleAdd(activity, "activity")} />
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-3xl border border-dashed border-border p-10 text-center text-muted-foreground">
-              {contentType === "recipes" ? t("כל המתכונים כבר בתוכנית.", "All the recipes are already in the plan.") : contentType === "experiments" ? t("כל הניסויים כבר בתוכנית.", "All the experiments are already in the plan.") : t("לא נמצאו פעילויות תואמות לסינון שבחרת. נסי גיל אחר, פחות מטרות, או משך זמן אחר.", "No activities match your filters. Try a different age, fewer goals, or a different length.")}
-            </div>
-          ))}
+          )}
 
           {mainTab === "all" ? (
             <div>
               <p className="mb-3 text-sm text-muted-foreground">{t("כל הפעילויות בבנק, בלי סינון -", "All activities in the library, without filtering —")}{" "}{therapistActivities.length}{" "}{t("בסך הכל.", "in total.")}</p>
               {cardSearch(activityTitles(therapistActivities), "all")}
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">{activityCards(therapistActivities)}</div>
+              <div className="search-tile-grid">{activityCards(therapistActivities)}</div>
             </div>
           ) : mainTab === "creative" ? (
             <div>
@@ -482,7 +446,7 @@ export default function TherapistBuild() {
                 searchedCreativeBrowseResults.length ? (
                   <>
                     {cardSearch(activityTitles(searchedCreativeBrowseResults), "creative")}
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">{activityCards(searchedCreativeBrowseResults)}</div>
+                    <div className="search-tile-grid">{activityCards(searchedCreativeBrowseResults)}</div>
                   </>
                 ) : <div className="rounded-3xl border border-dashed border-border p-10 text-center text-muted-foreground">{t("לא נמצאו יצירות שמתאימות לחיפוש.", "No crafts match your search.")}</div>
               ) : (
@@ -498,11 +462,11 @@ export default function TherapistBuild() {
                   {searchedCraftResults.length ? (
                     <>
                       {cardSearch(activityTitles(searchedCraftResults.map((r) => r.activity)), "supplies")}
-                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      <div className="search-tile-grid">
                         {searchedCraftResults.map(({ activity, missing }) => (
                           <div key={activity.id} className="relative" hidden={!nameVisible(activityTitle(activity, language))}>
                             {craftHave.size > 0 ? <span className={cn("absolute -top-2 right-3 z-10 rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow-sm", missing.length === 0 ? "bg-sage text-sage-foreground" : "bg-butter text-foreground/80")}>{missing.length === 0 ? t("יש לך הכל! ✓", "You have everything! ✓") : t(`חסר ${missing.length} פריטים`, `${missing.length} ${missing.length === 1 ? "item" : "items"} missing`)}</span> : null}
-                            <ActivityCandidateCard activity={activity} addLabel={addLabel} boardMode={boardMode} onAdd={() => handleAdd(activity, "activity")} />
+                            <ActivityCandidateCard activity={activity} addLabel={addLabel} boardMode={boardMode} added={planActivityIds.has(activity.id)} onAdd={() => toggleInPlan(activity, "activity")} />
                           </div>
                         ))}
                       </div>
@@ -515,25 +479,25 @@ export default function TherapistBuild() {
             <div>
               <p className="mb-3 text-sm text-muted-foreground">{t("פעילויות שבהן מכינים משחק שאפשר להמשיך לשחק בו.", "Activities for making a game that can be played again.")}</p>
               {cardSearch(activityTitles(gameMakingResults), "game-making")}
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">{activityCards(gameMakingResults)}</div>
+              <div className="search-tile-grid">{activityCards(gameMakingResults)}</div>
             </div>
           ) : mainTab === "sensory" ? (
             <div>
               <p className="mb-3 text-sm text-muted-foreground">{sensoryResults.length}{" "}{t("פעילויות סנסוריות.", "sensory activities.")}</p>
               {cardSearch(activityTitles(sensoryResults), "sensory")}
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">{activityCards(sensoryResults)}</div>
+              <div className="search-tile-grid">{activityCards(sensoryResults)}</div>
             </div>
           ) : mainTab === "movement" ? (
             <div>
               <p className="mb-3 text-sm text-muted-foreground">{movementResults.length}{" "}{t("פעילויות תנועה.", "movement activities.")}</p>
               {cardSearch(activityTitles(movementResults), "movement")}
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">{activityCards(movementResults)}</div>
+              <div className="search-tile-grid">{activityCards(movementResults)}</div>
             </div>
           ) : mainTab === "social" ? (
             <div>
               <p className="mb-3 text-sm text-muted-foreground">{t("משחקי חצר וחברה קלאסיים -", "Classic outdoor and social games —")}{" "}{socialGamesResults.length}{" "}{t("משחקים.", "games.")}</p>
               {cardSearch(activityTitles(socialGamesResults), "social")}
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">{activityCards(socialGamesResults)}</div>
+              <div className="search-tile-grid">{activityCards(socialGamesResults)}</div>
             </div>
           ) : mainTab === "experiments" ? (
             <div>
@@ -544,8 +508,8 @@ export default function TherapistBuild() {
               {experimentsMode === "browse" ? (
                 <>
                   {cardSearch(EXPERIMENTS.map((e) => e.title), "experiments")}
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">
-                    {EXPERIMENTS.map((item) => <ExperimentCandidateCard key={item.id} item={item} addLabel={addLabel} boardMode={boardMode} hidden={!nameVisible(item.title)} onAdd={() => handleAdd(item, "experiment")} />)}
+                  <div className="search-tile-grid">
+                    {EXPERIMENTS.map((item) => <ExperimentCandidateCard key={item.id} item={item} addLabel={addLabel} boardMode={boardMode} added={planExperimentIds.has(item.id)} hidden={!nameVisible(item.title)} onAdd={() => toggleInPlan(item, "experiment")} />)}
                   </div>
                 </>
               ) : (
@@ -565,11 +529,11 @@ export default function TherapistBuild() {
                   </div>
                   <h2 className="mb-3 font-display text-lg font-bold">{pantryHave.size > 0 ? t("מה אפשר להכין עם מה שיש לך", "What you can make with what you have") : t("כל הניסויים", "All experiments")}</h2>
                   {cardSearch(pantryResults.map((r) => r.e.title), "pantry")}
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="search-tile-grid">
                     {pantryResults.map(({ e, missing }) => (
                       <div key={e.id} className="relative" hidden={!nameVisible(e.title)}>
                         {pantryHave.size > 0 ? <span className={cn("absolute -top-2 right-3 z-10 rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow-sm", missing.length === 0 ? "bg-sage text-sage-foreground" : "bg-butter text-foreground/80")}>{missing.length === 0 ? t("יש לך הכל! ✓", "You have everything! ✓") : t(`חסר ${missing.length} פריטים`, `${missing.length} ${missing.length === 1 ? "item" : "items"} missing`)}</span> : null}
-                        <ExperimentCandidateCard item={e} addLabel={addLabel} boardMode={boardMode} onAdd={() => handleAdd(e, "experiment")} />
+                        <ExperimentCandidateCard item={e} addLabel={addLabel} boardMode={boardMode} added={planExperimentIds.has(e.id)} onAdd={() => toggleInPlan(e, "experiment")} />
                       </div>
                     ))}
                   </div>
@@ -580,18 +544,23 @@ export default function TherapistBuild() {
             <div>
               <p className="mb-3 text-sm text-muted-foreground">{t("כל המתכונים בבנק, בלי סינון -", "All recipes in the library, without filtering —")}{" "}{RECIPES.length}{" "}{t("בסך הכל.", "in total.")}</p>
               {cardSearch(RECIPES.map((r) => r.title), "recipes")}
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 activity-card-grid-v92">
-                {RECIPES.map((item) => <RecipeCandidateCard key={item.id} item={item} addLabel={addLabel} boardMode={boardMode} hidden={!nameVisible(item.title)} onAdd={() => handleAdd(item, "recipe")} />)}
+              <div className="search-tile-grid">
+                {RECIPES.map((item) => <RecipeCandidateCard key={item.id} item={item} addLabel={addLabel} boardMode={boardMode} added={planRecipeIds.has(item.id)} hidden={!nameVisible(item.title)} onAdd={() => toggleInPlan(item, "recipe")} />)}
               </div>
             </div>
           ) : null}
         </div>
 
-        {/* ---------- plan sidebar ---------- */}
-        <aside data-treatment-plan-panel="" className="h-fit space-y-4 rounded-3xl border border-border/60 bg-card p-5 lg:sticky lg:top-6">
-          <div>
-            <h2 className="font-display text-lg font-bold">{t("תכנית הטיפול", "Session plan")}</h2>
-            <p className="text-sm text-muted-foreground">{plan.length}{" "}{t("פריטים", "items")}{totalMinutes ? t(` · ${totalMinutes}+ דק' סה"כ`, ` · ${totalMinutes}+ min total`) : ""}</p>
+        {/* ---------- the plan: a bar at the bottom, and a sheet with the full list ---------- */}
+        <div className="search-plan-spacer" aria-hidden="true" />
+        {planOpen && <button type="button" className="search-plan-backdrop" aria-label={t("סגירה", "Close")} onClick={() => setPlanOpen(false)} />}
+        <aside data-treatment-plan-panel="" className={cn("search-plan-sheet space-y-4 rounded-3xl border border-border/60 bg-card p-5", planOpen && "open")} aria-hidden={!planOpen}>
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <h2 className="font-display text-lg font-bold">{boardMode ? t("למפגש", "For the session") : t("תכנית הטיפול", "Session plan")}</h2>
+              <p className="text-sm text-muted-foreground">{plan.length}{" "}{t("פריטים", "items")}{totalMinutes ? t(` · ${totalMinutes}+ דק' סה"כ`, ` · ${totalMinutes}+ min total`) : ""}</p>
+            </div>
+            <button type="button" onClick={() => setPlanOpen(false)} aria-label={t("סגירה", "Close")} className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background print:hidden"><X className="h-4 w-4" /></button>
           </div>
           <Link to={`/therapist/motor-trail?returnTo=plan${existingMotorTrail ? `&edit=${existingMotorTrail.uid}` : ""}`} className="flex items-center gap-2 rounded-2xl border border-dashed border-sage/50 bg-sage/5 px-3 py-2.5 text-foreground transition-colors hover:bg-sage/10">
             <Route className="h-4 w-4 shrink-0 text-sage-foreground" />
@@ -671,6 +640,24 @@ export default function TherapistBuild() {
             </Button>
           </div>
         </aside>
+        <div className="search-plan-bar print:hidden">
+          <button type="button" className="search-plan-summary" aria-expanded={planOpen} onClick={() => setPlanOpen((open) => !open)}>
+            <span className="search-plan-count">
+              <strong>{boardMode ? t(`למפגש: ${plan.length}`, `For the session: ${plan.length}`) : t(`בתכנית: ${plan.length}`, `In the plan: ${plan.length}`)}</strong>
+              <small>{plan.length ? t("נגיעה כאן: סדר, שמירה והדפסה", "Tap here to order, save or print") : t("נוגעים ב־+ כדי להוסיף", "Tap + to add")}</small>
+            </span>
+            <span className="search-plan-thumbs" aria-hidden="true">
+              {plan.slice(-5).map((item) => {
+                const picture = item.kind === "activity" ? activityHero(item.id) || getActivity(item.id)?.hero_image : item.kind === "recipe" ? getRecipe(item.id)?.cover : item.kind === "experiment" ? experimentHero(item.id) : item.kind === "photo" ? item.image : motorTrailItem(item.equipment?.[0], item)?.image;
+                return picture ? <img key={boardItemKey(item)} src={picture} alt="" /> : null;
+              })}
+            </span>
+            <ChevronUp className={cn("h-5 w-5 shrink-0 transition-transform", !planOpen && "rotate-180")} aria-hidden="true" />
+          </button>
+          <Button onClick={startSession} disabled={!plan.length} className="search-plan-start rounded-full bg-sage text-sage-foreground">
+            <Play className="h-4 w-4" /> {boardMode ? t("הוספה ללוח", "Add to the board") : sessionId ? t("התחל טיפול", "Start Session") : t("התחלת מפגש", "Start Session")}
+          </Button>
+        </div>
       </div>
     </AppShell>
   );
@@ -1104,96 +1091,58 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
 }
 
 // ---------- cards on the search page ----------
-function SuggestedActivityCard({ activity, language, t, addLabel, boardMode, hidden, onAdd }) {
+// A small tile: picture, name and length. The + adds it to the plan (✓ when it is in the plan, and
+// a second tap takes it out); the picture and name open the full activity.
+function SearchTile({ picture, title, length, href, added, hidden, onAdd, boardMode }) {
+  const { t } = useTranslator();
   return (
-    <div className={cn("flex flex-col overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm", boardMode && "meeting-search-activity-card")} hidden={hidden}>
-      <div className="flex h-40 items-center justify-center bg-white">
-        {activityHero(activity.id) || activity.hero_image ? (
-          <div className="flex h-28 w-28 items-center justify-center"><img src={activityHero(activity.id) || activity.hero_image} alt="" className="max-h-full max-w-full object-contain" /></div>
-        ) : activity.ai_generated ? <img src="/icon-bank/crafts-new/seed-71-independent/material-pencil.webp" alt="" className="h-24 w-24 object-contain" /> : <span className="text-6xl">{activityEmoji(activity)}</span>}
-      </div>
-      <div className="flex flex-1 flex-col p-4">
-        <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-          <h3 className="font-display text-base font-bold leading-snug">{activityTitle(activity, language)}</h3>
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"><Clock className="h-3 w-3" /> {activity.duration_min}+ {t("דק'", "min")}</span>
-        </div>
-        <div className="mt-auto flex flex-wrap items-center gap-2">
-          <Button onClick={onAdd} size="sm" className="rounded-full bg-sage text-sage-foreground"><Plus className="h-3.5 w-3.5" /> {addLabel}</Button>
-          <Link to={`/activity/${activity.id}`} className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"><ExternalLink className="h-3 w-3" />{" "}{t("צפייה מלאה", "View Details")}</Link>
-        </div>
-      </div>
+    <div className={cn("search-tile", added && "added")} hidden={hidden}>
+      <Link to={href} className="search-tile-link">
+        <span className="search-tile-picture">{picture}</span>
+        <span className="search-tile-title">{title}</span>
+        {length && <span className="search-tile-length">{length}</span>}
+      </Link>
+      <button type="button" className="search-tile-add" aria-pressed={Boolean(added)} onClick={onAdd}
+        aria-label={added ? t(`הסרת ${title} מהמפגש`, `Remove ${title} from the session`) : t(`הוספת ${title} למפגש`, `Add ${title} to the session`)}>
+        {added ? <Check className="h-4 w-4" strokeWidth={3} /> : <Plus className="h-4 w-4" strokeWidth={3} />}
+      </button>
     </div>
   );
 }
 
-function ActivityCandidateCard({ activity, addLabel, boardMode, hidden, onAdd }) {
+function ActivityCandidateCard({ activity, boardMode, added, hidden, onAdd }) {
   const { language, t } = useTranslator();
   const location = useLocation();
-  const query = new URLSearchParams({ mode: "therapist", returnPath: `${location.pathname}${location.search}`, returnLabel: t("חזרה לבניית הטיפול", "Back to Session Planner") });
+  const query = new URLSearchParams({ mode: "therapist", returnPath: `${location.pathname}${location.search}`, returnLabel: t("חזרה למנוע החיפוש", "Back to Find Activities") });
+  const hero = activityHero(activity.id) || activity.hero_image || (activity.ai_generated ? "/icon-bank/crafts-new/seed-71-independent/material-pencil.webp" : null);
   return (
-    <div className={cn("flex flex-col overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm", boardMode && "meeting-search-activity-card")} hidden={hidden}>
-      <div className="flex h-40 items-center justify-center bg-white">
-        {activityHero(activity.id) || activity.hero_image ? (
-          <div className="flex h-28 w-28 items-center justify-center"><img src={activityHero(activity.id) || activity.hero_image} alt="" className="max-h-full max-w-full object-contain" /></div>
-        ) : activity.ai_generated ? <img src="/icon-bank/crafts-new/seed-71-independent/material-pencil.webp" alt="" className="h-24 w-24 object-contain" /> : <span className="text-6xl">{activityEmoji(activity)}</span>}
-      </div>
-      <div className="flex flex-1 flex-col p-4">
-        <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-          <h3 className="font-display text-base font-bold leading-snug">{activityTitle(activity, language)}</h3>
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"><Clock className="h-3 w-3" /> {activity.duration_min}+ {t("דק'", "min")}</span>
-        </div>
-        <div className="mt-auto flex flex-wrap items-center gap-2">
-          <Button onClick={onAdd} size="sm" className="rounded-full bg-sage text-sage-foreground"><Plus className="h-3.5 w-3.5" /> {addLabel}</Button>
-          <Link to={`/activity/${activity.id}?${query.toString()}`} className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"><ExternalLink className="h-3 w-3" /> {t("צפייה מלאה", "View details")}</Link>
-        </div>
-      </div>
-    </div>
+    <SearchTile
+      title={activityTitle(activity, language)}
+      length={activity.duration_min ? t(`${activity.duration_min}+ דק׳`, `${activity.duration_min}+ min`) : null}
+      href={`/activity/${activity.id}?${query.toString()}`}
+      picture={hero ? <img src={hero} alt="" loading="lazy" /> : <span className="text-4xl">{activityEmoji(activity)}</span>}
+      added={added} hidden={hidden} onAdd={onAdd} boardMode={boardMode}
+    />
   );
 }
 
-function ExperimentCandidateCard({ item, addLabel, boardMode, hidden, onAdd }) {
-  const { t } = useTranslator();
+function ExperimentCandidateCard({ item, boardMode, added, hidden, onAdd }) {
   return (
-    <div className={cn("flex flex-col overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm", boardMode && "meeting-search-activity-card")} hidden={hidden}>
-      <div className="flex h-40 items-center justify-center bg-white p-3"><img src={experimentHero(item.id)} alt="" className="max-h-full max-w-full object-contain" /></div>
-      <div className="flex flex-1 flex-col p-4">
-        <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-          <h3 className="font-display text-base font-bold leading-snug">{item.title}</h3>
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"><Clock className="h-3 w-3" /> {item.time}</span>
-        </div>
-        <div className="mt-auto flex flex-wrap items-center gap-2">
-          <Button onClick={onAdd} size="sm" className="rounded-full bg-sage text-sage-foreground"><Plus className="h-3.5 w-3.5" /> {addLabel}</Button>
-          <Link to={`/therapist/experiments?e=${item.id}`} className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"><ExternalLink className="h-3 w-3" />{" "}{t("צפייה מלאה", "View Details")}</Link>
-        </div>
-      </div>
-    </div>
+    <SearchTile title={item.title} length={item.time} href={`/therapist/experiments?e=${item.id}`}
+      picture={<img src={experimentHero(item.id)} alt="" loading="lazy" />} added={added} hidden={hidden} onAdd={onAdd} boardMode={boardMode} />
   );
 }
 
-function RecipeCandidateCard({ item, addLabel, boardMode, hidden, onAdd }) {
-  const { t } = useTranslator();
+function RecipeCandidateCard({ item, boardMode, added, hidden, onAdd }) {
   return (
-    <div className={cn("flex flex-col overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm", boardMode && "meeting-search-activity-card")} hidden={hidden}>
-      <div className="flex h-40 items-center justify-center bg-white">
-        {item.cover ? <div className="flex h-28 w-28 items-center justify-center"><img src={item.cover} alt="" className="max-h-full max-w-full object-contain" /></div>
-          : item.coverIcon ? <div className="h-20 w-20"><item.coverIcon /></div> : <span className="text-6xl">{item.coverEmoji ?? "🍳"}</span>}
-      </div>
-      <div className="flex flex-1 flex-col p-4">
-        <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-          <h3 className="font-display text-base font-bold leading-snug">{item.title}</h3>
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"><Clock className="h-3 w-3" /> {item.duration}</span>
-        </div>
-        <div className="mt-auto flex flex-wrap items-center gap-2">
-          <Button onClick={onAdd} size="sm" className="rounded-full bg-sage text-sage-foreground"><Plus className="h-3.5 w-3.5" /> {addLabel}</Button>
-          <Link to={`/therapist/recipes?r=${item.id}`} className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"><ExternalLink className="h-3 w-3" />{" "}{t("צפייה מלאה", "View Details")}</Link>
-        </div>
-      </div>
-    </div>
+    <SearchTile title={item.title} length={item.duration} href={`/therapist/recipes?r=${item.id}`}
+      picture={item.cover ? <img src={item.cover} alt="" loading="lazy" /> : item.coverIcon ? <span className="h-16 w-16"><item.coverIcon /></span> : <span className="text-4xl">{item.coverEmoji ?? "🍳"}</span>}
+      added={added} hidden={hidden} onAdd={onAdd} boardMode={boardMode} />
   );
 }
 
 function SideTabBtn({ active, children, onClick }) {
-  return <button onClick={onClick} className={cn("mobile-search-category-tab shrink-0 whitespace-nowrap rounded-2xl border px-4 py-3 text-sm font-bold text-right transition-colors lg:whitespace-normal", active ? "border-primary bg-sage/20 text-foreground" : "border-border/60 bg-card text-muted-foreground hover:bg-muted")}>{children}</button>;
+  return <button type="button" aria-pressed={active} onClick={onClick} className={cn("mobile-search-category-tab shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm font-bold transition-colors", active ? "border-foreground bg-foreground text-background" : "border-border/60 bg-card text-muted-foreground hover:bg-muted")}>{children}</button>;
 }
 
 function SmallTabBtn({ active, children, onClick }) {

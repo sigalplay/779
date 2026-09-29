@@ -26,6 +26,7 @@ import "./styles/site-shell.css";
 import "./styles/activity-print-sheet.css";
 import "./styles/board-groups.css";
 import "./styles/board-compact.css";
+import "./styles/search-tiles.css";
 
 // בספארי באייפון חלון ההדפסה נפתח לפעמים לפני שהעמוד מוכן להדפסה, ויוצא קובץ ריק.
 // השהיה קצרה מונעת את זה.
