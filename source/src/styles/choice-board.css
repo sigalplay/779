@@ -177,14 +177,12 @@
 .calm-add-board svg{width:16px;height:16px}
 @media(max-width:600px){.calm-options{grid-template-columns:repeat(3,1fr)}.calm-option-image{max-width:64px}}
 
-/* First-then: small round pictures when picking, and two round cards of the same size when shown. */
+/* First-then: small square pictures when picking, and two cards of the same size when shown. */
 .first-then-mode .choice-board-options{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
-.first-then-mode .choice-option{padding:8px 4px;border-radius:16px;font-size:12px}
-.first-then-mode .choice-option-image{width:68px;height:68px;margin:0 auto;border-radius:50%;background:#faf6f1;box-shadow:inset 0 0 0 2px #efe7de}
-.first-then-mode .choice-option-image img{width:76%;height:76%;object-fit:contain}
+.first-then-mode .choice-option{padding:6px;border-radius:16px;font-size:12px}
+.first-then-mode .choice-option-image{height:72px}
 .first-then-mode .choice-board-show.first-then{align-items:flex-start}
 .first-then-mode .first-then-slot{display:grid;justify-items:center;gap:10px;width:min(240px,42vw)}
-.first-then-mode .first-then-slot .choice-big{width:100%;max-width:none;flex:none;border-radius:28px}
-.first-then-mode .first-then-slot .choice-big-image{width:min(190px,34vw);height:min(190px,34vw);aspect-ratio:auto;margin:0 auto;border-radius:50%;background:#faf6f1;box-shadow:inset 0 0 0 3px #efe7de}
-.first-then-mode .first-then-slot .choice-big-image img{width:74%;height:74%;object-fit:contain}
+.first-then-mode .first-then-slot .choice-big{width:100%;max-width:none;flex:none}
+.first-then-mode .first-then-slot .choice-big-image{width:100%;aspect-ratio:1}
 .first-then-mode .first-then-slot .choice-big-title{min-height:2.5em;display:grid;place-items:center;font-size:18px}
