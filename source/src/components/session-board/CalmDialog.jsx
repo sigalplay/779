@@ -1,49 +1,18 @@
 import { useEffect, useState } from "react";
-import { Check, Pause, Play, X } from "lucide-react";
+import { ArrowRight, Check, Pause, Pin, Play, X } from "lucide-react";
+import { CALM_HELPERS, calmHelperImage, getCalmGender, getCalmPicked, setCalmGender, setCalmPicked } from "@/lib/session-board-tools";
 
-// "What helps me calm down?" on the session board: breathing together, counting together,
-// and the child's own card of what helps. The card is kept per client in this browser.
-const LOCAL_KEY = "boo_calm_v1";
-// Boy or girl pictures, also kept per client.
-const GENDER_KEY = "boo_calm_gender_v1";
-const helperImage = (helper, gender) => `/icon-bank/calm/${helper.id}${gender === "girl" ? "-girl" : ""}.webp`;
-
-const HELPERS = [
-  { id: "breathe", emoji: "🌬️", he: "לנשום עמוק", en: "Take deep breaths", tab: "breathe" },
-  { id: "count", emoji: "🔢", he: "לספור עד 10", en: "Count to 10", tab: "count" },
-  { id: "water", emoji: "💧", he: "לשתות מים", en: "Drink water" },
-  { id: "bubbles", emoji: "🫧", he: "לנשוף בועות", en: "Blow bubbles" },
-  { id: "squeeze", emoji: "✊", he: "ללחוץ על כדור", en: "Squeeze a ball" },
-  { id: "self-hug", emoji: "🤗", he: "לחבק את עצמי חזק", en: "Give myself a tight hug" },
-  { id: "teddy", emoji: "🧸", he: "לחבק בובה", en: "Hug a soft toy" },
-  { id: "hug-parent", emoji: "🫂", he: "לחבק את אמא או אבא", en: "Hug Mom or Dad" },
-  { id: "quiet", emoji: "🛋️", he: "לשבת בפינה שקטה", en: "Sit in a quiet corner" },
-  { id: "my-room", emoji: "🚪", he: "ללכת לחדר שלי", en: "Go to my room" },
-  { id: "music", emoji: "🎧", he: "לשמוע מוזיקה", en: "Listen to music" },
-  { id: "jump", emoji: "🦘", he: "לקפוץ", en: "Jump" },
-  { id: "wall", emoji: "🧱", he: "לדחוף את הקיר", en: "Push the wall" },
-  { id: "draw", emoji: "🎨", he: "לצייר", en: "Draw" },
-  { id: "break", emoji: "✋", he: "לבקש הפסקה", en: "Ask for a break" },
-  { id: "help", emoji: "🙋", he: "לבקש עזרה", en: "Ask for help" },
-];
-
-function readAll(key = LOCAL_KEY) {
-  try { return JSON.parse(localStorage.getItem(key)) || {}; } catch { return {}; }
-}
-
-export function CalmDialog({ language, patientKey, patientName, onClose }) {
+// "What helps me calm down?" on the session board: the child's own card of what helps (shown first),
+// with breathing together and counting together one tap away. The card and the boy/girl pictures are
+// kept per client in this browser. Chosen cards can also be placed on the board as round stickers.
+export function CalmDialog({ language, patientKey, patientName, onAddToBoard, onClose }) {
   const t = (he, en) => (language === "en" ? en : he);
-  const [tab, setTab] = useState("breathe");
-  const [picked, setPicked] = useState(() => readAll()[patientKey] || []);
-  const [gender, setGender] = useState(() => readAll(GENDER_KEY)[patientKey] || "boy");
+  const [view, setView] = useState("helps"); // "helps" | "breathe" | "count"
+  const [picked, setPicked] = useState(() => getCalmPicked(patientKey));
+  const [gender, setGender] = useState(() => getCalmGender(patientKey));
 
-  useEffect(() => {
-    try { localStorage.setItem(LOCAL_KEY, JSON.stringify({ ...readAll(), [patientKey]: picked })); } catch { /* storage blocked */ }
-  }, [patientKey, picked]);
-
-  useEffect(() => {
-    try { localStorage.setItem(GENDER_KEY, JSON.stringify({ ...readAll(GENDER_KEY), [patientKey]: gender })); } catch { /* storage blocked */ }
-  }, [patientKey, gender]);
+  useEffect(() => { setCalmPicked(patientKey, picked); }, [patientKey, picked]);
+  useEffect(() => { setCalmGender(patientKey, gender); }, [patientKey, gender]);
 
   useEffect(() => {
     const onKey = (event) => { if (event.key === "Escape") onClose(); };
@@ -52,34 +21,37 @@ export function CalmDialog({ language, patientKey, patientName, onClose }) {
   }, [onClose]);
 
   const toggle = (id) => setPicked((list) => (list.includes(id) ? list.filter((item) => item !== id) : [...list, id]));
-  const tabs = [["breathe", "🌬️", t("נושמים", "Breathe")], ["count", "🔢", t("סופרים", "Count")], ["helps", "💛", t("מה עוזר לי?", "What helps me?")]];
+  const pickedHelpers = picked.map((id) => CALM_HELPERS.find((helper) => helper.id === id)).filter(Boolean);
+  function addToBoard() {
+    pickedHelpers.forEach((helper) => onAddToBoard({ ...helper, asset: calmHelperImage(helper, gender) }));
+    onClose();
+  }
 
   return (
     <div className="choice-board" role="dialog" aria-modal="true" aria-label={t("מה עוזר לי להירגע?", "What helps me calm down?")}>
       <div className="choice-board-card calm-card">
         <button type="button" className="choice-board-close" onClick={onClose} aria-label={t("סגירה", "Close")}><X /></button>
         <h2>{t("מה עוזר לי להירגע?", "What helps me calm down?")}{patientName ? ` · ${patientName}` : ""}</h2>
-        <div className="farewell-tabs" role="tablist">
-          {tabs.map(([id, icon, label]) => (
-            <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? "active" : ""} onClick={() => setTab(id)}>
-              <span aria-hidden="true">{icon}</span> {label}
-            </button>
-          ))}
-        </div>
-        {tab === "breathe" && <Breathing t={t} />}
-        {tab === "count" && <Counting t={t} />}
-        {tab === "helps" && (
+        {view !== "helps" && (
+          <button type="button" className="calm-back" onClick={() => setView("helps")}><ArrowRight aria-hidden="true" />{t("חזרה למה עוזר לי", "Back to what helps me")}</button>
+        )}
+        {view === "breathe" && <Breathing t={t} />}
+        {view === "count" && <Counting t={t} />}
+        {view === "helps" && (
           <div className="calm-helps">
-            {picked.length > 0 && (
+            {pickedHelpers.length > 0 && (
               <section className="calm-mine" aria-label={t("הכרטיס שלי", "My card")}>
                 <strong>{t("כשקשה לי, זה עוזר לי:", "When it's hard, this helps me:")}</strong>
                 <div className="calm-mine-list">
-                  {picked.map((id) => HELPERS.find((helper) => helper.id === id)).filter(Boolean).map((helper) => (
-                    <button key={helper.id} type="button" className="calm-mine-card" onClick={() => (helper.tab ? setTab(helper.tab) : undefined)} disabled={!helper.tab}>
-                      <img src={helperImage(helper, gender)} alt="" />{t(helper.he, helper.en)}
+                  {pickedHelpers.map((helper) => (
+                    <button key={helper.id} type="button" className="calm-mine-card" onClick={() => (helper.tab ? setView(helper.tab) : undefined)} disabled={!helper.tab}>
+                      <img src={calmHelperImage(helper, gender)} alt="" />{t(helper.he, helper.en)}
                     </button>
                   ))}
                 </div>
+                {onAddToBoard && (
+                  <button type="button" className="calm-add-board" onClick={addToBoard}><Pin aria-hidden="true" />{t("הוספה ללוח", "Add to the board")}</button>
+                )}
               </section>
             )}
             <div className="calm-helps-head">
@@ -91,16 +63,20 @@ export function CalmDialog({ language, patientKey, patientName, onClose }) {
               </div>
             </div>
             <div className="calm-options">
-              {HELPERS.map((helper) => {
+              {CALM_HELPERS.map((helper) => {
                 const on = picked.includes(helper.id);
                 return (
                   <button key={helper.id} type="button" aria-pressed={on} className={on ? "calm-option on" : "calm-option"} onClick={() => toggle(helper.id)}>
                     {on && <span className="calm-option-check"><Check aria-hidden="true" /></span>}
-                    <img className="calm-option-image" src={helperImage(helper, gender)} alt="" loading="lazy" />
+                    <img className="calm-option-image" src={calmHelperImage(helper, gender)} alt="" loading="lazy" />
                     {t(helper.he, helper.en)}
                   </button>
                 );
               })}
+            </div>
+            <div className="calm-exercises">
+              <button type="button" onClick={() => setView("breathe")}><span aria-hidden="true">🌸</span>{t("נושמים יחד", "Breathe together")}</button>
+              <button type="button" onClick={() => setView("count")}><span aria-hidden="true">🔢</span>{t("סופרים יחד", "Count together")}</button>
             </div>
           </div>
         )}

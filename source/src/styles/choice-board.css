@@ -151,17 +151,38 @@
 .calm-mine{display:grid;gap:10px;padding:14px;border-radius:20px;background:#fdf4d9}
 .calm-mine strong{font-size:18px}
 .calm-mine-list{display:flex;flex-wrap:wrap;gap:10px}
-.calm-mine-card{display:inline-flex;flex-direction:column;align-items:center;gap:4px;width:150px;padding:8px 10px 12px;text-align:center;border:0;border-radius:18px;background:#fff;color:#40362f;font:800 18px Rubik,Arial,sans-serif;box-shadow:0 3px 10px rgba(64,54,47,.08)}
-.calm-mine-card img{width:120px;height:120px;object-fit:contain}
+.calm-mine-card{display:inline-flex;flex-direction:column;align-items:center;gap:4px;width:118px;font-size:15px!important;padding:8px 10px 12px;text-align:center;border:0;border-radius:18px;background:#fff;color:#40362f;font:800 18px Rubik,Arial,sans-serif;box-shadow:0 3px 10px rgba(64,54,47,.08)}
+.calm-mine-card img{width:84px;height:84px;object-fit:contain}
 .calm-option-image,.calm-mine-card img{mix-blend-mode:multiply}
 .calm-mine-card:not(:disabled){cursor:pointer}
 .calm-mine-card:disabled{opacity:1}
-.calm-options{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
-.calm-option{position:relative;display:grid;justify-items:center;align-content:start;gap:4px;padding:8px 8px 10px;border:2px solid #ebe3da;border-radius:18px;background:#fff;color:#40362f;font:700 14px/1.25 Rubik,Arial,sans-serif;text-align:center;cursor:pointer}
+.calm-options{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:8px}
+.calm-option{position:relative;display:grid;justify-items:center;align-content:start;gap:2px;padding:6px 6px 8px;font-size:12.5px!important;border:2px solid #ebe3da;border-radius:18px;background:#fff;color:#40362f;font:700 14px/1.25 Rubik,Arial,sans-serif;text-align:center;cursor:pointer}
 .calm-option.on{border-color:#5f9f7c;background:#eef8f2}
-.calm-option-image{width:100%;max-width:120px;aspect-ratio:1;object-fit:contain}
+.calm-option-image{width:100%;max-width:76px;aspect-ratio:1;object-fit:contain}
 .calm-option-check{position:absolute;top:6px;inset-inline-start:6px;display:grid;width:24px;height:24px;place-items:center;border-radius:50%;background:#5f9f7c;color:#fff}
 .calm-option-check svg{width:15px;height:15px}
 @media(prefers-reduced-motion:reduce){.calm-circle{transition-duration:0s!important}}
 @media(max-width:600px){.calm-say{font-size:18px}.calm-number{font-size:84px}.calm-mine-list{display:grid;grid-template-columns:1fr 1fr}.calm-mine-card{width:auto}.calm-mine-card img{width:100px;height:100px}}
 .calm-helps-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+
+.calm-back{justify-self:start;display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:4px 14px;border:1px solid #d9d0c5;border-radius:999px;background:#fff;color:#40362f;font:700 14px Rubik,Arial,sans-serif;cursor:pointer}
+.calm-back svg{width:16px;height:16px}
+[dir="ltr"] .calm-back svg,html[lang="en"] .calm-back svg{transform:scaleX(-1)}
+.calm-exercises{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.calm-exercises button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:60px;padding:8px 12px;border:2px solid #f3c7d6;border-radius:18px;background:#fdf1f5;color:#40362f;font:800 16px Rubik,Arial,sans-serif;cursor:pointer}
+.calm-exercises button span{font-size:26px;line-height:1}
+.calm-exercises button:last-child{border-color:#cfe6d7;background:#eef8f2}
+.calm-add-board{justify-self:start;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:6px 16px;border:1px solid #5f9f7c;border-radius:999px;background:#5f9f7c;color:#fff;font:700 14px Rubik,Arial,sans-serif;cursor:pointer}
+.calm-add-board svg{width:16px;height:16px}
+@media(max-width:600px){.calm-options{grid-template-columns:repeat(3,1fr)}.calm-option-image{max-width:64px}}
+
+/* First-then: small square pictures when picking, and two cards of the same size when shown. */
+.first-then-mode .choice-board-options{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.first-then-mode .choice-option{padding:6px;border-radius:16px;font-size:12px}
+.first-then-mode .choice-option-image{height:72px}
+.first-then-mode .choice-board-show.first-then{align-items:flex-start}
+.first-then-mode .first-then-slot{display:grid;justify-items:center;gap:10px;width:min(240px,42vw)}
+.first-then-mode .first-then-slot .choice-big{width:100%;max-width:none;flex:none}
+.first-then-mode .first-then-slot .choice-big-image{width:100%;aspect-ratio:1}
+.first-then-mode .first-then-slot .choice-big-title{min-height:2.5em;display:grid;place-items:center;font-size:18px}

@@ -32,6 +32,39 @@ export function setEmotionGender(gender) {
 }
 export const emotionAsset = (emotion, gender) => (gender === "girl" ? emotion.asset.replace(".webp", "-girl.webp") : emotion.asset);
 
+// "What helps me calm down?" cards (components/session-board/CalmDialog.jsx), a boy and a girl version.
+export const CALM_HELPERS = [
+  { id: "breathe", he: "לנשום עמוק", en: "Take deep breaths", tab: "breathe" },
+  { id: "count", he: "לספור עד 10", en: "Count to 10", tab: "count" },
+  { id: "water", he: "לשתות מים", en: "Drink water" },
+  { id: "bubbles", he: "לנשוף בועות", en: "Blow bubbles" },
+  { id: "squeeze", he: "ללחוץ על כדור", en: "Squeeze a ball" },
+  { id: "self-hug", he: "לחבק את עצמי חזק", en: "Give myself a tight hug" },
+  { id: "teddy", he: "לחבק בובה", en: "Hug a soft toy" },
+  { id: "hug-parent", he: "לחבק את אמא או אבא", en: "Hug Mom or Dad" },
+  { id: "quiet", he: "לשבת בפינה שקטה", en: "Sit in a quiet corner" },
+  { id: "my-room", he: "ללכת לחדר שלי", en: "Go to my room" },
+  { id: "music", he: "לשמוע מוזיקה", en: "Listen to music" },
+  { id: "jump", he: "לקפוץ", en: "Jump" },
+  { id: "wall", he: "לדחוף את הקיר", en: "Push the wall" },
+  { id: "draw", he: "לצייר", en: "Draw" },
+  { id: "break", he: "לבקש הפסקה", en: "Ask for a break" },
+  { id: "help", he: "לבקש עזרה", en: "Ask for help" },
+].map((helper) => ({ ...helper, label: helper.he, labelEn: helper.en }));
+export const calmHelperImage = (helper, gender) => `/icon-bank/calm/${helper.id}${gender === "girl" ? "-girl" : ""}.webp`;
+const CALM_PICKED_KEY = "boo_calm_v1";
+const CALM_GENDER_KEY = "boo_calm_gender_v1";
+function readJson(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || {}; } catch { return {}; }
+}
+function writeJson(key, patientKey, value) {
+  try { localStorage.setItem(key, JSON.stringify({ ...readJson(key), [patientKey]: value })); } catch { /* storage blocked */ }
+}
+export const getCalmPicked = (patientKey) => readJson(CALM_PICKED_KEY)[patientKey] || [];
+export const setCalmPicked = (patientKey, picked) => writeJson(CALM_PICKED_KEY, patientKey, picked);
+export const getCalmGender = (patientKey) => (readJson(CALM_GENDER_KEY)[patientKey] === "girl" ? "girl" : "boy");
+export const setCalmGender = (patientKey, gender) => writeJson(CALM_GENDER_KEY, patientKey, gender);
+
 // Toys and materials from the therapy room (ids stay the same so saved boards keep their names).
 const TOYS = "/icon-bank/toys";
 export const BOARD_GAMES = [

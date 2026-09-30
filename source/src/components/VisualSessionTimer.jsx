@@ -7,7 +7,7 @@ import { playTimerSound, unlockTimerAudio } from "@/lib/timer-sound";
 const PRESETS = [1, 3, 5, 10, 15, 20, 30, 45, 60];
 const RAINBOW = ["#e88ba5", "#efbc81", "#e0d884", "#a9cfaa", "#91bad1", "#b19acd"];
 const TIMER_STORAGE = {
-  width: "boo_visual_timer_width_v2",
+  width: "boo_visual_timer_width_v3",
   position: "boo_visual_timer_position_v2",
   sound: "boo_visual_timer_sound_v1",
 };
@@ -26,7 +26,10 @@ function readSound() {
     return "chime";
   }
 }
-const DEFAULT_PANEL_WIDTH = 336;
+// Smaller by default so the timer does not cover the board (phones smaller still).
+const DEFAULT_PANEL_WIDTH = 300;
+const PHONE_PANEL_WIDTH = 260;
+const isPhone = () => typeof window !== "undefined" && window.innerWidth <= 760;
 // Everything in the timer stays visible without scrolling: the dial shrinks on short screens
 // to leave room for the controls (about this much height). Phones also keep clear of the
 // bottom navigation bar.
@@ -66,7 +69,7 @@ export function VisualSessionTimer({
     onOpenChange?.(next);
   };
   const text = (hebrew, english) => language === "en" ? english : hebrew;
-  const [panelWidth, setPanelWidth] = useState(() => Number(localStorage.getItem(TIMER_STORAGE.width)) || DEFAULT_PANEL_WIDTH);
+  const [panelWidth, setPanelWidth] = useState(() => Number(localStorage.getItem(TIMER_STORAGE.width)) || (isPhone() ? PHONE_PANEL_WIDTH : DEFAULT_PANEL_WIDTH));
   const [position, setPosition] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem(TIMER_STORAGE.position)) || defaultPanelPosition();
@@ -87,7 +90,7 @@ export function VisualSessionTimer({
   const clipId = `visual-timer-${useId().replace(/:/g, "")}`;
 
   function resizePanel(next) {
-    const width = Math.max(280, Math.min(760, Number(next)));
+    const width = Math.max(240, Math.min(760, Number(next)));
     setPanelWidth(width);
     localStorage.setItem(TIMER_STORAGE.width, String(width));
   }
@@ -219,7 +222,7 @@ export function VisualSessionTimer({
       </button>}
 
       {open && (
-        <section ref={panelRef} dir={language === "en" ? "ltr" : "rtl"} style={{ left: position.x, top: position.y, width: panelWidth, minWidth: 280, maxWidth: "calc(100vw - 16px)", maxHeight: "calc(100dvh - 16px)", overflow: minimized ? "hidden" : "auto" }} className="fixed z-[100] rounded-[24px] border border-border/70 bg-white p-4 shadow-2xl" aria-label={text(t("טיימר חזותי ללוח המפגש", "Visual timer for the session schedule"), "Visual session timer")}>
+        <section ref={panelRef} dir={language === "en" ? "ltr" : "rtl"} style={{ left: position.x, top: position.y, width: panelWidth, minWidth: 240, maxWidth: "calc(100vw - 16px)", maxHeight: "calc(100dvh - 16px)", overflow: minimized ? "hidden" : "auto" }} className="fixed z-[100] rounded-[24px] border border-border/70 bg-white p-4 shadow-2xl" aria-label={text(t("טיימר חזותי ללוח המפגש", "Visual timer for the session schedule"), "Visual session timer")}>
           <div onPointerDown={beginDrag} className="flex cursor-move touch-none select-none items-center justify-between rounded-xl bg-muted/50 px-2 py-1">
             <div className="flex items-center gap-2"><GripVertical className="h-5 w-5 text-muted-foreground" /><h2 className="font-display text-lg font-bold">{text(t("כמה זמן נשאר?", "How much time is left?"), "How much time is left?")}</h2></div>
             <div className="flex items-center gap-1">
@@ -229,9 +232,9 @@ export function VisualSessionTimer({
           </div>
 
           {!minimized && <>
-          <div className="mt-3 flex items-center gap-2 rounded-2xl bg-muted/60 p-2"><button type="button" onClick={() => resizePanel(panelWidth - 40)} aria-label={t("הקטנת הטיימר", "Reduce timer")} className="rounded-full border bg-white p-1.5"><Minus className="h-4 w-4" /></button><input type="range" min="280" max="760" step="10" value={panelWidth} onChange={(event) => resizePanel(event.target.value)} aria-label={t("גודל הטיימר", "Timer size")} className="min-w-0 flex-1 accent-[#a9cfaa]" /><button type="button" onClick={() => resizePanel(panelWidth + 40)} aria-label={t("הגדלת הטיימר", "Enlarge timer")} className="rounded-full border bg-white p-1.5"><Plus className="h-4 w-4" /></button></div>
+          <div className="mt-3 flex items-center gap-2 rounded-2xl bg-muted/60 p-2"><button type="button" onClick={() => resizePanel(panelWidth - 40)} aria-label={t("הקטנת הטיימר", "Reduce timer")} className="rounded-full border bg-white p-1.5"><Minus className="h-4 w-4" /></button><input type="range" min="240" max="760" step="10" value={panelWidth} onChange={(event) => resizePanel(event.target.value)} aria-label={t("גודל הטיימר", "Timer size")} className="min-w-0 flex-1 accent-[#a9cfaa]" /><button type="button" onClick={() => resizePanel(panelWidth + 40)} aria-label={t("הגדלת הטיימר", "Enlarge timer")} className="rounded-full border bg-white p-1.5"><Plus className="h-4 w-4" /></button></div>
 
-          <div className="mx-auto mt-2 w-[min(100%,390px)]" style={{ maxWidth: `max(130px, calc(100dvh - ${CONTROLS_HEIGHT + bottomReserve()}px))` }}>
+          <div className="mx-auto mt-2" style={{ width: `min(100%, ${Math.round(panelWidth * (isPhone() ? 0.6 : 0.68))}px)`, maxWidth: `max(120px, calc(100dvh - ${CONTROLS_HEIGHT + bottomReserve()}px))` }}>
             <svg viewBox="0 0 240 240" role="img" data-finished={finished || undefined} aria-label={t(`נותרו ${timeLabel}`, `${timeLabel} left`)} className="h-auto w-full">
               <defs><clipPath id={clipId}><path d={sectorPath(fraction)} /></clipPath></defs>
               <circle cx="120" cy="120" r="112" fill="#f5f7f5" stroke="#d9e3df" strokeWidth="2" />

@@ -27,7 +27,7 @@ export function ChoiceBoard({ mode, language, options, onStart, onClose }) {
 
   return (
     <div className="choice-board" role="dialog" aria-modal="true" aria-label={title}>
-      <div className={showing ? "choice-board-card showing" : "choice-board-card"}>
+      <div className={[showing ? "choice-board-card showing" : "choice-board-card", !isChoice && "first-then-mode"].filter(Boolean).join(" ")}>
         <button type="button" className="choice-board-close" onClick={onClose} aria-label={t("סגירה", "Close")}><X /></button>
 
         {!showing ? (
