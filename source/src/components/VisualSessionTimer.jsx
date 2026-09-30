@@ -1,14 +1,31 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { Timer, Play, Pause, RotateCcw, X, Minus, Plus, GripVertical, Maximize2, Minimize2 } from "lucide-react";
+import { Timer, Play, Pause, RotateCcw, X, Minus, Plus, GripVertical, Maximize2, Minimize2, Bell, BellOff, Music, Waves } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslator } from "@/lib/language";
+import { playTimerSound, unlockTimerAudio } from "@/lib/timer-sound";
 
-const PRESETS = [5, 10, 15, 20, 30, 45, 60];
+const PRESETS = [1, 3, 5, 10, 15, 20, 30, 45, 60];
 const RAINBOW = ["#e88ba5", "#efbc81", "#e0d884", "#a9cfaa", "#91bad1", "#b19acd"];
 const TIMER_STORAGE = {
   width: "boo_visual_timer_width_v2",
   position: "boo_visual_timer_position_v2",
+  sound: "boo_visual_timer_sound_v1",
 };
+const SOUND_CHOICES = [
+  { id: "chime", Icon: Bell, he: "פעמון", en: "Bell" },
+  { id: "melody", Icon: Music, he: "מנגינה", en: "Tune" },
+  { id: "bowl", Icon: Waves, he: "רך", en: "Soft" },
+  { id: "silent", Icon: BellOff, he: "בלי צליל", en: "Silent" },
+];
+
+function readSound() {
+  try {
+    const saved = localStorage.getItem(TIMER_STORAGE.sound);
+    return SOUND_CHOICES.some((choice) => choice.id === saved) ? saved : "chime";
+  } catch {
+    return "chime";
+  }
+}
 const DEFAULT_PANEL_WIDTH = 336;
 // Everything in the timer stays visible without scrolling: the dial shrinks on short screens
 // to leave room for the controls (about this much height). Phones also keep clear of the
@@ -61,6 +78,10 @@ export function VisualSessionTimer({
   const [minutes, setMinutes] = useState(10);
   const [remaining, setRemaining] = useState(600);
   const [running, setRunning] = useState(false);
+  const [finished, setFinished] = useState(false);
+  const [sound, setSound] = useState(readSound);
+  const soundRef = useRef(sound);
+  soundRef.current = sound;
   const deadline = useRef(null);
   const panelRef = useRef(null);
   const clipId = `visual-timer-${useId().replace(/:/g, "")}`;
@@ -119,7 +140,12 @@ export function VisualSessionTimer({
       setRemaining(next);
       if (next === 0) {
         setRunning(false);
+        setFinished(true);
         deadline.current = null;
+        if (soundRef.current !== "silent") {
+          playTimerSound(soundRef.current);
+          navigator.vibrate?.([200, 120, 200]);
+        }
       }
     };
     update();
@@ -127,11 +153,41 @@ export function VisualSessionTimer({
     return () => window.clearInterval(interval);
   }, [running]);
 
+  // Keep a tablet or phone screen awake while the timer runs, where the browser allows it.
+  useEffect(() => {
+    if (!running || !navigator.wakeLock) return undefined;
+    let lock = null;
+    let released = false;
+    const request = () => navigator.wakeLock.request("screen").then((next) => {
+      if (released) next.release();
+      else lock = next;
+    }).catch(() => {});
+    const onVisible = () => { if (document.visibilityState === "visible") request(); };
+    request();
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      released = true;
+      document.removeEventListener("visibilitychange", onVisible);
+      lock?.release().catch(() => {});
+    };
+  }, [running]);
+
+  function chooseSound(id) {
+    setSound(id);
+    try { localStorage.setItem(TIMER_STORAGE.sound, id); } catch { /* the choice just isn't remembered */ }
+    // Tapping a sound plays it, so it can be heard before the timer ends.
+    if (id !== "silent") {
+      unlockTimerAudio();
+      playTimerSound(id);
+    }
+  }
+
   function selectMinutes(next) {
     const value = Math.max(1, Math.min(60, next));
     setMinutes(value);
     setRemaining(value * 60);
     setRunning(false);
+    setFinished(false);
     deadline.current = null;
   }
 
@@ -142,6 +198,9 @@ export function VisualSessionTimer({
       setRunning(false);
       return;
     }
+    // Browsers only allow sound after a tap, so the audio is unlocked now for the end of the timer.
+    if (sound !== "silent") unlockTimerAudio();
+    setFinished(false);
     const seconds = remaining || minutes * 60;
     setRemaining(seconds);
     deadline.current = Date.now() + seconds * 1000;
@@ -173,7 +232,7 @@ export function VisualSessionTimer({
           <div className="mt-3 flex items-center gap-2 rounded-2xl bg-muted/60 p-2"><button type="button" onClick={() => resizePanel(panelWidth - 40)} aria-label={t("הקטנת הטיימר", "Reduce timer")} className="rounded-full border bg-white p-1.5"><Minus className="h-4 w-4" /></button><input type="range" min="280" max="760" step="10" value={panelWidth} onChange={(event) => resizePanel(event.target.value)} aria-label={t("גודל הטיימר", "Timer size")} className="min-w-0 flex-1 accent-[#a9cfaa]" /><button type="button" onClick={() => resizePanel(panelWidth + 40)} aria-label={t("הגדלת הטיימר", "Enlarge timer")} className="rounded-full border bg-white p-1.5"><Plus className="h-4 w-4" /></button></div>
 
           <div className="mx-auto mt-2 w-[min(100%,390px)]" style={{ maxWidth: `max(130px, calc(100dvh - ${CONTROLS_HEIGHT + bottomReserve()}px))` }}>
-            <svg viewBox="0 0 240 240" role="img" aria-label={t(`נותרו ${timeLabel}`, `${timeLabel} left`)} className="h-auto w-full">
+            <svg viewBox="0 0 240 240" role="img" data-finished={finished || undefined} aria-label={t(`נותרו ${timeLabel}`, `${timeLabel} left`)} className="h-auto w-full">
               <defs><clipPath id={clipId}><path d={sectorPath(fraction)} /></clipPath></defs>
               <circle cx="120" cy="120" r="112" fill="#f5f7f5" stroke="#d9e3df" strokeWidth="2" />
               <circle cx="120" cy="120" r="89" fill="#ffffff" />
@@ -190,10 +249,12 @@ export function VisualSessionTimer({
             </svg>
           </div>
 
-          <div dir="ltr" className="text-center text-3xl font-bold tabular-nums tracking-wide">{timeLabel}</div>
+          {finished
+            ? <div role="status" className="timer-finished text-center text-3xl font-bold text-[#52766a]">{t("הזמן נגמר!", "Time's up!")}</div>
+            : <div dir="ltr" className="text-center text-3xl font-bold tabular-nums tracking-wide">{timeLabel}</div>}
           <div className="mt-4 flex items-center justify-center gap-3">
             <button type="button" onClick={() => selectMinutes(minutes - 1)} aria-label={t("הפחתת דקה", "Subtract one minute")} className="rounded-full border p-2 hover:bg-muted"><Minus className="h-4 w-4" /></button>
-            <span className="min-w-20 text-center text-sm font-medium">{minutes} {text(t("דקות", "minutes"), "minutes")}</span>
+            <span className="min-w-20 text-center text-sm font-medium">{minutes === 1 ? t("דקה אחת", "1 minute") : `${minutes} ${text(t("דקות", "minutes"), "minutes")}`}</span>
             <button type="button" onClick={() => selectMinutes(minutes + 1)} aria-label={t("הוספת דקה", "Add one minute")} className="rounded-full border p-2 hover:bg-muted"><Plus className="h-4 w-4" /></button>
           </div>
           <div className="mt-3 flex flex-wrap justify-center gap-1.5">
@@ -205,6 +266,16 @@ export function VisualSessionTimer({
               {running ? text(t("השהיה", "Pause"), "Pause") : text(t("הפעלה", "Play"), "Start")}
             </button>
             <button type="button" onClick={() => selectMinutes(minutes)} className="flex items-center gap-2 rounded-full border px-4 py-2 text-sm"><RotateCcw className="h-4 w-4" />{text(t("איפוס", "Reset"), "Reset")}</button>
+          </div>
+          <div className="mt-4 rounded-2xl bg-muted/50 p-2" role="group" aria-label={t("צליל בסיום הזמן", "Sound when time is up")}>
+            <div className="mb-1.5 text-center text-xs font-medium text-muted-foreground">{t("צליל בסיום הזמן", "Sound when time is up")}</div>
+            <div className="grid grid-cols-4 gap-1.5">
+              {SOUND_CHOICES.map(({ id, Icon, he, en }) => (
+                <button key={id} type="button" onClick={() => chooseSound(id)} aria-pressed={sound === id} className={cn("flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 text-[11px] leading-tight", sound === id ? "bg-[#dcece3] font-semibold ring-1 ring-[#a9cfaa]" : "bg-white hover:bg-muted")}>
+                  <Icon className="h-4 w-4" aria-hidden="true" />{t(he, en)}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="mt-3 text-center text-[11px] text-muted-foreground">{text(t("אפשר לגרור מהכותרת ולשנות גודל עם הפס", "Drag the title bar to move the timer and use the slider to resize it."), "Drag the title bar to move the timer and use the slider to resize it.")}</div>
           </>}
