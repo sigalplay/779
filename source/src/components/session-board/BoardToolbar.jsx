@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { addPatient, hasCloudSession, listPatients } from "@/lib/session-board-cloud";
-import { BOARD_GAMES, EMOTIONS, VISUAL_SIGNS, localizedLabel } from "@/lib/session-board-tools";
+import { BOARD_GAMES, EMOTIONS, VISUAL_SIGNS, emotionAsset, getEmotionGender, localizedLabel, setEmotionGender } from "@/lib/session-board-tools";
 import { MOTOR_TRAIL_ITEMS } from "@/lib/motor-trail-items";
 import { getChosenGroup, groupIcon, groupName, loadPatientGroups, readPatientGroups, savePatientGroups, setChosenGroup } from "@/lib/patient-groups";
 
@@ -26,6 +26,7 @@ export function BoardToolbar({
   onOpenFirstThen,
   onShareWithParents,
   onOpenFarewell,
+  onOpenCalm,
   onOpenMyImages,
   fullscreen,
   onToggleFullscreen,
@@ -35,6 +36,8 @@ export function BoardToolbar({
   const [menuOpen, setMenuOpen] = useState(false);
   const [palette, setPalette] = useState(null); // "signs" | "games" | "motor" | "emotions" | null
   const [group, setGroup] = useState(null); // "add" | null
+  const [emotionGender, setEmotionGenderState] = useState(getEmotionGender);
+  const chooseEmotionGender = (gender) => { setEmotionGender(gender); setEmotionGenderState(gender); };
   // While the pen is on, its controls stay in view.
   const openGroup = pen.enabled ? "add" : group;
   function toggleGroup(name) {
@@ -186,10 +189,15 @@ export function BoardToolbar({
             {palette === "emotions" && (
               <div className="meeting-games-palette" role="dialog" aria-label={t("בחירת רגש ללוח", "Choose an emotion for the board")}>
                 <strong>{t("בחירת רגש ללוח", "Choose an emotion for the board")}</strong>
+                <div className="emotion-gender" role="group" aria-label={t("בן או בת", "Boy or girl")}>
+                  {[["boy", t("👦 בן", "👦 Boy")], ["girl", t("👧 בת", "👧 Girl")]].map(([id, label]) => (
+                    <button key={id} type="button" aria-pressed={emotionGender === id} className={emotionGender === id ? "on" : ""} onClick={() => chooseEmotionGender(id)}>{label}</button>
+                  ))}
+                </div>
                 <div>
                   {EMOTIONS.map((emotion) => (
-                    <button key={emotion.id} type="button" data-add-board-game={`emotion-${emotion.id}`} aria-label={t(`הוספת ${emotion.label} ללוח`, `Add ${emotion.labelEn} to the board`)} onClick={() => { setPalette(null); onAddEmotion(emotion); }}>
-                      <span className="board-game-choice"><span><img src={emotion.asset} alt="" /></span><strong>{localizedLabel(emotion, language)}</strong></span>
+                    <button key={emotion.id} type="button" data-add-board-game={`emotion-${emotion.id}`} aria-label={t(`הוספת ${emotion.label} ללוח`, `Add ${emotion.labelEn} to the board`)} onClick={() => { setPalette(null); onAddEmotion({ ...emotion, asset: emotionAsset(emotion, emotionGender) }); }}>
+                      <span className="board-game-choice"><span><img src={emotionAsset(emotion, emotionGender)} alt="" /></span><strong>{localizedLabel(emotion, language)}</strong></span>
                     </button>
                   ))}
                 </div>
@@ -248,6 +256,11 @@ export function BoardToolbar({
             <img className="meeting-tool-image-icon" src="/icon-bank/tools/timer.webp" alt="" />
             <span className="meeting-action-label-desktop">{t("טיימר חזותי", "Visual timer")}</span>
             <span className="meeting-action-label-mobile">{t("טיימר", "Timer")}</span>
+          </button>
+          <button className="meeting-calm" type="button" onClick={onOpenCalm} title={t("מה עוזר לי להירגע? נושמים, סופרים ובוחרים מה עוזר", "What helps me calm down? Breathe, count, and choose what helps")}>
+            <img className="meeting-tool-image-icon" src="/icon-bank/emotions/calm.webp" alt="" />
+            <span className="meeting-action-label-desktop">{t("להירגע", "Calm down")}</span>
+            <span className="meeting-action-label-mobile">{t("להירגע", "Calm down")}</span>
           </button>
           <button className="meeting-farewell" type="button" onClick={onOpenFarewell} title={t("פרידה - ספירה לאחור של המפגשים, מה למדנו ותעודת סיום", "Farewell - session countdown, what we learned, and a certificate")}>
             <img className="meeting-tool-image-icon" src="/icon-bank/tools/farewell.webp" alt="" />

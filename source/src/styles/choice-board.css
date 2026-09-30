@@ -127,3 +127,41 @@
 .farewell-gender{display:flex;gap:8px}
 .farewell-gender button{flex:1;min-height:42px;border:2px solid #ebe3da;border-radius:12px;background:#fff;color:#40362f;font:700 15px Rubik,Arial,sans-serif;cursor:pointer}
 .farewell-gender button.active{border-color:#5f9f7c;background:#eef8f2}
+
+/* "What helps me calm down?" (components/session-board/CalmDialog.jsx) */
+.calm-card{width:min(720px,100%)}
+.calm-breathe,.calm-count{display:grid;justify-items:center;gap:10px}
+.calm-circle-wrap{display:grid;width:min(260px,70vw);aspect-ratio:1;place-items:center}
+.calm-circle{display:grid;width:100%;aspect-ratio:1;place-items:center;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fdeef3,#f6c9d7 55%,#e9a9bf);box-shadow:0 10px 30px rgba(224,69,123,.18);transform:scale(.45);transition-property:transform;transition-timing-function:ease-in-out}
+.calm-circle.big{transform:scale(1)}
+.calm-circle-emoji{font-size:54px;line-height:1}
+.calm-say{margin:0;text-align:center;font-size:22px;font-weight:800}
+.calm-progress{margin:0;color:#7a6d63;font-size:14px;font-weight:600}
+.calm-settings{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:700;color:#7a6d63}
+.calm-settings button{min-height:36px;padding:4px 12px;border:2px solid #ebe3da;border-radius:999px;background:#fff;color:#40362f;font:700 14px Rubik,Arial,sans-serif;cursor:pointer}
+.calm-settings button.on{border-color:#5f9f7c;background:#eef8f2}
+.calm-setting-group{display:inline-flex;flex-wrap:nowrap;align-items:center;gap:6px;margin-inline:4px}
+.calm-start{display:inline-flex;align-items:center;gap:6px;min-width:150px;justify-content:center}
+.calm-start svg{width:18px;height:18px}
+.calm-number{display:grid;width:min(220px,60vw);aspect-ratio:1;place-items:center;border-radius:50%;background:#eef8f2;color:#2f6a45;font:800 110px/1 Rubik,Arial,sans-serif;box-shadow:inset 0 0 0 6px #cfe6d7}
+.calm-dots{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.calm-dots span{width:18px;height:18px;border-radius:50%;background:#ebe3da;transition:background .3s ease,transform .3s ease}
+.calm-dots span.on{background:#5f9f7c;transform:scale(1.15)}
+.calm-helps{display:grid;gap:12px}
+.calm-mine{display:grid;gap:10px;padding:14px;border-radius:20px;background:#fdf4d9}
+.calm-mine strong{font-size:18px}
+.calm-mine-list{display:flex;flex-wrap:wrap;gap:10px}
+.calm-mine-card{display:inline-flex;flex-direction:column;align-items:center;gap:4px;width:150px;padding:8px 10px 12px;text-align:center;border:0;border-radius:18px;background:#fff;color:#40362f;font:800 18px Rubik,Arial,sans-serif;box-shadow:0 3px 10px rgba(64,54,47,.08)}
+.calm-mine-card img{width:120px;height:120px;object-fit:contain}
+.calm-option-image,.calm-mine-card img{mix-blend-mode:multiply}
+.calm-mine-card:not(:disabled){cursor:pointer}
+.calm-mine-card:disabled{opacity:1}
+.calm-options{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.calm-option{position:relative;display:grid;justify-items:center;align-content:start;gap:4px;padding:8px 8px 10px;border:2px solid #ebe3da;border-radius:18px;background:#fff;color:#40362f;font:700 14px/1.25 Rubik,Arial,sans-serif;text-align:center;cursor:pointer}
+.calm-option.on{border-color:#5f9f7c;background:#eef8f2}
+.calm-option-image{width:100%;max-width:120px;aspect-ratio:1;object-fit:contain}
+.calm-option-check{position:absolute;top:6px;inset-inline-start:6px;display:grid;width:24px;height:24px;place-items:center;border-radius:50%;background:#5f9f7c;color:#fff}
+.calm-option-check svg{width:15px;height:15px}
+@media(prefers-reduced-motion:reduce){.calm-circle{transition-duration:0s!important}}
+@media(max-width:600px){.calm-say{font-size:18px}.calm-number{font-size:84px}.calm-mine-list{display:grid;grid-template-columns:1fr 1fr}.calm-mine-card{width:auto}.calm-mine-card img{width:100px;height:100px}}
+.calm-helps-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}

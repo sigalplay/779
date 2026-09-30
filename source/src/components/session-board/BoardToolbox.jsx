@@ -2,15 +2,16 @@ import { useEffect, useState } from "react";
 import { TherapistPostureScissorsTips } from "@/components/TherapistPostureScissorsTips";
 import { PenBar } from "@/components/toolbox/PenBar";
 import { Toolbox, tipTools } from "@/components/toolbox/Toolbox";
-import { EMOTIONS, VISUAL_SIGNS, localizedLabel } from "@/lib/session-board-tools";
+import { EMOTIONS, VISUAL_SIGNS, emotionAsset, getEmotionGender, localizedLabel, setEmotionGender } from "@/lib/session-board-tools";
 import { MOTOR_TRAIL_ITEMS } from "@/lib/motor-trail-items";
 
 // The toolbox on the session board in full screen, where the tool row is hidden (outside full screen
 // the tool row already has every tool). It sits inside the board so it stays visible in full screen.
 // Its timer and pen are the board's own, and signs are added to the board.
-export function BoardToolbox({ language, pen, onOpenTimer, onAddSign, onOpenChoice, onAddMotorItem, onAddEmotion }) {
+export function BoardToolbox({ language, pen, onOpenTimer, onAddSign, onOpenChoice, onAddMotorItem, onAddEmotion, onOpenCalm }) {
   const t = (he, en) => (language === "en" ? en : he);
   const [tipPanel, setTipPanel] = useState(null);
+  const [emotionGender, setEmotionGenderState] = useState(getEmotionGender);
 
   // While a tip window is open, hide the full-screen exit button so its × is not confused with the window's.
   useEffect(() => {
@@ -40,15 +41,28 @@ export function BoardToolbox({ language, pen, onOpenTimer, onAddSign, onOpenChoi
       image: "/icon-bank/emotions/happy.webp",
       label: t("רגשות", "Emotions"),
       large: true,
-      items: EMOTIONS.map((emotion) => ({
-        id: emotion.id,
-        image: emotion.asset,
-        fill: true,
-        label: localizedLabel(emotion, language),
-        ariaLabel: t(`הוספת ${emotion.label} ללוח`, `Add ${emotion.labelEn} to the board`),
-        onSelect: () => { pen.setEnabled(false); onAddEmotion(emotion); },
-      })),
+      items: [
+        ...EMOTIONS.map((emotion) => ({
+          id: emotion.id,
+          image: emotionAsset(emotion, emotionGender),
+          fill: true,
+          label: localizedLabel(emotion, language),
+          ariaLabel: t(`הוספת ${emotion.label} ללוח`, `Add ${emotion.labelEn} to the board`),
+          onSelect: () => { pen.setEnabled(false); onAddEmotion({ ...emotion, asset: emotionAsset(emotion, emotionGender) }); },
+        })),
+        // Switches the faces between the boy and the girl.
+        {
+          id: "emotion-gender",
+          image: emotionAsset(EMOTIONS[0], emotionGender === "girl" ? "boy" : "girl"),
+          fill: true,
+          label: emotionGender === "girl" ? t("לבן", "Boy") : t("לבת", "Girl"),
+          ariaLabel: emotionGender === "girl" ? t("החלפה לרגשות של בן", "Switch to the boy's faces") : t("החלפה לרגשות של בת", "Switch to the girl's faces"),
+          keepOpen: true,
+          onSelect: () => { const next = emotionGender === "girl" ? "boy" : "girl"; setEmotionGender(next); setEmotionGenderState(next); },
+        },
+      ],
     },
+    { id: "calm", color: "#f6d9e2", image: "/icon-bank/emotions/calm.webp", fill: true, label: t("להירגע", "Calm down"), onSelect: () => { pen.setEnabled(false); onOpenCalm(); } },
     { id: "first-then", color: "#e6dcf5", image: "/icon-bank/tools/first-then.webp", label: t("קודם-אחר כך", "First-then"), onSelect: () => { pen.setEnabled(false); onOpenChoice("firstThen"); } },
     {
       id: "motor",
@@ -66,7 +80,7 @@ export function BoardToolbox({ language, pen, onOpenTimer, onAddSign, onOpenChoi
     ...tipTools(language, (panel) => { pen.setEnabled(false); setTipPanel(panel); }),
   ].map((tool) => [tool.id, tool]));
   // In groups: the therapist's tools, then the tips, then what is shown to the child.
-  const tools = ["timer", "pen", "motor", "posture", "scissors", "writing", "coloring", "signs", "emotions", "first-then"].map((id) => byId[id]).filter(Boolean);
+  const tools = ["timer", "pen", "motor", "posture", "scissors", "writing", "coloring", "signs", "emotions", "calm", "first-then"].map((id) => byId[id]).filter(Boolean);
 
   return (
     <>
