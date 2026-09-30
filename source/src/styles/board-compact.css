@@ -57,3 +57,9 @@
   .meeting-board-actions .meeting-group .meeting-tool-image-icon{width:22px!important;height:22px!important}
   .meeting-group-plus{font-size:17px}
 }
+
+/* Boy / girl switch above the emotion faces. */
+.meeting-board-page .meeting-games-palette>div.emotion-gender,
+.meeting-games-palette>div.emotion-gender{display:flex!important;justify-content:center;gap:6px!important;margin-bottom:8px}
+.meeting-games-palette .emotion-gender button{min-height:36px;padding:4px 14px;border:2px solid #ebe3da;border-radius:999px;background:#fff;color:#40362f;font:700 14px Rubik,Arial,sans-serif;cursor:pointer}
+.meeting-games-palette .emotion-gender button.on{border-color:#5f9f7c;background:#eef8f2}

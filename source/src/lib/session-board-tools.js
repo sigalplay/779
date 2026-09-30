@@ -22,6 +22,16 @@ export const EMOTIONS = [
 ];
 export const findEmotion = (id) => EMOTIONS.find((emotion) => emotion.id === id) || null;
 
+// The same feelings drawn as a girl (files named "<id>-girl.webp"). The choice is remembered on this device.
+const EMOTION_GENDER_KEY = "boo_emotions_gender";
+export function getEmotionGender() {
+  try { return localStorage.getItem(EMOTION_GENDER_KEY) === "girl" ? "girl" : "boy"; } catch { return "boy"; }
+}
+export function setEmotionGender(gender) {
+  try { localStorage.setItem(EMOTION_GENDER_KEY, gender); } catch { /* storage blocked */ }
+}
+export const emotionAsset = (emotion, gender) => (gender === "girl" ? emotion.asset.replace(".webp", "-girl.webp") : emotion.asset);
+
 // Toys and materials from the therapy room (ids stay the same so saved boards keep their names).
 const TOYS = "/icon-bank/toys";
 export const BOARD_GAMES = [

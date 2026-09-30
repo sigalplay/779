@@ -210,7 +210,7 @@ export function Toolbox({ language, tools, storageKey, placement = "middle", hid
               tool={tool}
               index={index}
               className={tool.back ? "toolbox-tool-back" : subTool ? "toolbox-tool-item" : ""}
-              onClick={() => (tool.back ? setView("bank") : subTool ? (setView(null), tool.onSelect()) : select(tool))}
+              onClick={() => (tool.back ? setView("bank") : subTool ? (tool.keepOpen || setView(null), tool.onSelect()) : select(tool))}
             />
           ))}
         </div>
