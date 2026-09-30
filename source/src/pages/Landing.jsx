@@ -36,7 +36,7 @@ export default function Landing() {
     [language === "en" ? "/en/parent/daily-sequences/" : "/parent/daily-sequences/", "/icon-bank/daily-sequences/hands/rub.webp", "רצפי ADL", "ADL Visual Sequences"],
     ["/parent/recipes", "/icon-bank/navigation-v2/recipes-flat.webp", "מתכונים", "Kid-Friendly Recipes"],
     ["/parent/experiments", "/icon-bank/navigation-v2/experiments-flat.webp", "ניסויים", "Kids’ Science Experiments"],
-    ["/parent/card-games-generator/", "/assets/card-generator-home-v2.png", "מחולל משחקים", "Printable Game Builder"],
+    [language === "en" ? "/en/parent/card-games-generator/" : "/parent/card-games-generator/", "/assets/card-generator-home-v2.png", "מחולל משחקים", "Printable Game Builder"],
     ["/parent/hebrew-calendar", "/icon-bank/navigation-v2/family-calendar-illustrated-v2.webp", "יצירת לוח שנה", "Create a Family Calendar"],
   ];
 

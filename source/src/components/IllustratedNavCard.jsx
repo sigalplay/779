@@ -59,6 +59,7 @@ const STANDALONE_PAGES = new Set([
   "/parent/card-games-generator/",
   "/parent/routine-boards/",
   "/parent/daily-sequences/",
+  "/en/parent/card-games-generator/",
   "/en/parent/routine-boards/",
   "/en/parent/daily-sequences/",
 ]);
