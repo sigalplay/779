@@ -1415,6 +1415,7 @@ const EN = {
   },
   "seed-119": {
     description: "Color, cut, and fold a white template to build a standing sukkah with two walls and a floor.",
+    attachmentLabels: ["Printable 3D Sukkah Template (PDF)"],
     materials: [
       "Sukkah template printed on white cardstock",
       "Colored pencils or markers",

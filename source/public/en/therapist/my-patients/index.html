@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>My Clients | Let's Play</title>
+    <link rel="icon" href="/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      .patient-card-copy{min-width:0}.patient-card-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}.patient-card .patient-delete{display:inline-flex;min-height:40px;align-items:center;justify-content:center;padding:9px 14px;border:1px solid #e5b9b9;border-radius:999px;background:#fff;color:#9b3e3e;font:800 14px Rubik;cursor:pointer}.patient-card .patient-delete:hover{background:#fff2f2}.patient-card .patient-delete:focus-visible{outline:3px solid #e5b9b9;outline-offset:2px}.patient-card .patient-delete:disabled{cursor:wait;opacity:.65}.patient-message[data-state="success"]{color:var(--sage-dark)}
+      @media(max-width:680px){.patient-card{align-items:stretch}.patient-card-actions{width:100%}.patient-card-actions a,.patient-card-actions button{flex:1}.patient-card .patient-delete{width:auto}}
+    </style>
+    <link rel="stylesheet" href="/therapist/my-patients/patients.css">
+  </head>
+  <body>
+    <header class="standard-site-header">
+      <div class="standard-site-header__inner">
+        <a class="standard-site-header__logo" href="/en/" aria-label="Back to the home page"><img src="/boo-nesahek-logo-en-fast.webp" alt="Let's Play"></a>
+        <nav class="standard-site-header__nav" aria-label="Main navigation">
+          <a href="/en/">Home</a><a href="/en/therapist/build?view=session">Session board</a><a href="/en/therapist/diary">Diary</a><a href="/en/therapist/build?tab=search">Search</a><a class="active" aria-current="page" href="/en/therapist/my-patients/">My clients</a><a href="/en/favorites">Favorites</a><a href="/en/about">About</a>
+        </nav>
+        <div class="standard-site-header__actions"><a class="standard-site-header__account" data-patients-account href="/en/auth?mode=login">Sign in</a><button class="standard-site-header__menu-button" type="button" aria-expanded="false" aria-controls="patientsSiteMenu"><span aria-hidden="true">☰</span><span>Menu</span></button></div>
+      </div>
+      <div class="standard-site-header__menu" id="patientsSiteMenu" hidden><nav aria-label="Site menu"><a href="/en/">Home</a><a href="/en/therapist/build?view=session">Session board</a><a href="/en/therapist/diary">Diary</a><a href="/en/therapist/build?tab=search">Search</a><a aria-current="page" href="/en/therapist/my-patients/">My clients</a><a href="/en/favorites">Favorites</a><a href="/en/about">About</a><a data-patients-account href="/en/auth?mode=login">Sign in</a></nav></div>
+    </header>
+    <main class="patients-shell">
+      <section class="patients-intro"><p>Therapist area</p><h1>My clients</h1><span>Save a first name, initials, or a nickname with a daily session board, and open it from any device.</span></section>
+      <section id="signedOut" class="patient-panel" hidden><h2>Want to save boards to the cloud?</h2><p>You can build one board without signing in. Sign in only when you want to save multiple clients and open their boards from your phone or computer.</p><div class="patient-actions"><a class="primary" href="/en/auth?intent=patients&redirect=%2Ftherapist%2Fmy-patients%2F">Sign in</a><a href="/en/therapist/build?view=session&guest=1">Build a board without signing in</a></div></section>
+      <section id="signedIn" hidden>
+        <form id="patientForm" class="patient-form"><label for="patientName">First name, initials, or nickname</label><div><input id="patientName" maxlength="80" required placeholder="For example: A. or a nickname"><button type="submit">Add client</button></div><small>We recommend not entering a full name or medical information.</small></form>
+        <div class="patients-heading"><h2>My boards</h2><a href="/en/therapist/build?view=session&guest=1">Board without signing in</a></div>
+        <div id="groupChips" class="group-chips" role="toolbar" aria-label="Settings"></div><input id="patientSearch" class="patient-search" type="search" placeholder="Search by name..." aria-label="Search clients by name" hidden><div id="patientsList" class="patients-list" aria-live="polite"></div>
+      </section>
+      <dialog id="groupDialog" class="group-dialog" aria-labelledby="groupDialogTitle"><form method="dialog" id="groupForm"><h2 id="groupDialogTitle">New setting</h2><p>You do not need to enter the name of a preschool or school.</p><fieldset><legend>Type</legend><div class="group-types" id="groupTypes"></div></fieldset><fieldset><legend>Color</legend><div class="group-colors" id="groupColors"></div></fieldset><div class="group-preview" id="groupPreview"></div><p class="group-lock">🔒 Only the type and color are saved. No name or address is stored, so the list does not reveal where the children are seen.</p><div class="group-dialog-actions"><button type="submit" value="create" class="primary">Create setting</button><button type="submit" value="cancel">Cancel</button></div></form></dialog>
+      <p id="patientMessage" class="patient-message" role="status"></p>
+    </main>
+    <script defer src="/therapist/my-patients/patients.js"></script>
+  </body>
+</html>

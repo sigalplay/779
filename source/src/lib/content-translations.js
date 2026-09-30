@@ -112,6 +112,9 @@ ACTIVITY_TITLES_EN["seed-113"] = "Shark Teeth Play Dough Activity";
 ACTIVITY_TITLES_EN["seed-113"] = "Shark Teeth Play Dough Activity";
 
 const TERM_EN = {
+  "מוכנות לכיתה א'": "School readiness",
+  "ניסויים": "Experiments",
+  "תנועה": "Movement",
   "תפקודים ניהוליים": "Executive functions", "משחק משותף": "Social play", "יצירה": "Craft", "גמישות": "Flexibility", "קליניקה": "Clinic", "קשב למשימה": "Task attention", "תיאום עין-יד": "Hand–eye coordination",
   "גן": "Preschool", "בית ספר": "School", "אחר": "Other", "עצמאית": "Private practice",
   "התנסות במאכלים": "Food exploration",

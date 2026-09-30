@@ -64,7 +64,14 @@ export function useTranslator() {
 }
 
 // Standalone pages (outside the React app) that have a separate English copy under /en/.
-const ENGLISH_STANDALONE = new Set(["/parent/routine-boards/", "/parent/daily-routine/", "/child/daily-routine/", "/parent/daily-sequences/"]);
+const ENGLISH_STANDALONE = new Set([
+  "/parent/routine-boards/",
+  "/parent/daily-routine/",
+  "/child/daily-routine/",
+  "/parent/daily-sequences/",
+  "/parent/card-games-generator/",
+  "/therapist/my-patients/",
+]);
 
 export function standaloneHref(href, language) {
   return language === "en" && ENGLISH_STANDALONE.has(href) ? `/en${href}` : href;

@@ -58,7 +58,7 @@ import {
 } from "@/lib/storage";
 import { WEEKLY_BOARD_CATEGORIES, KIDS_WEEKLY_BOARD_CATEGORIES, weeklyBoardTaskById, weeklyBoardCategoryLabel, weeklyBoardTaskTitle } from "@/lib/weekly-board-tasks";
 import { weeklyBoardLimit } from "@/lib/subscription";
-import { useTranslator } from "@/lib/language";
+import { brandLogo, useTranslator } from "@/lib/language";
 import { imageAlt } from "@/lib/image-seo";
 import { useNavigate } from "react-router-dom";
 
@@ -457,7 +457,7 @@ export default function WeeklyBoard({ mode }) {
       </div>
 
       <div className="weekly-board-print-header hidden items-center justify-between print:flex">
-        <img src="/boo-nesahek-logo.png" alt={t("בואו נשחק", "Let's Play")} className="weekly-board-print-logo object-contain" />
+        <img src={brandLogo(language).replace("-fast.webp", ".png")} alt={t("בואו נשחק", "Let's Play")} className="weekly-board-print-logo object-contain" />
         <div className="text-center">
           <h1 className="font-display text-xl font-black">{displayBoardName(activeBoard?.name)}</h1>
           <p className="text-sm font-bold">{t("לוח התארגנות שבועי", "Weekly Visual Schedule")} · {formatWeekRangeLabel(weekDates, language)}</p>

@@ -40,6 +40,7 @@ export function BoardDateNavigation({ date, savedDates, language, onNavigate, on
       </button>
       <label className="meeting-board-date-card meeting-current-date">
         <strong>{date === localTodayIso() ? t("היום", "Today") : t("תאריך הטיפול", "Session date")}</strong>
+        {" "}
         <span>{formatDate(date, language)}</span>
         <input type="date" value={date} data-board-date-input="" aria-label={t("בחירת תאריך טיפול", "Choose a session date")} onChange={(e) => e.target.value && onNavigate(e.target.value)} />
       </label>
