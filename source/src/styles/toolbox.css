@@ -89,3 +89,12 @@ svg[data-finished] {
   .timer-finished,
   svg[data-finished] { animation: none; }
 }
+
+/* Phones: large circles (emotions) a little smaller, so the whole grid fits on the screen. */
+@media(max-width:760px){
+  .toolbox-grid-large .toolbox-tool{width:96px}
+  .toolbox-grid-large .toolbox-tool-circle{width:82px;height:82px}
+  .toolbox-grid-large .toolbox-tool small{font-size:11px;padding:2px 6px}
+  .toolbox-grid-large .toolbox-tool-back{width:60px;height:60px;margin-block:11px}
+  .toolbox-strip.toolbox-grid{gap:8px}
+}
