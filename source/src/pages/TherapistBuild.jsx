@@ -836,9 +836,13 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
   function addEmotion(emotion) {
     addSticker(emotion, true);
   }
-  // One piece of obstacle-course equipment on its own, as a picture on the board.
+  // One piece of obstacle-course equipment on its own, as a round sticker on the board.
   function addMotorItem(item) {
-    setPlan((prev) => [...prev, { kind: "photo", uid: `motor-${item.id}-${Date.now()}`, image: item.image, label: localizedLabel(item, language), motorItem: item.id }]);
+    addSticker({ ...item, asset: item.image }, false);
+  }
+  // A "what helps me calm down" card, as a round sticker.
+  function addCalmHelper(helper) {
+    addSticker(helper, true);
   }
   async function photoChosen(event) {
     const file = event.target.files?.[0];
@@ -1060,9 +1064,9 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
         {/* Inside the board so the timer and the toolbox stay visible in full screen. */}
         <div className="meeting-board-overlay">
           <VisualSessionTimer language={language} open={timerOpen} onOpenChange={setTimerOpen} hideTrigger />
-          {fullscreen && <BoardToolbox language={language} pen={pen} onOpenTimer={openTimer} onAddSign={addSign} onOpenChoice={setChoiceMode} onAddMotorItem={addMotorItem} onAddEmotion={addEmotion} onOpenCalm={() => setCalmOpen(true)} />}
+          {fullscreen && <BoardToolbox language={language} pen={pen} onOpenTimer={openTimer} onAddSign={addSign} onOpenChoice={setChoiceMode} onAddMotorItem={addMotorItem} onAddEmotion={addEmotion} onAddCalmHelper={addCalmHelper} calmPatientKey={patientBoardId || "guest"} />}
           {myImagesOpen && <MyImagesDialog language={language} returnUrl={`${window.location.pathname}${window.location.search}`} onAdd={addMyImage} onChanged={setMyImages} onClose={() => setMyImagesOpen(false)} />}
-          {calmOpen && <CalmDialog language={language} patientKey={patientBoardId || "guest"} patientName={patientBoardId ? patientName : ""} onClose={() => setCalmOpen(false)} />}
+          {calmOpen && <CalmDialog language={language} patientKey={patientBoardId || "guest"} patientName={patientBoardId ? patientName : ""} onAddToBoard={addCalmHelper} onClose={() => setCalmOpen(false)} />}
           {farewellOpen && <FarewellDialog language={language} patientKey={patientBoardId || "guest"} patientName={patientBoardId ? patientName : ""} onClose={() => setFarewellOpen(false)} />}
           {shareOpen && <HomePracticeShare language={language} onClose={() => setShareOpen(false)}
             activities={plan.filter((item) => item.kind === "activity" && getActivity(item.id)).map((item) => ({ id: item.id, title: boardItemView(item).title, image: boardItemView(item).hero }))} />}
