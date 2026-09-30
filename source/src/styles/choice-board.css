@@ -164,3 +164,4 @@
 .calm-option-check svg{width:15px;height:15px}
 @media(prefers-reduced-motion:reduce){.calm-circle{transition-duration:0s!important}}
 @media(max-width:600px){.calm-say{font-size:18px}.calm-number{font-size:84px}.calm-mine-list{display:grid;grid-template-columns:1fr 1fr}.calm-mine-card{width:auto}.calm-mine-card img{width:100px;height:100px}}
+.calm-helps-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}

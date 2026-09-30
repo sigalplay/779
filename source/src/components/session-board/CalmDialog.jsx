@@ -4,7 +4,9 @@ import { Check, Pause, Play, X } from "lucide-react";
 // "What helps me calm down?" on the session board: breathing together, counting together,
 // and the child's own card of what helps. The card is kept per client in this browser.
 const LOCAL_KEY = "boo_calm_v1";
-const helperImage = (helper) => `/icon-bank/calm/${helper.id}.webp`;
+// Boy or girl pictures, also kept per client.
+const GENDER_KEY = "boo_calm_gender_v1";
+const helperImage = (helper, gender) => `/icon-bank/calm/${helper.id}${gender === "girl" ? "-girl" : ""}.webp`;
 
 const HELPERS = [
   { id: "breathe", emoji: "🌬️", he: "לנשום עמוק", en: "Take deep breaths", tab: "breathe" },
@@ -25,18 +27,23 @@ const HELPERS = [
   { id: "help", emoji: "🙋", he: "לבקש עזרה", en: "Ask for help" },
 ];
 
-function readAll() {
-  try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || {}; } catch { return {}; }
+function readAll(key = LOCAL_KEY) {
+  try { return JSON.parse(localStorage.getItem(key)) || {}; } catch { return {}; }
 }
 
 export function CalmDialog({ language, patientKey, patientName, onClose }) {
   const t = (he, en) => (language === "en" ? en : he);
   const [tab, setTab] = useState("breathe");
   const [picked, setPicked] = useState(() => readAll()[patientKey] || []);
+  const [gender, setGender] = useState(() => readAll(GENDER_KEY)[patientKey] || "boy");
 
   useEffect(() => {
     try { localStorage.setItem(LOCAL_KEY, JSON.stringify({ ...readAll(), [patientKey]: picked })); } catch { /* storage blocked */ }
   }, [patientKey, picked]);
+
+  useEffect(() => {
+    try { localStorage.setItem(GENDER_KEY, JSON.stringify({ ...readAll(GENDER_KEY), [patientKey]: gender })); } catch { /* storage blocked */ }
+  }, [patientKey, gender]);
 
   useEffect(() => {
     const onKey = (event) => { if (event.key === "Escape") onClose(); };
@@ -69,20 +76,27 @@ export function CalmDialog({ language, patientKey, patientName, onClose }) {
                 <div className="calm-mine-list">
                   {picked.map((id) => HELPERS.find((helper) => helper.id === id)).filter(Boolean).map((helper) => (
                     <button key={helper.id} type="button" className="calm-mine-card" onClick={() => (helper.tab ? setTab(helper.tab) : undefined)} disabled={!helper.tab}>
-                      <img src={helperImage(helper)} alt="" />{t(helper.he, helper.en)}
+                      <img src={helperImage(helper, gender)} alt="" />{t(helper.he, helper.en)}
                     </button>
                   ))}
                 </div>
               </section>
             )}
-            <p className="choice-board-hint">{t("הילד בוחר מה עוזר לו. הבחירות נשמרות לילד הזה.", "The child picks what helps. The choices are kept for this child.")}</p>
+            <div className="calm-helps-head">
+              <p className="choice-board-hint">{t("הילד בוחר מה עוזר לו. הבחירות נשמרות לילד הזה.", "The child picks what helps. The choices are kept for this child.")}</p>
+              <div className="calm-settings" role="group" aria-label={t("בן או בת", "Boy or girl")}>
+                {[["boy", t("👦 בן", "👦 Boy")], ["girl", t("👧 בת", "👧 Girl")]].map(([id, label]) => (
+                  <button key={id} type="button" aria-pressed={gender === id} className={gender === id ? "on" : ""} onClick={() => setGender(id)}>{label}</button>
+                ))}
+              </div>
+            </div>
             <div className="calm-options">
               {HELPERS.map((helper) => {
                 const on = picked.includes(helper.id);
                 return (
                   <button key={helper.id} type="button" aria-pressed={on} className={on ? "calm-option on" : "calm-option"} onClick={() => toggle(helper.id)}>
                     {on && <span className="calm-option-check"><Check aria-hidden="true" /></span>}
-                    <img className="calm-option-image" src={helperImage(helper)} alt="" loading="lazy" />
+                    <img className="calm-option-image" src={helperImage(helper, gender)} alt="" loading="lazy" />
                     {t(helper.he, helper.en)}
                   </button>
                 );
