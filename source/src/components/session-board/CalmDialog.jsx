@@ -4,6 +4,7 @@ import { Check, Pause, Play, X } from "lucide-react";
 // "What helps me calm down?" on the session board: breathing together, counting together,
 // and the child's own card of what helps. The card is kept per client in this browser.
 const LOCAL_KEY = "boo_calm_v1";
+const helperImage = (helper) => `/icon-bank/calm/${helper.id}.webp`;
 
 const HELPERS = [
   { id: "breathe", emoji: "🌬️", he: "לנשום עמוק", en: "Take deep breaths", tab: "breathe" },
@@ -68,7 +69,7 @@ export function CalmDialog({ language, patientKey, patientName, onClose }) {
                 <div className="calm-mine-list">
                   {picked.map((id) => HELPERS.find((helper) => helper.id === id)).filter(Boolean).map((helper) => (
                     <button key={helper.id} type="button" className="calm-mine-card" onClick={() => (helper.tab ? setTab(helper.tab) : undefined)} disabled={!helper.tab}>
-                      <span aria-hidden="true">{helper.emoji}</span>{t(helper.he, helper.en)}
+                      <img src={helperImage(helper)} alt="" />{t(helper.he, helper.en)}
                     </button>
                   ))}
                 </div>
@@ -81,7 +82,7 @@ export function CalmDialog({ language, patientKey, patientName, onClose }) {
                 return (
                   <button key={helper.id} type="button" aria-pressed={on} className={on ? "calm-option on" : "calm-option"} onClick={() => toggle(helper.id)}>
                     {on && <span className="calm-option-check"><Check aria-hidden="true" /></span>}
-                    <span className="calm-option-emoji" aria-hidden="true">{helper.emoji}</span>
+                    <img className="calm-option-image" src={helperImage(helper)} alt="" loading="lazy" />
                     {t(helper.he, helper.en)}
                   </button>
                 );
