@@ -1,6 +1,9 @@
 /* patients-site-header-v1.js */
 (() => {
   "use strict";
+  const EN = document.documentElement.lang.toLowerCase().startsWith("en");
+  const prefix = EN ? "/en" : "";
+  const t = (he, en) => EN ? en : he;
 
   function sessionExists() {
     try {
@@ -14,8 +17,8 @@
   function updateAccountLinks() {
     const signedIn = sessionExists();
     document.querySelectorAll("[data-patients-account]").forEach((link) => {
-      link.textContent = signedIn ? "החשבון שלי" : "כניסה";
-      link.href = signedIn ? "/profile" : `/auth?mode=login&redirect=${encodeURIComponent(location.pathname)}`;
+      link.textContent = signedIn ? t("החשבון שלי", "My account") : t("כניסה", "Sign in");
+      link.href = signedIn ? `${prefix}/profile` : `${prefix}/auth?mode=login&redirect=${encodeURIComponent(location.pathname.replace(/^\/en(?=\/|$)/, ""))}`;
     });
   }
 
@@ -39,8 +42,8 @@
     addEventListener("pp_auth_change", updateAccountLinks);
     const workflowNav = document.createElement("nav");
     workflowNav.className = "therapist-mobile-workflow-nav";
-    workflowNav.setAttribute("aria-label", "ניווט מהיר באזור המטפלות");
-    workflowNav.innerHTML = `<div class="therapist-mobile-workflow-nav__inner"><a href="/therapist/build?tab=search&boardMode=1"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg><strong>מנוע חיפוש</strong></a><a href="/therapist/build?view=session"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg><strong>לוח המפגש</strong></a><a aria-current="page" href="/therapist/my-patients/"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><circle cx="17" cy="9" r="2.5"></circle><path d="M3.5 20c.4-4 2.2-6 5.5-6s5.1 2 5.5 6M14 15c3.7-.7 5.8 1 6.5 4"></path></svg><strong>המטופלים שלי</strong></a><a href="/therapist/diary"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M7 3v4M17 3v4M3 10h18M8 14h3M13 14h3M8 17h3"></path></svg><strong>יומן</strong></a><button type="button" data-workflow-menu><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"></path></svg><strong>תפריט</strong></button></div>`;
+    workflowNav.setAttribute("aria-label", t("ניווט מהיר באזור המטפלות", "Quick therapist-area navigation"));
+    workflowNav.innerHTML = `<div class="therapist-mobile-workflow-nav__inner"><a href="${prefix}/therapist/build?tab=search&boardMode=1"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg><strong>${t("מנוע חיפוש", "Search")}</strong></a><a href="${prefix}/therapist/build?view=session"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg><strong>${t("לוח המפגש", "Session board")}</strong></a><a aria-current="page" href="${prefix}/therapist/my-patients/"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><circle cx="17" cy="9" r="2.5"></circle><path d="M3.5 20c.4-4 2.2-6 5.5-6s5.1 2 5.5 6M14 15c3.7-.7 5.8 1 6.5 4"></path></svg><strong>${t("המטופלים שלי", "My clients")}</strong></a><a href="${prefix}/therapist/diary"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M7 3v4M17 3v4M3 10h18M8 14h3M13 14h3M8 17h3"></path></svg><strong>${t("יומן", "Diary")}</strong></a><button type="button" data-workflow-menu><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"></path></svg><strong>${t("תפריט", "Menu")}</strong></button></div>`;
     workflowNav.querySelector("[data-workflow-menu]")?.addEventListener("click", () => {
       document.querySelector(".standard-site-header__menu-button")?.click();
     });
@@ -55,6 +58,9 @@
 /* therapist-patients-v1.js */
 (() => {
   "use strict";
+  const EN = document.documentElement.lang.toLowerCase().startsWith("en");
+  const prefix = EN ? "/en" : "";
+  const t = (he, en) => EN ? en : he;
   // Same project as src/lib/cloud-auth.js.
   const URL = "https://xoyaymlmnsmhuaxnkdqh.supabase.co";
   const KEY = "sb_publishable_FjXUtCvY96sSzeTs_0LFOQ_bxp2_mKb";
@@ -90,10 +96,10 @@
   // kept, never the name of a kindergarten or a school, so the list does not tell where a child is.
   // They live on the therapist's account: { list: [{ id, type, color }], of: { patientId: groupId } }.
   const GROUP_TYPES = [
-    { id: "clinic", label: "קליניקה", icon: "🏠" },
-    { id: "kindergarten", label: "גן", icon: "🏫" },
-    { id: "school", label: "בית ספר", short: "בי״ס", icon: "🎒" },
-    { id: "center", label: "מכון", icon: "🩺" }
+    { id: "clinic", label: t("קליניקה", "Clinic"), icon: "🏠" },
+    { id: "kindergarten", label: t("גן", "Preschool"), icon: "🏫" },
+    { id: "school", label: t("בית ספר", "School"), short: t("בי״ס", "School"), icon: "🎒" },
+    { id: "center", label: t("מכון", "Center"), icon: "🩺" }
   ];
   const GROUP_COLORS = ["#7fc4a0", "#8fb8e8", "#f2a65a", "#c9a3e0", "#f0d36b", "#ef9aa8", "#8fd3d0", "#c8b39a"];
   const CHOSEN_GROUP = "boo_patients_group";
@@ -140,7 +146,7 @@
     } catch {
       groups = previous;
       render();
-      setMessage("לא הצלחנו לשמור את המסגרות. נסי להתחבר מחדש.");
+      setMessage(t("לא הצלחנו לשמור את המסגרות. נסי להתחבר מחדש.", "We could not save the settings. Please sign in again."));
     }
   }
 
@@ -154,38 +160,39 @@
     if (chosen !== "all" && !groups.list.some((group) => group.id === chosen)) chosen = "all";
     const count = (id) => patients.filter((patient) => groups.of[patient.id] === id).length;
     chips.innerHTML = [
-      `<button type="button" data-group="all" aria-pressed="${chosen === "all"}">הכל <small>${patients.length}</small></button>`,
+      `<button type="button" data-group="all" aria-pressed="${chosen === "all"}">${t("הכל", "All")} <small>${patients.length}</small></button>`,
       ...groups.list.map((group) => `<button type="button" data-group="${escapeHtml(group.id)}" aria-pressed="${chosen === group.id}"><span class="group-dot" style="background:${escapeHtml(group.color)}"></span><span aria-hidden="true">${typeOf(group).icon}</span> ${escapeHtml(groupName(group))} <small>${count(group.id)}</small></button>`),
-      '<button type="button" class="group-add" data-new-group>＋ מסגרת</button>',
-      chosen !== "all" ? '<button type="button" class="group-remove" data-remove-group>מחיקת המסגרת</button>' : ""
+      `<button type="button" class="group-add" data-new-group>＋ ${t("מסגרת", "Setting")}</button>`,
+      chosen !== "all" ? `<button type="button" class="group-remove" data-remove-group>${t("מחיקת המסגרת", "Delete setting")}</button>` : ""
     ].join("");
     const group = groups.list.find((item) => item.id === chosen);
-    formButton.textContent = group ? `הוספה ל${groupName(group)}` : "הוספת מטופל";
+    formButton.textContent = group ? t(`הוספה ל${groupName(group)}`, `Add to ${groupName(group)}`) : t("הוספת מטופל", "Add client");
   }
 
   function patientCard(patient) {
     const group = groupOf(patient.id);
-    const options = [`<option value="">בלי מסגרת</option>`, ...groups.list.map((item) => `<option value="${escapeHtml(item.id)}"${item.id === group?.id ? " selected" : ""}>${typeOf(item).icon} ${escapeHtml(groupName(item))}</option>`)].join("");
+    const options = [`<option value="">${t("בלי מסגרת", "No setting")}</option>`, ...groups.list.map((item) => `<option value="${escapeHtml(item.id)}"${item.id === group?.id ? " selected" : ""}>${typeOf(item).icon} ${escapeHtml(groupName(item))}</option>`)].join("");
     const place = groups.list.length
-      ? `<label class="patient-group">${group ? `<span class="group-dot" style="background:${escapeHtml(group.color)}"></span>` : ""}<span class="sr-only">מסגרת של ${escapeHtml(patient.display_name)}</span><select data-patient-group="${escapeHtml(patient.id)}">${options}</select></label>`
-      : "<small>לוח המפגש להיום</small>";
-    return `<article class="patient-card"${group ? ` style="--group-color:${escapeHtml(group.color)}"` : ""}><div class="patient-card-copy"><strong>${escapeHtml(patient.display_name)}</strong>${place}</div><div class="patient-card-actions"><a href="/therapist/build?view=session&patientBoard=${encodeURIComponent(patient.id)}">פתיחת הלוח</a><button type="button" class="patient-delete" data-delete-patient="${encodeURIComponent(patient.id)}" data-patient-name="${escapeHtml(patient.display_name)}" aria-label="מחיקת ${escapeHtml(patient.display_name)}">מחיקה</button></div></article>`;
+      ? `<label class="patient-group">${group ? `<span class="group-dot" style="background:${escapeHtml(group.color)}"></span>` : ""}<span class="sr-only">${t("מסגרת של", "Setting for")} ${escapeHtml(patient.display_name)}</span><select data-patient-group="${escapeHtml(patient.id)}">${options}</select></label>`
+      : `<small>${t("לוח המפגש להיום", "Today’s session board")}</small>`;
+    return `<article class="patient-card"${group ? ` style="--group-color:${escapeHtml(group.color)}"` : ""}><div class="patient-card-copy"><strong>${escapeHtml(patient.display_name)}</strong>${place}</div><div class="patient-card-actions"><a href="${prefix}/therapist/build?view=session&patientBoard=${encodeURIComponent(patient.id)}">${t("פתיחת הלוח", "Open board")}</a><button type="button" class="patient-delete" data-delete-patient="${encodeURIComponent(patient.id)}" data-patient-name="${escapeHtml(patient.display_name)}" aria-label="${t("מחיקת", "Delete")} ${escapeHtml(patient.display_name)}">${t("מחיקה", "Delete")}</button></div></article>`;
   }
 
   function render() {
     renderChips();
     search.hidden = patients.length < 7;
-    const query = search.hidden ? "" : search.value.trim().toLocaleLowerCase("he");
-    const shown = patients.filter((patient) => (chosen === "all" || groups.of[patient.id] === chosen) && (!query || String(patient.display_name).toLocaleLowerCase("he").includes(query)));
+    const locale = EN ? "en" : "he";
+    const query = search.hidden ? "" : search.value.trim().toLocaleLowerCase(locale);
+    const shown = patients.filter((patient) => (chosen === "all" || groups.of[patient.id] === chosen) && (!query || String(patient.display_name).toLocaleLowerCase(locale).includes(query)));
     const empty = !patients.length
-      ? "עדיין לא הוספת מטופלים. אפשר להתחיל בשם פרטי, ראשי תיבות או כינוי."
-      : query ? "לא נמצא מטופל בשם הזה." : "אין עדיין מטופלים במסגרת הזאת. אפשר להוסיף מהטופס למעלה.";
+      ? t("עדיין לא הוספת מטופלים. אפשר להתחיל בשם פרטי, ראשי תיבות או כינוי.", "You have not added any clients yet. Start with a first name, initials, or a nickname.")
+      : query ? t("לא נמצא מטופל בשם הזה.", "No client with that name was found.") : t("אין עדיין מטופלים במסגרת הזאת. אפשר להוסיף מהטופס למעלה.", "There are no clients in this setting yet. Add one using the form above.");
     list.innerHTML = shown.length ? shown.map(patientCard).join("") : `<p class="patients-empty">${empty}</p>`;
   }
 
   function renderDialog() {
     document.querySelector("#groupTypes").innerHTML = GROUP_TYPES.map((type) => `<button type="button" data-type="${type.id}" aria-pressed="${draft.type === type.id}"><span aria-hidden="true">${type.icon}</span>${type.label}</button>`).join("");
-    document.querySelector("#groupColors").innerHTML = GROUP_COLORS.map((color, index) => `<button type="button" data-color="${color}" aria-pressed="${draft.color === color}" aria-label="צבע ${index + 1}" style="background:${color}"></button>`).join("");
+    document.querySelector("#groupColors").innerHTML = GROUP_COLORS.map((color, index) => `<button type="button" data-color="${color}" aria-pressed="${draft.color === color}" aria-label="${t("צבע", "Color")} ${index + 1}" style="background:${color}"></button>`).join("");
     const preview = { id: "new", ...draft };
     document.querySelector("#groupPreview").innerHTML = `<span class="group-dot" style="background:${draft.color}"></span><span aria-hidden="true">${typeOf(preview).icon}</span> ${escapeHtml(groupName(preview, [...groups.list, preview]))}`;
   }
@@ -204,7 +211,7 @@
       const group = groups.list.find((item) => item.id === chosen);
       if (!group) return;
       const name = groupName(group);
-      if (!window.confirm(`למחוק את המסגרת "${name}"?\n\nהמטופלים לא יימחקו, הם רק יעברו ל"בלי מסגרת".`)) return;
+      if (!window.confirm(t(`למחוק את המסגרת "${name}"?\n\nהמטופלים לא יימחקו, הם רק יעברו ל"בלי מסגרת".`, `Delete the “${name}” setting?\n\nThe clients will not be deleted; they will move to “No setting.”`))) return;
       const of = Object.fromEntries(Object.entries(groups.of).filter(([, id]) => id !== group.id));
       chosen = "all";
       try { localStorage.setItem(CHOSEN_GROUP, "all"); } catch {}
@@ -257,7 +264,7 @@
 
   async function loadPatients() {
     setMessage("");
-    list.innerHTML = '<p class="patients-empty">טוענת את הלוחות…</p>';
+    list.innerHTML = `<p class="patients-empty">${t("טוענת את הלוחות…", "Loading boards…")}</p>`;
     try {
       const response = await fetch(`${URL}/rest/v1/therapist_patients?select=id,display_name,updated_at&order=updated_at.desc`, { headers });
       if (!response.ok) throw new Error("load-failed");
@@ -265,7 +272,7 @@
       render();
     } catch {
       list.innerHTML = "";
-      setMessage("לא הצלחנו לטעון את המטופלים. נסי להתחבר מחדש.");
+      setMessage(t("לא הצלחנו לטעון את המטופלים. נסי להתחבר מחדש.", "We could not load the clients. Please sign in again."));
     }
   }
 
@@ -273,13 +280,13 @@
     const button = event.target.closest("[data-delete-patient]");
     if (!button || button.disabled) return;
     const patientId = decodeURIComponent(button.dataset.deletePatient || "");
-    const patientName = button.dataset.patientName || "המטופל";
+    const patientName = button.dataset.patientName || t("המטופל", "this client");
     if (!patientId) return;
-    const approved = window.confirm(`למחוק את ${patientName}?\n\nהמחיקה תסיר גם את לוח המפגש השמור ולא ניתן יהיה לבטל אותה.`);
+    const approved = window.confirm(t(`למחוק את ${patientName}?\n\nהמחיקה תסיר גם את לוח המפגש השמור ולא ניתן יהיה לבטל אותה.`, `Delete ${patientName}?\n\nThis will also remove the saved session board and cannot be undone.`));
     if (!approved) return;
     const originalText = button.textContent;
     button.disabled = true;
-    button.textContent = "מוחקת…";
+    button.textContent = t("מוחקת…", "Deleting…");
     setMessage("");
     try {
       const response = await fetch(`${URL}/rest/v1/therapist_patients?id=eq.${encodeURIComponent(patientId)}&user_id=eq.${encodeURIComponent(session.user.id)}`, {
@@ -296,11 +303,11 @@
         saveGroups({ ...groups, of });
       }
       await loadPatients();
-      setMessage(`${patientName} נמחק/ה בהצלחה יחד עם לוח המפגש.`, "success");
+      setMessage(t(`${patientName} נמחק/ה בהצלחה יחד עם לוח המפגש.`, `${patientName} and the session board were deleted.`), "success");
     } catch {
       button.disabled = false;
       button.textContent = originalText;
-      setMessage("לא הצלחנו למחוק את המטופל כרגע. נסי להתחבר מחדש.");
+      setMessage(t("לא הצלחנו למחוק את המטופל כרגע. נסי להתחבר מחדש.", "We could not delete the client right now. Please sign in again."));
     }
   });
 
@@ -316,7 +323,7 @@
       input.value = "";
       if (created?.id && groups.list.some((group) => group.id === chosen)) saveGroups({ ...groups, of: { ...groups.of, [created.id]: chosen } });
       await loadPatients();
-    } catch { setMessage("לא הצלחנו להוסיף את המטופל כרגע."); }
+    } catch { setMessage(t("לא הצלחנו להוסיף את המטופל כרגע.", "We could not add the client right now.")); }
     finally { formButton.disabled = false; }
   });
 

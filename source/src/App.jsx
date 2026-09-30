@@ -6,7 +6,7 @@ import { SeoManager } from "@/components/SeoManager";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import Landing from "@/pages/Landing";
 import { AnalyticsConsent } from "@/components/AnalyticsConsent";
-import { routerBasename } from "@/lib/language";
+import { getLanguage, routerBasename } from "@/lib/language";
 
 
 
@@ -67,6 +67,7 @@ const DeferredReportErrorButton = lazy(() => import("@/components/ReportErrorBut
 const DeferredToaster = lazy(() => import("sonner").then((module) => ({ default: module.Toaster })));
 
 function PageLoader() {
+  const english = getLanguage() === "en";
   const [slow, setSlow] = useState(false);
   // On the first load of a page saved by the build, keep showing the saved page instead of "loading".
   const [savedPage] = useState(() => window.__prerenderedPage || null);
@@ -81,7 +82,7 @@ function PageLoader() {
     };
   }, [savedPage]);
   if (savedPage) return <div style={{ display: "contents" }} dangerouslySetInnerHTML={{ __html: savedPage }} />;
-  return <div className="flex min-h-screen items-center justify-center bg-background"><div className="text-center"><div className="rounded-full bg-card px-5 py-3 text-sm font-bold text-muted-foreground shadow-sm">טוענת…</div>{slow && <button type="button" onClick={() => window.location.reload()} className="mt-4 rounded-full border border-border bg-white px-4 py-2 text-sm font-bold">הטעינה מתעכבת — רענון</button>}</div></div>;
+  return <div className="flex min-h-screen items-center justify-center bg-background"><div className="text-center"><div className="rounded-full bg-card px-5 py-3 text-sm font-bold text-muted-foreground shadow-sm">{english ? "Loading…" : "טוענת…"}</div>{slow && <button type="button" onClick={() => window.location.reload()} className="mt-4 rounded-full border border-border bg-white px-4 py-2 text-sm font-bold">{english ? "Loading is taking longer — refresh" : "הטעינה מתעכבת — רענון"}</button>}</div></div>;
 }
 
 class RouteErrorBoundary extends Component {
@@ -89,7 +90,8 @@ class RouteErrorBoundary extends Component {
   static getDerivedStateFromError() { return { failed: true }; }
   render() {
     if (!this.state.failed) return this.props.children;
-    return <div className="flex min-h-screen items-center justify-center bg-background px-6"><div className="max-w-md rounded-3xl bg-card p-6 text-center shadow-soft"><h1 className="text-xl font-black">העמוד לא נטען</h1><p className="mt-2 text-sm text-muted-foreground">כנראה נשאר בדפדפן קובץ ישן. רענון יטען את הגרסה המעודכנת.</p><button type="button" onClick={() => { try { sessionStorage.removeItem("boo_chunk_retry"); } catch { /* storage may be blocked */ } const url = new URL(window.location.href); url.searchParams.set("refresh", Date.now().toString()); window.location.replace(url.toString()); }} className="mt-4 rounded-full bg-primary px-5 py-2.5 font-bold text-primary-foreground">רענון העמוד</button></div></div>;
+    const english = getLanguage() === "en";
+    return <div className="flex min-h-screen items-center justify-center bg-background px-6"><div className="max-w-md rounded-3xl bg-card p-6 text-center shadow-soft"><h1 className="text-xl font-black">{english ? "The page did not load" : "העמוד לא נטען"}</h1><p className="mt-2 text-sm text-muted-foreground">{english ? "Your browser may still have an older file. Refresh to load the latest version." : "כנראה נשאר בדפדפן קובץ ישן. רענון יטען את הגרסה המעודכנת."}</p><button type="button" onClick={() => { try { sessionStorage.removeItem("boo_chunk_retry"); } catch { /* storage may be blocked */ } const url = new URL(window.location.href); url.searchParams.set("refresh", Date.now().toString()); window.location.replace(url.toString()); }} className="mt-4 rounded-full bg-primary px-5 py-2.5 font-bold text-primary-foreground">{english ? "Refresh page" : "רענון העמוד"}</button></div></div>;
   }
 }
 
@@ -105,7 +107,7 @@ function DeferredServices() {
     return () => window.clearTimeout(id);
   }, []);
   if (!ready) return null;
-  return <Suspense fallback={null}><DeferredReportErrorButton /><DeferredToaster position="top-center" richColors dir="rtl" duration={1800} /></Suspense>;
+  return <Suspense fallback={null}><DeferredReportErrorButton /><DeferredToaster position="top-center" richColors dir={getLanguage() === "en" ? "ltr" : "rtl"} duration={1800} /></Suspense>;
 }
 
 // "/therapist", the old "/therapist/board" and a bare "/therapist/build" all open the treatment board.

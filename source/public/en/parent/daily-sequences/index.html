@@ -53,14 +53,14 @@
 <script>(function(){try{localStorage.setItem("boo_nesahek_language","en");sessionStorage.setItem("boo_english_preview","1")}catch(e){}document.documentElement.lang="en";document.documentElement.dir="ltr"}())</script>
 </head>
 <body>
-  <header><a href="/en/">Back to Home</a><img src="/boo-nesahek-logo.png" alt="Let's Play"></header>
+  <header><a href="/en/">Back to Home</a><img src="/boo-nesahek-logo-en.png" alt="Let's Play"></header>
   <main>
     <h1>ADL Visual Sequences</h1>
     <p class="intro">Choose an everyday activity. Print it, reorder the steps, or show the child one step at a time in full screen.</p>
     <div class="sequence-grid" id="sequence-grid"></div>
     <section class="detail" id="detail"></section>
     <div class="player" id="player" role="dialog" aria-modal="true"></div>
-    <div class="footer"><img src="/boo-nesahek-logo.png" alt="Let's Play"><span>© Let's Play</span></div>
+    <div class="footer"><img src="/boo-nesahek-logo-en.png" alt="Let's Play"><span>© Let's Play</span></div>
   </main>
   <script>
     const L={groupDaily:'Daily routines',groupDressing:'Getting dressed, step by step',girl:'Girl',boy:'Boy',print:'Print',close:'Close',play:'Show the child: one step at a time',playHint:'Full screen',hint:'Tap a picture to remove it from the sequence. The arrows change the order.',layout:'Sequence layout',column:'Vertical',row:'Horizontal',moveUp:'Move up',moveDown:'Move down',moveEarlierRow:'Move left',moveLaterRow:'Move right',removeStep:(n,t)=>`Step ${n}: ${t}. Remove from the sequence`,position:t=>`Change the position of ${t}`,empty:'Choose pictures from the library to build the sequence.',bank:'Removed steps',bankHint:'Tap a picture to add it back at the end.',reset:'Restore all steps',addStep:t=>`Add ${t} back to the sequence`,stepOf:(n,t)=>`Step ${n} of ${t}`,allDone:'All done!',exit:'Exit step-by-step mode',prev:'Back',did:'I did it!',finish:'Finished!',greatJob:'Great job! You finished every step',again:'Start over'};

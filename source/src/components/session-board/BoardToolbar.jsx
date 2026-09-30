@@ -277,7 +277,8 @@ function PatientMenu({ language, returnUrl, onClose, onSelectPatient, onUseGuest
   const [message, setMessage] = useState("");
   const [groups, setGroups] = useState(() => (signedIn ? readPatientGroups() : { list: [], of: {} }));
   const [chosen, setChosen] = useState(getChosenGroup);
-  const signInHref = `/auth?mode=login&intent=patients&redirect=${encodeURIComponent(returnUrl)}`;
+  const prefix = language === "en" ? "/en" : "";
+  const signInHref = `${prefix}/auth?mode=login&intent=patients&redirect=${encodeURIComponent(returnUrl)}`;
 
   useEffect(() => {
     if (!signedIn) return undefined;
@@ -376,7 +377,7 @@ function PatientMenu({ language, returnUrl, onClose, onSelectPatient, onUseGuest
         <small>{t("מומלץ לא להזין שם מלא או מידע רפואי.", "We recommend not entering a full name or medical information.")}</small>
       </form>
       <button type="button" data-use-guest-board="" onClick={onUseGuestBoard}>{t("מעבר ללוח ללא מטופל", "Use a board without a client")}</button>
-      <a href="/therapist/my-patients/">{t("ניהול המטופלים שלי", "Manage my clients")}</a>
+      <a href={`${prefix}/therapist/my-patients/`}>{t("ניהול המטופלים שלי", "Manage my clients")}</a>
       <p className="patient-menu-message" role="status">{message}</p>
     </>
   );

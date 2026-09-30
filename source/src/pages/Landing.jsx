@@ -36,7 +36,7 @@ export default function Landing() {
     [language === "en" ? "/en/parent/daily-sequences/" : "/parent/daily-sequences/", "/icon-bank/daily-sequences/hands/rub.webp", "רצפי ADL", "ADL Visual Sequences"],
     ["/parent/recipes", "/icon-bank/navigation-v2/recipes-flat.webp", "מתכונים", "Kid-Friendly Recipes"],
     ["/parent/experiments", "/icon-bank/navigation-v2/experiments-flat.webp", "ניסויים", "Kids’ Science Experiments"],
-    ...(language === "he" ? [["/parent/card-games-generator/", "/assets/card-generator-home-v2.png", "מחולל משחקים", "Printable Game Builder"]] : []),
+    ["/parent/card-games-generator/", "/assets/card-generator-home-v2.png", "מחולל משחקים", "Printable Game Builder"],
     ["/parent/hebrew-calendar", "/icon-bank/navigation-v2/family-calendar-illustrated-v2.webp", "יצירת לוח שנה", "Create a Family Calendar"],
   ];
 
@@ -83,31 +83,28 @@ export default function Landing() {
           </div>
         </div>
 
-        {language === "he" && (
-          <p className="mt-5 text-center text-xs text-muted-foreground">
-            אפשר לחזור למסך הזה בכל שלב, ולעבור בין הכלים דרך התפריט העליון.
+        <p className="mt-5 text-center text-xs text-muted-foreground">
+            {t("אפשר לחזור למסך הזה בכל שלב, ולעבור בין הכלים דרך התפריט העליון.", "You can return here at any time and use the top menu to move between tools.")}
           </p>
-        )}
 
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {quickLinks.map(([to, image, he, en]) => <IllustratedNavCard key={to} to={to} image={image} title={t(he, en)} captionClassName={pinkCaption} />)}
         </div>
 
-        {language === "he" && (
-          <section className="compact-seasonal-section mt-8 rounded-[2rem] border border-rose/55 bg-secondary/80 p-4 shadow-soft md:p-6" aria-labelledby="seasonal-title">
+        <section className="compact-seasonal-section mt-8 rounded-[2rem] border border-rose/55 bg-secondary/80 p-4 shadow-soft md:p-6" aria-labelledby="seasonal-title">
             <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
               <div>
                 <p className="text-sm font-bold text-rose">{t("פעילויות לפי התקופה", "Seasonal activities")}</p>
                 <label className="block">
-                  <span className="sr-only">בחירת נושא הפעילויות</span>
+                  <span className="sr-only">{t("בחירת נושא הפעילויות", "Choose a seasonal topic")}</span>
                   <select
                     id="seasonal-title"
                     value={seasonalTopic}
                     onChange={(e) => setSeasonalTopic(e.target.value)}
                     className="cursor-pointer rounded-xl border border-rose/40 bg-white px-3 py-1.5 text-2xl font-black text-foreground shadow-sm outline-none transition hover:border-rose focus:ring-2 focus:ring-rose/30"
                   >
-                    <option value="sukkot">פעילויות לסוכות 🌿</option>
-                    <option value="rosh-hashanah">פעילויות לראש השנה 🍎</option>
+                    <option value="sukkot">{t("פעילויות לסוכות 🌿", "Sukkot activities 🌿")}</option>
+                    <option value="rosh-hashanah">{t("פעילויות לראש השנה 🍎", "Rosh Hashanah activities 🍎")}</option>
                   </select>
                 </label>
               </div>
@@ -132,8 +129,7 @@ export default function Landing() {
                 </Link>
               ))}
             </div>
-          </section>
-        )}
+        </section>
       </div>
     </AppShell>
   );

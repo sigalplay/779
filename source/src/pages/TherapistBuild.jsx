@@ -1053,7 +1053,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
             </li>
           );
         })}
-        <button type="button" className="meeting-fullscreen-exit" data-exit-board-fullscreen="true" aria-label={t("יציאה ממסך מלא", "Exit full screen")} title={t("יציאה ממסך מלא", "Exit full screen")} onClick={exitFullscreen}>×</button>
+        {fullscreen && <button type="button" className="meeting-fullscreen-exit" data-exit-board-fullscreen="true" aria-label={t("יציאה ממסך מלא", "Exit full screen")} title={t("יציאה ממסך מלא", "Exit full screen")} onClick={exitFullscreen}>×</button>}
         {/* Inside the board so the timer and the toolbox stay visible in full screen. */}
         <div className="meeting-board-overlay">
           <VisualSessionTimer language={language} open={timerOpen} onOpenChange={setTimerOpen} hideTrigger />

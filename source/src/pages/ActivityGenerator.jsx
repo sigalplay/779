@@ -128,7 +128,7 @@ export default function ActivityGenerator() {
         {!signedIn ? (
           <div className="rounded-3xl border border-border/60 bg-card p-6 text-center">
             <p className="mb-4 font-semibold">{t("מחולל הפעילויות פתוח למטפלות מחוברות.", "The activity generator is for signed-in therapists.")}</p>
-            <a href={`/auth?mode=login&redirect=${encodeURIComponent("/therapist/activity-generator")}`} className="inline-flex min-h-11 items-center rounded-full bg-primary px-6 font-semibold text-primary-foreground">{t("התחברות", "Sign in")}</a>
+            <a href={`${language === "en" ? "/en" : ""}/auth?mode=login&redirect=${encodeURIComponent("/therapist/activity-generator")}`} className="inline-flex min-h-11 items-center rounded-full bg-primary px-6 font-semibold text-primary-foreground">{t("התחברות", "Sign in")}</a>
           </div>
         ) : !activity ? (
           <form onSubmit={create} className="space-y-4">

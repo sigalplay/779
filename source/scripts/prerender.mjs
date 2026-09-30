@@ -35,7 +35,7 @@ const STANDALONE_PAGES = [
   ["/parent/routine-boards/", "/en/parent/routine-boards/"],
   ["/parent/daily-routine/", "/en/parent/daily-routine/"],
   ["/parent/daily-sequences/", "/en/parent/daily-sequences/"],
-  ["/parent/card-games-generator/", null],
+  ["/parent/card-games-generator/", "/en/parent/card-games-generator/"],
   ["/parent/school-holidays/", null],
 ];
 
@@ -150,7 +150,7 @@ async function renderPage(page) {
   tab.on("request", (request) => (BLOCKED.test(request.url()) ? request.abort() : request.continue()));
   try {
     await tab.goto(`${origin}${page.address}`, { waitUntil: "networkidle0", timeout: 45000 });
-    await tab.waitForFunction(() => document.querySelector("#root main") && !document.body.innerText.includes("טוענת…"), { timeout: 20000 });
+    await tab.waitForFunction(() => document.querySelector("#root main") && !document.body.innerText.includes("טוענת…") && !document.body.innerText.includes("Loading…"), { timeout: 20000 });
     const result = await tab.evaluate(() => {
       document.querySelectorAll(".analytics-consent, [data-prerender-skip]").forEach((node) => node.remove());
       // Entrance animations start from transparent and slightly moved. A tab in the background may not
@@ -235,11 +235,17 @@ const existsInDist = (url) => {
   return clean === "/" || (fs.existsSync(file) && fs.statSync(file).isFile()) || fs.existsSync(path.join(file, "index.html"));
 };
 const broken = new Map();
-for (const page of pages) {
-  const file = page.address === "/" ? path.join(dist, "index.html") : path.join(dist, ...page.address.split("/").filter(Boolean), "index.html");
+const checkedAddresses = new Set([
+  ...pages.map((page) => page.address),
+  ...STANDALONE_PAGES.flatMap(([he, en]) => [he, en].filter(Boolean)),
+  "/therapist/my-patients/",
+  "/en/therapist/my-patients/",
+]);
+for (const address of checkedAddresses) {
+  const file = address === "/" ? path.join(dist, "index.html") : path.join(dist, ...address.split("/").filter(Boolean), "index.html");
   if (!fs.existsSync(file)) continue;
   for (const [, url] of fs.readFileSync(file, "utf8").matchAll(/\b(?:href|src)="(\/(?!\/)[^"]*)"/g)) {
-    if (!existsInDist(url)) broken.set(url, page.address);
+    if (!existsInDist(url)) broken.set(url, address);
   }
 }
 for (const [url, from] of broken) failures.push(`${from}: link to a missing file ${url}`);
