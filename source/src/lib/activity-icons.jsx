@@ -1331,6 +1331,7 @@ export const ACTIVITY_ICON_SETS = {
   "seed-123": { large: true, hero: "/icon-bank/crafts-new/campfire-blow/hero.webp" },
   "seed-124": { large: true, hero: "/icon-bank/crafts-new/hidden-spider-web/hero.webp" },
   "seed-125": { large: true, hero: "/icon-bank/crafts-new/blow-hair/hero.webp" },
+  "seed-126": { large: true, hero: "/icon-bank/crafts-new/seed-126-window-stickers/hero.webp" },
 };
 
 // The activity bank uses one calm, unified watercolor illustration per card.
