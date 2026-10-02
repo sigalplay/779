@@ -230,3 +230,18 @@
 @keyframes who-pop-hand{0%{transform:scale(.9)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
 @media(prefers-reduced-motion:reduce){.who-player,.who-player.winner,.who-rps-hand.winner{transition:none;animation:none}}
 @media(max-width:600px){.who-player{width:94px;min-height:94px}.who-avatar{font-size:32px}.who-player strong{font-size:13px}.who-word{font-size:30px!important}.who-winner strong{font-size:22px}.who-rps{grid-template-columns:1fr}.who-rps-hand span{font-size:48px}}
+.who-photo{width:56px;height:56px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px #fff}
+.who-player .who-photo{width:64px;height:64px}
+.who-photo-pick{position:relative;display:inline-grid;place-items:center;cursor:pointer}
+.who-photo-pick .who-photo{width:36px;height:36px;box-shadow:0 0 0 2px #fff}
+.who-photo-pick .who-avatar{font-size:26px}
+.who-photo-badge{position:absolute;bottom:-3px;inset-inline-end:-5px;display:grid;width:18px;height:18px;place-items:center;border-radius:50%;background:#fff;color:#40362f;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.who-photo-badge svg{width:11px;height:11px}
+.who-photo-pick:focus-within{outline:3px solid #5b9e7a;outline-offset:2px;border-radius:50%}
+.who-photo-note{flex-basis:100%;margin:0;color:#7a6d63;font-size:13px;text-align:center}
+.who-rps-who{display:flex;align-items:center;gap:8px}
+.who-rps-who select{flex:1;min-width:0}
+.who-rps-who .who-avatar{font-size:34px;line-height:1}
+.who-rps-who .who-photo{width:46px;height:46px}
+.who-winner-photo{width:96px;height:96px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 5px #e0457b,0 0 0 10px #fde3ec;animation:who-pop-hand .6s ease}
+@media(max-width:600px){.who-player .who-photo{width:46px;height:46px}.who-winner-photo{width:80px;height:80px}}
