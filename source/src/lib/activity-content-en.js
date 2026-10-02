@@ -1550,7 +1550,7 @@ const EN = {
     ],
   },
   "seed-126": {
-    description: "Mix glue, dish soap, and color, paint on a clear plastic sleeve, let it dry, and peel off flexible stickers for a window.",
+    description: "Mix glue, dish soap, and color, paint on a clear plastic sleeve, let it dry, and peel off flexible stickers for a window. About 20 minutes of work, plus overnight drying.",
     materials: [
       "White craft glue — 2 tablespoons",
       "Dish soap — 2 drops",
