@@ -27,6 +27,7 @@ export function BoardToolbar({
   onShareWithParents,
   onOpenFarewell,
   onOpenCalm,
+  onOpenWhoStarts,
   onOpenMyImages,
   fullscreen,
   onToggleFullscreen,
@@ -261,6 +262,11 @@ export function BoardToolbar({
             <img className="meeting-tool-image-icon" src="/icon-bank/emotions/calm.webp" alt="" />
             <span className="meeting-action-label-desktop">{t("להירגע", "Calm down")}</span>
             <span className="meeting-action-label-mobile">{t("להירגע", "Calm down")}</span>
+          </button>
+          <button className="meeting-who-starts" type="button" onClick={onOpenWhoStarts} title={t("מי מתחיל? אן דן דינו, הגרלה, הצבעה או אבן נייר ומספריים", "Who starts? Eeny meeny, a draw, a vote, or rock paper scissors")}>
+            <span className="meeting-tool-image-icon meeting-tool-emoji" aria-hidden="true">🎲</span>
+            <span className="meeting-action-label-desktop">{t("מי מתחיל?", "Who starts?")}</span>
+            <span className="meeting-action-label-mobile">{t("מי מתחיל?", "Who starts?")}</span>
           </button>
           <button className="meeting-farewell" type="button" onClick={onOpenFarewell} title={t("פרידה - ספירה לאחור של המפגשים, מה למדנו ותעודת סיום", "Farewell - session countdown, what we learned, and a certificate")}>
             <img className="meeting-tool-image-icon" src="/icon-bank/tools/farewell.webp" alt="" />
