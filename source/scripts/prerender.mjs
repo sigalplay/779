@@ -33,6 +33,7 @@ const PRIVATE_ROUTES = [
 // Plain HTML pages in public/ that are indexed as they are (they carry their own tags).
 const STANDALONE_PAGES = [
   ["/parent/routine-boards/", "/en/parent/routine-boards/"],
+  ["/parent/chores-board/", "/en/parent/chores-board/"],
   ["/parent/daily-routine/", "/en/parent/daily-routine/"],
   ["/parent/daily-sequences/", "/en/parent/daily-sequences/"],
   ["/parent/card-games-generator/", "/en/parent/card-games-generator/"],

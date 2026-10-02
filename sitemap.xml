@@ -2497,6 +2497,20 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://letsplayot.com/parent/routine-boards/"/>
   </url>
   <url>
+    <loc>https://letsplayot.com/parent/chores-board/</loc>
+    <lastmod>2026-10-02</lastmod>
+    <xhtml:link rel="alternate" hreflang="he" href="https://letsplayot.com/parent/chores-board/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://letsplayot.com/en/parent/chores-board/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://letsplayot.com/parent/chores-board/"/>
+  </url>
+  <url>
+    <loc>https://letsplayot.com/en/parent/chores-board/</loc>
+    <lastmod>2026-10-02</lastmod>
+    <xhtml:link rel="alternate" hreflang="he" href="https://letsplayot.com/parent/chores-board/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://letsplayot.com/en/parent/chores-board/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://letsplayot.com/parent/chores-board/"/>
+  </url>
+  <url>
     <loc>https://letsplayot.com/parent/daily-routine/</loc>
     <lastmod>2026-09-25</lastmod>
     <xhtml:link rel="alternate" hreflang="he" href="https://letsplayot.com/parent/daily-routine/"/>
