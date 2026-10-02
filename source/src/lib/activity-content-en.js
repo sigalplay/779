@@ -1549,6 +1549,32 @@ const EN = {
       { boldPrefix: "Oral motor:", text: "Strong, sustained blowing with the lips closed around the straw, while controlling the strength and direction of the air." },
     ],
   },
+  "seed-126": {
+    description: "Mix glue, dish soap, and color, paint on a clear plastic sleeve, let it dry, and peel off flexible stickers for a window. About 20 minutes of work, plus overnight drying.",
+    materials: [
+      "White craft glue — 2 tablespoons",
+      "Dish soap — 2 drops",
+      "Food coloring or tempera paint — a few drops",
+      "Small mixing bowl",
+      "Clear plastic sheet protector",
+      "Paintbrushes",
+      "Drawing or stencil — optional",
+    ],
+    preparation: "Cover the work surface and place the plastic sleeve on a flat surface. If desired, insert a drawing or stencil inside it.",
+    steps: [
+      "Put 2 tablespoons of white craft glue, 2 drops of dish soap, and a few drops of food coloring or tempera paint in a small bowl.",
+      "Mix well with a paintbrush until the mixture is smooth and even.",
+      "Paint on the outside of the plastic sleeve. A drawing or stencil can be placed inside as a guide.",
+      "Leave the sleeve flat to dry overnight, until the picture is dry, translucent, and flexible.",
+      "Gently peel the dry picture from the sleeve and place it directly on the window glass.",
+    ],
+    adaptations: "For younger children, prepare the mixture in advance, use a thick paintbrush and one color, or place a simple stencil with large shapes inside the sleeve.",
+    extensions: "Mix several colors, create a set of shapes or one large picture from several stickers, and rearrange them on the window.",
+    tips: [
+      { boldPrefix: "Safety and cleanup:", text: "Use washable, nontoxic glue and paint with adult supervision. Do not put the mixture in the mouth, and wash hands and brushes afterward." },
+      { boldPrefix: "Drying time:", text: "Wait until the next day and peel only when fully dry. A sticker that still feels sticky or soft needs more time." },
+    ],
+  },
 };
 
 export function activityEnglishContent(activity) { return EN[activity?.id] || null; }

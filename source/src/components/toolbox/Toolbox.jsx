@@ -10,6 +10,7 @@ const DRAG_THRESHOLD = 6;
 const HINT_KEY = "boo_toolbox_scroll_hint";
 const TOOL_WIDTH = 68;
 const LARGE_TOOL_WIDTH = 118;
+const PHONE_LARGE_TOOL_WIDTH = 96;
 const GRID_GAP = 10;
 const GRID_PADDING = 16;
 
@@ -89,16 +90,20 @@ export function Toolbox({ language, tools, storageKey, placement = "middle", hid
   // A second row (such as the signs) is shown whole, in two lines, so a child can point at any of
   // them. Where two lines are not wide enough, it takes as many lines as it needs.
   const gridCount = subTool ? subTool.items.length + 1 : 0;
-  const toolWidth = subTool?.large ? LARGE_TOOL_WIDTH : TOOL_WIDTH;
+  // Large circles are a little smaller on phones (matches toolbox.css).
+  const toolWidth = subTool?.large ? (window.innerWidth <= 760 ? PHONE_LARGE_TOOL_WIDTH : LARGE_TOOL_WIDTH) : TOOL_WIDTH;
   const gridColumns = subTool ? Math.max(1, Math.min(Math.ceil(gridCount / 2), Math.floor((room - (subTool?.large ? 24 : GRID_PADDING) + GRID_GAP) / (toolWidth + GRID_GAP)))) : 0;
   useLayoutEffect(() => {
     const strip = panelRef.current;
     if (!view || !strip) { setPanelStyle(null); return; }
-    const height = strip.getBoundingClientRect().height;
-    const top = Math.min(Math.max(EDGE, position.y + BUTTON_SIZE / 2 - height / 2), window.innerHeight - height - EDGE);
+    // A tall grid (emotions, calm cards) never goes past the top or bottom of the screen: it scrolls instead.
+    const maxHeight = window.innerHeight - EDGE * 2;
+    const height = Math.min(strip.scrollHeight, maxHeight);
+    const top = Math.max(EDGE, Math.min(position.y + BUTTON_SIZE / 2 - height / 2, window.innerHeight - height - EDGE));
+    const fit = { maxHeight, overflowY: "auto" };
     setPanelStyle(opensRight
-      ? { top, left: position.x + BUTTON_SIZE + 4, maxWidth: room }
-      : { top, right: window.innerWidth - position.x + 4, maxWidth: room });
+      ? { top, left: position.x + BUTTON_SIZE + 4, maxWidth: room, ...fit }
+      : { top, right: window.innerWidth - position.x + 4, maxWidth: room, ...fit });
   }, [view, position, opensRight, room]);
 
   // When not every tool fits, the row is cut off with a fade and can be scrolled. The first time,
