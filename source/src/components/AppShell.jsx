@@ -60,7 +60,7 @@ const MENU_GROUPS = [
 ];
 
 // עמודים שאינם חלק מאפליקציית React ונטענים בטעינה מלאה.
-const isStandalonePage = (href) => /^\/(en\/)?(parent|child|therapist)\/(daily-routine|routine-boards|daily-sequences|school-holidays|card-games-generator|my-patients|board|tools)\/$/.test(href);
+const isStandalonePage = (href) => /^\/(en\/)?(parent|child|therapist)\/(daily-routine|routine-boards|chores-board|daily-sequences|school-holidays|card-games-generator|my-patients|board|tools)\/$/.test(href);
 
 const MENU_LINK = "rounded-xl px-3 py-2 text-sm font-semibold transition hover:bg-muted hover:text-foreground";
 const HOME_PATHS = new Set(["/", "/parent", "/therapist"]);
