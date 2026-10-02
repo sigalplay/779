@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Plus, RotateCcw, X } from "lucide-react";
 
-// "Who starts?" on the session board: eeny meeny (אן דן דינו), a draw, a vote, or rock paper scissors.
+// "Who starts?" on the session board: eeny meeny (אן דן דינו), a draw, or rock paper scissors.
 // The players' names are kept per client in this browser.
 const STORAGE_KEY = "boo_who_starts_v1";
 const AVATARS = ["🐶", "🐱", "🐰", "🦊", "🐼", "🐸", "🦁", "🐻"];
@@ -34,7 +34,7 @@ const randomIndex = (length) => Math.floor(Math.random() * length);
 
 export function WhoStartsDialog({ language, patientKey, patientName, onClose }) {
   const t = (he, en) => (language === "en" ? en : he);
-  const [mode, setMode] = useState("rhyme"); // "rhyme" | "draw" | "vote" | "rps"
+  const [mode, setMode] = useState("rhyme"); // "rhyme" | "draw" | "rps"
   const [players, setPlayers] = useState(() => readPlayers(patientKey) || [patientName || t("אני", "Me"), t("המטפלת", "Therapist")]);
   const [editing, setEditing] = useState(false);
 
@@ -50,7 +50,6 @@ export function WhoStartsDialog({ language, patientKey, patientName, onClose }) 
   const modes = [
     ["rhyme", "👆", t("אן דן דינו", "Eeny meeny")],
     ["draw", "🎲", t("הגרלה", "Draw")],
-    ["vote", "✋", t("הצבעה", "Vote")],
     ["rps", "✊", t("אבן, נייר ומספריים", "Rock paper scissors")],
   ];
 
@@ -89,27 +88,19 @@ export function WhoStartsDialog({ language, patientKey, patientName, onClose }) 
         </section>
         {!editing && mode === "rhyme" && <Rhyme key={players.length} t={t} names={names} language={language} />}
         {!editing && mode === "draw" && <Draw key={players.length} t={t} names={names} />}
-        {!editing && mode === "vote" && <Vote key={players.length} t={t} names={names} />}
         {!editing && mode === "rps" && <RockPaperScissors key={players.length} t={t} names={names} />}
       </div>
     </div>
   );
 }
 
-function PlayerCircles({ names, active, winner, votes, onVote }) {
+function PlayerCircles({ names, active, winner }) {
   return (
     <div className="who-circles">
       {names.map((name, i) => (
         <div key={i} className={`who-player${active === i ? " active" : ""}${winner === i ? " winner" : ""}`} style={{ "--who-color": COLORS[i] }}>
           <span className="who-avatar" aria-hidden="true">{AVATARS[i]}</span>
           <strong>{name}</strong>
-          {votes && (
-            <span className="who-votes">
-              <button type="button" aria-label={`-1 ${name}`} disabled={!votes[i]} onClick={() => onVote(i, -1)}>−</button>
-              <output aria-live="polite">{votes[i]}</output>
-              <button type="button" aria-label={`+1 ${name}`} onClick={() => onVote(i, 1)}>+</button>
-            </span>
-          )}
         </div>
       ))}
     </div>
@@ -146,7 +137,7 @@ function Rhyme({ t, names, language }) {
   return (
     <div className="who-stage">
       <PlayerCircles names={names} active={running ? pointAt(step) : -1} winner={done ? winner : -1} />
-      <div className="who-word" aria-live="polite">{running ? words[step] : done ? "" : words.slice(0, 3).join(" ") + "…"}</div>
+      {!done && <div className="who-word" aria-live="polite">{running ? words[step] : words.slice(0, 3).join(" ") + "…"}</div>}
       {done ? <Winner t={t} name={names[winner]} onAgain={go} /> : (
         <div className="choice-board-actions"><button type="button" className="choice-primary" onClick={go} disabled={running}>{t("מתחילים לספור", "Start counting")}</button></div>
       )}
@@ -182,32 +173,6 @@ function Draw({ t, names }) {
       <PlayerCircles names={names} active={spinning ? active : -1} winner={winner} />
       {winner >= 0 ? <Winner t={t} name={names[winner]} onAgain={go} /> : (
         <div className="choice-board-actions"><button type="button" className="choice-primary" onClick={go} disabled={spinning}>🎲 {t("מגרילים!", "Draw!")}</button></div>
-      )}
-    </div>
-  );
-}
-
-// Everyone votes with a hand up; a tie is settled with a draw between the tied players.
-function Vote({ t, names }) {
-  const [votes, setVotes] = useState(() => names.map(() => 0));
-  const [winner, setWinner] = useState(-1);
-  const total = votes.reduce((sum, n) => sum + n, 0);
-  const top = Math.max(...votes);
-  const leaders = votes.map((n, i) => (n === top ? i : -1)).filter((i) => i >= 0);
-
-  function vote(i, delta) { setWinner(-1); setVotes((list) => list.map((n, j) => (j === i ? Math.max(0, n + delta) : n))); }
-  function finish() { setWinner(leaders[randomIndex(leaders.length)]); }
-  function again() { setWinner(-1); setVotes(names.map(() => 0)); }
-  return (
-    <div className="who-stage">
-      <p className="choice-board-hint">{t("כל אחד מצביע על מי שיתחיל. לוחצים + על השם.", "Everyone votes for who starts. Tap + by the name.")}</p>
-      <PlayerCircles names={names} active={-1} winner={winner} votes={votes} onVote={vote} />
-      {winner >= 0 ? <Winner t={t} name={names[winner]} onAgain={again} /> : (
-        <div className="choice-board-actions">
-          <button type="button" className="choice-primary" onClick={finish} disabled={!total}>
-            {total && leaders.length > 1 ? t("תיקו! מגרילים ביניהם 🎲", "A tie! Draw between them 🎲") : t("מי ניצח?", "Who won?")}
-          </button>
-        </div>
       )}
     </div>
   );
