@@ -12,6 +12,7 @@ const ACTIVITY_TITLES_EN = {
   "seed-123": "Blow-Painted Campfire",
   "seed-124": "Hidden Spider Web",
   "seed-125": "Blow-Painted Crazy Hair",
+  "seed-126": "Window Stickers",
   "seed-1": "Make a Colorful Sand Bottle",
   "seed-3": "Treasure Hunt",
   "seed-4": "Drawing and Writing in Foam",
