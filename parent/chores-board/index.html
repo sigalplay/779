@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#fbf7f0"><meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="https://letsplayot.com/parent/chores-board/">
+  <link rel="alternate" hreflang="he" href="https://letsplayot.com/parent/chores-board/">
+  <link rel="alternate" hreflang="en" href="https://letsplayot.com/en/parent/chores-board/">
+  <link rel="alternate" hreflang="x-default" href="https://letsplayot.com/parent/chores-board/">
+  <title>לוח מטלות מאויר לילדים | בואו נשחק</title>
+  <meta name="description" content="בנו לוח מטלות חזותי לילדים: סידור החדר, פינוי כלים, מדיח ועוד. בחרו מטלות, סדרו אותן, הדפיסו או שלחו קישור לסימון ביצוע.">
+  <meta property="og:site_name" content="בואו נשחק"><meta property="og:type" content="website"><meta property="og:locale" content="he_IL">
+  <meta property="og:title" content="לוח מטלות מאויר לילדים"><meta property="og:description" content="בחרו מטלות מאוירות והכינו לוח אישי לילד או לילדה.">
+  <meta property="og:url" content="https://letsplayot.com/parent/chores-board/"><meta property="og:image" content="https://letsplayot.com/share-preview.png">
+  <link rel="icon" href="../../favicon.png"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="../../chores-board.css">
+</head>
+<body>
+  <header><div class="header-inner"><a class="brand" href="/"><img src="../../boo-nesahek-logo-fast.webp" alt="בואו נשחק"><span>בואו נשחק</span></a><a class="back" href="/parent/routine-boards/">לכל לוחות ההתארגנות</a></div></header>
+  <main>
+    <section class="intro"><h1>לוח המטלות שלי</h1><p>בחרו יחד כמה מטלות שמתאימות לגיל ולבית שלכם. אפשר לשנות את הסדר, להוסיף מטלה אישית, להדפיס או לשלוח קישור לסימון כל מטלה שבוצעה.</p></section>
+    <div class="layout">
+      <section class="panel library" aria-labelledby="choose-title"><h2 id="choose-title">בחרו מטלות</h2><p>לחצו על איור כדי להוסיף אותו ללוח או להסיר אותו.</p><div id="choices" class="choices"></div><form id="custom-form" class="custom"><input id="custom-task" maxlength="80" aria-label="שם המטלה האישית" placeholder="מטלה אישית, למשל השקיית עציץ"><button type="submit">הוספה ללוח</button></form></section>
+      <section class="panel" aria-labelledby="board-heading"><h2 id="board-heading">הלוח שלכם</h2><p>סדרו בעזרת החצים וסמנו מטלות שהושלמו.</p><input id="board-title" class="title-input" maxlength="80" aria-label="כותרת הלוח" placeholder="לוח המטלות שלי" value="לוח המטלות שלי"><h2 id="print-title" class="print-title"></h2><div id="board" class="board" aria-live="polite"></div><div class="actions"><button id="print-small" type="button">הדפסה רגילה</button><button id="print-large" type="button">הדפסה גדולה</button><button id="share" class="primary" type="button">שליחת לוח לילד</button></div><div id="status" class="status" role="status"></div></section>
+    </div>
+    <p class="fine">למשימות במטבח התאימו את הציוד לגיל והשגיחו לפי הצורך.</p>
+  </main>
+  <dialog id="share-dialog" aria-labelledby="share-heading"><h2 id="share-heading">קישור ללוח</h2><p>בפתיחת הקישור אפשר לסמן כל מטלה שהושלמה.</p><input id="share-url" readonly aria-label="קישור ללוח"><div class="dialog-actions"><button id="copy" type="button">העתקת קישור</button><button id="close-dialog" type="button">סגירה</button></div><p id="copy-status" class="fine" role="status"></p></dialog>
+  <script src="../../chores-board.js" defer></script><script src="../../standalone-page.js" defer></script>
+</body>
+</html>

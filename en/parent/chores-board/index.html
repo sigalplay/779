@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#fbf7f0"><meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="https://letsplayot.com/en/parent/chores-board/">
+  <link rel="alternate" hreflang="he" href="https://letsplayot.com/parent/chores-board/">
+  <link rel="alternate" hreflang="en" href="https://letsplayot.com/en/parent/chores-board/">
+  <link rel="alternate" hreflang="x-default" href="https://letsplayot.com/parent/chores-board/">
+  <title>Illustrated Chores Board for Kids | Let's Play</title>
+  <meta name="description" content="Make an illustrated chores board for kids. Choose tasks such as tidying a room, clearing dishes and loading the dishwasher, then print or share an interactive link.">
+  <meta property="og:site_name" content="Let's Play"><meta property="og:type" content="website"><meta property="og:locale" content="en_US">
+  <meta property="og:title" content="Illustrated Chores Board for Kids"><meta property="og:description" content="Choose illustrated chores and make a personalized board for your child.">
+  <meta property="og:url" content="https://letsplayot.com/en/parent/chores-board/"><meta property="og:image" content="https://letsplayot.com/share-preview.png">
+  <link rel="icon" href="../../../favicon.png"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="../../../chores-board.css">
+</head>
+<body>
+  <header><div class="header-inner"><a class="brand" href="/en/"><img src="../../../boo-nesahek-logo-fast.webp" alt="Let's Play"><span>Let's Play</span></a><a class="back" href="/en/parent/routine-boards/">All routine boards</a></div></header>
+  <main>
+    <section class="intro"><h1>My Chores Board</h1><p>Choose a few chores that suit your child and home. Reorder them, add a custom task, print the board, or share a link where each completed task can be checked off.</p></section>
+    <div class="layout">
+      <section class="panel library" aria-labelledby="choose-title"><h2 id="choose-title">Choose chores</h2><p>Tap an illustration to add or remove it.</p><div id="choices" class="choices"></div><form id="custom-form" class="custom"><input id="custom-task" maxlength="80" aria-label="Custom chore name" placeholder="Custom chore, such as watering a plant"><button type="submit">Add to board</button></form></section>
+      <section class="panel" aria-labelledby="board-heading"><h2 id="board-heading">Your board</h2><p>Use the arrows to reorder and check off completed chores.</p><input id="board-title" class="title-input" maxlength="80" aria-label="Board title" placeholder="My Chores Board" value="My Chores Board"><h2 id="print-title" class="print-title"></h2><div id="board" class="board" aria-live="polite"></div><div class="actions"><button id="print-small" type="button">Print</button><button id="print-large" type="button">Large print</button><button id="share" class="primary" type="button">Share board</button></div><div id="status" class="status" role="status"></div></section>
+    </div>
+    <p class="fine">For kitchen chores, choose age-appropriate items and supervise as needed.</p>
+  </main>
+  <dialog id="share-dialog" aria-labelledby="share-heading"><h2 id="share-heading">Board link</h2><p>Each completed chore can be checked off in the shared board.</p><input id="share-url" readonly aria-label="Board link"><div class="dialog-actions"><button id="copy" type="button">Copy link</button><button id="close-dialog" type="button">Close</button></div><p id="copy-status" class="fine" role="status"></p></dialog>
+  <script src="../../../chores-board.js" defer></script><script src="../../../standalone-page.js" defer></script>
+</body>
+</html>
