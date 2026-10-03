@@ -190,7 +190,7 @@
 .who-card{width:min(760px,100%)}
 .who-modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .who-modes button{display:grid;justify-items:center;gap:2px;min-height:64px;padding:6px 4px;border:2px solid #ebe3da;border-radius:18px;background:#fff;color:#40362f;font:700 14px/1.2 Rubik,Arial,sans-serif;cursor:pointer}
-.who-modes button span{font-size:24px;line-height:1}
+.who-modes button img{width:42px;height:42px;object-fit:contain;mix-blend-mode:multiply}
 .who-modes button.on{border-color:#5f9f7c;background:#eef8f2}
 .who-players{display:flex;justify-content:center}
 .who-edit-open{border:0;background:none;color:#5f7f6c;font:700 14px Rubik,Arial,sans-serif;text-decoration:underline;cursor:pointer}
@@ -206,7 +206,7 @@
 .who-circles{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
 .who-player{display:grid;justify-items:center;align-content:center;gap:4px;width:118px;min-height:118px;padding:10px 6px;border:4px solid transparent;border-radius:50%;aspect-ratio:1;background:var(--who-color);text-align:center;transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}
 .who-player strong{max-width:100%;overflow:hidden;font-size:15px;line-height:1.15;text-overflow:ellipsis;white-space:nowrap}
-.who-avatar{font-size:40px;line-height:1}
+.who-avatar{width:68px;height:68px;object-fit:contain;mix-blend-mode:multiply}
 .who-player.active{border-color:#40362f;transform:scale(1.12)}
 .who-player.winner{border-color:#e0457b;transform:scale(1.18);box-shadow:0 0 0 6px #fde3ec;animation:who-pop .6s ease}
 .who-word{min-height:48px;margin:0;font-size:38px!important;line-height:1.3!important;font-weight:800;text-align:center;color:#40362f}
@@ -220,28 +220,33 @@
 .who-rps-side select{min-height:40px;border:0;border-radius:999px;padding:4px 12px;background:#fff;color:#40362f;font:800 16px Rubik,Arial,sans-serif}
 .who-rps-picks{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .who-rps-picks button{display:grid;justify-items:center;gap:2px;padding:8px 2px;border:0;border-radius:16px;background:#fff;color:#40362f;font:700 13px Rubik,Arial,sans-serif;cursor:pointer}
-.who-rps-picks button span{font-size:34px;line-height:1.1}
+.who-rps-picks button img{width:54px;height:54px;object-fit:contain}
 .who-rps-picks .who-rps-random{grid-column:1/-1;font-size:13px;padding:6px}
 .who-rps-hand{display:grid;justify-items:center;gap:4px;padding:10px;border:4px solid transparent;border-radius:20px;background:#fff;font-weight:800;font-size:17px}
-.who-rps-hand span{font-size:64px;line-height:1.1}
+.who-rps-hand img{width:110px;height:110px;object-fit:contain}
 .who-rps-hand.winner{border-color:#e0457b;animation:who-pop .6s ease}
 @keyframes who-pop{0%{transform:scale(.9)}60%{transform:scale(1.25)}100%{transform:scale(1.18)}}
 .who-rps-hand.winner{animation-name:who-pop-hand}
 @keyframes who-pop-hand{0%{transform:scale(.9)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
 @media(prefers-reduced-motion:reduce){.who-player,.who-player.winner,.who-rps-hand.winner{transition:none;animation:none}}
-@media(max-width:600px){.who-player{width:94px;min-height:94px}.who-avatar{font-size:32px}.who-player strong{font-size:13px}.who-word{font-size:30px!important}.who-winner strong{font-size:22px}.who-rps{grid-template-columns:1fr}.who-rps-hand span{font-size:48px}}
+@media(max-width:600px){.who-player{width:94px;min-height:94px}.who-avatar{width:50px;height:50px}.who-player strong{font-size:13px}.who-word{font-size:30px!important}.who-winner strong{font-size:22px}.who-rps{grid-template-columns:1fr}.who-rps-hand img{width:84px;height:84px}}
 .who-photo{width:56px;height:56px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px #fff}
 .who-player .who-photo{width:64px;height:64px}
 .who-photo-pick{position:relative;display:inline-grid;place-items:center;cursor:pointer}
 .who-photo-pick .who-photo{width:36px;height:36px;box-shadow:0 0 0 2px #fff}
-.who-photo-pick .who-avatar{font-size:26px}
+.who-photo-pick .who-avatar{width:34px;height:34px}
 .who-photo-badge{position:absolute;bottom:-3px;inset-inline-end:-5px;display:grid;width:18px;height:18px;place-items:center;border-radius:50%;background:#fff;color:#40362f;box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .who-photo-badge svg{width:11px;height:11px}
 .who-photo-pick:focus-within{outline:3px solid #5b9e7a;outline-offset:2px;border-radius:50%}
 .who-photo-note{flex-basis:100%;margin:0;color:#7a6d63;font-size:13px;text-align:center}
 .who-rps-who{display:flex;align-items:center;gap:8px}
 .who-rps-who select{flex:1;min-width:0}
-.who-rps-who .who-avatar{font-size:34px;line-height:1}
+.who-rps-who .who-avatar{width:44px;height:44px}
 .who-rps-who .who-photo{width:46px;height:46px}
 .who-winner-photo{width:96px;height:96px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 5px #e0457b,0 0 0 10px #fde3ec;animation:who-pop-hand .6s ease}
 @media(max-width:600px){.who-player .who-photo{width:46px;height:46px}.who-winner-photo{width:80px;height:80px}}
+.who-button-art{width:26px;height:26px;margin-inline-end:6px;object-fit:contain;vertical-align:middle;mix-blend-mode:multiply}
+.who-tie-art{width:96px;height:96px;object-fit:contain}
+.who-rps-picks .who-rps-random{display:flex;align-items:center;justify-content:center;gap:2px}
+.who-rps-picks .who-rps-random img{width:26px;height:26px}
+.who-rps-picks img,.who-rps-hand img,.who-tie-art{mix-blend-mode:multiply}

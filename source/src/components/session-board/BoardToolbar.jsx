@@ -264,7 +264,7 @@ export function BoardToolbar({
             <span className="meeting-action-label-mobile">{t("להירגע", "Calm down")}</span>
           </button>
           <button className="meeting-who-starts" type="button" onClick={onOpenWhoStarts} title={t("מי מתחיל? אן דן דינו, הגרלה או אבן נייר ומספריים", "Who starts? Eeny meeny, a draw, or rock paper scissors")}>
-            <span className="meeting-tool-image-icon meeting-tool-emoji" aria-hidden="true">🎲</span>
+            <img className="meeting-tool-image-icon" src="/icon-bank/who-starts/tool.webp" alt="" />
             <span className="meeting-action-label-desktop">{t("מי מתחיל?", "Who starts?")}</span>
             <span className="meeting-action-label-mobile">{t("מי מתחיל?", "Who starts?")}</span>
           </button>

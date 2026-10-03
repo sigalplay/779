@@ -89,7 +89,7 @@ export function BoardToolbox({ language, pen, onOpenTimer, onAddSign, onOpenChoi
         },
       ],
     },
-    { id: "who-starts", color: "#f8df9a", icon: <span className="toolbox-emoji" aria-hidden="true">🎲</span>, label: t("מי מתחיל?", "Who starts?"), onSelect: () => { pen.setEnabled(false); onOpenWhoStarts(); } },
+    { id: "who-starts", color: "#f8df9a", image: "/icon-bank/who-starts/tool.webp", label: t("מי מתחיל?", "Who starts?"), onSelect: () => { pen.setEnabled(false); onOpenWhoStarts(); } },
     { id: "first-then", color: "#e6dcf5", image: "/icon-bank/tools/first-then.webp", label: t("קודם-אחר כך", "First-then"), onSelect: () => { pen.setEnabled(false); onOpenChoice("firstThen"); } },
     {
       id: "motor",

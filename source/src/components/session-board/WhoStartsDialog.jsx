@@ -6,15 +6,18 @@ import { Camera, ImageOff, Plus, RotateCcw, X } from "lucide-react";
 const STORAGE_KEY = "boo_who_starts_v1";
 const PHOTOS_KEY = "boo_who_starts_photos_v1";
 const PHOTO_SIZE = 192;
+const ART = "/icon-bank/who-starts/";
+const ANIMALS = ["dog", "cat", "rabbit", "fox", "panda", "frog", "lion", "bear"].map((id) => `${ART}${id}.webp`);
+// Shown next to the names in the rock paper scissors menus, where pictures cannot go.
 const AVATARS = ["🐶", "🐱", "🐰", "🦊", "🐼", "🐸", "🦁", "🐻"];
 const COLORS = ["#f9d0de", "#bcdcf2", "#bfe6d1", "#fbe7a1", "#e6dcf5", "#f6c3b5", "#d8ecc6", "#f8df9a"];
 const MAX_PLAYERS = 8;
 const RHYME_HE = ["אֶן", "דֶּן", "דִּינוֹ", "סָק", "לָה", "מִינוֹ", "סָק", "לָה", "טָקָה", "אֶן", "דֶּן", "דּוֹ"];
 const RHYME_EN = ["Eeny", "meeny", "miny", "moe", "catch", "a", "tiger", "by", "the", "toe"];
 const HANDS = [
-  { id: "rock", emoji: "✊", he: "אבן", en: "Rock", beats: "scissors" },
-  { id: "paper", emoji: "✋", he: "נייר", en: "Paper", beats: "rock" },
-  { id: "scissors", emoji: "✌️", he: "מספריים", en: "Scissors", beats: "paper" },
+  { id: "rock", image: `${ART}rock.webp`, he: "אבן", en: "Rock", beats: "scissors" },
+  { id: "paper", image: `${ART}paper.webp`, he: "נייר", en: "Paper", beats: "rock" },
+  { id: "scissors", image: `${ART}scissors.webp`, he: "מספריים", en: "Scissors", beats: "paper" },
 ];
 
 function readPlayers(patientKey) {
@@ -66,7 +69,7 @@ function photoFromFile(file) {
 }
 
 function Avatar({ photo, index }) {
-  return photo ? <img className="who-photo" src={photo} alt="" /> : <span className="who-avatar" aria-hidden="true">{AVATARS[index]}</span>;
+  return photo ? <img className="who-photo" src={photo} alt="" /> : <img className="who-avatar" src={ANIMALS[index]} alt="" />;
 }
 
 const randomIndex = (length) => Math.floor(Math.random() * length);
@@ -101,9 +104,9 @@ export function WhoStartsDialog({ language, patientKey, patientName, onClose }) 
 
   const names = players.map((name, i) => name.trim() || t(`שחקן ${i + 1}`, `Player ${i + 1}`));
   const modes = [
-    ["rhyme", "👆", t("אן דן דינו", "Eeny meeny")],
-    ["draw", "🎲", t("הגרלה", "Draw")],
-    ["rps", "✊", t("אבן, נייר ומספריים", "Rock paper scissors")],
+    ["rhyme", `${ART}rhyme.webp`, t("אן דן דינו", "Eeny meeny")],
+    ["draw", `${ART}draw.webp`, t("הגרלה", "Draw")],
+    ["rps", `${ART}rock.webp`, t("אבן, נייר ומספריים", "Rock paper scissors")],
   ];
 
   return (
@@ -112,9 +115,9 @@ export function WhoStartsDialog({ language, patientKey, patientName, onClose }) 
         <button type="button" className="choice-board-close" onClick={onClose} aria-label={t("סגירה", "Close")}><X /></button>
         <h2>{t("מי מתחיל?", "Who starts?")}</h2>
         <div className="who-modes" role="tablist">
-          {modes.map(([id, emoji, label]) => (
+          {modes.map(([id, image, label]) => (
             <button key={id} type="button" role="tab" aria-selected={mode === id} className={mode === id ? "on" : ""} onClick={() => setMode(id)}>
-              <span aria-hidden="true">{emoji}</span>{label}
+              <img src={image} alt="" />{label}
             </button>
           ))}
         </div>
@@ -231,7 +234,7 @@ function Draw({ t, names, photos }) {
     <div className="who-stage">
       <PlayerCircles names={names} photos={photos} active={spinning ? active : -1} winner={winner} />
       {winner >= 0 ? <Winner t={t} name={names[winner]} onAgain={go} /> : (
-        <div className="choice-board-actions"><button type="button" className="choice-primary" onClick={go} disabled={spinning}>🎲 {t("מגרילים!", "Draw!")}</button></div>
+        <div className="choice-board-actions"><button type="button" className="choice-primary" onClick={go} disabled={spinning}><img className="who-button-art" src={`${ART}draw.webp`} alt="" />{t("מגרילים!", "Draw!")}</button></div>
       )}
     </div>
   );
@@ -268,17 +271,17 @@ function RockPaperScissors({ t, names, photos }) {
             </select>
             </div>
             {revealed ? (
-              <div className={`who-rps-hand${result === side ? " winner" : ""}`}><span aria-hidden="true">{(side ? b : a).emoji}</span>{t((side ? b : a).he, (side ? b : a).en)}</div>
+              <div className={`who-rps-hand${result === side ? " winner" : ""}`}><img src={(side ? b : a).image} alt="" />{t((side ? b : a).he, (side ? b : a).en)}</div>
             ) : picks[side] ? (
-              <div className="who-rps-hand hidden"><span aria-hidden="true">🤫</span>{t("בחרתי!", "Picked!")}</div>
+              <div className="who-rps-hand hidden"><img src={`${ART}secret.webp`} alt="" />{t("בחרתי!", "Picked!")}</div>
             ) : (
               <div className="who-rps-picks">
                 {HANDS.map((hand) => (
                   <button key={hand.id} type="button" onClick={() => pick(side, hand.id)} disabled={count >= 0}>
-                    <span aria-hidden="true">{hand.emoji}</span>{t(hand.he, hand.en)}
+                    <img src={hand.image} alt="" />{t(hand.he, hand.en)}
                   </button>
                 ))}
-                <button type="button" className="who-rps-random" onClick={() => pick(side, HANDS[randomIndex(3)].id)} disabled={count >= 0}>🎲 {t("אקראי", "Random")}</button>
+                <button type="button" className="who-rps-random" onClick={() => pick(side, HANDS[randomIndex(3)].id)} disabled={count >= 0}><img className="who-button-art" src={`${ART}draw.webp`} alt="" />{t("אקראי", "Random")}</button>
               </div>
             )}
           </div>
@@ -286,7 +289,7 @@ function RockPaperScissors({ t, names, photos }) {
       </div>
       {count >= 0 && !revealed && <div className="who-word" aria-live="polite">{sayings[count]}</div>}
       {revealed ? (result < 0 ? (
-        <div className="who-winner" role="status"><span aria-hidden="true">🤝</span><strong>{t("תיקו! עוד פעם", "A tie! Once more")}</strong><button type="button" className="who-again" onClick={again}><RotateCcw aria-hidden="true" />{t("שוב", "Again")}</button></div>
+        <div className="who-winner" role="status"><img className="who-tie-art" src={`${ART}tie.webp`} alt="" /><strong>{t("תיקו! עוד פעם", "A tie! Once more")}</strong><button type="button" className="who-again" onClick={again}><RotateCcw aria-hidden="true" />{t("שוב", "Again")}</button></div>
       ) : <Winner t={t} name={names[sides[result]]} photo={photos[sides[result]]} onAgain={again} />) : count < 0 && (
         <div className="choice-board-actions">
           <button type="button" className="choice-primary" disabled={!picks[0] || !picks[1]} onClick={() => setCount(0)}>{t("אבן, נייר ומספריים!", "Rock, paper, scissors!")}</button>
