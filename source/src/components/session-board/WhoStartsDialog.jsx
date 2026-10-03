@@ -13,7 +13,7 @@ const ANIMALS = ["dog", "cat", "rabbit", "fox", "panda", "frog", "lion", "bear"]
 const AVATARS = ["🐶", "🐱", "🐰", "🦊", "🐼", "🐸", "🦁", "🐻"];
 const COLORS = ["#f9d0de", "#bcdcf2", "#bfe6d1", "#fbe7a1", "#e6dcf5", "#f6c3b5", "#d8ecc6", "#f8df9a"];
 const MAX_PLAYERS = 8;
-const RHYME_HE = ["אֶן", "דֶּן", "דִּינוֹ", "סָק", "לָה", "מִינוֹ", "סָק", "לָה", "טָקָה", "אֶן", "דֶּן", "דּוֹ"];
+const RHYME_HE = ["אֶן", "דֶּן", "דִּינוֹ", "סוֹף", "עַל", "הַקְּטִינוֹ", "סוֹף", "עַל", "הַקְּטִי", "קְטוֹ", "אֶלִיק", "בֶּלִיק", "בּוּם"];
 const RHYME_EN = ["Eeny", "meeny", "miny", "moe", "catch", "a", "tiger", "by", "the", "toe"];
 const HANDS = [
   { id: "rock", image: `${ART}rock.webp`, he: "אבן", en: "Rock", beats: "scissors" },
