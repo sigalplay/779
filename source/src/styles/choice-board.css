@@ -212,6 +212,7 @@
 .who-word{min-height:48px;margin:0;font-size:38px!important;line-height:1.3!important;font-weight:800;text-align:center;color:#40362f}
 .who-winner{display:grid;justify-items:center;gap:6px;text-align:center}
 .who-winner>span{font-size:44px;line-height:1}
+.who-celebrate{width:84px;height:84px;object-fit:contain;mix-blend-mode:multiply}
 .who-winner strong{font-size:28px}
 .who-again{display:inline-flex;align-items:center;gap:6px;min-height:42px;padding:6px 18px;border:2px solid #5f9f7c;border-radius:999px;background:#fff;color:#2f6a45;font:800 15px Rubik,Arial,sans-serif;cursor:pointer}
 .who-again svg{width:16px;height:16px}
@@ -250,7 +251,6 @@
 .who-rps-picks .who-rps-random{display:flex;align-items:center;justify-content:center;gap:2px}
 .who-rps-picks .who-rps-random img{width:26px;height:26px}
 .who-rps-picks img,.who-rps-hand img,.who-tie-art{mix-blend-mode:multiply}
-.who-mode-emoji{display:block;height:42px;font-size:32px;line-height:42px}
 .who-player.with-extra{width:124px;aspect-ratio:auto;border-radius:28px}
 .who-player-score.out{opacity:.35}
 .who-die{display:inline-grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:6%;width:96px;height:96px;padding:14px;border-radius:20px;background:#fff;box-shadow:inset 0 0 0 3px #f1d6df,0 6px 14px rgba(64,54,47,.12)}
@@ -265,7 +265,7 @@
 .who-score>span{display:flex;align-items:center;gap:6px;font-size:15px}
 .who-score .who-avatar,.who-score .who-photo{width:34px;height:34px}
 .who-score output{min-width:24px;font:800 24px Rubik,Arial,sans-serif;text-align:center}
-.who-computer{font-size:28px;line-height:1}
+.who-computer{width:38px;height:38px;object-fit:contain;mix-blend-mode:multiply}
 .who-computer-hand{display:grid;justify-items:center;gap:6px;min-width:min(260px,100%);padding:14px 24px;border-radius:24px;background:#e6f0fb}
 .who-computer-hand img{width:130px;height:130px;object-fit:contain;mix-blend-mode:multiply}
 .who-computer-hand strong{font-size:22px;text-align:center}
@@ -279,6 +279,8 @@
 .who-ideas{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;width:100%}
 .who-ideas button{display:flex;align-items:center;gap:10px;padding:10px 12px;border:2px solid #ebe3da;border-radius:16px;background:#fff;color:#40362f;font:700 14px/1.3 Rubik,Arial,sans-serif;text-align:start;cursor:pointer}
 .who-ideas button span{font-size:28px;line-height:1}
+.who-ideas button img{width:40px;height:40px;flex:none;object-fit:contain;mix-blend-mode:multiply}
 .who-ideas button.on{border-color:#e0457b;background:#fdeef3;box-shadow:0 0 0 4px #fde3ec}
 @media(prefers-reduced-motion:reduce){.who-die.rolling,.who-computer-hand img.shake{animation:none}}
-@media(max-width:600px){.who-player.with-extra{width:104px}.who-die{width:80px;height:80px;padding:12px}.who-die.small{width:34px;height:34px;padding:5px}.who-computer-hand img{width:104px;height:104px}.who-computer-hand strong{font-size:19px}.who-mode-emoji{height:34px;font-size:26px;line-height:34px}.who-ideas{grid-template-columns:1fr}}
+@media(max-width:600px){.who-player.with-extra{width:104px}.who-die{width:80px;height:80px;padding:12px}.who-die.small{width:34px;height:34px;padding:5px}.who-computer-hand img{width:104px;height:104px}.who-computer-hand strong{font-size:19px}.who-ideas{grid-template-columns:1fr}}
+.who-ideas button span{flex:none;width:40px;text-align:center}

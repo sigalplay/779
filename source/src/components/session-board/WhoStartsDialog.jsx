@@ -109,8 +109,8 @@ export function WhoStartsDialog({ language, patientKey, patientName, onClose }) 
     ["draw", `${ART}tool.webp`, t("הגרלה", "Draw")],
     ["dice", `${ART}draw.webp`, t("קובייה", "Dice")],
     ["rps", `${ART}rock.webp`, t("אבן, נייר ומספריים", "Rock paper scissors")],
-    ["computer", null, t("מול המחשב", "Vs. the computer"), "🤖"],
-    ["ideas", null, t("רעיונות", "Ideas"), "💡"],
+    ["computer", `${ART}computer.webp`, t("מול המחשב", "Vs. the computer")],
+    ["ideas", `${ART}ideas.webp`, t("רעיונות", "Ideas")],
   ];
 
   return (
@@ -119,9 +119,9 @@ export function WhoStartsDialog({ language, patientKey, patientName, onClose }) 
         <button type="button" className="choice-board-close" onClick={onClose} aria-label={t("סגירה", "Close")}><X /></button>
         <h2>{t("מי מתחיל?", "Who starts?")}</h2>
         <div className="who-modes" role="tablist">
-          {modes.map(([id, image, label, emoji]) => (
+          {modes.map(([id, image, label]) => (
             <button key={id} type="button" role="tab" aria-selected={mode === id} className={mode === id ? "on" : ""} onClick={() => setMode(id)}>
-              {image ? <img src={image} alt="" /> : <span className="who-mode-emoji" aria-hidden="true">{emoji}</span>}{label}
+              <img src={image} alt="" />{label}
             </button>
           ))}
         </div>
@@ -180,7 +180,7 @@ function PlayerCircles({ names, photos, active, winner, extra }) {
 function Winner({ t, name, photo, onAgain }) {
   return (
     <div className="who-winner" role="status">
-      {photo ? <img className="who-winner-photo" src={photo} alt="" /> : <span aria-hidden="true">🎉</span>}
+      {photo ? <img className="who-winner-photo" src={photo} alt="" /> : <img className="who-celebrate" src={`${ART}celebrate.webp`} alt="" />}
       <strong>{t(`התור של ${name}!`, `${name} goes first!`)}</strong>
       <button type="button" className="who-again" onClick={onAgain}><RotateCcw aria-hidden="true" />{t("שוב", "Again")}</button>
     </div>
@@ -388,7 +388,7 @@ function VsComputer({ t, name, photo }) {
       <div className="who-score" aria-label={t("ניקוד", "Score")}>
         <span><Avatar photo={photo} index={0} /><strong>{name}</strong><output>{score[0]}</output></span>
         <b aria-hidden="true">:</b>
-        <span><span className="who-computer" aria-hidden="true">🤖</span><strong>{t("המחשב", "Computer")}</strong><output>{score[1]}</output></span>
+        <span><img className="who-computer" src={`${ART}computer.webp`} alt="" /><strong>{t("המחשב", "Computer")}</strong><output>{score[1]}</output></span>
       </div>
       {game === "rps" ? <RpsComputer t={t} onResult={addPoint} /> : <DiceComputer t={t} name={name} onResult={addPoint} />}
     </div>
@@ -398,7 +398,7 @@ function VsComputer({ t, name, photo }) {
 function ComputerResult({ t, winner, onAgain }) {
   return (
     <div className="who-winner" role="status">
-      {winner === 0 ? <span aria-hidden="true">🎉</span> : winner === 1 ? <span aria-hidden="true">🤖</span> : <img className="who-tie-art" src={`${ART}tie.webp`} alt="" />}
+      {winner === 0 ? <img className="who-celebrate" src={`${ART}celebrate.webp`} alt="" /> : winner === 1 ? <img className="who-celebrate" src={`${ART}computer.webp`} alt="" /> : <img className="who-tie-art" src={`${ART}tie.webp`} alt="" />}
       <strong>{winner === 0 ? t("ניצחת!", "You win!") : winner === 1 ? t("המחשב ניצח", "The computer wins") : t("תיקו!", "A tie!")}</strong>
       <button type="button" className="who-again" onClick={onAgain}><RotateCcw aria-hidden="true" />{t("עוד סיבוב", "Another round")}</button>
     </div>
@@ -482,15 +482,15 @@ function DiceComputer({ t, name, onResult }) {
   );
 }
 
-// Ways to decide who starts away from the screen, with a random pick.
+// Ways to decide who starts away from the screen, with a random pick. Each has a picture or an emoji.
 const IDEAS = [
-  ["🎂", "הכי צעיר מתחיל", "The youngest starts"],
+  [`${ART}cake.webp`, "הכי צעיר מתחיל", "The youngest starts"],
   ["👀", "תחרות מבטים: מי שממצמץ ראשון, השני מתחיל", "Staring contest: whoever blinks first, the other starts"],
-  ["🔴", "מי שמוצא ראשון משהו אדום בחדר", "First to find something red in the room"],
-  ["🦩", "עומדים על רגל אחת: מי שמחזיק הכי הרבה זמן", "Stand on one foot: whoever lasts longest"],
+  [`${ART}find-red.webp`, "מי שמוצא ראשון משהו אדום בחדר", "First to find something red in the room"],
+  [`${ART}flamingo.webp`, "עומדים על רגל אחת: מי שמחזיק הכי הרבה זמן", "Stand on one foot: whoever lasts longest"],
   ["👃", "מי שנוגע ראשון באף כשאומרים \"עכשיו!\"", "First to touch their nose when someone says \"now!\""],
-  ["🏀", "מי שקולע ראשון כדור לסל", "First to throw a ball into the basket"],
-  ["🧱", "מי שבונה ראשון מגדל של 3 קוביות", "First to build a tower of 3 blocks"],
+  [`${ART}ball-basket.webp`, "מי שקולע ראשון כדור לסל", "First to throw a ball into the basket"],
+  [`${ART}tower.webp`, "מי שבונה ראשון מגדל של 3 קוביות", "First to build a tower of 3 blocks"],
   ["🔢", "מנחשים מספר מ־1 עד 10: הכי קרוב מתחיל", "Guess a number from 1 to 10: the closest starts"],
   ["🤫", "משחק השקט: מי שמחזיק הכי הרבה בשקט", "The quiet game: whoever stays quiet longest"],
   ["🐸", "מי שקופץ ראשון 5 קפיצות צפרדע", "First to do 5 frog jumps"],
@@ -509,11 +509,11 @@ function Ideas({ t }) {
   return (
     <div className="who-stage">
       <div className="choice-board-hint">{t("רעיונות להחליט מי מתחיל, בלי מסך. בחרו אחד או הגרילו.", "Ideas for deciding who starts, away from the screen. Pick one or draw one.")}</div>
-      <div className="choice-board-actions"><button type="button" className="choice-primary" onClick={surprise}>💡 {t("רעיון אקראי", "A random idea")}</button></div>
+      <div className="choice-board-actions"><button type="button" className="choice-primary" onClick={surprise}>{t("רעיון אקראי", "A random idea")}</button></div>
       <div className="who-ideas">
         {IDEAS.map(([emoji, he, en], i) => (
           <button key={i} ref={(el) => { refs.current[i] = el; }} type="button" className={picked === i ? "on" : ""} aria-pressed={picked === i} onClick={() => setPicked(i)}>
-            <span aria-hidden="true">{emoji}</span>{t(he, en)}
+            {emoji.startsWith("/") ? <img src={emoji} alt="" /> : <span aria-hidden="true">{emoji}</span>}{t(he, en)}
           </button>
         ))}
       </div>
