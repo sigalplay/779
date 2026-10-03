@@ -266,10 +266,6 @@
 .who-score .who-avatar,.who-score .who-photo{width:34px;height:34px}
 .who-score output{min-width:24px;font:800 24px Rubik,Arial,sans-serif;text-align:center}
 .who-computer{width:38px;height:38px;object-fit:contain;mix-blend-mode:multiply}
-.who-computer-hand{display:grid;justify-items:center;gap:6px;min-width:min(260px,100%);padding:14px 24px;border-radius:24px;background:#e6f0fb}
-.who-computer-hand img{width:130px;height:130px;object-fit:contain;mix-blend-mode:multiply}
-.who-computer-hand strong{font-size:22px;text-align:center}
-.who-computer-hand img.shake{animation:who-shake .375s ease-in-out infinite}
 @keyframes who-shake{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
 .who-rps-mine{width:min(420px,100%)}
 .who-dice-duel{display:flex;gap:32px}
@@ -281,6 +277,16 @@
 .who-ideas button span{font-size:28px;line-height:1}
 .who-ideas button img{width:40px;height:40px;flex:none;object-fit:contain;mix-blend-mode:multiply}
 .who-ideas button.on{border-color:#e0457b;background:#fdeef3;box-shadow:0 0 0 4px #fde3ec}
-@media(prefers-reduced-motion:reduce){.who-die.rolling,.who-computer-hand img.shake{animation:none}}
-@media(max-width:600px){.who-player.with-extra{width:104px}.who-die{width:80px;height:80px;padding:12px}.who-die.small{width:34px;height:34px;padding:5px}.who-computer-hand img{width:104px;height:104px}.who-computer-hand strong{font-size:19px}.who-ideas{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.who-die.rolling{animation:none}}
+@media(max-width:600px){.who-player.with-extra{width:104px}.who-die{width:80px;height:80px;padding:12px}.who-die.small{width:34px;height:34px;padding:5px}.who-ideas{grid-template-columns:1fr}}
 .who-ideas button span{flex:none;width:40px;text-align:center}
+.who-duel{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:min(520px,100%)}
+.who-duel-side{display:grid;justify-items:center;gap:6px;padding:12px;border:4px solid transparent;border-radius:24px;background:#e6f0fb}
+.who-duel-side:first-child{background:#f9d0de}
+.who-duel-side>.who-avatar,.who-duel-side>.who-photo,.who-duel-side>.who-computer{width:44px;height:44px}
+.who-duel-side>img:not(.who-avatar):not(.who-photo):not(.who-computer){width:110px;height:110px;object-fit:contain;mix-blend-mode:multiply}
+.who-duel-side>img.shake{animation:who-shake .375s ease-in-out infinite}
+.who-duel-side strong{font-size:17px;text-align:center}
+.who-duel-side.winner{border-color:#e0457b;box-shadow:0 0 0 5px #fde3ec}
+@media(prefers-reduced-motion:reduce){.who-duel-side>img.shake{animation:none}}
+@media(max-width:600px){.who-duel-side>img:not(.who-avatar):not(.who-photo):not(.who-computer){width:84px;height:84px}}
