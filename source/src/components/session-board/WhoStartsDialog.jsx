@@ -13,7 +13,7 @@ const ANIMALS = ["dog", "cat", "rabbit", "fox", "panda", "frog", "lion", "bear"]
 const AVATARS = ["🐶", "🐱", "🐰", "🦊", "🐼", "🐸", "🦁", "🐻"];
 const COLORS = ["#f9d0de", "#bcdcf2", "#bfe6d1", "#fbe7a1", "#e6dcf5", "#f6c3b5", "#d8ecc6", "#f8df9a"];
 const MAX_PLAYERS = 8;
-const RHYME_HE = ["אֶן", "דֶּן", "דִּינוֹ", "סָק", "לָה", "מִינוֹ", "סָק", "לָה", "טָקָה", "אֶן", "דֶּן", "דּוֹ"];
+const RHYME_HE = ["אֶן", "דֶּן", "דִּינוֹ", "סוֹף", "עַל", "הַקְּטִינוֹ", "סוֹף", "עַל", "הַקְּטִי", "קְטוֹ", "אֶלִיק", "בֶּלִיק", "בּוּם"];
 const RHYME_EN = ["Eeny", "meeny", "miny", "moe", "catch", "a", "tiger", "by", "the", "toe"];
 const HANDS = [
   { id: "rock", image: `${ART}rock.webp`, he: "אבן", en: "Rock", beats: "scissors" },
@@ -390,7 +390,7 @@ function VsComputer({ t, name, photo }) {
         <b aria-hidden="true">:</b>
         <span><img className="who-computer" src={`${ART}computer.webp`} alt="" /><strong>{t("המחשב", "Computer")}</strong><output>{score[1]}</output></span>
       </div>
-      {game === "rps" ? <RpsComputer t={t} onResult={addPoint} /> : <DiceComputer t={t} name={name} onResult={addPoint} />}
+      {game === "rps" ? <RpsComputer t={t} name={name} photo={photo} onResult={addPoint} /> : <DiceComputer t={t} name={name} onResult={addPoint} />}
     </div>
   );
 }
@@ -405,14 +405,15 @@ function ComputerResult({ t, winner, onAgain }) {
   );
 }
 
-// "Rock… paper… scissors!" while the child shakes a fist, then the computer shows its hand
-// and the child taps the hand they made.
-function RpsComputer({ t, onResult }) {
+// The child picks a hand, then "rock… paper… scissors!" (while making the sign with their own hand),
+// and both hands are shown side by side.
+function RpsComputer({ t, name, photo, onResult }) {
   const [count, setCount] = useState(-1);
   const [computer, setComputer] = useState(null);
   const [mine, setMine] = useState(null);
   const sayings = [t("אבן…", "Rock…"), t("נייר…", "Paper…"), t("ומספריים!", "Scissors!")];
   const revealed = count >= sayings.length;
+  const winner = revealed ? (mine.id === computer.id ? -1 : mine.beats === computer.id ? 0 : 1) : null;
 
   useEffect(() => {
     if (count < 0 || revealed) return undefined;
@@ -420,31 +421,37 @@ function RpsComputer({ t, onResult }) {
     return () => window.clearTimeout(id);
   }, [count, revealed]);
 
-  function start() { setMine(null); setComputer(HANDS[randomIndex(3)]); setCount(0); }
-  function choose(hand) {
-    setMine(hand);
-    onResult(hand.id === computer.id ? -1 : hand.beats === computer.id ? 0 : 1);
-  }
-  const winner = mine ? (mine.id === computer.id ? -1 : mine.beats === computer.id ? 0 : 1) : null;
+  useEffect(() => { if (revealed) onResult(winner); }, [revealed]);
+
+  function choose(hand) { setMine(hand); setComputer(HANDS[randomIndex(3)]); setCount(0); }
+  const again = () => { setMine(null); setComputer(null); setCount(-1); };
+  const side = (who, hand, art, label) => (
+    <div className={`who-duel-side${revealed && winner === who ? " winner" : ""}`}>
+      {art}
+      <img className={revealed ? "" : "shake"} src={revealed ? hand.image : `${ART}rock.webp`} alt="" />
+      <strong>{revealed ? `${label}: ${t(hand.he, hand.en)}` : label}</strong>
+    </div>
+  );
 
   return (
     <>
-      <div className="who-computer-hand">
-        {revealed ? <img src={computer.image} alt="" /> : <img className={count >= 0 ? "shake" : ""} src={`${ART}rock.webp`} alt="" />}
-        <strong aria-live="polite">{revealed ? t(`המחשב: ${computer.he}`, `Computer: ${computer.en}`) : count >= 0 ? sayings[count] : t("מכינים יד… מוכנים?", "Get your hand ready… ready?")}</strong>
-      </div>
-      {count < 0 && <div className="choice-board-actions"><button type="button" className="choice-primary" onClick={start}>{t("אבן, נייר ומספריים!", "Rock, paper, scissors!")}</button></div>}
-      {revealed && !mine && (
+      {!mine ? (
         <>
-          <div className="choice-board-hint">{t("מה הראית?", "What did you show?")}</div>
+          <div className="choice-board-hint">{t("מה בוחרים? לוחצים, ואז עושים את התנועה עם היד:", "What will you show? Tap it, then make the sign with your hand:")}</div>
           <div className="who-rps-picks who-rps-mine">
             {HANDS.map((hand) => (
               <button key={hand.id} type="button" onClick={() => choose(hand)}><img src={hand.image} alt="" />{t(hand.he, hand.en)}</button>
             ))}
           </div>
         </>
+      ) : (
+        <div className="who-duel">
+          {side(0, mine, <Avatar photo={photo} index={0} />, name)}
+          {side(1, computer, <img className="who-computer" src={`${ART}computer.webp`} alt="" />, t("המחשב", "Computer"))}
+        </div>
       )}
-      {mine && <ComputerResult t={t} winner={winner} onAgain={() => { setMine(null); setCount(-1); setComputer(null); }} />}
+      {mine && !revealed && <div className="who-word" aria-live="polite">{sayings[count]}</div>}
+      {revealed && <ComputerResult t={t} winner={winner} onAgain={again} />}
     </>
   );
 }
