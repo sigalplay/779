@@ -14,6 +14,7 @@ import { BoardToolbox } from "@/components/session-board/BoardToolbox";
 import { BoardStickers, stickerStartPosition } from "@/components/session-board/BoardStickers";
 import { FarewellDialog } from "@/components/session-board/FarewellDialog";
 import { CalmDialog } from "@/components/session-board/CalmDialog";
+import { WhoStartsDialog } from "@/components/session-board/WhoStartsDialog";
 import { ChoiceBoard } from "@/components/session-board/ChoiceBoard";
 import { BoardDayAppointments } from "@/components/session-board/BoardDayAppointments";
 import { HomePracticeShare } from "@/components/session-board/HomePracticeShare";
@@ -679,6 +680,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
   const [controlsRow, setControlsRow] = useState(null);
   const [farewellOpen, setFarewellOpen] = useState(false);
   const [calmOpen, setCalmOpen] = useState(false);
+  const [whoStartsOpen, setWhoStartsOpen] = useState(false);
   const photoInputRef = useRef(null);
   const [timerOpen, setTimerOpen] = useState(false);
   const [choiceMode, setChoiceMode] = useState(null); // "choice" | "firstThen" | null
@@ -1002,6 +1004,7 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
         onShareWithParents={() => { setPenEnabled(false); setShareOpen(true); }}
         onOpenFarewell={() => { setPenEnabled(false); setFarewellOpen(true); }}
         onOpenCalm={() => { setPenEnabled(false); setCalmOpen(true); }}
+        onOpenWhoStarts={() => { setPenEnabled(false); setWhoStartsOpen(true); }}
         onOpenMyImages={() => { setPenEnabled(false); setMyImagesOpen(true); }}
         fullscreen={fullscreen}
         onToggleFullscreen={toggleFullscreen}
@@ -1064,9 +1067,10 @@ function SessionBoard({ plan, setPlan, language, t, sessionId, linkedPatient, pa
         {/* Inside the board so the timer and the toolbox stay visible in full screen. */}
         <div className="meeting-board-overlay">
           <VisualSessionTimer language={language} open={timerOpen} onOpenChange={setTimerOpen} hideTrigger />
-          {fullscreen && <BoardToolbox language={language} pen={pen} onOpenTimer={openTimer} onAddSign={addSign} onOpenChoice={setChoiceMode} onAddMotorItem={addMotorItem} onAddEmotion={addEmotion} onAddCalmHelper={addCalmHelper} calmPatientKey={patientBoardId || "guest"} />}
+          {fullscreen && <BoardToolbox language={language} pen={pen} onOpenTimer={openTimer} onAddSign={addSign} onOpenChoice={setChoiceMode} onAddMotorItem={addMotorItem} onAddEmotion={addEmotion} onAddCalmHelper={addCalmHelper} calmPatientKey={patientBoardId || "guest"} onOpenWhoStarts={() => setWhoStartsOpen(true)} />}
           {myImagesOpen && <MyImagesDialog language={language} returnUrl={`${window.location.pathname}${window.location.search}`} onAdd={addMyImage} onChanged={setMyImages} onClose={() => setMyImagesOpen(false)} />}
           {calmOpen && <CalmDialog language={language} patientKey={patientBoardId || "guest"} patientName={patientBoardId ? patientName : ""} onAddToBoard={addCalmHelper} onClose={() => setCalmOpen(false)} />}
+          {whoStartsOpen && <WhoStartsDialog language={language} patientKey={patientBoardId || "guest"} patientName={patientBoardId ? patientName : ""} onClose={() => setWhoStartsOpen(false)} />}
           {farewellOpen && <FarewellDialog language={language} patientKey={patientBoardId || "guest"} patientName={patientBoardId ? patientName : ""} onClose={() => setFarewellOpen(false)} />}
           {shareOpen && <HomePracticeShare language={language} onClose={() => setShareOpen(false)}
             activities={plan.filter((item) => item.kind === "activity" && getActivity(item.id)).map((item) => ({ id: item.id, title: boardItemView(item).title, image: boardItemView(item).hero }))} />}
