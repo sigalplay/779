@@ -5,6 +5,12 @@ import { IllustratedNavCard } from "@/components/IllustratedNavCard";
 import { brandLogo, useTranslator } from "@/lib/language";
 
 // פעילויות עונתיות בדף הבית. בורר הנושא מאפשר לעבור בין החגים.
+// כל נושא מוצג רק בשפות שברשימה שלו (חגי ישראל בעברית בלבד). אם אין נושא לשפה, האזור לא מוצג.
+const SEASONAL_TOPIC_LIST = [
+  { id: "sukkot", he: "פעילויות לסוכות 🌿", en: "Sukkot activities 🌿", languages: ["he"] },
+  { id: "rosh-hashanah", he: "פעילויות לראש השנה 🍎", en: "Rosh Hashanah activities 🍎", languages: ["he"] },
+];
+
 const SEASONAL_TOPICS = {
   sukkot: [
     { titleHe: "הכנת לוח שנה", titleEn: "Create a family calendar", image: "/icon-bank/navigation-v2/family-calendar-illustrated-v2.webp", altHe: "הכנת לוח שנה משפחתי להדפסה", altEn: "Create a printable family calendar", imageFit: "contain", to: "/parent/hebrew-calendar", badgeHe: "להכנה", badgeEn: "Create calendar" },
@@ -25,8 +31,10 @@ const MOBILE_HOME_CSS = "@media(max-width:639px){.home-screen .landing-home-logo
 
 export default function Landing() {
   const { language, t } = useTranslator();
-  const [seasonalTopic, setSeasonalTopic] = useState("sukkot");
-  const seasonalActivities = SEASONAL_TOPICS[seasonalTopic] || SEASONAL_TOPICS.sukkot;
+  const topics = SEASONAL_TOPIC_LIST.filter((topic) => topic.languages.includes(language));
+  const [chosenTopic, setSeasonalTopic] = useState(topics[0]?.id);
+  const seasonalTopic = topics.some((topic) => topic.id === chosenTopic) ? chosenTopic : topics[0]?.id;
+  const seasonalActivities = SEASONAL_TOPICS[seasonalTopic] || [];
   const pinkCaption = "!border-rose/45 !bg-secondary/95";
   // Order on the home page: stories, routine boards, ADL; then recipes, experiments, game builder;
   // the family calendar last, on its own row.
@@ -91,7 +99,7 @@ export default function Landing() {
           {quickLinks.map(([to, image, he, en]) => <IllustratedNavCard key={to} to={to} image={image} title={t(he, en)} captionClassName={pinkCaption} />)}
         </div>
 
-        <section className="compact-seasonal-section mt-8 rounded-[2rem] border border-rose/55 bg-secondary/80 p-4 shadow-soft md:p-6" aria-labelledby="seasonal-title">
+        {topics.length > 0 && <section className="compact-seasonal-section mt-8 rounded-[2rem] border border-rose/55 bg-secondary/80 p-4 shadow-soft md:p-6" aria-labelledby="seasonal-title">
             <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
               <div>
                 <p className="text-sm font-bold text-rose">{t("פעילויות לפי התקופה", "Seasonal activities")}</p>
@@ -103,8 +111,7 @@ export default function Landing() {
                     onChange={(e) => setSeasonalTopic(e.target.value)}
                     className="cursor-pointer rounded-xl border border-rose/40 bg-white px-3 py-1.5 text-2xl font-black text-foreground shadow-sm outline-none transition hover:border-rose focus:ring-2 focus:ring-rose/30"
                   >
-                    <option value="sukkot">{t("פעילויות לסוכות 🌿", "Sukkot activities 🌿")}</option>
-                    <option value="rosh-hashanah">{t("פעילויות לראש השנה 🍎", "Rosh Hashanah activities 🍎")}</option>
+                    {topics.map((topic) => <option key={topic.id} value={topic.id}>{t(topic.he, topic.en)}</option>)}
                   </select>
                 </label>
               </div>
@@ -129,7 +136,7 @@ export default function Landing() {
                 </Link>
               ))}
             </div>
-        </section>
+        </section>}
       </div>
     </AppShell>
   );
