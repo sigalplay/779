@@ -6,6 +6,8 @@ import { activityContext, IMAGE_CONTEXT } from "@/lib/image-seo";
 export const SITE_URL = "https://letsplayot.com";
 export const SITE_NAME = { he: "בואו נשחק", en: "Let's Play" };
 export const SHARE_IMAGE = { url: "/share-preview.png", width: 1200, height: 630 };
+// The same preview with the English logo, for pages in English.
+export const SHARE_IMAGE_EN = "/share-preview-en.png";
 
 const INDEX = "index, follow, max-image-preview:large";
 const NOINDEX = "noindex, nofollow";
@@ -107,7 +109,7 @@ function howTo({ name, description, image, url, language, supplies = [], tools =
 export function resolveSeo(path, language, content) {
   const bare = path.replace(/\/+$/, "") || "/";
   const url = pageUrl(bare, language);
-  const base = { url, path: bare, language, robots: INDEX, type: "website", image: SHARE_IMAGE.url, imageAlt: null, schema: null };
+  const base = { url, path: bare, language, robots: INDEX, type: "website", image: language === "en" ? SHARE_IMAGE_EN : SHARE_IMAGE.url, imageAlt: null, schema: null };
 
   let match = bare.match(/^\/activity\/([^/]+)$/);
   if (match && content?.activities) {
