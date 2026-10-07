@@ -23,6 +23,10 @@ const SEASONAL_TOPICS = {
     { titleHe: "קיפוד עלים", titleEn: "Leaf Hedgehog", image: "/icon-bank/crafts-new/seed-128-leaf-hedgehog/hero.webp", altHe: "קיפוד מבריסטול עם קוצים מעלים", altEn: "A cardstock hedgehog with leaf spikes", imageFit: "contain", to: "/activity/seed-128?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
     { titleHe: "עלה קסום", titleEn: "Magic Leaf", image: "/icon-bank/crafts-new/seed-133-crayon-transfer/hero.webp", altHe: "ציורי סתיו בצבעי פנדה בטכניקת העברה", altEn: "Fall drawings made with the crayon transfer technique", imageFit: "contain", to: "/activity/seed-133?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
     { titleHe: "כתר עלים", titleEn: "Leaf Crown", image: "/icon-bank/crafts-new/seed-132-leaf-crown/hero.webp", altHe: "כתר מעלי שלכת", altEn: "A crown made of fall leaves", imageFit: "contain", to: "/activity/seed-132?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
+    { titleHe: "מיון עלים", titleEn: "Leaf Sorting", image: "/icon-bank/crafts-new/seed-130-leaf-sorting/hero.webp", altHe: "מיון עלים לפי צבע וגודל", altEn: "Sorting leaves by color and size", imageFit: "contain", to: "/activity/seed-130?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
+    { titleHe: "הטבעת עלים", titleEn: "Leaf Prints", image: "/icon-bank/crafts-new/seed-129-leaf-prints/hero.webp", altHe: "הטבעת עלים בצבע", altEn: "Leaf prints made with paint", imageFit: "contain", to: "/activity/seed-129?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
+    { titleHe: "העתקת עלים בצבעי פנדה", titleEn: "Leaf Rubbing", image: "/icon-bank/crafts-new/seed-127-leaf-rubbing/hero.webp", altHe: "העתקת עלים בצבעי פנדה", altEn: "Leaf rubbings made with crayons", imageFit: "contain", to: "/activity/seed-127?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
+    { titleHe: "כתב סתרים של סתיו", titleEn: "Halloween Secret Code", image: "/icon-bank/navigation-v2/cipher-flat.webp", altHe: "יצירת כתב סתרים עם סמלים של סתיו", altEn: "Create a Halloween secret code", imageFit: "contain", to: "/parent/cipher?key=fall", toEn: "/parent/cipher?key=halloween", badgeHe: "לכתב סתרים", badgeEn: "Create code" },
   ],
 };
 
@@ -119,7 +123,7 @@ export default function Landing() {
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {seasonalActivities.map((activity) => (
-                <Link key={activity.to} to={activity.to} className="overflow-hidden rounded-[1.5rem] border border-sky bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-soft">
+                <Link key={activity.to} to={language === "en" && activity.toEn ? activity.toEn : activity.to} className="overflow-hidden rounded-[1.5rem] border border-sky bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-soft">
                   <div className="aspect-[4/3] overflow-hidden bg-white">
                     <img
                       src={activity.image}

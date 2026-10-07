@@ -15,6 +15,10 @@ const LETTER_ORDER = ["א", "ב", "ג", "ד", "ה", "ו", "ז", "ח", "ט", "י"
 const ENGLISH_LETTER_ORDER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 const CIPHER_KEYS = {
+  fall: {
+    label: "מפתח סתיו",
+    symbols: ["🍁", "🎃", "🌰", "🍄", "🍎", "🍐", "🍇", "🦔", "🦉", "🐿️", "☔", "🌧️", "🌈", "💨", "🧣", "🧤", "🥾", "🌙", "⭐", "🌻", "🐌", "🧺"],
+  },
   roshHashanah: {
     label: "מפתח ראש השנה",
     // Avoid near-duplicate emoji variants (two apples, two fish, two breads,
@@ -40,6 +44,14 @@ const CIPHER_KEYS = {
 };
 
 const ENGLISH_CIPHER_KEYS = {
+  fall: {
+    label: "Fall",
+    symbols: ["🍁", "🎃", "🌰", "🍄", "🍎", "🍐", "🍇", "🦔", "🦉", "🐿️", "☔", "🌧️", "🌈", "💨", "🧣", "🧤", "🥾", "🌙", "⭐", "🌻", "🐌", "🧺", "🥧", "🌽", "🦃", "☕"],
+  },
+  halloween: {
+    label: "Halloween",
+    symbols: ["🎃", "👻", "🦇", "🕷️", "🕸️", "🧙", "🍬", "🍭", "🍫", "🌕", "🐈", "🦉", "🍂", "🧹", "🔮", "🕯️", "🍎", "🌽", "🏚️", "⭐", "🍪", "🎭", "👑", "🧺", "✨", "🐺"],
+  },
   shapes: {
     label: "Shapes & Stars",
     symbols: ["○", "●", "□", "■", "△", "▲", "◇", "◆", "☆", "★", "♡", "♥", "♧", "♣", "☀", "☾", "✿", "✦", "✚", "✕", "♪", "♫", "☂", "⚑", "⌂", "∞"],
@@ -144,13 +156,16 @@ export default function CipherGenerator({ mode = "therapist" }) {
   const defaultTitle = t("היכן הרמז הבא?", "Where is the next clue?");
   const [title, setTitle] = useState(defaultTitle);
   const [word, setWord] = useState("");
-  // ?key=sukkot opens the Sukkot key (used by the Sukkot activities on the home page).
-  const requestedKey = () => (new URLSearchParams(window.location.search).get("key") === "sukkot" ? "sukkot" : "roshHashanah");
+  // ?key=… opens that key (the seasonal activities on the home page link to the fall and Halloween keys).
+  const requestedKey = () => {
+    const key = new URLSearchParams(window.location.search).get("key");
+    const keys = isEnglish ? ENGLISH_CIPHER_KEYS : CIPHER_KEYS;
+    return keys[key] ? key : Object.keys(keys)[0];
+  };
   const [keyId, setKeyId] = useState(requestedKey);
 
   useEffect(() => {
-    const nextKey = isEnglish ? "shapes" : requestedKey();
-    setKeyId(nextKey);
+    setKeyId(requestedKey());
     setTitle(isEnglish ? "Where is the next clue?" : "היכן הרמז הבא?");
     setWord("");
   }, [isEnglish]);
@@ -191,6 +206,11 @@ export default function CipherGenerator({ mode = "therapist" }) {
               </button>
             ))}
           </div>
+          {!isEnglish && keyId === "fall" && (
+            <p className="mb-4 rounded-2xl bg-amber-50 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+              מפתח סתווי עם עלים, דלעת, בלוטים, פטריות, קיפוד, ינשוף, סנאי, מטרייה וגשם. לכל אות נשמר סימן קבוע.
+            </p>
+          )}
           {keyId === "roshHashanah" && (
             <p className="mb-4 rounded-2xl bg-amber-50 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
               {t("מפתח חגיגי עם תפוחים, דבש, דבורים, דגים, שיבולים, שופר וסמלי התחדשות. לכל אות נשמר סימן קבוע.", "A festive key with apples, honey, bees, fish, wheat sheaves, a shofar, and symbols of renewal. Each letter keeps a fixed symbol.")}
@@ -201,11 +221,14 @@ export default function CipherGenerator({ mode = "therapist" }) {
               {t("מפתח חגיגי עם סוכה, ארבעת המינים, קישוטים, שרשראות, כוכבים, פירות ועלים. לכל אות נשמר סימן קבוע.", "A festive key with a sukkah, the Four Species, decorations, paper chains, stars, fruit, and leaves. Each letter keeps its own fixed symbol.")}
             </p>
           )}
-          {isEnglish && ["christmas", "easter"].includes(activeKeyId) && (
+          {isEnglish && ["fall", "halloween", "christmas", "easter"].includes(activeKeyId) && (
             <p className="mb-4 rounded-2xl bg-sky/20 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
-              {activeKeyId === "christmas"
-                ? "A festive Christmas key with 26 different symbols — one for every English letter."
-                : "A colorful Easter and spring key with 26 different symbols — one for every English letter."}
+              {{
+                fall: "A cozy fall key with leaves, pumpkins, acorns, mushrooms, a hedgehog, an owl, rain, and more — one symbol for every English letter.",
+                halloween: "A friendly Halloween key with pumpkins, ghosts, bats, spiders, candy, and costumes — nothing too scary, one symbol for every English letter.",
+                christmas: "A festive Christmas key with 26 different symbols — one for every English letter.",
+                easter: "A colorful Easter and spring key with 26 different symbols — one for every English letter.",
+              }[activeKeyId]}
             </p>
           )}
 
