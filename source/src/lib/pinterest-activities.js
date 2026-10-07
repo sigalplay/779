@@ -1329,7 +1329,7 @@ export const PINTEREST_ACTIVITIES = [
     ],
     material_images: {
       "עלים טריים בגדלים שונים": "/icon-bank/crafts-new/fall-leaves/material-leaves.webp",
-      "דפי נייר דקים (נייר מדפסת)": "/icon-bank/crafts-new/flying-butterfly/material-colored-paper.webp",
+      "דפי נייר דקים (נייר מדפסת)": "/icon-bank/embedded-v358/seed-82/material-paper.webp",
       "צבעי פנדה בלי עטיפה": "/icon-bank/crafts-new/fall-leaves/material-crayons.webp",
       "סלוטייפ": "/icon-bank/crafts-new/seed-100-independent/material-tape.webp",
     },
@@ -1498,7 +1498,7 @@ export const PINTEREST_ACTIVITIES = [
       "עלים טריים בגדלים שונים": "/icon-bank/crafts-new/fall-leaves/material-leaves.webp",
       "צבעי גואש בצבעי סתיו": "/icon-bank/crafts-new/campfire-blow/material-paints.webp",
       "מכחול": "/icon-bank/crafts-new/hidden-spider-web/material-brush.webp",
-      "דפים לבנים": "/icon-bank/crafts-new/flying-butterfly/material-colored-paper.webp",
+      "דפים לבנים": "/icon-bank/embedded-v358/seed-82/material-paper.webp",
       "נייר סופג": "/icon-bank/crafts-new/seed-101-illustrated/material-paper-towel.webp",
     },
     preparation: "מכסים את השולחן בעיתון ושמים קצת צבע מכל גוון על צלחת.",
@@ -1512,8 +1512,8 @@ export const PINTEREST_ACTIVITIES = [
       },
       {
         n: 2,
-        text: "מורחים על העלה שכבה דקה של צבע. אפשר לשלב כמה צבעים.",
-        textN: "מוֹרְחִים עַל הֶעָלֶה שִׁכְבָה דַּקָּה שֶׁל צֶבַע. אֶפְשָׁר לְשַׁלֵּב כַּמָּה צְבָעִים.",
+        text: "מורחים על העלה שכבה דקה של צבע.",
+        textN: "מוֹרְחִים עַל הֶעָלֶה שִׁכְבָה דַּקָּה שֶׁל צֶבַע.",
         image: "/icon-bank/crafts-new/seed-129-leaf-prints/step-2.webp",
       },
       {
@@ -1646,7 +1646,7 @@ export const PINTEREST_ACTIVITIES = [
     ],
     material_images: {
       "נייר קרפ בצבעי סתיו: אדום, כתום, צהוב וחום": "/icon-bank/crafts-new/fall-leaves/material-crepe.webp",
-      "דף ציור": "/icon-bank/crafts-new/flying-butterfly/material-colored-paper.webp",
+      "דף ציור": "/icon-bank/embedded-v358/seed-82/material-paper.webp",
       "טוש חום": "/icon-bank/crafts-new/seed-100-independent/material-colored-markers.webp",
       "דבק פלסטי": "/icon-bank/crafts-new/shared-independent/glue.webp",
     },
@@ -1798,7 +1798,7 @@ export const PINTEREST_ACTIVITIES = [
     material_images: {
       "דפי ציורי סתיו להדפסה (עלה, דלעת, בלוט)": "/icon-bank/crafts-new/seed-133-crayon-transfer/printable-leaf.webp",
       "צבעי פנדה בצבעי סתיו": "/icon-bank/crafts-new/fall-leaves/material-crayons.webp",
-      "2 דפים לבנים": "/icon-bank/crafts-new/flying-butterfly/material-colored-paper.webp",
+      "2 דפים לבנים": "/icon-bank/embedded-v358/seed-82/material-paper.webp",
       "עיפרון": "/icon-bank/crafts-new/seed-33-independent/material-pencils-markers.webp",
       "סלוטייפ (רשות)": "/icon-bank/crafts-new/seed-100-independent/material-tape.webp",
     },
