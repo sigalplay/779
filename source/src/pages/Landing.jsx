@@ -28,7 +28,7 @@ const SEASONAL_TOPICS = {
   fall: [
     { titleHe: "עץ סתיו מכדורי נייר", titleEn: "Crumpled Paper Fall Tree", image: "/icon-bank/crafts-new/seed-131-crumpled-paper-tree/hero.webp", altHe: "עץ סתיו מכדורי נייר קרפ", altEn: "A fall tree made of crumpled crepe paper", imageFit: "contain", to: "/activity/seed-131?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
     { titleHe: "קיפוד עלים", titleEn: "Leaf Hedgehog", image: "/icon-bank/crafts-new/seed-128-leaf-hedgehog/hero.webp", altHe: "קיפוד מבריסטול עם קוצים מעלים", altEn: "A cardstock hedgehog with leaf spikes", imageFit: "contain", to: "/activity/seed-128?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
-    { titleHe: "ציור העברה בצבעי פנדה", titleEn: "Crayon Transfer Drawing", image: "/icon-bank/crafts-new/seed-133-crayon-transfer/hero.webp", altHe: "ציורי סתיו בצבעי פנדה בטכניקת העברה", altEn: "Fall drawings made with the crayon transfer technique", imageFit: "contain", to: "/activity/seed-133?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
+    { titleHe: "עלה קסום", titleEn: "Magic Leaf", image: "/icon-bank/crafts-new/seed-133-crayon-transfer/hero.webp", altHe: "ציורי סתיו בצבעי פנדה בטכניקת העברה", altEn: "Fall drawings made with the crayon transfer technique", imageFit: "contain", to: "/activity/seed-133?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
     { titleHe: "כתר עלים", titleEn: "Leaf Crown", image: "/icon-bank/crafts-new/seed-132-leaf-crown/hero.webp", altHe: "כתר מעלי שלכת", altEn: "A crown made of fall leaves", imageFit: "contain", to: "/activity/seed-132?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
   ],
 };

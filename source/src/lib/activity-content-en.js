@@ -1599,21 +1599,23 @@ const EN = {
   },
   "seed-128": {
     description: "Cut a hedgehog out of cardstock and glue leaves in rows on its back so they look like spikes.",
+    attachmentLabels: ["Printable hedgehog to cut out — PDF"],
     materials: [
+      "Printable hedgehog page",
       "Brown (or any color) cardstock",
       "Dry or fresh leaves",
       "Scissors",
       "White craft glue",
       "Black marker",
     ],
-    preparation: "Draw a large teardrop shape on the cardstock for the hedgehog's body. For younger children, cut it out in advance.",
+    preparation: "Print the hedgehog page, ideally on cardstock or thick paper. You can also draw a large teardrop shape on cardstock yourself.",
     steps: [
-      "Cut out the teardrop and draw an eye and a nose at the pointed end.",
-      "Spread glue on the wide part of the body, which is the hedgehog's back.",
+      "Cut out the hedgehog along the black line. If you drew it yourself, add an eye and a nose at the pointed end.",
+      "Spread glue on the hedgehog's back, behind the dashed line.",
       "Glue leaves in rows from the tail toward the head, with the tips sticking out like spikes.",
       "Keep going until the whole back is covered with leaves, then let the glue dry.",
     ],
-    adaptations: "Cut out the hedgehog in advance and use large leaves. The leaves can be stuck onto double-sided tape instead of glue.",
+    adaptations: "An adult cuts out the hedgehog in advance, and the child uses large leaves. The leaves can be stuck onto double-sided tape instead of glue.",
     extensions: "Cut the leaves into thin strips before gluing, or make a family of hedgehogs in different sizes.",
     tips: [
       { boldPrefix: "Dry leaves:", text: "Dry leaves break easily. Use craft glue and place a heavy book on top while it dries." },
