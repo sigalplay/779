@@ -7,18 +7,11 @@ import { brandLogo, useTranslator } from "@/lib/language";
 // פעילויות עונתיות בדף הבית. בורר הנושא מאפשר לעבור בין החגים.
 // כל נושא מוצג רק בשפות שברשימה שלו (חגי ישראל בעברית בלבד). אם אין נושא לשפה, האזור לא מוצג.
 const SEASONAL_TOPIC_LIST = [
-  { id: "sukkot", he: "פעילויות לסוכות 🌿", en: "Sukkot activities 🌿", languages: ["he"] },
+  { id: "fall", he: "פעילויות לסתיו 🍂", en: "Fall activities 🍂", languages: ["he", "en"] },
   { id: "rosh-hashanah", he: "פעילויות לראש השנה 🍎", en: "Rosh Hashanah activities 🍎", languages: ["he"] },
-  { id: "fall", he: "פעילויות לסתיו 🍂", en: "Fall activities 🍂", languages: ["en"] },
 ];
 
 const SEASONAL_TOPICS = {
-  sukkot: [
-    { titleHe: "הכנת לוח שנה", titleEn: "Create a family calendar", image: "/icon-bank/navigation-v2/family-calendar-illustrated-v2.webp", altHe: "הכנת לוח שנה משפחתי להדפסה", altEn: "Create a printable family calendar", imageFit: "contain", to: "/parent/hebrew-calendar", badgeHe: "להכנה", badgeEn: "Create calendar" },
-    { titleHe: "שרשרת לבבות", titleEn: "Paper Heart Chain", image: "/icon-bank/crafts-new/seed-120-heart-chain/hero.webp", altHe: "הכנת שרשרת לבבות צבעונית לסוכה", altEn: "Make a colorful paper heart chain", imageFit: "contain", to: "/activity/seed-120?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
-    { titleHe: "הכנת סוכה", titleEn: "3D Cardstock Sukkah", image: "/icon-bank/crafts-new/seed-119-sukkah/hero.webp", altHe: "הכנת סוכה תלת־ממדית מבריסטול", altEn: "Make a 3D cardstock sukkah", imageFit: "contain", to: "/activity/seed-119?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
-    { titleHe: "כתב סתרים של סוכות", titleEn: "Sukkot Secret Code", image: "/icon-bank/navigation-v2/cipher-flat.webp", altHe: "יצירת כתב סתרים עם סמלים של סוכות", altEn: "Create a Sukkot secret code", imageFit: "contain", to: "/parent/cipher?key=sukkot", badgeHe: "לכתב סתרים", badgeEn: "Create code" },
-  ],
   "rosh-hashanah": [
     { titleHe: "יצירת לוח שנה", titleEn: "Create a family calendar", image: "/icon-bank/navigation-v2/family-calendar-illustrated-v2.webp", altHe: "יצירת לוח שנה משפחתי להדפסה", altEn: "Create a printable family calendar", imageFit: "contain", to: "/parent/hebrew-calendar", badgeHe: "להכנת לוח שנה", badgeEn: "Create calendar" },
     { titleHe: "משושי הדבש", titleEn: "Honeycomb Shapes", image: "/icon-bank/manual/experiments/honey-hexagons-hero.webp", altHe: "ניסוי משושי הדבש לראש השנה", altEn: "Honeycomb shapes experiment for Rosh Hashanah", to: "/parent/experiments/honey-hexagons", badgeHe: "לניסוי", badgeEn: "View experiment" },
