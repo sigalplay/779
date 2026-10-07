@@ -1520,7 +1520,7 @@ const EN = {
     materials: ["White paper plate", "White crayon", "Watercolors in dark shades: blue, purple, or turquoise", "Thick paintbrush", "Cup of water"],
     preparation: "Set out a cup of water and cover the table.",
     steps: [
-      "Draw a spider web with a white crayon, pressing hard.",
+      "Draw a spider web with a white crayon.",
       "Dip a wet brush in dark paint.",
       "Paint the whole center of the plate.",
       "The web appears! Leave to dry.",
