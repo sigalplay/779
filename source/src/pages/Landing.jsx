@@ -9,6 +9,7 @@ import { brandLogo, useTranslator } from "@/lib/language";
 const SEASONAL_TOPIC_LIST = [
   { id: "sukkot", he: "פעילויות לסוכות 🌿", en: "Sukkot activities 🌿", languages: ["he"] },
   { id: "rosh-hashanah", he: "פעילויות לראש השנה 🍎", en: "Rosh Hashanah activities 🍎", languages: ["he"] },
+  { id: "fall", he: "פעילויות לסתיו 🍂", en: "Fall activities 🍂", languages: ["en"] },
 ];
 
 const SEASONAL_TOPICS = {
@@ -23,6 +24,12 @@ const SEASONAL_TOPICS = {
     { titleHe: "משושי הדבש", titleEn: "Honeycomb Shapes", image: "/icon-bank/manual/experiments/honey-hexagons-hero.webp", altHe: "ניסוי משושי הדבש לראש השנה", altEn: "Honeycomb shapes experiment for Rosh Hashanah", to: "/parent/experiments/honey-hexagons", badgeHe: "לניסוי", badgeEn: "View experiment" },
     { titleHe: "גרעיני הרימון", titleEn: "Pomegranate Seed Counting Craft", image: "/icon-bank/crafts-new/seed-110-pomegranate/hero.webp", altHe: "יצירת גרעיני רימון מנייר קרפ", altEn: "Pomegranate seeds craft using crepe paper", to: "/activity/seed-112?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
     { titleHe: "פלחי תפוחים מצופים בשוקולד", titleEn: "Chocolate-Dipped Apple Slices", image: "/icon-bank/manual/chocolate-apple-slices/cover.webp", altHe: "מתכון פלחי תפוחים מצופים בשוקולד", altEn: "Chocolate-dipped apple slices recipe", to: "/parent/recipes/chocolate-apple-slices", badgeHe: "למתכון", badgeEn: "View recipe" },
+  ],
+  fall: [
+    { titleHe: "עץ סתיו מכדורי נייר", titleEn: "Crumpled Paper Fall Tree", image: "/icon-bank/crafts-new/seed-131-crumpled-paper-tree/hero.webp", altHe: "עץ סתיו מכדורי נייר קרפ", altEn: "A fall tree made of crumpled crepe paper", imageFit: "contain", to: "/activity/seed-131?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
+    { titleHe: "קיפוד עלים", titleEn: "Leaf Hedgehog", image: "/icon-bank/crafts-new/seed-128-leaf-hedgehog/hero.webp", altHe: "קיפוד מבריסטול עם קוצים מעלים", altEn: "A cardstock hedgehog with leaf spikes", imageFit: "contain", to: "/activity/seed-128?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
+    { titleHe: "העתקת עלים בצבעי פנדה", titleEn: "Leaf Rubbing", image: "/icon-bank/crafts-new/seed-127-leaf-rubbing/hero.webp", altHe: "העתקת עלים בצבעי פנדה", altEn: "Leaf rubbings made with crayons", imageFit: "contain", to: "/activity/seed-127?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
+    { titleHe: "כתר עלים", titleEn: "Leaf Crown", image: "/icon-bank/crafts-new/seed-132-leaf-crown/hero.webp", altHe: "כתר מעלי שלכת", altEn: "A crown made of fall leaves", imageFit: "contain", to: "/activity/seed-132?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
   ],
 };
 
