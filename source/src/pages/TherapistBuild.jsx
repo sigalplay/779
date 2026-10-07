@@ -31,7 +31,7 @@ import { therapistGoalIcon } from "@/lib/therapist-goal-icons";
 import { MOTOR_TRAIL_ITEMS, MOTOR_TRAIL_HERO } from "@/lib/motor-trail-items";
 import { RECIPES } from "@/pages/TherapistRecipes";
 import { EXPERIMENTS, experimentHero, PANTRY_CATEGORIES, PANTRY_TAGS } from "@/pages/TherapistExperiments";
-import { allActivities, getActivity, getCustomRecipes, getTreatmentPlan, saveTreatmentPlan, updateTreatmentPlan, isSignedIn, getDraftPlan, setDraftPlan, isSearchActive, newestActivitiesFirst } from "@/lib/storage";
+import { allActivities, getActivity, getCustomRecipes, getTreatmentPlan, saveTreatmentPlan, updateTreatmentPlan, isSignedIn, getDraftPlan, setDraftPlan, isSearchActive, newestActivitiesFirst, spreadNewestBatch } from "@/lib/storage";
 import { CRAFT_SUPPLIES, matchByCraftSupplies } from "@/lib/craft-supplies";
 import { attachPlanToSession, completeClinicSession, getPatient, getSession, startClinicSession } from "@/lib/therapist-clinic";
 import { activityTitle, translatedTerm } from "@/lib/content-translations";
@@ -160,13 +160,13 @@ export default function TherapistBuild() {
     const filtered = durationMode ? pool.filter((a) => (durationMode === "max" ? a.duration_min <= 15 : a.duration_min >= 15)) : pool;
     const expandedGoals = goals.length ? expandGoals(goals) : [];
     const matching = expandedGoals.length ? filtered.filter((activity) => scoreActivity(activity, expandedGoals) > 0) : filtered;
-    return [...matching].sort((a, b) => {
+    return spreadNewestBatch([...matching].sort((a, b) => {
       const dateDiff = newestActivitiesFirst(a, b);
       if (dateDiff !== 0) return dateDiff;
       const diff = scoreActivity(b, expandedGoals) - scoreActivity(a, expandedGoals);
       if (diff !== 0) return diff;
       return a.duration_min - b.duration_min;
-    });
+    }));
   }, [goals, durationMode, contentType]);
 
   const planActivityIds = useMemo(() => new Set(plan.filter((p) => p.kind === "activity").map((p) => p.id)), [plan]);

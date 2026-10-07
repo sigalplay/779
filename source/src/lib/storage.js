@@ -121,8 +121,27 @@ export function newestActivitiesFirst(a, b) {
   return dateB - dateA;
 }
 
+// The newest activities are usually added together (for example a seasonal set), so in activity lists
+// they are spread through the list instead of filling the top rows: the first stays on top and the
+// rest are placed at even gaps.
+export function spreadNewestBatch(rows) {
+  const day = (a) => (a.created_at || "").slice(0, 10);
+  const newest = rows.length ? day(rows[0]) : "";
+  const batch = rows.filter((a) => newest && day(a) === newest);
+  if (batch.length < 3) return rows;
+  const rest = rows.filter((a) => !batch.includes(a));
+  const out = [batch[0]];
+  const gap = (rest.length + 1) / batch.length;
+  let next = 1;
+  rest.forEach((a, i) => {
+    out.push(a);
+    while (next < batch.length && i + 1 >= Math.round(gap * next)) out.push(batch[next++]);
+  });
+  return out.concat(batch.slice(next));
+}
+
 export function allActivities() {
-  return [...customActivities(), ...getCachedCmsCollection("activity", SEED_ACTIVITIES)].sort(newestActivitiesFirst);
+  return spreadNewestBatch([...customActivities(), ...getCachedCmsCollection("activity", SEED_ACTIVITIES)].sort(newestActivitiesFirst));
 }
 
 export function isSearchActive(activity) {
@@ -243,7 +262,7 @@ export function searchActivities(params) {
       return distA - distB;
     });
   } else {
-    rows = [...rows].sort(newestActivitiesFirst);
+    rows = spreadNewestBatch([...rows].sort(newestActivitiesFirst));
   }
   return rows.slice(0, params.limit ?? 60);
 }
