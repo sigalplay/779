@@ -5,6 +5,7 @@ import { IllustratedNavCard } from "@/components/IllustratedNavCard";
 import { brandLogo, useTranslator } from "@/lib/language";
 
 // פעילויות עונתיות בדף הבית. בורר הנושא מאפשר לעבור בין החגים.
+// כרטיס עם more: true מוצג רק אחרי לחיצה על "עוד".
 // כל נושא מוצג רק בשפות שברשימה שלו (חגי ישראל בעברית בלבד). אם אין נושא לשפה, האזור לא מוצג.
 const SEASONAL_TOPIC_LIST = [
   { id: "fall", he: "פעילויות לסתיו 🍂", en: "Fall activities 🍂", languages: ["he", "en"] },
@@ -19,14 +20,14 @@ const SEASONAL_TOPICS = {
     { titleHe: "פלחי תפוחים מצופים בשוקולד", titleEn: "Chocolate-Dipped Apple Slices", image: "/icon-bank/manual/chocolate-apple-slices/cover.webp", altHe: "מתכון פלחי תפוחים מצופים בשוקולד", altEn: "Chocolate-dipped apple slices recipe", to: "/parent/recipes/chocolate-apple-slices", badgeHe: "למתכון", badgeEn: "View recipe" },
   ],
   fall: [
-    { titleHe: "עץ סתיו מכדורי נייר", titleEn: "Crumpled Paper Fall Tree", image: "/icon-bank/crafts-new/seed-131-crumpled-paper-tree/hero.webp", altHe: "עץ סתיו מכדורי נייר קרפ", altEn: "A fall tree made of crumpled crepe paper", imageFit: "contain", to: "/activity/seed-131?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
     { titleHe: "קיפוד עלים", titleEn: "Leaf Hedgehog", image: "/icon-bank/crafts-new/seed-128-leaf-hedgehog/hero.webp", altHe: "קיפוד מבריסטול עם קוצים מעלים", altEn: "A cardstock hedgehog with leaf spikes", imageFit: "contain", to: "/activity/seed-128?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
     { titleHe: "עלה קסום", titleEn: "Magic Leaf", image: "/icon-bank/crafts-new/seed-133-crayon-transfer/hero.webp", altHe: "ציורי סתיו בצבעי פנדה בטכניקת העברה", altEn: "Fall drawings made with the crayon transfer technique", imageFit: "contain", to: "/activity/seed-133?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
-    { titleHe: "כתר עלים", titleEn: "Leaf Crown", image: "/icon-bank/crafts-new/seed-132-leaf-crown/hero.webp", altHe: "כתר מעלי שלכת", altEn: "A crown made of fall leaves", imageFit: "contain", to: "/activity/seed-132?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
-    { titleHe: "מיון עלים", titleEn: "Leaf Sorting", image: "/icon-bank/crafts-new/seed-130-leaf-sorting/hero.webp", altHe: "מיון עלים לפי צבע וגודל", altEn: "Sorting leaves by color and size", imageFit: "contain", to: "/activity/seed-130?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
     { titleHe: "הטבעת עלים", titleEn: "Leaf Prints", image: "/icon-bank/crafts-new/seed-129-leaf-prints/hero.webp", altHe: "הטבעת עלים בצבע", altEn: "Leaf prints made with paint", imageFit: "contain", to: "/activity/seed-129?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
-    { titleHe: "העתקת עלים בצבעי פנדה", titleEn: "Leaf Rubbing", image: "/icon-bank/crafts-new/seed-127-leaf-rubbing/hero.webp", altHe: "העתקת עלים בצבעי פנדה", altEn: "Leaf rubbings made with crayons", imageFit: "contain", to: "/activity/seed-127?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
     { titleHe: "כתב סתרים של סתיו", titleEn: "Halloween Secret Code", image: "/icon-bank/navigation-v2/cipher-flat.webp", altHe: "יצירת כתב סתרים עם סמלים של סתיו", altEn: "Create a Halloween secret code", imageFit: "contain", to: "/parent/cipher?key=fall", toEn: "/parent/cipher?key=halloween", badgeHe: "לכתב סתרים", badgeEn: "Create code" },
+    { more: true, titleHe: "עץ סתיו מכדורי נייר", titleEn: "Crumpled Paper Fall Tree", image: "/icon-bank/crafts-new/seed-131-crumpled-paper-tree/hero.webp", altHe: "עץ סתיו מכדורי נייר קרפ", altEn: "A fall tree made of crumpled crepe paper", imageFit: "contain", to: "/activity/seed-131?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
+    { more: true, titleHe: "כתר עלים", titleEn: "Leaf Crown", image: "/icon-bank/crafts-new/seed-132-leaf-crown/hero.webp", altHe: "כתר מעלי שלכת", altEn: "A crown made of fall leaves", imageFit: "contain", to: "/activity/seed-132?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
+    { more: true, titleHe: "מיון עלים", titleEn: "Leaf Sorting", image: "/icon-bank/crafts-new/seed-130-leaf-sorting/hero.webp", altHe: "מיון עלים לפי צבע וגודל", altEn: "Sorting leaves by color and size", imageFit: "contain", to: "/activity/seed-130?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
+    { more: true, titleHe: "העתקת עלים בצבעי פנדה", titleEn: "Leaf Rubbing", image: "/icon-bank/crafts-new/seed-127-leaf-rubbing/hero.webp", altHe: "העתקת עלים בצבעי פנדה", altEn: "Leaf rubbings made with crayons", imageFit: "contain", to: "/activity/seed-127?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
   ],
 };
 
@@ -38,7 +39,10 @@ export default function Landing() {
   const topics = SEASONAL_TOPIC_LIST.filter((topic) => topic.languages.includes(language));
   const [chosenTopic, setSeasonalTopic] = useState(topics[0]?.id);
   const seasonalTopic = topics.some((topic) => topic.id === chosenTopic) ? chosenTopic : topics[0]?.id;
-  const seasonalActivities = SEASONAL_TOPICS[seasonalTopic] || [];
+  const [showMore, setShowMore] = useState(false);
+  const topicActivities = SEASONAL_TOPICS[seasonalTopic] || [];
+  const hasMore = topicActivities.some((activity) => activity.more);
+  const seasonalActivities = showMore ? topicActivities : topicActivities.filter((activity) => !activity.more);
   const pinkCaption = "!border-rose/45 !bg-secondary/95";
   // Order on the home page: stories, routine boards, ADL; then recipes, experiments, game builder;
   // the family calendar last, on its own row.
@@ -112,7 +116,7 @@ export default function Landing() {
                   <select
                     id="seasonal-title"
                     value={seasonalTopic}
-                    onChange={(e) => setSeasonalTopic(e.target.value)}
+                    onChange={(e) => { setSeasonalTopic(e.target.value); setShowMore(false); }}
                     className="cursor-pointer rounded-xl border border-rose/40 bg-white px-3 py-1.5 text-2xl font-black text-foreground shadow-sm outline-none transition hover:border-rose focus:ring-2 focus:ring-rose/30"
                   >
                     {topics.map((topic) => <option key={topic.id} value={topic.id}>{t(topic.he, topic.en)}</option>)}
@@ -140,6 +144,13 @@ export default function Landing() {
                 </Link>
               ))}
             </div>
+            {hasMore && (
+              <div className="mt-4 text-center">
+                <button type="button" onClick={() => setShowMore((open) => !open)} aria-expanded={showMore} className="rounded-full border border-rose/40 bg-white px-5 py-2 text-sm font-bold text-foreground shadow-sm transition hover:border-rose">
+                  {showMore ? t("פחות", "Show less") : t("עוד פעילויות לסתיו", "More fall activities")}
+                </button>
+              </div>
+            )}
         </section>}
       </div>
     </AppShell>
