@@ -112,6 +112,7 @@ export const ACTIVITY_SKILLS = {
   "seed-130": { skills: ["תכנון", "מוטוריקה עדינה", "חקירה חושית", "בקרה"], sensory: ["חזותית", "טקטילית"] },
   "seed-131": { skills: ["מוטוריקה עדינה", "ויסות כוח", "תיאום בי-לטרלי", "תיאום עין-יד"], sensory: ["טקטילית"] },
   "seed-132": { skills: ["גזירה", "תיאום בי-לטרלי", "תכנון", "מוטוריקה עדינה"], sensory: ["טקטילית"] },
+  "seed-133": { skills: ["ויסות כוח", "גראפו מוטורי", "תיאום עין-יד", "תיאום בי-לטרלי"], sensory: ["טקטילית"] },
 };
 
 // Activities taken out of the catalog. Their content and illustrations stay in the code for later use.

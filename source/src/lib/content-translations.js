@@ -19,6 +19,7 @@ const ACTIVITY_TITLES_EN = {
   "seed-130": "Leaf Sorting",
   "seed-131": "Crumpled Paper Fall Tree",
   "seed-132": "Leaf Crown",
+  "seed-133": "Crayon Transfer Drawing",
   "seed-1": "Make a Colorful Sand Bottle",
   "seed-3": "Treasure Hunt",
   "seed-4": "Drawing and Writing in Foam",

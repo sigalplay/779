@@ -1703,6 +1703,30 @@ const EN = {
       { boldPrefix: "Safety:", text: "An adult uses the stapler, with the staples facing outward so they don't touch the head." },
     ],
   },
+  "seed-133": {
+    description: "Color a sheet heavily with oil pastels and flip it onto white paper. Lay a fall drawing on top and trace its lines with a pencil, and the drawing transfers in color to the white sheet.",
+    attachmentLabels: ["Printable fall drawings: leaf, pumpkin, and acorn — PDF"],
+    materials: [
+      "Printable fall drawings (leaf, pumpkin, acorn)",
+      "Oil pastels in fall colors",
+      "2 sheets of white paper",
+      "Pencil",
+      "Tape (optional)",
+    ],
+    preparation: "Print the drawing pages and choose one drawing.",
+    steps: [
+      "Color a white sheet with oil pastels, pressing hard in a thick layer, until the whole sheet is covered in fall colors.",
+      "Lay down a clean white sheet, the colored sheet on top of it color side down, and the drawing on top of everything.",
+      "Trace the lines of the drawing with a pencil, pressing firmly. The other hand holds the sheets so they don't move.",
+      "Lift the top two sheets and reveal the colorful drawing on the white sheet.",
+    ],
+    adaptations: "Tape all three sheets to the table so they don't move, and start with the pumpkin, which has simple, round lines.",
+    extensions: "Draw your own fall picture and transfer it, or color the sheet in stripes of different colors so the line comes out in rainbow colors.",
+    tips: [
+      { boldPrefix: "The secret is a thick layer:", text: "The thicker the color, the clearer the lines. Oil pastels work especially well because they are soft and oily." },
+      { boldPrefix: "Force control:", text: "If the line comes out faint, press harder with the pencil. It's natural practice in controlled pressure." },
+    ],
+  },
 };
 
 export function activityEnglishContent(activity) { return EN[activity?.id] || null; }

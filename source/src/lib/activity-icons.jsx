@@ -1338,6 +1338,7 @@ export const ACTIVITY_ICON_SETS = {
   "seed-130": { large: true, hero: "/icon-bank/crafts-new/seed-130-leaf-sorting/hero.webp" },
   "seed-131": { large: true, hero: "/icon-bank/crafts-new/seed-131-crumpled-paper-tree/hero.webp" },
   "seed-132": { large: true, hero: "/icon-bank/crafts-new/seed-132-leaf-crown/hero.webp" },
+  "seed-133": { large: true, hero: "/icon-bank/crafts-new/seed-133-crayon-transfer/hero.webp" },
 };
 
 // The activity bank uses one calm, unified watercolor illustration per card.
