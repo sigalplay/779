@@ -1575,6 +1575,134 @@ const EN = {
       { boldPrefix: "Drying time:", text: "Wait until the next day and peel only when fully dry. A sticker that still feels sticky or soft needs more time." },
     ],
   },
+  "seed-127": {
+    description: "Place leaves under a sheet of paper and rub crayons over them on their side until the leaf shape and its veins appear.",
+    materials: [
+      "Fresh leaves in different sizes",
+      "Thin paper (printer paper)",
+      "Crayons with the wrappers removed",
+      "Tape",
+    ],
+    preparation: "Remove the wrappers from the crayons. Very dry leaves break, so fresh, flexible leaves work best.",
+    steps: [
+      "Lay the leaves on the table with the veined side facing up.",
+      "Place a sheet of paper over the leaves and tape its corners to the table.",
+      "Rub the long side of a crayon back and forth over the paper until the leaf shape appears.",
+      "Switch colors and leaves, and fill the whole page with colorful leaves.",
+    ],
+    adaptations: "For younger children, tape the leaves to the table and use large leaves and a thick crayon.",
+    extensions: "Guess which leaf is hiding under the paper before rubbing, or cut out the colored leaves and glue them onto a drawing of a tree.",
+    tips: [
+      { boldPrefix: "Force control:", text: "Pressing too hard tears the paper, and pressing too lightly doesn't show the veins. It's natural practice in finding the right amount of force." },
+      { boldPrefix: "Collecting leaves:", text: "Going out together to collect leaves in the yard or park is an activity in itself." },
+    ],
+  },
+  "seed-128": {
+    description: "Cut a hedgehog out of cardstock and glue leaves in rows on its back so they look like spikes.",
+    materials: [
+      "Brown (or any color) cardstock",
+      "Dry or fresh leaves",
+      "Scissors",
+      "White craft glue",
+      "Black marker",
+    ],
+    preparation: "Draw a large teardrop shape on the cardstock for the hedgehog's body. For younger children, cut it out in advance.",
+    steps: [
+      "Cut out the teardrop and draw an eye and a nose at the pointed end.",
+      "Spread glue on the wide part of the body, which is the hedgehog's back.",
+      "Glue leaves in rows from the tail toward the head, with the tips sticking out like spikes.",
+      "Keep going until the whole back is covered with leaves, then let the glue dry.",
+    ],
+    adaptations: "Cut out the hedgehog in advance and use large leaves. The leaves can be stuck onto double-sided tape instead of glue.",
+    extensions: "Cut the leaves into thin strips before gluing, or make a family of hedgehogs in different sizes.",
+    tips: [
+      { boldPrefix: "Dry leaves:", text: "Dry leaves break easily. Use craft glue and place a heavy book on top while it dries." },
+    ],
+  },
+  "seed-129": {
+    description: "Brush paint onto a leaf and press it onto paper for a lovely print of the leaf with all its veins.",
+    materials: [
+      "Fresh leaves in different sizes",
+      "Tempera paint in fall colors",
+      "Paintbrush",
+      "White paper",
+      "Paper towel",
+    ],
+    preparation: "Cover the table with newspaper and put a little of each paint color on a plate.",
+    steps: [
+      "Lay a leaf on the newspaper with the veined side facing up.",
+      "Brush a thin layer of paint onto the leaf. Several colors can be combined.",
+      "Turn the leaf over and place it on a clean sheet of paper, paint side down.",
+      "Cover with a paper towel and press with your palm over the whole leaf. Carefully lift the leaf by its stem.",
+    ],
+    adaptations: "Use large leaves and one color, and dip the leaf straight into the paint plate instead of using a brush.",
+    extensions: "Turn the prints into a tree, a wreath, or a bird, or print on fabric or a cloth bag.",
+    tips: [
+      { boldPrefix: "How much paint:", text: "A thick layer blurs the veins. If the print comes out as a blob, use less paint and try again." },
+    ],
+  },
+  "seed-130": {
+    description: "Sort leaves by color, size, or shape, and line them up from smallest to largest.",
+    materials: [
+      "Leaves in different colors, sizes, and shapes",
+      "Paper plates",
+      "Markers",
+    ],
+    preparation: "Mark each plate with a dot in a different color: green, yellow, orange, and brown.",
+    steps: [
+      "Spread the leaves on the table and look at them together: what is similar and what is different?",
+      "Pick up one leaf at a time with the thumb and finger and put it on the plate of its color.",
+      "Check together that every leaf is on the right plate.",
+      "Line up the leaves on each plate from smallest to largest.",
+    ],
+    adaptations: "Start with just two colors and large leaves that look very different from each other.",
+    extensions: "Sort by two features at once, such as small yellow leaves, or count how many leaves are on each plate.",
+    tips: [
+      { boldPrefix: "Language and concepts:", text: "A chance to practice words like big, small, long, round, pointy, dry, and soft." },
+    ],
+  },
+  "seed-131": {
+    description: "Crumple squares of crepe paper into small balls and glue them onto tree branches like fall leaves.",
+    materials: [
+      "Crepe paper in fall colors: red, orange, yellow, and brown",
+      "Drawing paper",
+      "Brown marker",
+      "White craft glue",
+    ],
+    preparation: "Tear or cut the crepe paper into small squares, about 1 inch.",
+    steps: [
+      "Draw a trunk and branches on the paper with a brown marker.",
+      "Crumple each square into a small ball between the thumb, index, and middle fingers.",
+      "Put dots of glue around the branches.",
+      "Press the balls onto the glue until the tree is full of colorful leaves. Add a few on the ground too, like fallen leaves.",
+    ],
+    adaptations: "Use bigger squares and crumple with the whole hand. The balls can be stuck onto contact paper instead of glue.",
+    extensions: "Crumple with one hand only, pick up the balls with tweezers, or fill the tree by color: brown at the bottom, orange in the middle, and yellow on top.",
+    tips: [
+      { boldPrefix: "Hand strength:", text: "Crumpling small pieces of paper with the fingertips strengthens the small muscles of the hand that are later used to hold a pencil." },
+    ],
+  },
+  "seed-132": {
+    description: "Measure a cardstock strip around the head, cut it, tape leaves along it, and join it into a fall crown.",
+    materials: [
+      "A cardstock strip about 24 inches long",
+      "Dry or fresh leaves",
+      "Scissors",
+      "Tape",
+      "Stapler",
+    ],
+    preparation: "Cut a 2-inch-wide strip of cardstock. For younger children, prepare it in advance.",
+    steps: [
+      "Wrap the strip around the head, mark where the ends meet, and cut off the extra.",
+      "Tape leaves along the strip so their tips stick up.",
+      "Join the two ends with a stapler or tape, and put on the crown.",
+    ],
+    adaptations: "Prepare the strip in advance and stick the leaves onto double-sided tape running along it.",
+    extensions: "Cut paper leaves from a template and mix them with real ones, or make a repeating pattern: big leaf, small leaf.",
+    tips: [
+      { boldPrefix: "Safety:", text: "An adult uses the stapler, with the staples facing outward so they don't touch the head." },
+    ],
+  },
 };
 
 export function activityEnglishContent(activity) { return EN[activity?.id] || null; }
