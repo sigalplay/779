@@ -11,6 +11,25 @@ import { allActivities, isSearchActive } from "@/lib/storage";
 import { useTranslator } from "@/lib/language";
 import { activityTitle, translatedTerm } from "@/lib/content-translations";
 
+// The newest activities are usually added together (for example a seasonal set), so on this page
+// they are spread through the list instead of filling the top rows: the first stays on top and the
+// rest are placed at even gaps.
+function spreadNewestBatch(rows) {
+  const day = (a) => (a.created_at || "").slice(0, 10);
+  const newest = rows.length ? day(rows[0]) : "";
+  const batch = rows.filter((a) => newest && day(a) === newest);
+  if (batch.length < 3) return rows;
+  const rest = rows.filter((a) => !batch.includes(a));
+  const out = [batch[0]];
+  const gap = (rest.length + 1) / batch.length;
+  let next = 1;
+  rest.forEach((a, i) => {
+    out.push(a);
+    while (next < batch.length && i + 1 >= Math.round(gap * next)) out.push(batch[next++]);
+  });
+  return out.concat(batch.slice(next));
+}
+
 export default function AllActivities({ mode = "therapist" }) {
   const { language, t } = useTranslator();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -67,7 +86,7 @@ export default function AllActivities({ mode = "therapist" }) {
     return rows;
   }, [all, group, age, category, duration, q]);
   const [nameQuery, setNameQuery] = useState("");
-  const shownRows = useMemo(() => filtered.filter((a) => matchesName(activityTitle(a, language), nameQuery)), [filtered, nameQuery, language]);
+  const shownRows = useMemo(() => spreadNewestBatch(filtered.filter((a) => matchesName(activityTitle(a, language), nameQuery))), [filtered, nameQuery, language]);
   useEffect(() => {
     document.body.classList.add("activities-two-column-page");
     return () => document.body.classList.remove("activities-two-column-page");
