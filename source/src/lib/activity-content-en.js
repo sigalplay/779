@@ -1635,7 +1635,7 @@ const EN = {
     preparation: "Cover the table with newspaper and put a little of each paint color on a plate.",
     steps: [
       "Lay a leaf on the newspaper with the veined side facing up.",
-      "Brush a thin layer of paint onto the leaf. Several colors can be combined.",
+      "Brush a thin layer of paint onto the leaf.",
       "Turn the leaf over and place it on a clean sheet of paper, paint side down.",
       "Cover with a paper towel and press with your palm over the whole leaf. Carefully lift the leaf by its stem.",
     ],
