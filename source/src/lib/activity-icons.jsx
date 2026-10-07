@@ -1332,6 +1332,13 @@ export const ACTIVITY_ICON_SETS = {
   "seed-124": { large: true, hero: "/icon-bank/crafts-new/hidden-spider-web/hero.webp" },
   "seed-125": { large: true, hero: "/icon-bank/crafts-new/blow-hair/hero.webp" },
   "seed-126": { large: true, hero: "/icon-bank/crafts-new/seed-126-window-stickers/hero.webp" },
+  "seed-127": { large: true, hero: "/icon-bank/crafts-new/seed-127-leaf-rubbing/hero.webp" },
+  "seed-128": { large: true, hero: "/icon-bank/crafts-new/seed-128-leaf-hedgehog/hero.webp" },
+  "seed-129": { large: true, hero: "/icon-bank/crafts-new/seed-129-leaf-prints/hero.webp" },
+  "seed-130": { large: true, hero: "/icon-bank/crafts-new/seed-130-leaf-sorting/hero.webp" },
+  "seed-131": { large: true, hero: "/icon-bank/crafts-new/seed-131-crumpled-paper-tree/hero.webp" },
+  "seed-132": { large: true, hero: "/icon-bank/crafts-new/seed-132-leaf-crown/hero.webp" },
+  "seed-133": { large: true, hero: "/icon-bank/crafts-new/seed-133-crayon-transfer/hero.webp" },
 };
 
 // The activity bank uses one calm, unified watercolor illustration per card.

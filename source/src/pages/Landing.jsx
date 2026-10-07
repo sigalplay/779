@@ -7,22 +7,26 @@ import { brandLogo, useTranslator } from "@/lib/language";
 // פעילויות עונתיות בדף הבית. בורר הנושא מאפשר לעבור בין החגים.
 // כל נושא מוצג רק בשפות שברשימה שלו (חגי ישראל בעברית בלבד). אם אין נושא לשפה, האזור לא מוצג.
 const SEASONAL_TOPIC_LIST = [
-  { id: "sukkot", he: "פעילויות לסוכות 🌿", en: "Sukkot activities 🌿", languages: ["he"] },
+  { id: "fall", he: "פעילויות לסתיו 🍂", en: "Fall activities 🍂", languages: ["he", "en"] },
   { id: "rosh-hashanah", he: "פעילויות לראש השנה 🍎", en: "Rosh Hashanah activities 🍎", languages: ["he"] },
 ];
 
 const SEASONAL_TOPICS = {
-  sukkot: [
-    { titleHe: "הכנת לוח שנה", titleEn: "Create a family calendar", image: "/icon-bank/navigation-v2/family-calendar-illustrated-v2.webp", altHe: "הכנת לוח שנה משפחתי להדפסה", altEn: "Create a printable family calendar", imageFit: "contain", to: "/parent/hebrew-calendar", badgeHe: "להכנה", badgeEn: "Create calendar" },
-    { titleHe: "שרשרת לבבות", titleEn: "Paper Heart Chain", image: "/icon-bank/crafts-new/seed-120-heart-chain/hero.webp", altHe: "הכנת שרשרת לבבות צבעונית לסוכה", altEn: "Make a colorful paper heart chain", imageFit: "contain", to: "/activity/seed-120?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
-    { titleHe: "הכנת סוכה", titleEn: "3D Cardstock Sukkah", image: "/icon-bank/crafts-new/seed-119-sukkah/hero.webp", altHe: "הכנת סוכה תלת־ממדית מבריסטול", altEn: "Make a 3D cardstock sukkah", imageFit: "contain", to: "/activity/seed-119?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
-    { titleHe: "כתב סתרים של סוכות", titleEn: "Sukkot Secret Code", image: "/icon-bank/navigation-v2/cipher-flat.webp", altHe: "יצירת כתב סתרים עם סמלים של סוכות", altEn: "Create a Sukkot secret code", imageFit: "contain", to: "/parent/cipher?key=sukkot", badgeHe: "לכתב סתרים", badgeEn: "Create code" },
-  ],
   "rosh-hashanah": [
     { titleHe: "יצירת לוח שנה", titleEn: "Create a family calendar", image: "/icon-bank/navigation-v2/family-calendar-illustrated-v2.webp", altHe: "יצירת לוח שנה משפחתי להדפסה", altEn: "Create a printable family calendar", imageFit: "contain", to: "/parent/hebrew-calendar", badgeHe: "להכנת לוח שנה", badgeEn: "Create calendar" },
     { titleHe: "משושי הדבש", titleEn: "Honeycomb Shapes", image: "/icon-bank/manual/experiments/honey-hexagons-hero.webp", altHe: "ניסוי משושי הדבש לראש השנה", altEn: "Honeycomb shapes experiment for Rosh Hashanah", to: "/parent/experiments/honey-hexagons", badgeHe: "לניסוי", badgeEn: "View experiment" },
     { titleHe: "גרעיני הרימון", titleEn: "Pomegranate Seed Counting Craft", image: "/icon-bank/crafts-new/seed-110-pomegranate/hero.webp", altHe: "יצירת גרעיני רימון מנייר קרפ", altEn: "Pomegranate seeds craft using crepe paper", to: "/activity/seed-112?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
     { titleHe: "פלחי תפוחים מצופים בשוקולד", titleEn: "Chocolate-Dipped Apple Slices", image: "/icon-bank/manual/chocolate-apple-slices/cover.webp", altHe: "מתכון פלחי תפוחים מצופים בשוקולד", altEn: "Chocolate-dipped apple slices recipe", to: "/parent/recipes/chocolate-apple-slices", badgeHe: "למתכון", badgeEn: "View recipe" },
+  ],
+  fall: [
+    { titleHe: "עץ סתיו מכדורי נייר", titleEn: "Crumpled Paper Fall Tree", image: "/icon-bank/crafts-new/seed-131-crumpled-paper-tree/hero.webp", altHe: "עץ סתיו מכדורי נייר קרפ", altEn: "A fall tree made of crumpled crepe paper", imageFit: "contain", to: "/activity/seed-131?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
+    { titleHe: "קיפוד עלים", titleEn: "Leaf Hedgehog", image: "/icon-bank/crafts-new/seed-128-leaf-hedgehog/hero.webp", altHe: "קיפוד מבריסטול עם קוצים מעלים", altEn: "A cardstock hedgehog with leaf spikes", imageFit: "contain", to: "/activity/seed-128?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
+    { titleHe: "עלה קסום", titleEn: "Magic Leaf", image: "/icon-bank/crafts-new/seed-133-crayon-transfer/hero.webp", altHe: "ציורי סתיו בצבעי פנדה בטכניקת העברה", altEn: "Fall drawings made with the crayon transfer technique", imageFit: "contain", to: "/activity/seed-133?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
+    { titleHe: "כתר עלים", titleEn: "Leaf Crown", image: "/icon-bank/crafts-new/seed-132-leaf-crown/hero.webp", altHe: "כתר מעלי שלכת", altEn: "A crown made of fall leaves", imageFit: "contain", to: "/activity/seed-132?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
+    { titleHe: "מיון עלים", titleEn: "Leaf Sorting", image: "/icon-bank/crafts-new/seed-130-leaf-sorting/hero.webp", altHe: "מיון עלים לפי צבע וגודל", altEn: "Sorting leaves by color and size", imageFit: "contain", to: "/activity/seed-130?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
+    { titleHe: "הטבעת עלים", titleEn: "Leaf Prints", image: "/icon-bank/crafts-new/seed-129-leaf-prints/hero.webp", altHe: "הטבעת עלים בצבע", altEn: "Leaf prints made with paint", imageFit: "contain", to: "/activity/seed-129?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
+    { titleHe: "העתקת עלים בצבעי פנדה", titleEn: "Leaf Rubbing", image: "/icon-bank/crafts-new/seed-127-leaf-rubbing/hero.webp", altHe: "העתקת עלים בצבעי פנדה", altEn: "Leaf rubbings made with crayons", imageFit: "contain", to: "/activity/seed-127?mode=parent&returnPath=%2F", badgeHe: "ליצירה", badgeEn: "View craft" },
+    { titleHe: "כתב סתרים של סתיו", titleEn: "Halloween Secret Code", image: "/icon-bank/navigation-v2/cipher-flat.webp", altHe: "יצירת כתב סתרים עם סמלים של סתיו", altEn: "Create a Halloween secret code", imageFit: "contain", to: "/parent/cipher?key=fall", toEn: "/parent/cipher?key=halloween", badgeHe: "לכתב סתרים", badgeEn: "Create code" },
   ],
 };
 
@@ -119,7 +123,7 @@ export default function Landing() {
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {seasonalActivities.map((activity) => (
-                <Link key={activity.to} to={activity.to} className="overflow-hidden rounded-[1.5rem] border border-sky bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-soft">
+                <Link key={activity.to} to={language === "en" && activity.toEn ? activity.toEn : activity.to} className="overflow-hidden rounded-[1.5rem] border border-sky bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-soft">
                   <div className="aspect-[4/3] overflow-hidden bg-white">
                     <img
                       src={activity.image}
