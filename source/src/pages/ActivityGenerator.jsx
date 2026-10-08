@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { useTranslator } from "@/lib/language";
 import { translatedTerm } from "@/lib/content-translations";
 import { isCloudSignedIn } from "@/lib/cloud-auth";
-import { addActivity, addCustomRecipe, addToDraftPlan, getCustomActivities, updateCustomActivity } from "@/lib/storage";
+import { addActivity, addCustomRecipe, addToDraftPlan, getCustomActivities, getCustomRecipes, updateCustomActivity, updateCustomRecipe } from "@/lib/storage";
 import { readPhotoFile } from "@/lib/session-board-tools";
 import { generateActivity, loadIllustrationCatalog, suggestIllustrations, toSiteActivity, toSiteRecipe } from "@/lib/activity-generator";
 
@@ -22,8 +22,9 @@ const WITHOUT = [["nuts", "אגוזים", "Nuts"], ["gluten", "גלוטן", "Glu
 // The activity generator: the therapist describes what she needs and gets an activity in the site's
 // format, drawn with the site's own illustrations; where none fits she can choose another or upload
 // her own photo. The result can be edited, saved to "My activities", added to the session board and printed.
-// In recipe mode (?kind=recipe) it writes a kids' recipe instead, saves it under "My recipes" and opens it
-// on the recipes page. Activities and recipes share one monthly limit.
+// In recipe mode (?kind=recipe) it writes a kids' recipe instead: she checks its pictures, then it is saved
+// under "My recipes" and opened on the recipes page. A saved recipe's pictures can be changed later
+// (?kind=recipe&edit=<id>). Activities and recipes share one monthly limit.
 export default function ActivityGenerator() {
   const { language, t } = useTranslator();
   const navigate = useNavigate();
@@ -34,6 +35,7 @@ export default function ActivityGenerator() {
   const setKind = (kind) => { setForm((current) => ({ ...current, kind })); setError(""); setSearchParams(kind === "recipe" ? { kind } : {}, { replace: true }); };
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [recipe, setRecipe] = useState(() => savedRecipeForReview(searchParams.get("edit")));
   const [activity, setActivity] = useState(null);
   const [remaining, setRemaining] = useState(null);
   const [editing, setEditing] = useState(false);
@@ -62,9 +64,9 @@ export default function ActivityGenerator() {
         return;
       }
       if (result.activity.kind === "recipe") {
-        const saved = addCustomRecipe(toSiteRecipe(result.activity, language));
-        toast.success(result.remaining != null ? t(`המתכון נשמר ב"המתכונים שלי". נשארו לך החודש ${result.remaining}.`, `Saved to "My recipes". ${result.remaining} left this month.`) : t("המתכון נשמר ב\"המתכונים שלי\"", "Saved to \"My recipes\""));
-        navigate(`/therapist/recipes/${saved.id}`);
+        setRecipe(result.activity);
+        setRemaining(result.remaining ?? null);
+        window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
       setActivity(result.activity);
@@ -114,6 +116,26 @@ export default function ActivityGenerator() {
     toast.success(t("הפעילות נוספה ללוח המפגש", "Added to the session board"));
     navigate("/therapist/build?view=session");
   }
+  const changeRecipeItem = (key, index, image) => {
+    setRecipe((current) => ({ ...current, [key]: current[key].map((item, i) => (i === index ? { ...item, image } : item)) }));
+  };
+  function saveRecipe() {
+    if (recipe.saved) {
+      // Back to the saved shape: a picture as img, otherwise the item's emoji.
+      const toSaved = (fallback) => ({ image, img, emoji, ...item }) => (image ? { ...item, img: image } : { ...item, emoji: emoji || fallback });
+      updateCustomRecipe(recipe.saved.id, {
+        ingredients: recipe.ingredients.map(toSaved("🛒")),
+        tools: recipe.tools.map(toSaved("🍴")),
+        steps: recipe.steps.map(toSaved(recipe.saved.coverEmoji || "🍪")),
+      });
+      toast.success(t("התמונות במתכון עודכנו", "The recipe's pictures were updated"));
+      navigate(`/therapist/recipes/${recipe.saved.id}`);
+      return;
+    }
+    const saved = addCustomRecipe(toSiteRecipe(recipe, language));
+    toast.success(remaining != null ? t(`המתכון נשמר ב"המתכונים שלי". נשארו לך החודש ${remaining}.`, `Saved to "My recipes". ${remaining} left this month.`) : t("המתכון נשמר ב\"המתכונים שלי\"", "Saved to \"My recipes\""));
+    navigate(`/therapist/recipes/${saved.id}`);
+  }
   function openToPrint() {
     navigate(`/activity/${save()}?mode=therapist`);
   }
@@ -127,7 +149,14 @@ export default function ActivityGenerator() {
           {" "}<Link to="/therapist/community-activities" className="font-bold text-primary underline underline-offset-4">{t("לפעילויות שמשתמשים יצרו", "Activities users created")}</Link>
         </p>
 
-        {!signedIn ? (
+        {recipe ? (
+          <RecipeReview
+            recipe={recipe}
+            onPick={setPicker}
+            onSave={saveRecipe}
+            onCancel={recipe.saved ? () => navigate(`/therapist/recipes/${recipe.saved.id}`) : () => { setRecipe(null); setError(""); }}
+          />
+        ) : !signedIn ? (
           <div className="rounded-3xl border border-border/60 bg-card p-6 text-center">
             <p className="mb-4 font-semibold">{t("מחולל הפעילויות פתוח למטפלות מחוברות.", "The activity generator is for signed-in therapists.")}</p>
             <a href={`${language === "en" ? "/en" : ""}/auth?mode=login&redirect=${encodeURIComponent("/therapist/activity-generator")}`} className="inline-flex min-h-11 items-center rounded-full bg-primary px-6 font-semibold text-primary-foreground">{t("התחברות", "Sign in")}</a>
@@ -221,7 +250,75 @@ export default function ActivityGenerator() {
           onClose={() => setPicker(null)}
         />
       )}
+      {picker && recipe && (
+        <IllustrationPicker
+          text={recipe[picker.kind][picker.index]?.text}
+          kind={picker.kind === "steps" ? "step" : "material"}
+          title={picker.kind === "steps" ? t(`שלב ${picker.index + 1}`, `Step ${picker.index + 1}`) : recipe[picker.kind][picker.index]?.text}
+          current={recipe[picker.kind][picker.index]?.image}
+          onChoose={(image) => { changeRecipeItem(picker.kind, picker.index, image); setPicker(null); }}
+          onClose={() => setPicker(null)}
+        />
+      )}
     </AppShell>
+  );
+}
+
+// A saved recipe in the shape the review screen uses: each item's picture as image.
+function savedRecipeForReview(id) {
+  const saved = id ? getCustomRecipes().find((item) => item.id === id) : null;
+  if (!saved) return null;
+  const withImage = (item) => ({ ...item, image: item.img || null });
+  return { saved, title: saved.title, ingredients: saved.ingredients.map(withImage), tools: saved.tools.map(withImage), steps: saved.steps.map(withImage) };
+}
+
+// The recipe's pictures before it is saved (or when changing a saved one): tapping a picture chooses
+// another from the site's catalog or uploads her own photo.
+function RecipeReview({ recipe, onPick, onSave, onCancel }) {
+  const { t } = useTranslator();
+  const groups = [["ingredients", t("מצרכים", "Ingredients")], ["tools", t("כלים", "Tools")]];
+  const picture = (item, label, onClick, size) => (
+    <button type="button" onClick={onClick} aria-label={t(`איור ל${label}`, `Picture for ${label}`)} className={cn("relative grid shrink-0 place-items-center overflow-hidden rounded-xl", size, item.image ? "bg-white" : "border-2 border-dashed border-border bg-muted/40 text-sage-foreground")}>
+      {item.image ? <img src={item.image} alt="" className="h-full w-full object-contain" /> : <span className="grid place-items-center gap-1 text-[11px] font-bold">{item.emoji ? <span className="text-2xl" aria-hidden="true">{item.emoji}</span> : <Camera className="h-5 w-5" aria-hidden="true" />}{t("איור / תמונה", "Picture")}</span>}
+      {item.image && <SwapBadge />}
+    </button>
+  );
+  return (
+    <article className="space-y-6 rounded-3xl border border-border/60 bg-card p-5">
+      <div>
+        <h2 className="font-display text-2xl font-black">{recipe.title}</h2>
+        <p className="mt-2 rounded-xl bg-sage/15 px-3 py-2 text-sm font-semibold text-sage-foreground">{t("איור לא מתאים? נוגעים בו ובוחרים אחר מהמאגר, או מעלים תמונה משלך.", "Picture doesn't fit? Tap it to choose another from the site or upload your own photo.")}</p>
+      </div>
+      {groups.map(([key, label]) => (
+        <section key={key}>
+          <h3 className="mb-2 font-bold">{label}</h3>
+          <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            {recipe[key].map((item, index) => (
+              <li key={index} className="flex flex-col rounded-2xl border border-border/60 bg-card p-1.5 text-center">
+                {picture(item, item.text, () => onPick({ kind: key, index }), "aspect-square w-full")}
+                <span className="mt-1 text-sm font-semibold">{item.text}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+      <section>
+        <h3 className="mb-2 font-bold">{t("שלבים", "Steps")}</h3>
+        <ol className="space-y-2">
+          {recipe.steps.map((step, index) => (
+            <li key={index} className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-2">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-sage/30 text-sm font-bold">{index + 1}</span>
+              {picture(step, t(`שלב ${index + 1}`, `step ${index + 1}`), () => onPick({ kind: "steps", index }), "h-20 w-20")}
+              <p className="flex-1 leading-relaxed">{step.text}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" onClick={onSave} className="min-h-11 rounded-full"><Save className="h-4 w-4" aria-hidden="true" />{" "}{recipe.saved ? t("שמירת השינויים", "Save changes") : t("שמירה ופתיחת המתכון", "Save and open the recipe")}</Button>
+        <Button type="button" variant="outline" onClick={onCancel} className="min-h-11 rounded-full">{recipe.saved ? t("ביטול", "Cancel") : t("בקשה חדשה", "New request")}</Button>
+      </div>
+    </article>
   );
 }
 
