@@ -176,8 +176,8 @@ create policy "own ai requests" on public.ai_activity_requests for select to aut
 
 -- Activities that users created with the activity generator. Every generated activity is added
 -- here by the generate-activity function (with the service key), without who made it, and anyone
--- can read the list (/therapist/community-activities). Only site admins (cms_admins) can change its
--- pictures or delete it.
+-- can read the list (/therapist/community-activities). Signed-in users can correct an activity
+-- unless it is locked; only site admins (cms_admins) can lock or delete it.
 create table if not exists public.community_activities (
   id uuid primary key default gen_random_uuid(),
   activity jsonb not null,
@@ -190,10 +190,16 @@ create table if not exists public.community_activities (
   created_at timestamptz not null default now()
 );
 create index if not exists community_activities_time on public.community_activities (created_at desc);
+-- A locked activity can be changed only by an admin.
+alter table public.community_activities add column if not exists locked boolean not null default false;
 alter table public.community_activities enable row level security;
 drop policy if exists "anyone reads community activities" on public.community_activities;
 create policy "anyone reads community activities" on public.community_activities for select to anon, authenticated
   using (true);
+-- Signed-in users may correct an unlocked activity (and cannot lock it); admins may change and lock any.
+drop policy if exists "users correct unlocked community activities" on public.community_activities;
+create policy "users correct unlocked community activities" on public.community_activities for update to authenticated
+  using (not locked) with check (not locked);
 drop policy if exists "admins update community activities" on public.community_activities;
 create policy "admins update community activities" on public.community_activities for update to authenticated
   using (exists (select 1 from public.cms_admins a where a.user_id = auth.uid()))
