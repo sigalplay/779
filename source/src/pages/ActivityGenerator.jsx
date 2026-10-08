@@ -78,7 +78,9 @@ export default function ActivityGenerator() {
         else setError(t(`הגעת ל־${failure.limit} היצירות של החודש (פעילויות ומתכונים יחד). המכסה מתחדשת ב־1 לחודש.`, `You have reached this month's ${failure.limit} creations (activities and recipes together). The limit renews on the 1st.`));
         return;
       }
-      setError(errors[failure.code] || t("משהו השתבש. נסי שוב.", "Something went wrong. Please try again."));
+      // The code (e.g. "server", "ai-error", or a network failure) tells the site owner what to fix.
+      const code = failure.code || (failure instanceof TypeError ? "network" : "unknown");
+      setError(errors[failure.code] || t(`משהו השתבש. נסי שוב. (קוד: ${code})`, `Something went wrong. Please try again. (code: ${code})`));
     } finally {
       setLoading(false);
     }
