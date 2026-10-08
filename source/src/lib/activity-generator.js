@@ -11,7 +11,7 @@ export async function generateActivity({ kind, request, age, equipment, duration
     body: JSON.stringify({ kind, request, age, equipment, duration, without, oven, language }),
   });
   const body = await response.json().catch(() => ({}));
-  if (!response.ok) throw Object.assign(new Error(body.error || "server"), { code: body.error || (response.status === 404 ? "not-deployed" : "server"), limit: body.limit });
+  if (!response.ok) throw Object.assign(new Error(body.error || "server"), { code: body.error || (response.status === 404 ? "not-deployed" : `server-${response.status}`), limit: body.limit });
   return body;
 }
 
