@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useBodyClass } from "@/lib/use-body-class";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { ChefHat, Clock, ArrowLeft, RotateCcw, ListPlus, Check, Printer, X, Sparkles, Trash2 } from "lucide-react";
+import { ChefHat, Clock, ArrowLeft, RotateCcw, ListPlus, Check, Printer, X, Sparkles, Trash2, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { PageToolbox } from "@/components/toolbox/PageToolbox";
@@ -2139,6 +2139,11 @@ function RecipeDetail({ recipe, mode, onBack }) {
         >
           ✏️ כתב יד {handwriting.on ? "פעיל" : "כבוי"}
         </button>}
+        {mode !== "parent" && recipe.id?.startsWith("my-recipe-") && (
+          <Link to={`/therapist/activity-generator?kind=recipe&edit=${recipe.id}`} className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1.5 text-base font-bold hover:bg-muted/70">
+            <ImageIcon className="h-4 w-4" aria-hidden="true" /> {t("החלפת איורים", "Change pictures")}
+          </Link>
+        )}
         <span className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-base text-muted-foreground">
           <Clock className="h-4 w-4" /> {recipe.duration}
         </span>

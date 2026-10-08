@@ -188,6 +188,13 @@ export function addCustomRecipe(recipe) {
   return saved;
 }
 
+// Changes a recipe the therapist made (new pictures for its ingredients, tools or steps).
+export function updateCustomRecipe(id, patch) {
+  const list = read(KEYS.recipes, []).map((recipe) => (recipe.id === id ? { ...recipe, ...patch, id } : recipe));
+  write(KEYS.recipes, list);
+  return list.find((recipe) => recipe.id === id) ?? null;
+}
+
 export function deleteCustomRecipe(id) {
   write(KEYS.recipes, read(KEYS.recipes, []).filter((recipe) => recipe.id !== id));
 }
