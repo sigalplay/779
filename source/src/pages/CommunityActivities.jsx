@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ImageIcon, Lock, LockOpen, Pencil, Plus, Save, Search, Sparkles, Trash2 } from "lucide-react";
+import { BookOpen, ImageIcon, Lock, LockOpen, Pencil, Plus, Save, Search, Sparkles, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { isCloudSignedIn } from "@/lib/cloud-auth";
@@ -15,7 +15,7 @@ import { addActivity, addCustomRecipe, addToDraftPlan } from "@/lib/storage";
 import { toSiteActivity, toSiteRecipe } from "@/lib/activity-generator";
 import { deleteCommunityActivity, listCommunityActivities, updateCommunityActivity } from "@/lib/community-activities";
 import { IllustrationPicker, SwapBadge } from "@/components/IllustrationPicker";
-import { isCmsAdmin } from "@/lib/cms-content";
+import { deleteCmsRow, getCachedCmsCollection, isCmsAdmin, saveCmsRow } from "@/lib/cms-content";
 
 const AGES = [["3-4", 3, 4], ["5-6", 5, 6], ["7-9", 7, 9], ["10+", 10, 99]];
 
@@ -90,6 +90,33 @@ export default function CommunityActivities() {
       toast.error(t("השמירה לא הצליחה. ייתכן שהפעילות ננעלה או שחסרה הרשאה ב־Supabase.", "Couldn't save. The activity may be locked, or a permission is missing in Supabase."));
     } finally {
       setSavingPictures(false);
+    }
+  }
+  // An admin can publish a recipe from the bank on the main recipes page (as CMS content, id "bank-<row id>").
+  // It is a copy: after later corrections she publishes it again to update it.
+  const pageId = open ? `bank-${open.id}` : "";
+  const [cmsTick, setCmsTick] = useState(0);
+  const onRecipesPage = useMemo(() => Boolean(pageId) && getCachedCmsCollection("recipe", []).some((item) => item.id === pageId), [pageId, cmsTick]); // eslint-disable-line react-hooks/exhaustive-deps
+  async function publishToRecipesPage() {
+    setSavingPictures(true);
+    try {
+      await saveCmsRow({ content_type: "recipe", content_id: pageId, payload: { ...toSiteRecipe(open.activity, open.language), ai_generated: false }, status: "published" });
+      setCmsTick((value) => value + 1);
+      toast.success(onRecipesPage ? t("המתכון עודכן בדף המתכונים", "Updated on the recipes page") : t("המתכון נוסף לדף המתכונים", "Added to the recipes page"));
+    } catch {
+      toast.error(t("לא הצלחנו להוסיף לדף המתכונים.", "Couldn't add it to the recipes page."));
+    } finally {
+      setSavingPictures(false);
+    }
+  }
+  async function removeFromRecipesPage() {
+    if (!window.confirm(t("להסיר את המתכון מדף המתכונים? הוא יישאר בבנק.", "Remove the recipe from the recipes page? It stays in the bank."))) return;
+    try {
+      await deleteCmsRow("recipe", pageId);
+      setCmsTick((value) => value + 1);
+      toast.success(t("המתכון הוסר מדף המתכונים", "Removed from the recipes page"));
+    } catch {
+      toast.error(t("ההסרה לא הצליחה.", "Couldn't remove it."));
     }
   }
   const savePictures = () => saveRow({ activity: draft, title: draft.title }, t("השינויים נשמרו בבנק", "The changes were saved to the bank"));
@@ -285,6 +312,16 @@ export default function CommunityActivities() {
                 {admin && (
                   <button type="button" disabled={savingPictures} onClick={toggleLock} className="inline-flex items-center gap-1 text-sm font-semibold text-foreground">
                     {open.locked ? <LockOpen className="h-4 w-4" aria-hidden="true" /> : <Lock className="h-4 w-4" aria-hidden="true" />} {open.locked ? t("ביטול נעילה (מנהלת)", "Unlock (admin)") : t("נעילה לעריכה (מנהלת)", "Lock editing (admin)")}
+                  </button>
+                )}
+                {admin && isRecipe && (
+                  <button type="button" disabled={savingPictures} onClick={publishToRecipesPage} className="inline-flex items-center gap-1 text-sm font-semibold text-foreground">
+                    <BookOpen className="h-4 w-4" aria-hidden="true" /> {onRecipesPage ? t("עדכון בדף המתכונים (מנהלת)", "Update on the recipes page (admin)") : t("הוספה לדף המתכונים (מנהלת)", "Add to the recipes page (admin)")}
+                  </button>
+                )}
+                {admin && isRecipe && onRecipesPage && (
+                  <button type="button" onClick={removeFromRecipesPage} className="inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground">
+                    {t("הסרה מדף המתכונים", "Remove from the recipes page")}
                   </button>
                 )}
                 {admin && (
