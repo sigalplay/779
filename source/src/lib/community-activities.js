@@ -2,7 +2,7 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL, freshCloudSession } from "@/lib/cloud-
 
 // "Activities users created": every activity made with the activity generator is added to the
 // table community_activities by the generate-activity function. Anyone can read it; only site
-// admins can delete (see supabase/schema.sql).
+// admins can change (its pictures) or delete it (see supabase/schema.sql).
 const TABLE = `${SUPABASE_URL}/rest/v1/community_activities`;
 
 export async function listCommunityActivities() {
@@ -22,4 +22,18 @@ export async function deleteCommunityActivity(id) {
   });
   const rows = await response.json().catch(() => []);
   if (!response.ok || !rows.length) throw new Error("not-allowed");
+}
+
+// Saves an admin's changes to a shared activity (new pictures from the site's catalog).
+export async function updateCommunityActivity(id, activity) {
+  const session = await freshCloudSession();
+  if (!session?.access_token) throw new Error("sign-in");
+  const response = await fetch(`${TABLE}?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json", Prefer: "return=representation" },
+    body: JSON.stringify({ activity }),
+  });
+  const rows = await response.json().catch(() => []);
+  if (!response.ok || !rows.length) throw new Error("not-allowed");
+  return rows[0];
 }

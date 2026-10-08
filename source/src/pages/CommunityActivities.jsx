@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, Save, Search, Sparkles, Trash2 } from "lucide-react";
+import { ImageIcon, Plus, Save, Search, Sparkles, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -10,7 +10,8 @@ import { useTranslator } from "@/lib/language";
 import { translatedTerm } from "@/lib/content-translations";
 import { addActivity, addCustomRecipe, addToDraftPlan } from "@/lib/storage";
 import { toSiteActivity, toSiteRecipe } from "@/lib/activity-generator";
-import { deleteCommunityActivity, listCommunityActivities } from "@/lib/community-activities";
+import { deleteCommunityActivity, listCommunityActivities, updateCommunityActivity } from "@/lib/community-activities";
+import { IllustrationPicker, SwapBadge } from "@/components/IllustrationPicker";
 import { isCmsAdmin } from "@/lib/cms-content";
 
 const AGES = [["3-4", 3, 4], ["5-6", 5, 6], ["7-9", 7, 9], ["10+", 10, 99]];
@@ -28,6 +29,10 @@ export default function CommunityActivities() {
   const [age, setAge] = useState(null);
   const [open, setOpen] = useState(null);
   const [admin, setAdmin] = useState(false);
+  // An admin changing the pictures of the open activity: her draft, and which picture she is choosing.
+  const [draft, setDraft] = useState(null);
+  const [picking, setPicking] = useState(null); // { key, index }
+  const [savingPictures, setSavingPictures] = useState(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -57,6 +62,37 @@ export default function CommunityActivities() {
   }, [mine, query, goal, age]);
 
   const isRecipe = open?.activity?.kind === "recipe";
+  const openShown = draft || open?.activity;
+  const closeOpen = () => { setOpen(null); setDraft(null); setPicking(null); };
+  const choosePicture = (image) => {
+    setDraft((current) => ({ ...current, [picking.key]: current[picking.key].map((item, i) => (i === picking.index ? { ...item, image } : item)) }));
+    setPicking(null);
+  };
+  async function savePictures() {
+    setSavingPictures(true);
+    try {
+      const saved = await updateCommunityActivity(open.id, draft);
+      setRows((current) => current.map((row) => (row.id === saved.id ? { ...row, activity: saved.activity } : row)));
+      setOpen((current) => ({ ...current, activity: saved.activity }));
+      setDraft(null);
+      toast.success(t("האיורים עודכנו בבנק", "The pictures were updated in the bank"));
+    } catch {
+      toast.error(t("השמירה לא הצליחה. ייתכן שחסרה הרשאת עריכה ב־Supabase.", "Couldn't save. The edit permission may be missing in Supabase."));
+    } finally {
+      setSavingPictures(false);
+    }
+  }
+  // A picture in the open activity; while an admin edits, tapping it chooses another.
+  const picture = (item, key, index, className) => {
+    const img = item.image ? <img src={item.image} alt="" className={className} /> : null;
+    if (!draft) return img;
+    return (
+      <button type="button" onClick={() => setPicking({ key, index })} aria-label={t(`איור ל${item.name ?? item.text ?? ""}`, `Picture for ${item.name ?? item.text ?? ""}`)} className={cn("relative grid shrink-0 place-items-center overflow-hidden rounded-xl bg-white", !item.image && "aspect-square w-16 border-2 border-dashed border-border")}>
+        {img || <ImageIcon className="h-5 w-5 text-sage-foreground" aria-hidden="true" />}
+        <SwapBadge />
+      </button>
+    );
+  };
   const saveRecipe = (row) => addCustomRecipe(toSiteRecipe(row.activity, row.language));
   const saveToMine = (row) => addActivity(toSiteActivity(row.activity, { equipment: row.equipment, language: row.language }));
 
@@ -140,27 +176,39 @@ export default function CommunityActivities() {
         )}
       </div>
 
-      <Dialog open={Boolean(open)} onOpenChange={(value) => !value && setOpen(null)}>
+      <Dialog open={Boolean(open)} onOpenChange={(value) => !value && closeOpen()}>
         {open && (
           <DialogContent dir={language === "en" ? "ltr" : "rtl"} className="max-h-[90vh] max-w-2xl overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{open.activity.emoji} {open.activity.title}</DialogTitle>
             </DialogHeader>
+            {picking ? (
+              <IllustrationPicker
+                inline
+                allowUpload={false}
+                text={openShown[picking.key][picking.index]?.name ?? openShown[picking.key][picking.index]?.text}
+                kind={picking.key === "steps" ? "step" : "material"}
+                title={picking.key === "steps" ? t(`שלב ${picking.index + 1}`, `Step ${picking.index + 1}`) : (openShown[picking.key][picking.index]?.name ?? openShown[picking.key][picking.index]?.text)}
+                current={openShown[picking.key][picking.index]?.image}
+                onChoose={choosePicture}
+                onClose={() => setPicking(null)}
+              />
+            ) : <>
             <p className="text-muted-foreground">{open.activity.description}</p>
             <p className="text-xs font-semibold text-muted-foreground">
               {t(`גיל ${open.activity.age_min}–${open.activity.age_max}`, `Age ${open.activity.age_min}–${open.activity.age_max}`)} · {t(`${open.activity.duration_min} דק׳`, `${open.activity.duration_min} min`)}{isRecipe ? "" : ` · ${open.equipment === "clinic" ? t("קליניקה", "Clinic") : t("מהבית", "At home")}`}
             </p>
 
             {(isRecipe
-              ? [[t("מצרכים", "Ingredients"), open.activity.ingredients], [t("כלים", "Tools"), open.activity.tools]]
-              : [[t("ציוד", "Materials"), open.activity.materials]]
-            ).map(([heading, items]) => (
+              ? [[t("מצרכים", "Ingredients"), "ingredients"], [t("כלים", "Tools"), "tools"]]
+              : [[t("ציוד", "Materials"), "materials"]]
+            ).map(([heading, key]) => [heading, key, openShown[key]]).map(([heading, key, items]) => (
               <div key={heading}>
                 <h3 className="mb-2 mt-2 font-bold">{heading}</h3>
                 <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                   {(items || []).map((item, index) => (
                     <li key={index} className="rounded-2xl border border-border/60 bg-background p-2 text-center text-xs font-semibold">
-                      {item.image ? <img src={item.image} alt="" className="mx-auto aspect-square w-full object-contain" /> : <span className="grid aspect-square place-items-center text-2xl" aria-hidden="true">•</span>}
+                      {draft ? <div className="mx-auto mb-1 w-full [&>button]:aspect-square [&>button]:w-full">{picture(item, key, index, "aspect-square w-full object-contain")}</div> : item.image ? <img src={item.image} alt="" className="mx-auto aspect-square w-full object-contain" /> : <span className="grid aspect-square place-items-center text-2xl" aria-hidden="true">•</span>}
                       {item.name ?? item.text}
                     </li>
                   ))}
@@ -170,17 +218,24 @@ export default function CommunityActivities() {
 
             <h3 className="mt-2 font-bold">{t("שלבים", "Steps")}</h3>
             <ol className="space-y-2">
-              {open.activity.steps.map((step, index) => (
+              {openShown.steps.map((step, index) => (
                 <li key={index} className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background p-2">
                   <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-sage/25 text-sm font-bold">{index + 1}</span>
-                  {step.image && <img src={step.image} alt="" className="h-16 w-16 shrink-0 object-contain" />}
+                  {draft ? <div className="h-16 w-16 shrink-0 [&>button]:h-16 [&>button]:w-16">{picture(step, "steps", index, "h-16 w-16 object-contain")}</div> : step.image && <img src={step.image} alt="" className="h-16 w-16 shrink-0 object-contain" />}
                   <span className="text-sm leading-relaxed">{step.text}</span>
                 </li>
               ))}
             </ol>
             {open.activity.safety && <p className="rounded-xl bg-amber-50 px-3 py-2 text-sm">⚠️ {open.activity.safety}</p>}
 
-            {isRecipe ? (
+            {draft ? (
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+              <Button className="min-h-11 rounded-full" disabled={savingPictures} onClick={savePictures}>
+                <Save className="h-4 w-4" aria-hidden="true" /> {savingPictures ? t("שומרת…", "Saving…") : t("שמירת האיורים בבנק", "Save pictures to the bank")}
+              </Button>
+              <Button variant="outline" className="min-h-11 rounded-full" onClick={() => setDraft(null)}>{t("ביטול", "Cancel")}</Button>
+            </div>
+            ) : isRecipe ? (
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
               <Button className="min-h-11 rounded-full" onClick={() => { addToDraftPlan("recipe", saveRecipe(open).id); navigate("/therapist/build?view=session"); }}>
                 <Plus className="h-4 w-4" aria-hidden="true" /> {t("ללוח המובנה", "Add to session board")}
@@ -199,11 +254,17 @@ export default function CommunityActivities() {
               </Button>
             </div>
             )}
-            {admin && (
-              <button type="button" onClick={() => remove(open)} className="mx-auto mt-1 inline-flex items-center gap-1 text-sm font-semibold text-destructive">
-                <Trash2 className="h-4 w-4" aria-hidden="true" /> {t("מחיקה מהבנק (מנהלת)", "Delete from the bank (admin)")}
-              </button>
+            {admin && !draft && (
+              <div className="mt-1 flex flex-wrap justify-center gap-4">
+                <button type="button" onClick={() => setDraft(structuredClone(open.activity))} className="inline-flex items-center gap-1 text-sm font-semibold text-sage-foreground">
+                  <ImageIcon className="h-4 w-4" aria-hidden="true" /> {t("החלפת איורים (מנהלת)", "Change pictures (admin)")}
+                </button>
+                <button type="button" onClick={() => remove(open)} className="inline-flex items-center gap-1 text-sm font-semibold text-destructive">
+                  <Trash2 className="h-4 w-4" aria-hidden="true" /> {t("מחיקה מהבנק (מנהלת)", "Delete from the bank (admin)")}
+                </button>
+              </div>
             )}
+            </>}
           </DialogContent>
         )}
       </Dialog>
