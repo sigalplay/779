@@ -176,7 +176,8 @@ create policy "own ai requests" on public.ai_activity_requests for select to aut
 
 -- Activities that users created with the activity generator. Every generated activity is added
 -- here by the generate-activity function (with the service key), without who made it, and anyone
--- can read the list (/therapist/community-activities). Only site admins (cms_admins) can delete.
+-- can read the list (/therapist/community-activities). Only site admins (cms_admins) can change its
+-- pictures or delete it.
 create table if not exists public.community_activities (
   id uuid primary key default gen_random_uuid(),
   activity jsonb not null,
@@ -193,6 +194,10 @@ alter table public.community_activities enable row level security;
 drop policy if exists "anyone reads community activities" on public.community_activities;
 create policy "anyone reads community activities" on public.community_activities for select to anon, authenticated
   using (true);
+drop policy if exists "admins update community activities" on public.community_activities;
+create policy "admins update community activities" on public.community_activities for update to authenticated
+  using (exists (select 1 from public.cms_admins a where a.user_id = auth.uid()))
+  with check (exists (select 1 from public.cms_admins a where a.user_id = auth.uid()));
 drop policy if exists "admins delete community activities" on public.community_activities;
 create policy "admins delete community activities" on public.community_activities for delete to authenticated
   using (exists (select 1 from public.cms_admins a where a.user_id = auth.uid()));
