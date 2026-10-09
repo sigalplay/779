@@ -31,7 +31,7 @@ function MonthPage({ month, monthIndex, year, settings, title, customEvents, pho
   while (cells.length % 7) cells.push(null);
   const weekRows = cells.length / 7;
   const brand = english ? "Let's Play" : "בואו נשחק";
-  const logo = english ? "/boo-nesahek-logo-en.png" : "/boo-nesahek-logo.png";
+  const logo = english ? "/boo-nesahek-logo-en-print.webp" : "/boo-nesahek-logo-print.webp";
 
   return (
     <section className={cn("hebrew-calendar-sheet bg-white", !isLast && "hebrew-calendar-break")} dir={english ? "ltr" : "rtl"}>

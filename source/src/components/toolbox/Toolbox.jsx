@@ -246,7 +246,7 @@ export function tipTools(language, onOpenTip, { showScissors = true } = {}) {
   return [
     { id: "posture", color: "#bfe6d1", image: "/icon-bank/ui/posture-chair.webp", label: t("ישיבה", "Sitting"), large: true, items: tips("posture", POSTURE_POINTS) },
     showScissors && { id: "scissors", color: "#e6dcf5", image: "/icon-bank/ui/cutting-scissors.webp", label: t("גזירה", "Cutting"), large: true, items: tips("scissors", SCISSOR_TIP_CARDS) },
-    { id: "writing", color: "#f9d0de", image: "/icon-bank/guidance/writing/notebook-pencil.png", label: t("כתיבה", "Writing"), onSelect: () => onOpenTip("writing") },
+    { id: "writing", color: "#f9d0de", image: "/icon-bank/guidance/writing/notebook-pencil.webp", label: t("כתיבה", "Writing"), onSelect: () => onOpenTip("writing") },
     { id: "coloring", color: "#d8ecc6", image: "/icon-bank/guidance/coloring/1-relaxed-grip.webp", label: t("צביעה", "Coloring"), large: true, items: tips("coloring", COLORING_TIP_CARDS) },
   ].filter(Boolean);
 }

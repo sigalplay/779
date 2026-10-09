@@ -2,11 +2,11 @@
 // Saved board items keep the same shape as on the live site, so existing boards still open.
 
 export const VISUAL_SIGNS = [
-  { id: "enough", label: "מספיק", labelEn: "Enough", asset: "/icon-bank/ui/visual-signs-v95/enough.png" },
-  { id: "more", label: "עוד", labelEn: "More", asset: "/icon-bank/ui/visual-signs-v95/more.png" },
-  { id: "stop", label: "עצור", labelEn: "Stop", asset: "/icon-bank/ui/visual-signs-v95/stop.png" },
-  { id: "my-turn", label: "תורי", labelEn: "My turn", asset: "/icon-bank/ui/visual-signs-v95/my-turn.png" },
-  { id: "your-turn", label: "תורך", labelEn: "Your turn", asset: "/icon-bank/ui/visual-signs-v95/your-turn.png" },
+  { id: "enough", label: "מספיק", labelEn: "Enough", asset: "/icon-bank/ui/visual-signs-v95/enough.webp" },
+  { id: "more", label: "עוד", labelEn: "More", asset: "/icon-bank/ui/visual-signs-v95/more.webp" },
+  { id: "stop", label: "עצור", labelEn: "Stop", asset: "/icon-bank/ui/visual-signs-v95/stop.webp" },
+  { id: "my-turn", label: "תורי", labelEn: "My turn", asset: "/icon-bank/ui/visual-signs-v95/my-turn.webp" },
+  { id: "your-turn", label: "תורך", labelEn: "Your turn", asset: "/icon-bank/ui/visual-signs-v95/your-turn.webp" },
 ];
 
 // Emotion faces (the same boy, a shirt colour for each feeling), added to the board as pictures.

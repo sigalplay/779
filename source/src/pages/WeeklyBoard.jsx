@@ -458,7 +458,7 @@ export default function WeeklyBoard({ mode }) {
       </div>
 
       <div className="weekly-board-print-header hidden items-center justify-between print:flex">
-        <img src={brandLogo(language).replace("-fast.webp", ".png")} alt={t("בואו נשחק", "Let's Play")} className="weekly-board-print-logo object-contain" />
+        <img src={brandLogo(language).replace("-fast.webp", "-print.webp")} alt={t("בואו נשחק", "Let's Play")} className="weekly-board-print-logo object-contain" />
         <div className="text-center">
           <h1 className="font-display text-xl font-black">{displayBoardName(activeBoard?.name)}</h1>
           <p className="text-sm font-bold">{t("לוח התארגנות שבועי", "Weekly Visual Schedule")} · {formatWeekRangeLabel(weekDates, language)}</p>

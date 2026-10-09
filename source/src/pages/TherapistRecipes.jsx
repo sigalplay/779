@@ -819,7 +819,7 @@ export const RECIPES = [
       {
         text: "3–4 תפוחים גדולים",
         textN: "3–4 תַּפּוּחִים גְּדוֹלִים",
-        img: "/icon-bank/manual/chocolate-apple-slices/ingredient-apples-v2.png",
+        img: "/icon-bank/manual/chocolate-apple-slices/ingredient-apples-v2.webp",
       },
       {
         text: "12–16 שיפודי עץ",
@@ -829,7 +829,7 @@ export const RECIPES = [
       {
         text: "200 גרם שוקולד",
         textN: "200 גְּרַם שׁוֹקוֹלָד",
-        img: "/icon-bank/manual/chocolate-apple-slices/ingredient-chocolate-v2.png",
+        img: "/icon-bank/manual/chocolate-apple-slices/ingredient-chocolate-v2.webp",
       },
       {
         text: "סוכריות לבחירה",

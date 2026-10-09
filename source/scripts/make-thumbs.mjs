@@ -25,6 +25,20 @@ function sources() {
     for (const match of text.matchAll(/"(\/icon-bank\/[^"]*(?:hero|cover)[^"]*\.(?:webp|png|jpg))"/gi)) found.add(match[1]);
   });
   walk(path.join(root, "src"));
+  // Card pictures whose paths are put together in code: experiment heroes, story covers, board games.
+  const byName = (dir, test) => {
+    const base = path.join(pub, "icon-bank", dir);
+    if (!fs.existsSync(base)) return;
+    const visit = (folder) => fs.readdirSync(folder, { withFileTypes: true }).forEach((entry) => {
+      const full = path.join(folder, entry.name);
+      if (entry.isDirectory()) return visit(full);
+      if (/\.(webp|png|jpg)$/.test(entry.name) && test(entry.name)) found.add(`/${path.relative(pub, full).split(path.sep).join("/")}`);
+    });
+    visit(base);
+  };
+  byName("manual/experiments", (name) => name.includes("hero"));
+  byName("social-stories", (name) => name.includes("cover") || name === "toilet.webp");
+  byName("board-games", () => true);
   const activities = path.join(pub, "icon-bank/activities");
   if (fs.existsSync(activities)) fs.readdirSync(activities).filter((name) => name.endsWith(".webp")).forEach((name) => found.add(`/icon-bank/activities/${name}`));
   return [...found].filter((src) => !src.startsWith("/icon-bank/thumbs/") && fs.existsSync(path.join(pub, src)) && fs.statSync(path.join(pub, src)).size > MIN_BYTES).sort();

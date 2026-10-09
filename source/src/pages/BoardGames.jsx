@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { thumb } from "@/lib/thumb";
 import { Dices, Clock, Layers } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { BOARD_GAMES } from "@/lib/board-games-data";
@@ -27,7 +28,7 @@ export default function BoardGames({ mode = "therapist" }) {
           >
             <div className="flex h-40 items-center justify-center overflow-hidden bg-white p-3">
               {g.image ? (
-                <img src={g.image} alt={imageAlt(g.title, "boardGame", language)} title={imageAlt(g.title, "boardGame", language)} className="h-full w-full object-contain" />
+                <img src={thumb(g.image)} loading="lazy" decoding="async" alt={imageAlt(g.title, "boardGame", language)} title={imageAlt(g.title, "boardGame", language)} className="h-full w-full object-contain" />
               ) : (
                 <span className="text-7xl leading-none drop-shadow-md">{g.emoji}</span>
               )}

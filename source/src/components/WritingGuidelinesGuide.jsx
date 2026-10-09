@@ -2,7 +2,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { WRITING_GUIDELINE_POINTS } from "@/lib/writing-guidelines";
 
-const GUIDE_IMAGE = "/icon-bank/guidance/writing/writing-guidelines-notebook.png";
+const GUIDE_IMAGE = "/icon-bank/guidance/writing/writing-guidelines-notebook.webp";
 
 const hotspots = [
   { right: "6.1%", top: "23.5%" },
