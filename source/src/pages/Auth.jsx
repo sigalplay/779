@@ -133,9 +133,9 @@ export default function Auth() {
     try {
       await requestPasswordRecovery(address);
       setRecoverySentTo(address);
-      toast.success(t("נשלח אלייך קישור לשחזור הכניסה", "A password recovery link was sent"));
+      toast.success(t("נשלח אלייך קישור לשחזור הכניסה", "We sent you a password reset link"));
     } catch {
-      setError(t("לא הצלחנו לשלוח כרגע את קישור השחזור. נסי שוב בעוד רגע", "We could not send the recovery link. Please try again shortly"));
+      setError(t("לא הצלחנו לשלוח כרגע את קישור השחזור. נסי שוב בעוד רגע", "We could not send the reset link. Please try again shortly"));
     } finally {
       setBusy(false);
     }
@@ -146,7 +146,7 @@ export default function Auth() {
     setError("");
     if (password.length < MIN_PASSWORD) { setError(t("הסיסמה צריכה לכלול לפחות 8 תווים", "Password must contain at least 8 characters")); return; }
     if (password !== passwordAgain) { setError(t("הסיסמאות אינן זהות", "Passwords do not match")); return; }
-    if (!recoverySession?.access_token) { setError(t("קישור השחזור אינו תקף. בקשי קישור חדש", "The recovery link is invalid. Request a new one")); return; }
+    if (!recoverySession?.access_token) { setError(t("קישור השחזור אינו תקף. בקשי קישור חדש", "This reset link is invalid. Request a new one")); return; }
     setBusy(true);
     try {
       const user = await updatePassword({ accessToken: recoverySession.access_token, password });
@@ -156,14 +156,14 @@ export default function Auth() {
       toast.success(t("הסיסמה עודכנה ונכנסת בהצלחה", "Password updated and you are signed in"));
       finish();
     } catch {
-      setError(t("לא הצלחנו לעדכן את הסיסמה. בקשי קישור שחזור חדש", "We could not update the password. Request a new recovery link"));
+      setError(t("לא הצלחנו לעדכן את הסיסמה. בקשי קישור שחזור חדש", "We could not update the password. Request a new reset link"));
     } finally {
       setBusy(false);
     }
   }
 
   const heading = mode === "register" ? t("יצירת חשבון", "Create an account")
-    : mode === "forgot" ? t("שחזור כניסה", "Recover access")
+    : mode === "forgot" ? t("שחזור כניסה", "Reset your password")
       : mode === "recovery" ? t("בחירת סיסמה חדשה", "Choose a new password")
         : t("כניסה לחשבון", "Sign in");
   const subtitle = intent === "favorite"
@@ -185,7 +185,7 @@ export default function Auth() {
   } else if (recoverySentTo) {
     body = (
       <SentNotice
-        title={t("נשלח קישור לשחזור הכניסה", "Recovery link sent")}
+        title={t("נשלח קישור לשחזור הכניסה", "Reset link sent")}
         text={t("פתחי את המייל ולחצי על הקישור. לאחר מכן תוכלי לבחור סיסמה חדשה באתר.", "Open the email and select the link. You can then choose a new password on the site.")}
         address={recoverySentTo}
       >
@@ -213,7 +213,7 @@ export default function Auth() {
         <p className="text-sm leading-6 text-muted-foreground">{t("הזיני את כתובת האימייל של החשבון ונשלח אלייך קישור לבחירת סיסמה חדשה.", "Enter your account email and we will send a link to choose a new password.")}</p>
         <EmailField label={t("כתובת אימייל", "Email address")} value={email} onChange={setEmail} />
         <FormError message={error} />
-        <SubmitButton busy={busy}>{busy ? t("שולחים…", "Sending…") : t("שליחת קישור לשחזור", "Send recovery link")}</SubmitButton>
+        <SubmitButton busy={busy}>{busy ? t("שולחים…", "Sending…") : t("שליחת קישור לשחזור", "Send reset link")}</SubmitButton>
         <button type="button" onClick={() => switchMode("login")} className="auth-text-button">{t("חזרה לכניסה", "Back to sign in")}</button>
       </form>
     );
@@ -291,7 +291,7 @@ export default function Auth() {
             <ul className="mt-6 space-y-4">
               {[
                 [Heart, t("מועדפים ותיקיות שנשמרים בחשבון", "Favorites and folders kept in your account")],
-                [ClipboardList, t("תכניות טיפול שמורות לשימוש חוזר", "Saved treatment plans to use again")],
+                [ClipboardList, t("תכניות טיפול שמורות לשימוש חוזר", "Saved session plans to reuse")],
                 [Users, t("לוחות מפגש לכל מטופל, מהטלפון ומהמחשב", "Session boards for each client, on phone and computer")],
               ].map(([Icon, text]) => (
                 <li key={text} className="flex items-center gap-3 text-sm font-semibold text-foreground/85">

@@ -27,9 +27,9 @@ export const STORY_TEMPLATES = [
   { id: "sibling", title: "נולד לי אח או אחות", emoji: "👶", illustration: `${ILLUSTRATIONS}/sibling-cover-girl.webp`, description: "מתכוננים לתינוק חדש ולשינויים בבית.", titleEn: "A New Baby in My Family", descriptionEn: "Preparing for a new baby and changes at home." },
   { id: "kindergarten", title: "אני מתחיל/ה גן חדש", emoji: "🧸", illustration: `${ILLUSTRATIONS}/kindergarten-cover-girl.webp`, description: "היכרות עם הגן, הפרידה והחזרה הביתה.", titleEn: "I Am Starting a New Preschool", descriptionEn: "Getting to know preschool, saying goodbye, and returning home." },
   { id: "school", title: "אני מתחיל/ה בית ספר חדש", emoji: "🎒", illustration: `${ILLUSTRATIONS}/school-cover-girl.webp`, description: "מתכוננים לכיתה, לצוות ולשגרה החדשה.", titleEn: "I Am Starting a New School", descriptionEn: "Preparing for the classroom, staff, and new routine." },
-  { id: "losing-game", title: "לפעמים מפסידים במשחק", emoji: "🎲", illustration: `${ILLUSTRATIONS}/losing-game/girl/cover.webp`, description: "מבינים מה מרגישים כשמפסידים ואילו אפשרויות יכולות לעזור.", personalized: false, style1Only: true, titleEn: "Sometimes you lose the game", descriptionEn: "Understand how losing feels and which options can help." },
-  { id: "not-getting-want", title: "כשלא מקבלים את מה שרוצים", emoji: "💭", illustration: `${ILLUSTRATIONS}/not-getting-want/girl/cover.webp`, description: "נותנים מקום לאכזבה ומכירים דרכים להתמודד איתה.", personalized: false, style1Only: true, titleEn: "When you don’t get what you want", descriptionEn: "Make room for disappointment and learn ways to cope with it." },
-  { id: "personal-space", title: "שומרים על מרחב אישי", emoji: "↔️", illustration: `${ILLUSTRATIONS}/personal-space/girl/cover.webp`, description: "לומדים לזהות מרחב אישי, לבקש רשות ולהקשיב לסימנים של האחר.", personalized: false, style1Only: true, titleEn: "Respecting personal space", descriptionEn: "Learn to recognize personal space, ask permission, and read other people’s cues." },
+  { id: "losing-game", title: "לפעמים מפסידים במשחק", emoji: "🎲", illustration: `${ILLUSTRATIONS}/losing-game/girl/cover.webp`, description: "מבינים מה מרגישים כשמפסידים ואילו אפשרויות יכולות לעזור.", personalized: false, style1Only: true, titleEn: "Sometimes We Lose a Game", descriptionEn: "Understand how losing feels and which options can help." },
+  { id: "not-getting-want", title: "כשלא מקבלים את מה שרוצים", emoji: "💭", illustration: `${ILLUSTRATIONS}/not-getting-want/girl/cover.webp`, description: "נותנים מקום לאכזבה ומכירים דרכים להתמודד איתה.", personalized: false, style1Only: true, titleEn: "When You Don’t Get What You Want", descriptionEn: "Make room for disappointment and learn ways to cope with it." },
+  { id: "personal-space", title: "שומרים על מרחב אישי", emoji: "↔️", illustration: `${ILLUSTRATIONS}/personal-space/girl/cover.webp`, description: "לומדים לזהות מרחב אישי, לבקש רשות ולהקשיב לסימנים של האחר.", personalized: false, style1Only: true, titleEn: "Respecting Personal Space", descriptionEn: "Learn to recognize personal space, ask permission, and read other people’s cues." },
 ];
 
 // סיפורים כלליים (לא מותאמים אישית): איור לכל עמוד לפי מגדר, בלי שם הילד ובלי החלפת פנים.
@@ -105,14 +105,14 @@ export function createTemplateStory(templateId, childName, gender = "girl", kind
       [`${name === "אני" ? "I am" : `My name is ${name}. I am`} a growing child, and I am learning new things.`, "😊"],
       ["Now I am saying goodbye to diapers and wearing underwear.", "✨"], ["When I feel that I need to pee or poop, I can tell Mom, Dad, or another adult who helps me.", "🤝"],
       ["I go to the toilet, pull down my pants, and sit comfortably.", "🚽"], ["I can sit calmly and give my body time. An adult can wait nearby and help me.", "🙂"],
-      ["Sometimes the wee or poo goes in the toilet, and sometimes it does not yet. My body is learning.", "🙂"], ["If I have an accident, it is okay. We clean up, change clothes, and carry on.", "😌"],
+      ["Sometimes the pee or poop goes in the toilet, and sometimes it does not yet. My body is learning.", "🙂"], ["If I have an accident, it is okay. We clean up, change clothes, and keep going.", "😌"],
       ["After using the toilet, I wipe, flush, and wash my hands.", "🧼"], ["Then I can go back to playing. Each time, I learn a little more.", "🧸"],
     ]},
     sibling: { title: `${name === "אני" ? "I Am" : name + " Is"} a Big ${gender === "boy" ? "Brother" : "Sister"}`, pages: [
       ["A new baby is going to be born into our family.", "👶"], ["When the baby is born, Mom will be in the hospital for a while and a familiar adult will stay with me.", "🏥"],
-      ["The baby cannot eat independently yet. Mom or Dad will feed the baby.", "🍽️"], ["The baby cannot use the toilet yet. Mom or Dad will change the baby's diaper.", "🧷"],
+      ["The baby cannot eat alone yet. Mom or Dad will feed the baby.", "🍽️"], ["The baby cannot use the toilet yet. Mom or Dad will change the baby's diaper.", "🧷"],
       ["The baby cannot fall asleep alone yet, so adults will hold and settle the baby.", "🛁"], ["Sometimes Mom or Dad will be busy with the baby. I can wait, ask for help, or choose something to do meanwhile.", "😌"],
-      ["I can stroke the baby gently, sing, bring a dummy, or help in a way that feels right for me.", "❤️"], ["This is a big change. I may feel happy, curious, sad, angry, or several feelings at once.", "🙂"],
+      ["I can stroke the baby gently, sing, bring a pacifier, or help in a way that feels right for me.", "❤️"], ["This is a big change. I may feel happy, curious, sad, angry, or several feelings at once.", "🙂"],
       ["Some things will change, and some things will stay the same.", "✨"], ["After the baby is born, we will still cuddle, play, and spend time together.", "🧸"],
       ["Mom and Dad will always love me. My place in the family remains special and secure.", "❤️"],
     ]},
@@ -124,8 +124,8 @@ export function createTemplateStory(templateId, childName, gender = "girl", kind
     ]},
     school: { title: `${name === "אני" ? "I Am" : name + " Is"} Starting a New School`, pages: [
       ["Soon I will start learning at a new school.", "🎒"], ["At school, there will be a classroom, teacher, children, and new places that I will get to know gradually.", "🏫"],
-      ["In the morning, I will arrive with my bag and say goodbye to the adult who brings me.", "👋"], ["In class, I will listen, learn, ask questions, and get help when I need it.", "🤝"],
-      ["There will also be breaks. I can play, eat, or ask an adult if I do not know what to do.", "🧸"], ["It is okay to feel excited and worried. Many children feel this way when they start somewhere new.", "😌"],
+      ["In the morning, I will arrive with my backpack and say goodbye to the adult who brings me.", "👋"], ["In class, I will listen, learn, ask questions, and get help when I need it.", "🤝"],
+      ["There will also be recess and snack time. I can play, eat, or ask an adult if I do not know what to do.", "🧸"], ["It is okay to feel excited and worried. Many children feel this way when they start somewhere new.", "😌"],
       ["Little by little, I will learn the way, the daily routine, and people's names.", "🙂"], ["At the end of the school day, I will go home and can tell someone about my day.", "🏠"],
     ]},
 

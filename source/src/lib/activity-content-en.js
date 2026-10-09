@@ -43,7 +43,7 @@ const EN = {
   },
   "seed-5": {
     description: "Creative pretend play with sock puppets and characters you invent together.",
-    materials: ["Old socks", "Buttons or self-adhesive eyes", "Marker"],
+    materials: ["Old socks", "Buttons or googly eyes", "Marker"],
     steps: [
       "Create a face on the sock puppet together, including eyes and a mouth.",
       "Invent characters and act out a short situation together.",
@@ -157,7 +157,7 @@ const EN = {
       "Make a key: 1 = head, 2 = body, 3 = one arm, 4 = second arm, 5 = one leg, 6 = second leg.",
       "Each player rolls the die in turn.",
       "Add the matching body part to the shared drawing.",
-      "If that body part has already been drawn, miss the turn.",
+      "If that body part has already been drawn, skip that turn.",
       "Continue until the person has a head, body, two arms, and two legs.",
     ],
     adaptations: "For younger children, skip the die and draw together in a set order: head, body, arms, and legs.",
@@ -183,7 +183,7 @@ const EN = {
     steps: [
       "Show the child the letter card and review the shape of each letter.",
       "Go on a letter hunt around the home, looking at food boxes, books, and signs.",
-      "Each time you find a letter, add a tick or sticker to the card.",
+      "Each time you find a letter, add a check mark or sticker to the card.",
       "Count how often each letter appeared. Which one was the most common at home?",
     ],
     adaptations: "Begin with one large, clear letter, such as the first letter of the child’s name.",
@@ -308,7 +308,7 @@ const EN = {
   },
   "seed-47": {
     description: "Make picture cards, then draw one of the pictures on a partner’s back for them to identify by touch.",
-    materials: ["A4 sheet of cardstock", "Scissors", "Markers"],
+    materials: ["Sheet of cardstock", "Scissors", "Markers"],
     steps: [
       "Fold the cardstock to create eight equal sections.",
       "Use the fold lines as guides for eight cards.",
@@ -407,7 +407,7 @@ const EN = {
   },
   "seed-59": {
     description: "Turn a child’s drawing into a personalized T-shirt print using plastic wrap and an iron.",
-    materials: ["Paper", "Markers", "Scissors", "Plastic wrap", "Plain T-shirt", "Baking paper", "Iron — adult use only"],
+    materials: ["Paper", "Markers", "Scissors", "Plastic wrap", "Plain T-shirt", "Parchment paper", "Iron — adult use only"],
     preparation: "Mark a drawing area on the paper and prepare all materials in advance.",
     steps: [
       "Make a colorful drawing on a small sheet of paper.",
@@ -447,7 +447,7 @@ const EN = {
     extensions: "Use more circles for a fuller balloon, or create several balloons in different sizes.",
   },
   "seed-64": {
-    description: "Play a miniature football game using finger movements only.",
+    description: "Play a miniature soccer game using finger movements only.",
     materials: ["Shoebox with a goal cut into each end", "Paper ball"],
     preparation: "Cut a goal into each end of the shoebox and make a small paper ball.",
     flow_text: "Place the paper ball in the middle of the box. Use the index and middle fingers to kick it and try to score a goal.",
@@ -591,7 +591,7 @@ const EN = {
     materials: ["Die, or cards numbered 1 to 6"],
     preparation: "Choose an exercise for each number and write the list on a sheet if helpful.",
     steps: [
-      "Make a key: 1 = jump, 2 = reach up, 3 = touch toes, 4 = turn around, 5 = run on the spot, 6 = star jump.",
+      "Make a key: 1 = jump, 2 = reach up, 3 = touch toes, 4 = turn around, 5 = run in place, 6 = jumping jack.",
       "Each player rolls the die in turn.",
       "Everyone completes the matching exercise.",
       "For a challenge, roll several times, remember the sequence, and complete the exercises in order.",
@@ -613,7 +613,7 @@ const EN = {
       "Draw a simple picture in pencil.",
       "Trace the lines with an even stream of glue.",
       "While the glue is wet, cover every line generously with salt.",
-      "Tilt the page over a bin or bowl to remove loose salt.",
+      "Tilt the page over a trash can or bowl to remove loose salt.",
       "Touch a very wet watercolor brush gently to one point and watch the color travel along the salt.",
       "Add different colors at several points until all lines are colored.",
     ],
@@ -722,16 +722,16 @@ const EN = {
     extensions: "Change the movement each round or play with a group to see who freezes fastest.",
   },
   "seed-89": {
-    description: "Complete three hidden challenges, then assemble the notes to reveal a sweet shape and receive a surprise.",
+    description: "Complete three hidden challenges, then put the notes together to reveal a candy shape and receive a surprise.",
     materials: ["Paper", "Small surprise", "Pen", "Scissors"],
     preparation: "Choose three short challenges and safe places to hide the notes.",
     steps: [
-      "Draw a large wrapped sweet and divide it into three sections.",
+      "Draw a large wrapped candy and divide it into three sections.",
       "Turn the page over and write one short challenge on the back of each section.",
       "Cut along the dividing lines to make three challenge notes.",
       "Hide the notes around the home.",
       "Find each note and complete its challenge.",
-      "Assemble the three pieces to reveal the sweet and receive the surprise.",
+      "Assemble the three pieces to reveal the candy and get the surprise.",
     ],
     tips: [
       {
@@ -740,7 +740,7 @@ const EN = {
       },
     ],
     adaptations: "Use only two notes with very simple challenges.",
-    extensions: "Add more pieces or let the child draw the sweet.",
+    extensions: "Add more pieces or let the child draw the candy.",
   },
   "seed-91": {
     description: "Begin a drawing, then swap pages whenever someone calls ‘Stop!’ and continue another person’s picture.",
@@ -759,7 +759,7 @@ const EN = {
   "seed-92": {
     description: "One player calls out a phrase with their back turned while everyone else moves closer, then turns around and tries to catch someone moving.",
     materials: [],
-    preparation: "Mark a starting line and a finish point several meters apart.",
+    preparation: "Mark a starting line and a finish point several yards apart.",
     steps: [
       "Choose the caller.",
       "Everyone waits at the starting line while the caller stands ahead with their back turned.",
@@ -771,26 +771,26 @@ const EN = {
     extensions: "Use a shorter cue or add movement rules, such as moving like frogs or freezing on one leg.",
   },
   "seed-93": {
-    description: "A circle chase game in which one child chooses another, then races around the circle to reach the empty place.",
+    description: "Duck, Duck, Goose: one child taps the others, picks a “goose,” and races around the circle to the empty spot.",
     materials: [],
     preparation: "Clear room for a seated circle and a safe running path around it.",
     steps: [
       "Sit in a circle and choose one child to walk around the outside.",
-      "The child gently taps each shoulder while saying ‘Rabbit…’.",
-      "When the child says ‘Black rabbit!’, the selected player stands and gives chase.",
+      "The child gently taps each head while saying ‘Duck… duck…’.",
+      "When the child says ‘Goose!’, that player jumps up and gives chase.",
       "The first child tries to complete the circle and sit in the empty place before being caught.",
       "Whoever remains standing walks around the circle next.",
     ],
     adaptations: "Replace running with fast walking, or simply swap places without chasing.",
-    extensions: "Choose a different animal word or add a movement before the chase begins.",
+    extensions: "Use a different pair of words or add a movement before the chase begins.",
   },
   "seed-94": {
     description: "Run and step between three sticks without touching them as the gaps gradually become wider.",
     materials: ["Three sticks, about 28 inches long"],
-    preparation: "Place the sticks about one meter apart and mark a starting point about ten meters away.",
+    preparation: "Place the sticks about 3 feet apart and mark a starting point about 30 feet away.",
     steps: [
-      "Place three sticks on the ground about one meter apart.",
-      "Line up about ten meters from the first stick.",
+      "Place three sticks on the ground about 3 feet apart.",
+      "Line up about 30 feet from the first stick.",
       "Run and cross each gap with only one step, without touching the sticks.",
       "After everyone has crossed, the final player moves the last stick to their final landing point and spaces all three evenly.",
       "A player who touches a stick or needs an extra step leaves the round. The last remaining player wins.",
@@ -872,7 +872,7 @@ const EN = {
     materials: ["Eight to ten popsicle sticks", "Clear tape", "Scissors", "Black marker", "Colorful markers"],
     preparation: "Arrange all materials on a clean work surface.",
     steps: [
-      "Place the sticks lengthways, side by side.",
+      "Place the sticks lengthwise, side by side.",
       "Cut two strips of tape and secure the sticks across the top and bottom.",
       "Turn the sticks over and number them in order on one side.",
       "Turn them over again and draw one picture across all the sticks.",
@@ -957,13 +957,13 @@ const EN = {
     extensions: "Invent a story, give clues for finding a creature, or create another sleeve with a space, jungle, or night theme.",
   },
   "seed-106": {
-    description: "Color and decorate printable ice pops, cut them out, and attach popsicle sticks.",
-    materials: ["Printed ice-popsicle sheet", "Colored pencils or markers", "Stickers", "Scissors", "Popsicle sticks", "Glue"],
+    description: "Color and decorate printable popsicles, cut them out, and attach popsicle sticks.",
+    materials: ["Printed popsicle sheet", "Colored pencils or markers", "Stickers", "Scissors", "Popsicle sticks", "Glue"],
     preparation: "Print the template and arrange the craft materials.",
-    steps: ["Color the ice pops.", "Add stickers.", "Cut around each ice popsicle.", "Glue on a popsicle stick."],
+    steps: ["Color the popsicles.", "Add stickers.", "Cut around each popsicle.", "Glue on a popsicle stick."],
     attachmentLabels: ["Popsicles to color and cut — PDF"],
     adaptations: "Pre-cut the shape, use large stickers, or offer a broad coloring area.",
-    extensions: "Make several imaginary flavours and play ice-popsicle shop.",
+    extensions: "Make up flavors and play popsicle stand.",
   },
   "seed-104": {
     description: "Hide a phone playing music or a musical toy and follow the sound to find it.",
@@ -1026,7 +1026,7 @@ const EN = {
   },
   "seed-108": {
     description: "Shine a flashlight behind the paper jars to reveal the hidden pictures.",
-    materials: ["Picture Sheet", "Jar Template", "Glue", "Scissors", "Flashlight"],
+    materials: ["Picture sheet", "Jar template", "Glue", "Scissors", "Flashlight"],
     preparation: "Print the jar template and picture sheet.",
     steps: [
       "Glue the jar template on top of the picture sheet, making sure the boxes line up.",
@@ -1057,7 +1057,7 @@ const EN = {
   },
   "seed-110": {
     description: "Make a flat paper-towel flower, add water to the center, and watch the colors spread toward the tips of the petals.",
-    materials: ["Paper towel", "Pencil", "Scissors", "Water-based markers", "Plate", "Small Cup of Water", "Dropper"],
+    materials: ["Paper towel", "Pencil", "Scissors", "Water-based markers", "Plate", "Small cup of water", "Dropper"],
     preparation: "Set out a dry plate, a small cup of water, and a dropper.",
     steps: [
       "Draw a large flower with wide petals on a paper towel.",

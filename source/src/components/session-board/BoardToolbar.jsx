@@ -99,7 +99,7 @@ export function BoardToolbar({
             </>
           ) : (
             <>
-              <strong>{t("תכנון טיפולים", "Treatment planning")}</strong>
+              <strong>{t("תכנון טיפולים", "Session planning")}</strong>
               <small>{t("בחירת מטופל ושמירת לוחות", "Choose a client and save boards")}</small>
             </>
           )}
@@ -263,7 +263,7 @@ export function BoardToolbar({
             <span className="meeting-action-label-desktop">{t("להירגע", "Calm down")}</span>
             <span className="meeting-action-label-mobile">{t("להירגע", "Calm down")}</span>
           </button>
-          <button className="meeting-who-starts" type="button" onClick={onOpenWhoStarts} title={t("מי מתחיל? אן דן דינו, הגרלה או אבן נייר ומספריים", "Who starts? Eeny meeny, a draw, or rock paper scissors")}>
+          <button className="meeting-who-starts" type="button" onClick={onOpenWhoStarts} title={t("מי מתחיל? אן דן דינו, הגרלה או אבן נייר ומספריים", "Who starts? Eeny meeny, a random pick, or rock paper scissors")}>
             <img className="meeting-tool-image-icon" src="/icon-bank/who-starts/tool.webp" alt="" />
             <span className="meeting-action-label-desktop">{t("מי מתחיל?", "Who starts?")}</span>
             <span className="meeting-action-label-mobile">{t("מי מתחיל?", "Who starts?")}</span>

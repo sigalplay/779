@@ -164,11 +164,11 @@ export default function MotorTrail({ mode }) {
     const next = new Set(hiddenEquipment);
     next.delete(id);
     saveHiddenEquipment(next);
-    toast.success(t("המתקן הוחזר למאגר", "The equipment was returned to the bank"));
+    toast.success(t("המתקן הוחזר למאגר", "The equipment was returned to the library"));
   }
   function restoreAllEquipment() {
     saveHiddenEquipment(new Set());
-    toast.success(t("כל המתקנים הוחזרו למאגר", "All equipment was returned to the bank"));
+    toast.success(t("כל המתקנים הוחזרו למאגר", "All equipment was returned to the library"));
   }
   function move(index, dir) {
     setOrder((prev) => {
@@ -188,10 +188,10 @@ export default function MotorTrail({ mode }) {
     if (!order.length) return;
     if (editUid) {
       updateMotorTrailInDraftPlan(editUid, order, customItems);
-      toast.success(t("המסלול עודכן בתוכנית הטיפול", "Trail updated in the session plan."));
+      toast.success(t("המסלול עודכן בתוכנית הטיפול", "Obstacle course updated in the session plan."));
     } else {
       addMotorTrailToDraftPlan(order, customItems);
-      toast.success(t("המסלול נוסף לתוכנית הטיפול", "Trail added to the session plan."));
+      toast.success(t("המסלול נוסף לתוכנית הטיפול", "Obstacle course added to the session plan."));
     }
     // A board without a client is kept per date; store the updated board so the course stays on it.
     if (returnTo === "session" && !patientBoard) saveGuestBoard(normalizeBoardDate(boardDate), getDraftPlan());
@@ -271,7 +271,7 @@ export default function MotorTrail({ mode }) {
           <span className="text-sm font-bold">{t("כלי יצירה", "Creative tool")}</span>
         </div>
         <h1 className="mt-1 font-display text-3xl font-black md:text-4xl">{t("מסלול מוטורי", "Obstacle Course")}</h1>
-        <p className="mt-1 text-muted-foreground">{t("בוחרים מתקנים מהבנק, והם נכנסים לשביל לפי הסדר.", "Choose equipment from the bank, and it joins the trail in order.")}</p>
+        <p className="mt-1 text-muted-foreground">{t("בוחרים מתקנים מהבנק, והם נכנסים לשביל לפי הסדר.", "Choose equipment from the library to add stations in order.")}</p>
       </div>
 
       {/* ---------- The trail: stations in order, always in view ---------- */}
@@ -281,7 +281,7 @@ export default function MotorTrail({ mode }) {
           {scheduled.length > 0 && <span>{t("לחיצה על תחנה: שינוי סדר או מחיקה", "Tap a station to move or remove it")}</span>}
         </div>
         {scheduled.length === 0 ? (
-          <p className="trail-empty">{t("עוד אין תחנות. בוחרים מתקן מהבנק למטה.", "No stations yet. Choose equipment from the bank below.")}</p>
+          <p className="trail-empty">{t("עוד אין תחנות. בוחרים מתקן מהבנק למטה.", "No stations yet. Choose equipment from the library below.")}</p>
         ) : (
           <ol className="trail-path">
             {scheduled.map((it, i) => (
@@ -322,7 +322,7 @@ export default function MotorTrail({ mode }) {
           {mode === "therapist" && (
             <div className="flex items-center gap-1.5">
               <button type="button" onClick={() => setEditBank((v) => !v)} aria-pressed={editBank} className={editBank ? "trail-small on" : "trail-small"}>
-                <Trash2 className="h-3.5 w-3.5" />{editBank ? t("סיום עריכה", "Done") : t("עריכת הבנק", "Edit the bank")}
+                <Trash2 className="h-3.5 w-3.5" />{editBank ? t("סיום עריכה", "Done") : t("עריכת הבנק", "Edit the library")}
               </button>
               <button type="button" onClick={() => setArchiveOpen(true)} className="trail-small">
                 <Archive className="h-3.5 w-3.5" />{t("ארכיון", "Archive")}
@@ -354,7 +354,7 @@ export default function MotorTrail({ mode }) {
                   {inTrail && <em>{t("✓ במסלול", "✓ In the course")}</em>}
                 </button>
                 {editBank && it.group === "clinic" && (
-                  <button type="button" className="trail-tile-delete" onClick={() => deleteFromBank(it)} aria-label={t(`מחיקת ${it.label} מהמאגר`, `Remove ${itemLabel(it)} from the bank`)}><Trash2 className="h-3.5 w-3.5" /></button>
+                  <button type="button" className="trail-tile-delete" onClick={() => deleteFromBank(it)} aria-label={t(`מחיקת ${it.label} מהמאגר`, `Remove ${itemLabel(it)} from the library`)}><Trash2 className="h-3.5 w-3.5" /></button>
                 )}
               </div>
               </Fragment>
@@ -384,7 +384,7 @@ export default function MotorTrail({ mode }) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><Archive className="h-5 w-5" />{" "}{t("ארכיון מתקנים", "Equipment Archive")}</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">{t("כאן נשמרים המתקנים שהוסרת מבנק הקליניקה. אפשר להחזיר אותם למאגר בכל שלב.", "Equipment removed from the clinic bank is stored here. You can return it at any time.")}</p>
+          <p className="text-sm text-muted-foreground">{t("כאן נשמרים המתקנים שהוסרת מבנק הקליניקה. אפשר להחזיר אותם למאגר בכל שלב.", "Equipment removed from the clinic library is stored here. You can return it at any time.")}</p>
           {removedEquipment.length > 0 ? (
             <>
               <div className="max-h-[55vh] overflow-y-auto py-2">
@@ -412,7 +412,7 @@ export default function MotorTrail({ mode }) {
             <div className="rounded-3xl border border-dashed border-border p-10 text-center">
               <Archive className="mx-auto mb-3 h-9 w-9 text-muted-foreground/60" />
               <p className="font-bold">{t("הארכיון ריק", "The Archive Is Empty")}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{t("מתקנים שתסירי מבנק הקליניקה יופיעו כאן.", "Equipment removed from the clinic bank will appear here.")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("מתקנים שתסירי מבנק הקליניקה יופיעו כאן.", "Equipment removed from the clinic library will appear here.")}</p>
             </div>
           )}
         </DialogContent>

@@ -243,7 +243,7 @@ export default function HebrewCalendarGenerator() {
                 </div>
               )}
             </div>
-            <p className="rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-950">{t("חופשות ומועדים המסומנים בכוכבית הם בסיס נוח לעריכה. מומלץ לוודא מול לוח המסגרת ומשרד החינוך.", "Starred holidays and dates are provided as an editable starting point. Please check with the child's school or program and the Ministry of Education.")}</p>
+            <p className="rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-950">{t("חופשות ומועדים המסומנים בכוכבית הם בסיס נוח לעריכה. מומלץ לוודא מול לוח המסגרת ומשרד החינוך.", "Starred dates are estimates and may shift by a day. Please check your school district calendar for school breaks.")}</p>
           </aside>
 
           <section className="min-w-0">

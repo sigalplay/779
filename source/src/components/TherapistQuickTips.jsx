@@ -23,7 +23,7 @@ export function TherapistQuickTips() {
         className="absolute top-full z-40 mt-2 w-72 rounded-2xl border border-border/60 bg-card p-4 shadow-lg sm:right-0"
       >
         <p className="mb-2 text-xs leading-relaxed text-foreground/90">
-          {t("לוח התארגנות שבועי מסייע בתכנון מראש, תיעדוף משימות, ניהול זמן יעיל ופתרון בעיות שעלולות לצוץ במהלך השבוע.", "A weekly visual planner supports advance planning, prioritising tasks, managing time, and solving problems that may arise during the week.")}
+          {t("לוח התארגנות שבועי מסייע בתכנון מראש, תיעדוף משימות, ניהול זמן יעיל ופתרון בעיות שעלולות לצוץ במהלך השבוע.", "A weekly visual planner supports advance planning, prioritizing tasks, managing time, and solving problems that may arise during the week.")}
         </p>
         <ul className="space-y-1.5">
           {WEEKLY_BOARD_BENEFITS.map(([hebrew, english], i) => (
