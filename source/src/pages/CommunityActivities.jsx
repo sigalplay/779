@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { thumb } from "@/lib/thumb";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { BookOpen, ImageIcon, Lock, LockOpen, Pencil, Plus, Save, Search, Sparkles, Trash2 } from "lucide-react";
@@ -189,7 +190,7 @@ export default function CommunityActivities() {
                     <button type="button" onClick={() => setOpen(row)} className="flex h-full w-full flex-col overflow-hidden rounded-3xl border border-border/60 bg-card text-start shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
                       <span className="relative block aspect-[4/3] w-full bg-sage/15">
                         {image
-                          ? <img src={image} alt="" loading="lazy" className="absolute inset-0 m-auto h-4/5 max-w-[90%] object-contain mix-blend-multiply" />
+                          ? <img src={thumb(image)} alt="" loading="lazy" className="absolute inset-0 m-auto h-4/5 max-w-[90%] object-contain mix-blend-multiply" />
                           : <span className="absolute inset-0 grid place-items-center text-5xl" aria-hidden="true">{activity.emoji || "✨"}</span>}
                       </span>
                       <span className="flex flex-1 flex-col gap-1 p-4">

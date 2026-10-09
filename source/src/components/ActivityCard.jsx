@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { thumb } from "@/lib/thumb";
 import { ageRangeLabel } from "@/lib/age-label";
 import { Clock, Layers, Heart, ListPlus, Check } from "lucide-react";
 import { motion } from "framer-motion";
@@ -99,7 +100,9 @@ export function ActivityCard({ activity, index = 0, mode, returnPath, returnLabe
         >
           {hero ? (
             <img
-              src={hero}
+              src={thumb(hero)}
+              loading="lazy"
+              decoding="async"
               alt={imageAlt(title, activityContext(activity), language)}
               title={imageAlt(title, activityContext(activity), language)}
               className="h-full w-full object-contain"

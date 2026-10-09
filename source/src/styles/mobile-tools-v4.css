@@ -189,10 +189,10 @@
   .compact-seasonal-section > div:first-child { margin-bottom: .65rem !important; }
   .compact-seasonal-section h2,
   .compact-seasonal-section #seasonal-title { font-size: 1.1rem !important; }
-  .compact-seasonal-section > div:last-child { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: .35rem !important; }
-  .compact-seasonal-section > div:last-child > a { border-radius: .75rem !important; }
-  .compact-seasonal-section > div:last-child > a > div:first-child { aspect-ratio: 1 / 1 !important; }
-  .compact-seasonal-section > div:last-child > a > div:last-child { min-height: 2.8rem !important; padding: .3rem !important; justify-content: center !important; text-align: center !important; }
+  .compact-seasonal-section .seasonal-grid { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: .35rem !important; }
+  .compact-seasonal-section .seasonal-grid > a { border-radius: .75rem !important; }
+  .compact-seasonal-section .seasonal-grid > a > div:first-child { aspect-ratio: 1 / 1 !important; }
+  .compact-seasonal-section .seasonal-grid > a > div:last-child { min-height: 2.8rem !important; padding: .3rem !important; justify-content: center !important; text-align: center !important; }
   .compact-seasonal-section h3 { font-size: .62rem !important; line-height: 1.2 !important; }
   .compact-seasonal-section a span { display: none !important; }
 }

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { thumb } from "@/lib/thumb";
 import { useBodyClass } from "@/lib/use-body-class";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ChefHat, Clock, ArrowLeft, RotateCcw, ListPlus, Check, Printer, X, Sparkles, Trash2, Image as ImageIcon } from "lucide-react";
@@ -1974,7 +1975,7 @@ export default function TherapistRecipes({ mode = "therapist" }) {
               <div className="flex h-44 items-center justify-center bg-white">
                 {r.cover ? (
                   <div className="flex h-36 w-36 items-center justify-center">
-                    <img src={r.cover} alt={imageAlt(title, "recipe", language)} title={imageAlt(title, "recipe", language)} className="max-h-full max-w-full object-contain" />
+                    <img src={thumb(r.cover)} loading="lazy" decoding="async" alt={imageAlt(title, "recipe", language)} title={imageAlt(title, "recipe", language)} className="max-h-full max-w-full object-contain" />
                   </div>
                 ) : r.coverIcon ? (
                   <div className="h-28 w-28">
