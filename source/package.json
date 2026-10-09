@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "node scripts/build-ai-catalog.mjs && vite build && node scripts/prerender.mjs",
     "build:app": "vite build",
+    "thumbs": "node scripts/make-thumbs.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
