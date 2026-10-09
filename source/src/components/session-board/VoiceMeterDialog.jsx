@@ -6,10 +6,12 @@ import { Mic, MicOff, RotateCcw, X } from "lucide-react";
 // The therapist picks the target zone; time spent in it fills a progress bar toward a short goal.
 
 const ZONES = [
-  { id: "whisper", he: "לחישה", en: "Whisper", face: "🤫", color: "#7cc79a" },
-  { id: "talk", he: "קול רגיל", en: "Talking voice", face: "🙂", color: "#f2c94c" },
-  { id: "loud", he: "קול חזק", en: "Big voice", face: "😮", color: "#ef8a7a" },
+  { id: "whisper", he: "לחישה", en: "Whisper", color: "#7cc79a" },
+  { id: "talk", he: "קול רגיל", en: "Talking voice", color: "#f2c94c" },
+  { id: "loud", he: "קול חזק", en: "Big voice", color: "#ef8a7a" },
 ];
+const ART = "/icon-bank/voice-meter/";
+const GENDER_KEY = "boo_voice_meter_gender";
 const SILENCE = 14; // below this it is room noise, not the child's voice
 const GOALS = [3, 5, 10];
 
@@ -28,6 +30,7 @@ export function VoiceMeterDialog({ language, onClose }) {
   const [sensitivity, setSensitivity] = useState(50);
   const [goal, setGoal] = useState(5);
   const [held, setHeld] = useState(0);
+  const [gender, setGender] = useState(() => { try { return localStorage.getItem(GENDER_KEY) === "boy" ? "boy" : "girl"; } catch { return "girl"; } });
   const audio = useRef(null);
   const frame = useRef(0);
   const last = useRef(0);
@@ -92,6 +95,12 @@ export function VoiceMeterDialog({ language, onClose }) {
     frame.current = requestAnimationFrame(tick);
   }
 
+  function chooseGender(next) {
+    setGender(next);
+    try { localStorage.setItem(GENDER_KEY, next); } catch { /* storage may be blocked */ }
+  }
+  const picture = (name) => `${ART}${name}-${gender}.webp`;
+  const facePicture = done && status === "listening" ? picture("celebrate") : picture(status === "listening" && zone ? zone : "quiet");
   const targetZone = ZONES.find((item) => item.id === target);
   const currentZone = ZONES.find((item) => item.id === zone);
 
@@ -105,7 +114,7 @@ export function VoiceMeterDialog({ language, onClose }) {
           {ZONES.map((item) => (
             <button key={item.id} type="button" aria-pressed={target === item.id} onClick={() => { setTarget(item.id); setHeld(0); }}
               className={target === item.id ? "active" : ""} style={{ "--zone": item.color }}>
-              <span aria-hidden="true">{item.face}</span>{t(item.he, item.en)}
+              <img src={picture(item.id)} alt="" />{t(item.he, item.en)}
             </button>
           ))}
         </div>
@@ -118,8 +127,8 @@ export function VoiceMeterDialog({ language, onClose }) {
             })}
             <span className="voice-level" style={{ bottom: `${level}%` }} />
           </div>
-          <div className="voice-face" style={{ "--zone": currentZone?.color || "#e8e2d8" }}>
-            <span aria-hidden="true">{status !== "listening" ? "🎤" : currentZone?.face || "😶"}</span>
+          <div className="voice-face" style={{ "--zone": done && status === "listening" ? "#fff3c4" : currentZone?.color || "#ece6dc" }}>
+            <span><img src={facePicture} alt="" /></span>
             <strong role="status">{status !== "listening" ? "" : currentZone ? t(currentZone.he, currentZone.en) : t("שקט", "Quiet")}</strong>
           </div>
         </div>
@@ -141,6 +150,12 @@ export function VoiceMeterDialog({ language, onClose }) {
         )}
         {status === "denied" && <p className="voice-error">{t("אין גישה למיקרופון. אפשר לאשר את המיקרופון בהגדרות הדפדפן ולנסות שוב.", "No access to the microphone. Allow the microphone in the browser settings and try again.")}</p>}
         {status === "unsupported" && <p className="voice-error">{t("הדפדפן הזה לא תומך במיקרופון. נסו דפדפן אחר.", "This browser does not support the microphone. Try another browser.")}</p>}
+
+        <div className="voice-gender" role="group" aria-label={t("בן או בת", "Boy or girl")}>
+          {[["girl", t("👧 בת", "👧 Girl")], ["boy", t("👦 בן", "👦 Boy")]].map(([id, label]) => (
+            <button key={id} type="button" aria-pressed={gender === id} className={gender === id ? "active" : ""} onClick={() => chooseGender(id)}>{label}</button>
+          ))}
+        </div>
 
         <details className="voice-settings">
           <summary>{t("הגדרות למטפל/ת", "Therapist settings")}</summary>
