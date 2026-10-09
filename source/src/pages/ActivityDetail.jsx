@@ -806,7 +806,7 @@ function MaterialsChecklist({ altWhere, activityId, materials, displayMaterials,
               }`}
             >
               <div className="flex items-center gap-3">
-                <Checkbox id={`mat-${i}`} checked={isChecked} onCheckedChange={() => toggle(i)} className="h-5 w-5 shrink-0" />
+                <Checkbox id={`mat-${i}`} checked={isChecked} onCheckedChange={() => toggle(i)} aria-label={language === "en" ? `Check off ${displayMaterials?.[i] || m}` : `סימון ${pick(m, materialsN?.[i])}`} className="h-5 w-5 shrink-0" />
                 <button
                   type="button"
                   onClick={() => setExpandedMaterial((current) => (current === i ? null : i))}
