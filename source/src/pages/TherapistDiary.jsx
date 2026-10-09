@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useTranslator } from "@/lib/language";
+import { formatDayMonth, formatTime } from "@/lib/date-format";
 import { addPatient, hasCloudSession, listPatients } from "@/lib/session-board-cloud";
 import { addAppointment, deleteAppointment, listAppointments, localDateKey, occursOn, previousDay, updateAppointment } from "@/lib/diary-cloud";
 
@@ -126,7 +127,7 @@ export default function TherapistDiary() {
 
   const first = days[0];
   const last = days[6];
-  const rangeLabel = `${first.day}.${first.month} – ${last.day}.${last.month}`;
+  const rangeLabel = `${formatDayMonth(first.day, first.month, language)} – ${formatDayMonth(last.day, last.month, language)}`;
 
   return (
     <AppShell mode="therapist">
@@ -205,7 +206,7 @@ export default function TherapistDiary() {
                     className={cn("flex min-h-24 flex-col gap-2 rounded-2xl border p-2 md:min-h-64", isToday ? "border-sage bg-sage/10" : "border-border/60 bg-background", dropDay === day.key && "ring-2 ring-sage")}
                   >
                     <div className="flex items-center justify-between gap-1">
-                      <span className={cn("text-sm font-bold", isToday && "text-sage-foreground")}>{dayLabel(day.index)} <span className="tabular-nums text-muted-foreground">{day.day}.{day.month}</span></span>
+                      <span className={cn("text-sm font-bold", isToday && "text-sage-foreground")}>{dayLabel(day.index)} <span className="tabular-nums text-muted-foreground">{formatDayMonth(day.day, day.month, language)}</span></span>
                       <button type="button" onClick={() => openForm(day.key)} className="grid h-7 w-7 place-items-center rounded-full border border-border/60 bg-card text-muted-foreground hover:bg-muted" aria-label={t("שיבוץ מטופל ביום הזה", "Schedule a client on this day")}><Plus className="h-4 w-4" /></button>
                     </div>
 
@@ -214,7 +215,7 @@ export default function TherapistDiary() {
                         <button type="button" onClick={() => navigate(boardHref(appointment.patient_id, day.key))} className="flex w-full flex-col items-start gap-0.5 px-2.5 py-2 pe-8 text-start" title={t("פתיחת לוח המפגש", "Open the session board")}>
                           <span className="text-sm font-bold leading-tight">{patientName(appointment.patient_id)}</span>
                           <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            {appointment.start_time && <><Clock3 className="h-3 w-3" /><span className="tabular-nums">{appointment.start_time}</span></>}
+                            {appointment.start_time && <><Clock3 className="h-3 w-3" /><span className="tabular-nums">{formatTime(appointment.start_time, language)}</span></>}
                             {appointment.weekly && <Repeat className="h-3 w-3" aria-label={t("כל שבוע", "Every week")} />}
                           </span>
                         </button>

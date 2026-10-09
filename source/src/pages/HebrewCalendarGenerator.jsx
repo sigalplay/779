@@ -9,7 +9,9 @@ import { Input } from "@/components/ui/input";
 import { buildGregorianCalendarYear, currentCalendarStartYear, encodeCalendarPayload, eventLabel, eventsForDay, monthName } from "@/lib/hebrew-calendar";
 import { useTranslator } from "@/lib/language";
 
-const DEFAULT_SETTINGS = { jewish: true, muslim: false, christian: false, education: true, photoMode: "shared" };
+const DEFAULT_SETTINGS = { jewish: true, muslim: false, christian: false, education: true, us: false, photoMode: "shared" };
+// The English calendar is for American families: US holidays by default; Israeli school breaks are not offered.
+const DEFAULT_SETTINGS_EN = { jewish: false, muslim: false, christian: false, education: false, us: true, photoMode: "shared" };
 const IMAGE_TYPES = "image/png,image/jpeg,image/webp,image/gif";
 const newId = () => (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`);
 
@@ -38,7 +40,7 @@ export default function HebrewCalendarGenerator() {
   const english = language === "en";
   const mode = location.pathname.startsWith("/therapist") ? "therapist" : "parent";
   const [year, setYear] = useState(currentCalendarStartYear());
-  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState(english ? DEFAULT_SETTINGS_EN : DEFAULT_SETTINGS);
   const [title, setTitle] = useState(() => t("לוח השנה המשפחתי שלנו", "Our family calendar"));
   const [activeIndex, setActiveIndex] = useState(0);
   // Photos: one set for every month ("shared") or a set per month ("monthly"), up to 5 each.
@@ -163,7 +165,7 @@ export default function HebrewCalendarGenerator() {
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="flex items-center gap-2 text-3xl font-black"><CalendarDays className="h-8 w-8 text-primary" /> {t("יצירת לוח שנה", "Create a Family Calendar")}</h1>
-            <p className="mt-2 text-muted-foreground">{t("לוח לועזי מספטמבר עד אוגוסט, עם תאריכים עבריים, מועדים ותמונות.", "A September-to-August calendar with holidays, school breaks, and photos.")}</p>
+            <p className="mt-2 text-muted-foreground">{t("לוח לועזי מספטמבר עד אוגוסט, עם תאריכים עבריים, מועדים ותמונות.", "A September-to-August calendar with US holidays, your own events, and photos.")}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={copyLink}><Link2 className="h-4 w-4" /> {t("העתקת קישור", "Copy link")}</Button>
@@ -189,10 +191,11 @@ export default function HebrewCalendarGenerator() {
             </div>
             <fieldset className="space-y-2">
               <legend className="mb-2 text-sm font-bold">{t("מה להציג?", "What should be shown?")}</legend>
+              {english && <Toggle checked={settings.us} onChange={() => toggle("us")} label="US holidays" color="bg-[#7fb6ea]" />}
               <Toggle checked={settings.jewish} onChange={() => toggle("jewish")} label={t("חגים ומועדים יהודיים", "Jewish holidays and observances")} color="bg-amber-300" />
               <Toggle checked={settings.muslim} onChange={() => toggle("muslim")} label={t("חגים ומועדים מוסלמיים", "Muslim holidays and observances")} color="bg-emerald-300" />
               <Toggle checked={settings.christian} onChange={() => toggle("christian")} label={t("חגים ומועדים נוצריים", "Christian holidays and observances")} color="bg-[#9b8bd1]" />
-              <Toggle checked={settings.education} onChange={() => toggle("education")} label={t("חופשות מערכת החינוך", "School breaks")} color="bg-rose-300" />
+              {!english && <Toggle checked={settings.education} onChange={() => toggle("education")} label="חופשות מערכת החינוך" color="bg-rose-300" />}
             </fieldset>
             <div>
               <p className="mb-2 text-sm font-bold">{t("עיצוב האזור העליון", "Top-area design")}</p>

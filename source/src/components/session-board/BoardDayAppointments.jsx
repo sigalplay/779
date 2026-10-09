@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { listAppointments, localDateKey, occursOn } from "@/lib/diary-cloud";
 import { hasCloudSession, listPatients } from "@/lib/session-board-cloud";
+import { formatTime } from "@/lib/date-format";
 
 // The clients scheduled in the calendar for the board's date, above the session board.
 // A tap opens that client's board for the same date. Hidden when nothing is scheduled.
@@ -35,7 +36,7 @@ export function BoardDayAppointments({ boardDate, patientBoardId, language, onOp
       {rows.map((row) => (
         <button key={row.id} type="button" onClick={() => onOpen(row.patientId)} aria-current={row.patientId === patientBoardId ? "true" : undefined}
           className={row.patientId === patientBoardId ? "board-day-chip current" : "board-day-chip"}>
-          {row.time && <span className="board-day-time">{row.time}</span>}
+          {row.time && <span className="board-day-time">{formatTime(row.time, language)}</span>}
           <span>{row.name}</span>
         </button>
       ))}

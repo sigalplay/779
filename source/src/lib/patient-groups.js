@@ -6,7 +6,7 @@ import { cloudRequest, getCloudSession, saveCloudSession } from "@/lib/cloud-aut
 // public/therapist/my-patients/patients.js keeps the same shape, names and chosen-tab key.
 export const GROUP_TYPES = [
   { id: "clinic", label: "קליניקה", labelEn: "Clinic", icon: "🏠" },
-  { id: "kindergarten", label: "גן", labelEn: "Kindergarten", icon: "🏫" },
+  { id: "kindergarten", label: "גן", labelEn: "Preschool", icon: "🏫" },
   { id: "school", label: "בית ספר", short: "בי״ס", labelEn: "School", icon: "🎒" },
   { id: "center", label: "מכון", labelEn: "Center", icon: "🩺" },
 ];

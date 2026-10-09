@@ -75,7 +75,7 @@ function scaledRecipe(recipe, batch, language) {
   const amountLabel = language === "en" ? size.en : size.he;
   if (batch === "session" && recipe.id === "chocolate-apple-slices") {
     const texts = language === "en"
-      ? ["1 apple", "4 wooden skewers", "50 g chocolate", "Optional sprinkles"]
+      ? ["1 apple", "4 wooden skewers", "2 oz chocolate", "Optional sprinkles"]
       : ["תפוח אחד", "4 שיפודי עץ", "50 גרם שוקולד", "סוכריות לבחירה"];
     const textsN = ["תַּפּוּחַ אֶחָד", "4 שִׁפּוּדֵי עֵץ", "50 גְּרַם שׁוֹקוֹלָד", "סֻכָּרִיּוֹת לִבְחִירָה"];
     return {
@@ -1896,7 +1896,8 @@ function AddToPlanButton({ kind, id, mode, className = "" }) {
 export default function TherapistRecipes({ mode = "therapist" }) {
   const { language, t } = useTranslator();
   useBodyClass("compact-catalog-mobile-page");
-  const cmsRecipes = useCmsCollection("recipe", RECIPES);
+  // Recipes published from the activity bank carry their language; each site language lists its own.
+  const cmsRecipes = useCmsCollection("recipe", RECIPES).filter((recipe) => !recipe.language || recipe.language === (language === "en" ? "en" : "he"));
   const [searchParams] = useSearchParams();
   const { recipeId } = useParams();
   const navigate = useNavigate();

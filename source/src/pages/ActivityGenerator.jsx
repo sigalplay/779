@@ -127,6 +127,7 @@ export default function ActivityGenerator() {
         ingredients: recipe.ingredients.map(toSaved("🛒")),
         tools: recipe.tools.map(toSaved("🍴")),
         steps: recipe.steps.map(toSaved(recipe.saved.coverEmoji || "🍪")),
+        cover: recipe.cover || null,
       });
       toast.success(t("התמונות במתכון עודכנו", "The recipe's pictures were updated"));
       navigate(`/therapist/recipes/${recipe.saved.id}`);
@@ -240,7 +241,7 @@ export default function ActivityGenerator() {
         )}
       </div>
 
-      {picker && activity && (
+      {picker && picker.kind !== "cover" && activity && (
         <IllustrationPicker
           text={picker.kind === "material" ? activity.materials[picker.index]?.name : activity.steps[picker.index]?.text}
           kind={picker.kind}
@@ -250,7 +251,17 @@ export default function ActivityGenerator() {
           onClose={() => setPicker(null)}
         />
       )}
-      {picker && recipe && (
+      {picker?.kind === "cover" && (recipe || activity) && (
+        <IllustrationPicker
+          text={(recipe || activity).title}
+          kind="material"
+          title={t("איור ראשי", "the main picture")}
+          current={(recipe || activity).cover}
+          onChoose={(image) => { if (recipe) setRecipe((current) => ({ ...current, cover: image })); else change({ cover: image }); setPicker(null); }}
+          onClose={() => setPicker(null)}
+        />
+      )}
+      {picker && picker.kind !== "cover" && recipe && (
         <IllustrationPicker
           text={recipe[picker.kind][picker.index]?.text}
           kind={picker.kind === "steps" ? "step" : "material"}
@@ -269,7 +280,7 @@ function savedRecipeForReview(id) {
   const saved = id ? getCustomRecipes().find((item) => item.id === id) : null;
   if (!saved) return null;
   const withImage = (item) => ({ ...item, image: item.img || null });
-  return { saved, title: saved.title, ingredients: saved.ingredients.map(withImage), tools: saved.tools.map(withImage), steps: saved.steps.map(withImage) };
+  return { saved, title: saved.title, cover: saved.cover || null, ingredients: saved.ingredients.map(withImage), tools: saved.tools.map(withImage), steps: saved.steps.map(withImage) };
 }
 
 // The recipe's pictures before it is saved (or when changing a saved one): tapping a picture chooses
@@ -289,6 +300,10 @@ function RecipeReview({ recipe, onPick, onSave, onCancel }) {
         <h2 className="font-display text-2xl font-black">{recipe.title}</h2>
         <p className="mt-2 rounded-xl bg-sage/15 px-3 py-2 text-sm font-semibold text-sage-foreground">{t("איור לא מתאים? נוגעים בו ובוחרים אחר מהמאגר, או מעלים תמונה משלך.", "Picture doesn't fit? Tap it to choose another from the site or upload your own photo.")}</p>
       </div>
+      <section>
+        <h3 className="mb-2 font-bold">{t("איור ראשי", "Main picture")}</h3>
+        {picture({ image: recipe.cover }, t("איור ראשי", "the main picture"), () => onPick({ kind: "cover" }), "h-32 w-32")}
+      </section>
       {groups.map(([key, label]) => (
         <section key={key}>
           <h3 className="mb-2 font-bold">{label}</h3>
@@ -388,6 +403,13 @@ function GeneratedActivity({ activity, editing, onEdit, onChange, onChangeItem, 
           <span className="rounded-full border border-border bg-card px-3 py-1">{t(`גיל ${activity.age_min}–${activity.age_max}`, `Ages ${activity.age_min}–${activity.age_max}`)}</span>
           <span className="rounded-full border border-border bg-card px-3 py-1">{t(`${activity.duration_min} דקות`, `${activity.duration_min} minutes`)}</span>
           {activity.goals.map((goal) => <span key={goal} className="rounded-full border border-border bg-card px-3 py-1">{translatedTerm(goal, language)}</span>)}
+        </div>
+        <div className="mt-3 flex items-center gap-3">
+          <button type="button" onClick={() => onPick({ kind: "cover" })} aria-label={t("איור ראשי", "Main picture")} className={cn("relative grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-xl", activity.cover ? "bg-white" : "border-2 border-dashed border-border bg-muted/40 text-sage-foreground")}>
+            {activity.cover ? <img src={activity.cover} alt="" className="h-full w-full object-contain" /> : <span className="grid place-items-center gap-1 text-[11px] font-bold"><Camera className="h-5 w-5" aria-hidden="true" />{t("איור ראשי", "Main picture")}</span>}
+            {activity.cover && <SwapBadge />}
+          </button>
+          <p className="text-xs text-muted-foreground">{t("האיור הראשי של הפעילות. נוגעים כדי לבחור.", "The activity's main picture. Tap to choose.")}</p>
         </div>
       </div>
 
