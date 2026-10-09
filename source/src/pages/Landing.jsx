@@ -125,7 +125,7 @@ export default function Landing() {
               </div>
               <span className="rounded-full bg-sky/70 px-3 py-1 text-xs font-bold text-foreground/70">{t("מתחלף לאורך השנה", "Updated throughout the year")}</span>
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="seasonal-grid grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {seasonalActivities.map((activity) => (
                 <Link key={activity.to} to={language === "en" && activity.toEn ? activity.toEn : activity.to} className="overflow-hidden rounded-[1.5rem] border border-sky bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-soft">
                   <div className="aspect-[4/3] overflow-hidden bg-white">

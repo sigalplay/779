@@ -10,23 +10,31 @@ import { getLanguage, routerBasename } from "@/lib/language";
 
 
 
+// After a new version of the site is published, a tab that was opened earlier still asks for the old
+// page files, which no longer exist. Reload once to get the new version. The retry is remembered with a
+// time, so it can happen again after a later update, but never twice in a row (no reload loop).
+const CHUNK_RETRY_KEY = "boo_chunk_retry";
+function reloadForNewVersion() {
+  let lastRetry = 0;
+  try { lastRetry = Number(sessionStorage.getItem(CHUNK_RETRY_KEY)) || 0; } catch { /* storage may be blocked */ }
+  if (Date.now() - lastRetry < 30000) return false;
+  try { sessionStorage.setItem(CHUNK_RETRY_KEY, String(Date.now())); } catch { /* storage may be blocked */ }
+  const url = new URL(window.location.href);
+  url.searchParams.set("refresh", Date.now().toString());
+  window.location.replace(url.toString());
+  return true;
+}
+if (typeof window !== "undefined") {
+  window.addEventListener("vite:preloadError", (event) => { if (reloadForNewVersion()) event.preventDefault(); });
+}
+
 function lazyRoute(importer) {
   return lazy(() => Promise.race([
     importer(),
-    new Promise((_, reject) => window.setTimeout(() => reject(new Error("Page loading timed out")), 12000)),
-  ]).then((module) => {
-    try { sessionStorage.removeItem("boo_chunk_retry"); } catch { /* storage may be blocked */ }
-    return module;
-  }).catch((error) => {
-    let alreadyRetried = false;
-    try { alreadyRetried = sessionStorage.getItem("boo_chunk_retry") === "1"; } catch { /* storage may be blocked */ }
-    if (!alreadyRetried) {
-      try { sessionStorage.setItem("boo_chunk_retry", "1"); } catch { /* storage may be blocked */ }
-      const url = new URL(window.location.href);
-      url.searchParams.set("refresh", Date.now().toString());
-      window.location.replace(url.toString());
-      return new Promise(() => {});
-    }
+    // A slow phone connection is not a missing file: wait long enough before giving up.
+    new Promise((_, reject) => window.setTimeout(() => reject(new Error("Page loading timed out")), 30000)),
+  ]).catch((error) => {
+    if (reloadForNewVersion()) return new Promise(() => {});
     throw error;
   }));
 }
@@ -91,7 +99,7 @@ class RouteErrorBoundary extends Component {
   render() {
     if (!this.state.failed) return this.props.children;
     const english = getLanguage() === "en";
-    return <div className="flex min-h-screen items-center justify-center bg-background px-6"><div className="max-w-md rounded-3xl bg-card p-6 text-center shadow-soft"><h1 className="text-xl font-black">{english ? "The page did not load" : "העמוד לא נטען"}</h1><p className="mt-2 text-sm text-muted-foreground">{english ? "Your browser may still have an older file. Refresh to load the latest version." : "כנראה נשאר בדפדפן קובץ ישן. רענון יטען את הגרסה המעודכנת."}</p><button type="button" onClick={() => { try { sessionStorage.removeItem("boo_chunk_retry"); } catch { /* storage may be blocked */ } const url = new URL(window.location.href); url.searchParams.set("refresh", Date.now().toString()); window.location.replace(url.toString()); }} className="mt-4 rounded-full bg-primary px-5 py-2.5 font-bold text-primary-foreground">{english ? "Refresh page" : "רענון העמוד"}</button></div></div>;
+    return <div className="flex min-h-screen items-center justify-center bg-background px-6"><div className="max-w-md rounded-3xl bg-card p-6 text-center shadow-soft"><h1 className="text-xl font-black">{english ? "The page did not load" : "העמוד לא נטען"}</h1><p className="mt-2 text-sm text-muted-foreground">{english ? "Your browser may still have an older file. Refresh to load the latest version." : "כנראה נשאר בדפדפן קובץ ישן. רענון יטען את הגרסה המעודכנת."}</p><button type="button" onClick={() => { try { sessionStorage.removeItem(CHUNK_RETRY_KEY); } catch { /* storage may be blocked */ } const url = new URL(window.location.href); url.searchParams.set("refresh", Date.now().toString()); window.location.replace(url.toString()); }} className="mt-4 rounded-full bg-primary px-5 py-2.5 font-bold text-primary-foreground">{english ? "Refresh page" : "רענון העמוד"}</button></div></div>;
   }
 }
 
