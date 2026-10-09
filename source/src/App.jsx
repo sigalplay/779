@@ -130,8 +130,32 @@ function TherapistBuildEntry() {
   return <TherapistBuild key={`${params.get("boardDate") || ""}|${params.get("patientBoard") || ""}`} />;
 }
 
+// The main areas' code, fetched quietly a few seconds after the first page is ready, so moving to the
+// therapist area, the activities or an activity page does not wait for a download. Skipped when the
+// device asks to save data or the connection is very slow.
+const PRELOAD = [
+  () => import("@/pages/TherapistBuild"),
+  () => import("@/pages/ParentPlay"),
+  () => import("@/pages/AllActivities"),
+  () => import("@/pages/ActivityDetail"),
+];
+function usePreloadMainAreas() {
+  useEffect(() => {
+    const connection = navigator.connection;
+    if (connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType || "")) return undefined;
+    let cancelled = false;
+    const run = () => {
+      if (cancelled) return;
+      PRELOAD.reduce((chain, load) => chain.then(() => (cancelled ? null : load().catch(() => null))), Promise.resolve());
+    };
+    const timer = window.setTimeout(() => (window.requestIdleCallback ? window.requestIdleCallback(run, { timeout: 4000 }) : run()), 2500);
+    return () => { cancelled = true; window.clearTimeout(timer); };
+  }, []);
+}
+
 export default function App() {
   useImageSeo();
+  usePreloadMainAreas();
   // English pages keep their /en/ address: the router runs under /en, so every link stays in English.
   return (
     <RouteErrorBoundary><BrowserRouter basename={routerBasename()}>
