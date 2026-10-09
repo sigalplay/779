@@ -265,7 +265,7 @@ export function BoardToolbar({
             <span className="meeting-action-label-mobile">{t("להירגע", "Calm down")}</span>
           </button>
           <button className="meeting-voice-meter" type="button" onClick={onOpenVoiceMeter} title={t("מד עוצמת קול: לחישה, קול רגיל וקול חזק", "Voice volume meter: whisper, talking voice, and big voice")}>
-            <img className="meeting-tool-image-icon" src="/icon-bank/tools/voice-meter.svg" alt="" />
+            <img className="meeting-tool-image-icon" src="/icon-bank/tools/voice-meter.webp" alt="" />
             <span className="meeting-action-label-desktop">{t("מד קול", "Voice meter")}</span>
             <span className="meeting-action-label-mobile">{t("מד קול", "Voice")}</span>
           </button>

@@ -90,7 +90,7 @@ export function BoardToolbox({ language, pen, onOpenTimer, onAddSign, onOpenChoi
       ],
     },
     { id: "who-starts", color: "#f8df9a", image: "/icon-bank/who-starts/tool.webp", label: t("מי מתחיל?", "Who starts?"), onSelect: () => { pen.setEnabled(false); onOpenWhoStarts(); } },
-    { id: "voice-meter", color: "#dcefff", image: "/icon-bank/tools/voice-meter.svg", label: t("מד קול", "Voice meter"), onSelect: () => { pen.setEnabled(false); onOpenVoiceMeter?.(); } },
+    { id: "voice-meter", color: "#dcefff", image: "/icon-bank/tools/voice-meter.webp", label: t("מד קול", "Voice meter"), onSelect: () => { pen.setEnabled(false); onOpenVoiceMeter?.(); } },
     { id: "first-then", color: "#e6dcf5", image: "/icon-bank/tools/first-then.webp", label: t("קודם-אחר כך", "First-then"), onSelect: () => { pen.setEnabled(false); onOpenChoice("firstThen"); } },
     {
       id: "motor",
