@@ -190,8 +190,37 @@ function dateShift(iso, amount) {
   return d.toISOString().slice(0, 10);
 }
 
+// US holidays and common family dates, in English (the English calendar's default).
+function nthWeekday(year, monthIndex, weekday, n) {
+  const first = new Date(Date.UTC(year, monthIndex, 1, 12)).getUTCDay();
+  return 1 + ((weekday - first + 7) % 7) + (n - 1) * 7;
+}
+function lastWeekday(year, monthIndex, weekday) {
+  const last = new Date(Date.UTC(year, monthIndex + 1, 0, 12));
+  return last.getUTCDate() - ((last.getUTCDay() - weekday + 7) % 7);
+}
+function usHolidays(day, withEaster) {
+  const y = day.gregorianYear, m = day.gregorianMonth, d = day.gregorianDay;
+  const fixed = { "1-1": "New Year’s Day", "2-14": "Valentine’s Day", "3-17": "St. Patrick’s Day", "6-19": "Juneteenth", "7-4": "Independence Day", "10-31": "Halloween", "11-11": "Veterans Day", "12-24": "Christmas Eve", "12-25": "Christmas Day", "12-31": "New Year’s Eve" };
+  const labels = fixed[`${m}-${d}`] ? [fixed[`${m}-${d}`]] : [];
+  const rules = [
+    [1, 0, 1, 3, "Martin Luther King Jr. Day"],
+    [2, 1, 1, 3, "Presidents’ Day"],
+    [5, 4, 0, 2, "Mother’s Day"],
+    [6, 5, 0, 3, "Father’s Day"],
+    [9, 8, 1, 1, "Labor Day"],
+    [10, 9, 1, 2, "Columbus Day / Indigenous Peoples’ Day"],
+    [11, 10, 4, 4, "Thanksgiving"],
+  ];
+  rules.forEach(([month, monthIndex, weekday, n, label]) => { if (m === month && d === nthWeekday(y, monthIndex, weekday, n)) labels.push(label); });
+  if (m === 5 && d === lastWeekday(y, 4, 1)) labels.push("Memorial Day");
+  if (withEaster && day.date === westernEaster(y)) labels.push("Easter");
+  return labels;
+}
+
 export function eventsForDay(day, settings, customEvents = []) {
   const events = [];
+  if (settings.us) usHolidays(day, !settings.christian).forEach((label) => events.push({ label, type: "us" }));
   if (settings.jewish) {
     const label = jewishByMonth[day.monthKey]?.[day.hebrewDay];
     if (label) events.push({ label, type: "jewish" });
@@ -274,7 +303,7 @@ const EVENT_LABELS_EN = {
   "פסח": "Passover",
   "חול המועד פסח": "Passover intermediate days",
   "שביעי של פסח": "Seventh day of Passover",
-  "יום העצמאות*": "Independence Day*",
+  "יום העצמאות*": "Israeli Independence Day*",
   "ל״ג בעומר": "Lag BaOmer",
   "יום ירושלים": "Jerusalem Day",
   "ערב שבועות": "Shavuot eve",
@@ -289,9 +318,9 @@ const EVENT_LABELS_EN = {
   "חופשת חנוכה": "Hanukkah break",
   "חופשת פורים": "Purim break",
   "חופשת פסח": "Passover break",
-  "חופשת יום העצמאות": "Independence Day break",
+  "חופשת יום העצמאות": "Israeli Independence Day break",
   "חופשת שבועות": "Shavuot break",
-  "חופשת מערכת החינוך*": "School break*",
+  "חופשת מערכת החינוך*": "Israeli school break*",
   "אל־אסראא׳ ואל־מעראג׳*": "Isra and Mi’raj*",
   "לילת אל־בראאה*": "Laylat al-Bara’ah*",
   "תחילת רמדאן*": "Start of Ramadan*",

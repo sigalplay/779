@@ -385,7 +385,7 @@ function PatientMenu({ language, returnUrl, onClose, onSelectPatient, onUseGuest
           : <p>{patients.length ? t("אין מטופלים במסגרת הזאת.", "No clients in this setting.") : t("עדיין לא הוספת מטופלים.", "You have not added any clients yet.")}</p>}
       </div>
       {groups.list.length === 0 && patients.length > 0 && (
-        <p className="patient-menu-hint">{t("אפשר לסדר את המטופלים לפי מסגרות (קליניקה, גן, בית ספר, מכון) ב\"ניהול המטופלים שלי\".", "You can sort clients into settings (clinic, kindergarten, school, center) under \"Manage my clients\".")}</p>
+        <p className="patient-menu-hint">{t("אפשר לסדר את המטופלים לפי מסגרות (קליניקה, גן, בית ספר, מכון) ב\"ניהול המטופלים שלי\".", "You can sort clients into settings (clinic, preschool, school, center) under \"Manage my clients\".")}</p>
       )}
       <form data-add-patient-form="" onSubmit={submit}>
         <label htmlFor="quickPatientName">{activeGroup ? t(`הוספת מטופל ל${nameOf(activeGroup)}`, `Add a client to ${nameOf(activeGroup)}`) : t("הוספת מטופל", "Add a client")}</label>

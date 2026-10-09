@@ -75,7 +75,7 @@ function scaledRecipe(recipe, batch, language) {
   const amountLabel = language === "en" ? size.en : size.he;
   if (batch === "session" && recipe.id === "chocolate-apple-slices") {
     const texts = language === "en"
-      ? ["1 apple", "4 wooden skewers", "50 g chocolate", "Optional sprinkles"]
+      ? ["1 apple", "4 wooden skewers", "2 oz chocolate", "Optional sprinkles"]
       : ["תפוח אחד", "4 שיפודי עץ", "50 גרם שוקולד", "סוכריות לבחירה"];
     const textsN = ["תַּפּוּחַ אֶחָד", "4 שִׁפּוּדֵי עֵץ", "50 גְּרַם שׁוֹקוֹלָד", "סֻכָּרִיּוֹת לִבְחִירָה"];
     return {

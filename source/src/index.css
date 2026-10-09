@@ -366,7 +366,7 @@
   font-size:12px;
   font-weight:900;
 }
-.calendar-weekday:last-of-type, .calendar-shabbat {
+.calendar-shabbat {
   background:#e5f1e9;
 }
 .calendar-day {

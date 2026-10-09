@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { formatDateDayMonth } from "@/lib/date-format";
 import { ShareLinkField } from "@/components/ShareLinkField";
 import { ShareLinkActions } from "@/components/ShareLinkActions";
 import { toast } from "sonner";
@@ -72,13 +73,13 @@ function emptyDraft() {
 function isSameDate(a, b) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
-function formatDayDate(d) {
-  return `${d.getDate()}.${d.getMonth() + 1}`;
+function formatDayDate(d, language) {
+  return formatDateDayMonth(d, language);
 }
 function formatWeekRangeLabel(weekDates, language) {
   const first = weekDates[0];
   const last = weekDates[6];
-  const locale = language === "en" ? "en-GB" : "he-IL";
+  const locale = language === "en" ? "en-US" : "he-IL";
   const month = (date) => new Intl.DateTimeFormat(locale, { month: "long" }).format(date);
   if (first.getMonth() === last.getMonth()) return `${month(first)} ${first.getFullYear()}`;
   return `${month(first)}–${month(last)} ${last.getFullYear()}`;
@@ -546,7 +547,7 @@ export default function WeeklyBoard({ mode }) {
               <span>
                 {dayLabels[i]} {isToday ? t("· היום", "· Today") : ""}
               </span>
-              <span className="text-[11px] font-semibold opacity-80">{formatDayDate(date)}</span>
+              <span className="text-[11px] font-semibold opacity-80">{formatDayDate(date, language)}</span>
               <span className="text-[10px] font-semibold opacity-60">{count > 0 ? t(`${count} כרטיסים`, `${count} cards`) : t("ריק", "Empty")}</span>
             </button>
           );
@@ -601,7 +602,7 @@ export default function WeeklyBoard({ mode }) {
                         </div>
                         <div className="text-[7px] font-normal opacity-70 sm:text-xs">
                           <span className="sm:hidden">{date.getDate()}</span>
-                          <span className="hidden sm:inline">{formatDayDate(date)}</span>
+                          <span className="hidden sm:inline">{formatDayDate(date, language)}</span>
                         </div>
                       </th>
                     );
@@ -668,7 +669,7 @@ export default function WeeklyBoard({ mode }) {
                     isLastCol: true,
                   })}`}
                 >
-                  {t(`יום ${dayLabels[selectedDayIndex]}`, dayLabels[selectedDayIndex])}, {formatDayDate(weekDates[selectedDayIndex])}
+                  {t(`יום ${dayLabels[selectedDayIndex]}`, dayLabels[selectedDayIndex])}, {formatDayDate(weekDates[selectedDayIndex], language)}
                 </th>
               </tr>
             </thead>
@@ -757,8 +758,8 @@ export default function WeeklyBoard({ mode }) {
           <DialogHeader>
             <DialogTitle>
               {addTarget ? t(
-                `הוספת כרטיס - יום ${dayLabels[addTarget.dayIndex]}, ${formatDayDate(weekDates[addTarget.dayIndex])}`,
-                `Add card — ${dayLabels[addTarget.dayIndex]}, ${formatDayDate(weekDates[addTarget.dayIndex])}`
+                `הוספת כרטיס - יום ${dayLabels[addTarget.dayIndex]}, ${formatDayDate(weekDates[addTarget.dayIndex], language)}`,
+                `Add card — ${dayLabels[addTarget.dayIndex]}, ${formatDayDate(weekDates[addTarget.dayIndex], language)}`
               ) : t("הוספת כרטיס", "Add card")}
             </DialogTitle>
           </DialogHeader>

@@ -8,6 +8,7 @@ const EVENT_CLASSES = {
   christian: "calendar-event-christian",
   education: "bg-rose-100 text-rose-950",
   custom: "bg-violet-100 text-violet-950",
+  us: "bg-[#dcefff] text-[#14365a]",
 };
 
 export const MAX_CALENDAR_PHOTOS = 5;
@@ -60,7 +61,7 @@ function MonthPage({ month, monthIndex, year, settings, title, customEvents, pho
 
       <div className="calendar-grid" style={{ "--calendar-week-rows": weekRows }}>
         {(english ? WEEKDAYS_EN : WEEKDAYS_HE).map((day, index) => (
-          <div key={day} className={cn("calendar-weekday", `calendar-col-${index}`, index === 6 && "calendar-shabbat")}>{day}</div>
+          <div key={day} className={cn("calendar-weekday", `calendar-col-${index}`, !english && index === 6 && "calendar-shabbat")}>{day}</div>
         ))}
         {cells.map((day, index) => {
           if (!day) return <div key={`empty-${index}`} className={cn("calendar-day calendar-day-empty", `calendar-col-${index % 7}`)} />;
@@ -76,7 +77,7 @@ function MonthPage({ month, monthIndex, year, settings, title, customEvents, pho
               title={interactive ? state?.title ?? (english ? "Click to add a personal event" : "לחצו להוספת אירוע אישי") : undefined}
               aria-pressed={state?.pressed}
             >
-              <span className="calendar-hebrew-day">{day.gregorianDay}.{day.gregorianMonth}</span>
+              <span className="calendar-hebrew-day">{english ? day.gregorianDay : `${day.gregorianDay}.${day.gregorianMonth}`}</span>
               {!english && <span className="calendar-gregorian-day">{day.hebrewLabel}</span>}
               <span className="calendar-events">
                 {events.slice(0, 3).map((event, eventIndex) => (

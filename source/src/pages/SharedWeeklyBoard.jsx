@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from "react";
+import { formatDateDayMonth } from "@/lib/date-format";
 import { useSearchParams } from "react-router-dom";
 import { Printer, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,8 +18,8 @@ const MONTH_LABELS_EN = [
   "July", "August", "September", "October", "November", "December",
 ];
 
-function formatDayDate(d) {
-  return `${d.getDate()}.${d.getMonth() + 1}`;
+function formatDayDate(d, language) {
+  return formatDateDayMonth(d, language);
 }
 function formatWeekRangeLabel(days, language) {
   const first = days[0].date;
@@ -120,7 +121,7 @@ export default function SharedWeeklyBoard() {
                     </div>
                     <div className="text-[7px] font-normal opacity-70 sm:text-xs">
                       <span className="sm:hidden">{day.date.getDate()}</span>
-                      <span className="hidden sm:inline">{formatDayDate(day.date)}</span>
+                      <span className="hidden sm:inline">{formatDayDate(day.date, language)}</span>
                     </div>
                   </th>
                 ))}

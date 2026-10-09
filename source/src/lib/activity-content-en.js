@@ -65,7 +65,7 @@ const EN = {
   },
   "seed-9": {
     description: "Explore a tray of dry rice or lentils through touch, scooping, digging, and sorting.",
-    materials: ["Wide tray", "About 1 kg of dry rice or lentils", "Spoons and small bowls", "Scoops or digging tools"],
+    materials: ["Wide tray", "About 2 lb of dry rice or lentils", "Spoons and small bowls", "Scoops or digging tools"],
     steps: [
       "Pour the rice or lentils into a wide tray.",
       "Invite the child to bury and uncover items using their hands or a spoon.",
@@ -413,7 +413,7 @@ const EN = {
       "Make a colorful drawing on a small sheet of paper.",
       "Cut around the drawing.",
       "Wrap the drawing in plastic wrap.",
-      "Place it on the T-shirt and cover it with baking paper.",
+      "Place it on the T-shirt and cover it with parchment paper.",
       "Adult only: press carefully with an iron for a few seconds until the film adheres to the shirt.",
     ],
     adaptations: "Provide a simple outline to color instead of asking for a free drawing.",
@@ -440,7 +440,7 @@ const EN = {
     steps: [
       "Color the five circles.",
       "Cut out all the circles.",
-      "Fold each circle in half and glue neighbouring halves together to create a 3D balloon.",
+      "Fold each circle in half and glue neighboring halves together to create a 3D balloon.",
       "Glue the balloon to the base sheet and draw a basket and background.",
     ],
     adaptations: "Provide pre-cut circles for children who find detailed cutting difficult.",
@@ -786,7 +786,7 @@ const EN = {
   },
   "seed-94": {
     description: "Run and step between three sticks without touching them as the gaps gradually become wider.",
-    materials: ["Three sticks, about 70 cm long"],
+    materials: ["Three sticks, about 28 inches long"],
     preparation: "Place the sticks about one meter apart and mark a starting point about ten meters away.",
     steps: [
       "Place three sticks on the ground about one meter apart.",
@@ -885,7 +885,7 @@ const EN = {
   "seed-101": {
     description: "Place a folded black-and-white drawing in water and watch hidden colors appear as if by magic.",
     materials: ["Paper towel", "Waterproof black marker", "Regular colorful markers", "Shallow plate with a little water"],
-    preparation: "Cut a paper-towel square about 15 × 15 cm.",
+    preparation: "Cut a paper-towel square about 6 × 6 inches.",
     steps: [
       "Fold the paper-towel square in half like a book.",
       "Draw a simple outline on the front with waterproof black marker.",
@@ -1480,7 +1480,7 @@ const EN = {
   "seed-122": {
     description: "Make a paper butterfly with a rolled-up body, slide it onto a straw, blow, and watch it fly.",
     materials: ["Colored paper", "Scissors", "Pencil and markers", "Glue stick", "Straw"],
-    preparation: "Cut a strip of yellow paper about 4 cm wide for the butterfly's body.",
+    preparation: "Cut a strip of yellow paper about 1½ inches wide for the butterfly's body.",
     steps: [
       "Fold a sheet in half and draw half a butterfly next to the fold.",
       "Cut without cutting the fold, then open it.",
