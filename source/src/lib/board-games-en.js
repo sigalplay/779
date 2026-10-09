@@ -106,7 +106,7 @@ export const BOARD_GAMES_EN = {
     steps: [
       "Each player secretly chooses a character.",
       "Ask one yes-or-no question about appearance.",
-      "Close characters that do not match the answer.",
+      "Flip down the characters that don’t match the answer.",
       "Guess the mystery character when only a few remain.",
     ],
     adaptations: "Play with fewer characters and model useful questions.",

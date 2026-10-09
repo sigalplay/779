@@ -106,7 +106,7 @@ export function WhoStartsDialog({ language, patientKey, patientName, onClose }) 
   const names = players.map((name, i) => name.trim() || t(`שחקן ${i + 1}`, `Player ${i + 1}`));
   const modes = [
     ["rhyme", `${ART}rhyme.webp`, t("אן דן דינו", "Eeny meeny")],
-    ["draw", `${ART}tool.webp`, t("הגרלה", "Draw")],
+    ["draw", `${ART}tool.webp`, t("הגרלה", "Random pick")],
     ["dice", `${ART}draw.webp`, t("קובייה", "Dice")],
     ["rps", `${ART}rock.webp`, t("אבן, נייר ומספריים", "Rock paper scissors")],
     ["computer", `${ART}computer.webp`, t("מול המחשב", "Vs. the computer")],

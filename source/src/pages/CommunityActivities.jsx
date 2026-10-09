@@ -119,7 +119,7 @@ export default function CommunityActivities() {
       toast.error(t("ההסרה לא הצליחה.", "Couldn't remove it."));
     }
   }
-  const savePictures = () => saveRow({ activity: draft, title: draft.title }, t("השינויים נשמרו בבנק", "The changes were saved to the bank"));
+  const savePictures = () => saveRow({ activity: draft, title: draft.title }, t("השינויים נשמרו בבנק", "Changes saved"));
   const toggleLock = () => saveRow({ locked: !open.locked }, open.locked ? t("הפעילות פתוחה לעריכה", "The activity is open for editing") : t("הפעילות ננעלה", "The activity is locked"));
   // A picture in the open activity; while an admin edits, tapping it chooses another.
   const picture = (item, key, index, className) => {
@@ -239,7 +239,7 @@ export default function CommunityActivities() {
             {(draft || openShown.cover) && (
               <div className="flex items-center gap-3">
                 {draft ? <div className="h-28 w-28 shrink-0 [&>button]:h-28 [&>button]:w-28">{picture({ image: openShown.cover, name: t("איור ראשי", "the main picture") }, "cover", 0, "h-28 w-28 object-contain")}</div> : <img src={openShown.cover} alt="" className="h-28 w-28 shrink-0 object-contain" />}
-                {draft && <p className="text-xs text-muted-foreground">{t("איור ראשי: מופיע בכרטיס בבנק ובראש הפעילות. נוגעים כדי לבחור.", "Main picture: shown on the bank card and at the top. Tap to choose.")}</p>}
+                {draft && <p className="text-xs text-muted-foreground">{t("איור ראשי: מופיע בכרטיס בבנק ובראש הפעילות. נוגעים כדי לבחור.", "Main picture: shown on the card and at the top. Tap to choose.")}</p>}
               </div>
             )}
             {draft ? <Textarea aria-label={t("תיאור", "Description")} value={draft.description || ""} onChange={(e) => setField("description", e.target.value)} rows={2} /> : <p className="text-muted-foreground">{open.activity.description}</p>}
@@ -279,7 +279,7 @@ export default function CommunityActivities() {
             {draft ? (
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
               <Button className="min-h-11 rounded-full" disabled={savingPictures} onClick={savePictures}>
-                <Save className="h-4 w-4" aria-hidden="true" /> {savingPictures ? t("שומרת…", "Saving…") : t("שמירת השינויים בבנק", "Save changes to the bank")}
+                <Save className="h-4 w-4" aria-hidden="true" /> {savingPictures ? t("שומרת…", "Saving…") : t("שמירת השינויים בבנק", "Save changes")}
               </Button>
               <Button variant="outline" className="min-h-11 rounded-full" onClick={() => setDraft(null)}>{t("ביטול", "Cancel")}</Button>
             </div>

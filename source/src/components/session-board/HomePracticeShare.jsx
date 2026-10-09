@@ -25,7 +25,7 @@ export function HomePracticeShare({ language, activities, onClose }) {
       <div className="choice-board-card home-practice-card">
         <button type="button" className="choice-board-close" onClick={onClose} aria-label={t("סגירה", "Close")}><X /></button>
         <h2>{t("שליחה להורים", "Send to parents")}</h2>
-        <p className="choice-board-hint">{t("סמני אילו פעילויות לשלוח לתרגול בבית. הקישור לא כולל את שם הילד.", "Tick the activities to practice at home. The link does not include the child's name.")}</p>
+        <p className="choice-board-hint">{t("סמני אילו פעילויות לשלוח לתרגול בבית. הקישור לא כולל את שם הילד.", "Check the activities to practice at home. The link does not include the child's name.")}</p>
         {activities.length ? (
           <div className="choice-board-options">
             {activities.map((activity) => (

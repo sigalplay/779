@@ -33,7 +33,7 @@ export function BoardDateNavigation({ date, savedDates, language, onNavigate, on
   }
 
   return (
-    <section className="meeting-board-date-navigation" data-board-date-navigation="true" aria-label={t("מעבר בין לוחות טיפול", "Navigate treatment boards")}>
+    <section className="meeting-board-date-navigation" data-board-date-navigation="true" aria-label={t("מעבר בין לוחות טיפול", "Navigate session boards")}>
       <button type="button" className="meeting-board-date-card" data-previous-board="" onClick={() => onNavigate(neighbor(-1))}>
         <span className="meeting-date-arrow" aria-hidden="true">‹</span>
         <strong>{t("הטיפול הקודם", "Previous session")}</strong>
@@ -48,7 +48,7 @@ export function BoardDateNavigation({ date, savedDates, language, onNavigate, on
         <strong>{t("הטיפול הבא", "Next session")}</strong>
         <span className="meeting-date-arrow" aria-hidden="true">›</span>
       </button>
-      <select data-saved-board-select="" aria-label={t("מעבר ללוח טיפול שמור", "Open a saved treatment board")} value={date} onChange={(e) => e.target.value && onNavigate(e.target.value)}>
+      <select data-saved-board-select="" aria-label={t("מעבר ללוח טיפול שמור", "Open a saved session board")} value={date} onChange={(e) => e.target.value && onNavigate(e.target.value)}>
         <option value="">{t("מעבר ללוח שמור…", "Open a saved board…")}</option>
         {dates.map((value) => <option key={value} value={value}>{formatDate(value, language)}</option>)}
       </select>

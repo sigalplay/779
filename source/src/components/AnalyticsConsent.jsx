@@ -64,7 +64,7 @@ export function AnalyticsConsent() {
   if (consent === "accepted" || consent === "declined") return null;
   return (
     <section className="analytics-consent" dir={language === "en" ? "ltr" : "rtl"} role="dialog" aria-live="polite" aria-label={t("העדפות פרטיות", "Privacy preferences")}>
-      <p>{t("אתר זה משתמש בקבצי Cookies על מנת להעניק חווית גלישה מתקדמת", "This website uses Cookies to provide an enhanced browsing experience")}</p>
+      <p>{t("אתר זה משתמש בקבצי Cookies על מנת להעניק חווית גלישה מתקדמת", "This site uses cookies to improve your experience")}</p>
       <div className="analytics-consent__actions">
         <button type="button" className="analytics-consent__accept" onClick={() => choose("accepted")}>{t("קבל", "Accept")}</button>
         <button type="button" className="analytics-consent__decline" onClick={() => choose("declined")}>{t("דחה", "Decline")}</button>

@@ -374,7 +374,7 @@ function MaterialsChecklist({ gameId, materials, pick }) {
       <div className="mb-4">
         <h2 className="font-display text-lg font-bold">{t("אביזרי המשחק", "Game pieces")}</h2>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          {t("סמני כל פריט שיש לך ·", "Tick every item you have ·")}{" "}{done}/{materials.length}
+          {t("סמני כל פריט שיש לך ·", "Check off every item you have ·")}{" "}{done}/{materials.length}
         </p>
       </div>
       <ol className="space-y-2">
