@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { thumb } from "@/lib/thumb";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Check, ChevronDown, ChevronUp, Clock, ExternalLink, FlaskConical, FolderOpen, Play, Plus, Printer, RotateCcw, Route, Save, Search, X } from "lucide-react";
@@ -584,7 +585,7 @@ export default function TherapistBuild() {
                   <>
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sage/30 text-xs font-bold text-sage-foreground">{i + 1}</span>
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
-                      {hero ? <img src={hero} alt="" className={`h-full w-full ${item.kind === "photo" ? "object-cover" : "object-contain p-0.5"}`} />
+                      {hero ? <img src={thumb(hero)} alt="" loading="lazy" className={`h-full w-full ${item.kind === "photo" ? "object-cover" : "object-contain p-0.5"}`} />
                         : item.kind === "motor-trail" ? <Route className="h-5 w-5 text-muted-foreground" />
                           : item.kind === "recipe" ? (recipe?.coverIcon ? <recipe.coverIcon /> : <span className="text-xl">{recipe?.coverEmoji ?? "🍳"}</span>)
                             : item.kind === "experiment" ? <FlaskConical className="h-5 w-5 text-muted-foreground" />
@@ -646,7 +647,7 @@ export default function TherapistBuild() {
             <span className="search-plan-thumbs" aria-hidden="true">
               {plan.slice(-5).map((item) => {
                 const picture = item.kind === "activity" ? activityHero(item.id) || getActivity(item.id)?.hero_image : item.kind === "recipe" ? getRecipe(item.id)?.cover : item.kind === "experiment" ? experimentHero(item.id) : item.kind === "photo" ? item.image : motorTrailItem(item.equipment?.[0], item)?.image;
-                return picture ? <img key={boardItemKey(item)} src={picture} alt="" /> : null;
+                return picture ? <img key={boardItemKey(item)} src={thumb(picture)} alt="" /> : null;
               })}
             </span>
             <ChevronUp className={cn("h-5 w-5 shrink-0 transition-transform", !planOpen && "rotate-180")} aria-hidden="true" />
@@ -1130,7 +1131,7 @@ function ActivityCandidateCard({ activity, boardMode, added, hidden, onAdd }) {
       title={activityTitle(activity, language)}
       length={activity.duration_min ? t(`${activity.duration_min}+ דק׳`, `${activity.duration_min}+ min`) : null}
       href={`/activity/${activity.id}?${query.toString()}`}
-      picture={hero ? <img src={hero} alt="" loading="lazy" /> : <span className="text-4xl">{activityEmoji(activity)}</span>}
+      picture={hero ? <img src={thumb(hero)} alt="" loading="lazy" decoding="async" /> : <span className="text-4xl">{activityEmoji(activity)}</span>}
       added={added} hidden={hidden} onAdd={onAdd} boardMode={boardMode}
     />
   );
@@ -1139,14 +1140,14 @@ function ActivityCandidateCard({ activity, boardMode, added, hidden, onAdd }) {
 function ExperimentCandidateCard({ item, boardMode, added, hidden, onAdd }) {
   return (
     <SearchTile title={item.title} length={item.time} href={`/therapist/experiments?e=${item.id}`}
-      picture={<img src={experimentHero(item.id)} alt="" loading="lazy" />} added={added} hidden={hidden} onAdd={onAdd} boardMode={boardMode} />
+      picture={<img src={thumb(experimentHero(item.id))} alt="" loading="lazy" decoding="async" />} added={added} hidden={hidden} onAdd={onAdd} boardMode={boardMode} />
   );
 }
 
 function RecipeCandidateCard({ item, boardMode, added, hidden, onAdd }) {
   return (
     <SearchTile title={item.title} length={item.duration} href={`/therapist/recipes?r=${item.id}`}
-      picture={item.cover ? <img src={item.cover} alt="" loading="lazy" /> : item.coverIcon ? <span className="h-16 w-16"><item.coverIcon /></span> : <span className="text-4xl">{item.coverEmoji ?? "🍳"}</span>}
+      picture={item.cover ? <img src={thumb(item.cover)} alt="" loading="lazy" decoding="async" /> : item.coverIcon ? <span className="h-16 w-16"><item.coverIcon /></span> : <span className="text-4xl">{item.coverEmoji ?? "🍳"}</span>}
       added={added} hidden={hidden} onAdd={onAdd} boardMode={boardMode} />
   );
 }

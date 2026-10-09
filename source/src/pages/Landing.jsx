@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { thumb } from "@/lib/thumb";
 import { Link } from "react-router-dom";
 import { AppShell } from "@/components/AppShell";
 import { IllustratedNavCard } from "@/components/IllustratedNavCard";
@@ -130,7 +131,7 @@ export default function Landing() {
                 <Link key={activity.to} to={language === "en" && activity.toEn ? activity.toEn : activity.to} className="overflow-hidden rounded-[1.5rem] border border-sky bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-soft">
                   <div className="aspect-[4/3] overflow-hidden bg-white">
                     <img
-                      src={activity.image}
+                      src={thumb(activity.image)}
                       loading="lazy"
                       decoding="async"
                       alt={language === "en" ? activity.altEn : activity.altHe}
