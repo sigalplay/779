@@ -27,6 +27,7 @@ export function BoardToolbar({
   onShareWithParents,
   onOpenFarewell,
   onOpenCalm,
+  onOpenVoiceMeter,
   onOpenWhoStarts,
   onOpenMyImages,
   fullscreen,
@@ -262,6 +263,11 @@ export function BoardToolbar({
             <img className="meeting-tool-image-icon" src="/icon-bank/emotions/calm.webp" alt="" />
             <span className="meeting-action-label-desktop">{t("להירגע", "Calm down")}</span>
             <span className="meeting-action-label-mobile">{t("להירגע", "Calm down")}</span>
+          </button>
+          <button className="meeting-voice-meter" type="button" onClick={onOpenVoiceMeter} title={t("מד עוצמת קול: לחישה, קול רגיל וקול חזק", "Voice volume meter: whisper, talking voice, and big voice")}>
+            <img className="meeting-tool-image-icon" src="/icon-bank/tools/voice-meter.svg" alt="" />
+            <span className="meeting-action-label-desktop">{t("מד קול", "Voice meter")}</span>
+            <span className="meeting-action-label-mobile">{t("מד קול", "Voice")}</span>
           </button>
           <button className="meeting-who-starts" type="button" onClick={onOpenWhoStarts} title={t("מי מתחיל? אן דן דינו, הגרלה או אבן נייר ומספריים", "Who starts? Eeny meeny, a random pick, or rock paper scissors")}>
             <img className="meeting-tool-image-icon" src="/icon-bank/who-starts/tool.webp" alt="" />
