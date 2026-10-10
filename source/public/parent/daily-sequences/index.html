@@ -44,14 +44,14 @@
   </style>
 </head>
 <body>
-  <header><a href="/">חזרה לדף הראשי</a><img src="/boo-nesahek-logo.png" alt="בואו נשחק"></header>
+  <header><a href="/">חזרה לדף הראשי</a><img src="/boo-nesahek-logo-print.webp" alt="בואו נשחק"></header>
   <main>
     <h1>רצפי ADL</h1>
     <p class="intro">בחרו רצף של פעולה יום־יומית. אפשר להדפיס אותו, לסדר מחדש את השלבים, או להציג לילד/ה שלב אחד בכל פעם במסך מלא.</p>
     <div class="sequence-grid" id="sequence-grid"></div>
     <section class="detail" id="detail"></section>
     <div class="player" id="player" role="dialog" aria-modal="true"></div>
-    <div class="footer"><img src="/boo-nesahek-logo.png" alt="בואו נשחק"><span>© בואו נשחק</span></div>
+    <div class="footer"><img src="/boo-nesahek-logo-print.webp" alt="בואו נשחק"><span>© בואו נשחק</span></div>
   </main>
   <script>
     const L={groupDaily:'רצפים יומיים',groupDressing:'התלבשות, שלב אחר שלב',girl:'ילדה',boy:'ילד',print:'הדפסה',close:'סגירה',play:'הצגה לילד/ה: שלב אחר שלב',playHint:'במסך מלא',hint:'נוגעים בתמונה כדי להוציא אותה מהרצף. החצים משנים את הסדר.',layout:'תצוגת הרצף',column:'בטור',row:'בשורה',moveUp:'הזזה למעלה',moveDown:'הזזה למטה',moveEarlierRow:'הזזה ימינה',moveLaterRow:'הזזה שמאלה',removeStep:(n,t)=>`שלב ${n}: ${t}. הוצאה מהרצף`,position:t=>`שינוי המיקום של ${t}`,empty:'בחרו תמונות מהבנק כדי לבנות את הרצף.',bank:'שלבים שהוצאו',bankHint:'נוגעים בתמונה כדי להחזיר אותה לסוף הרצף.',reset:'החזרת כל השלבים',addStep:t=>`החזרת ${t} לרצף`,stepOf:(n,t)=>`שלב ${n} מתוך ${t}`,allDone:'סיימנו!',exit:'יציאה ממצב שלב אחר שלב',prev:'הקודם',did:'עשיתי!',finish:'סיימתי!',greatJob:'כל הכבוד! סיימת את כל השלבים',again:'מהתחלה'};

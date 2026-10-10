@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { thumb } from "@/lib/thumb";
 import { toast } from "sonner";
 import {
   Save,
@@ -125,7 +126,7 @@ function StoryChoices({ story, onBranch, onEnding, endingsOnly = false }) {
             )}
           >
             {!endingsOnly && <span className="mb-1 block text-base font-black">{index + 1}</span>}
-            <img src={storyImageSrc(option.illustration)} alt="" loading="lazy" className="mb-2 aspect-square w-full rounded-xl object-contain" />
+            <img src={thumb(storyImageSrc(option.illustration))} alt="" loading="lazy" className="mb-2 aspect-square w-full rounded-xl object-contain" />
             {option.label}
           </button>
         ))}
@@ -471,7 +472,7 @@ export default function SocialStories({ mode }) {
                         templateId === template.id ? "border-2 border-primary bg-primary/10 shadow-md ring-4 ring-primary/50" : "border-border hover:bg-muted/50",
                       )}
                     >
-                      <img src={storyImageSrc(template.illustration)} alt="" loading="lazy" decoding="async" className="h-20 w-full bg-white object-contain p-1 sm:h-24" />
+                      <img src={thumb(storyImageSrc(template.illustration))} alt="" loading="lazy" decoding="async" className="h-20 w-full bg-white object-contain p-1 sm:h-24" />
                       <span className="block p-2.5 sm:p-3">
                         <span className="font-bold">{t(template.title, template.titleEn || template.title)}</span>
                         <span className="mt-1 block text-xs text-muted-foreground">{t(template.description, template.descriptionEn || template.description)}</span>
@@ -1160,7 +1161,7 @@ function StoryReader({ story, page, onPage, onClose, onBranch, onEnding }) {
                   onClick={() => (branch ? onBranch(option) : onEnding(option))}
                   className={cn("flex w-28 flex-col items-center gap-1 rounded-2xl border-2 bg-white p-1.5 text-xs font-semibold text-foreground", chosen ? "border-primary ring-2 ring-primary/40" : "border-transparent")}
                 >
-                  <img src={storyImageSrc(option.illustration)} alt="" className="h-16 w-16 object-contain" />
+                  <img src={thumb(storyImageSrc(option.illustration))} alt="" className="h-16 w-16 object-contain" />
                   <span className="line-clamp-2">{option.label}</span>
                 </button>
               );

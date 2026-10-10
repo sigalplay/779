@@ -73,7 +73,7 @@ export default function SharedWeeklyBoard() {
       <div className="shared-weekly-board-page mx-auto max-w-5xl px-4 py-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 print:hidden">
           <div className="flex items-center gap-2">
-            <img src={brandLogo(language).replace("-fast.webp", ".png")} alt={t("בואו נשחק", "Let's Play")} className="h-14 w-14 rounded-xl object-contain" />
+            <img src={brandLogo(language).replace("-fast.webp", "-print.webp")} alt={t("בואו נשחק", "Let's Play")} className="h-14 w-14 rounded-xl object-contain" />
             <CalendarDays className="h-6 w-6 text-sage-foreground" />
             <div>
               <h1 className="font-display text-2xl font-black md:text-3xl">{t("הלוח השבועי שלנו", "Our weekly visual schedule")}</h1>
@@ -199,7 +199,7 @@ export default function SharedWeeklyBoard() {
           {t("צור לוח משלך — בואו נשחק", "Create your own visual schedule — Let's Play")}
         </a>
         <div className="shared-weekly-board-logo hidden items-center justify-start print:flex">
-          <img src={brandLogo(language).replace("-fast.webp", ".png")} alt={t("בואו נשחק", "Let's Play")} className="h-11 w-auto object-contain" />
+          <img src={brandLogo(language).replace("-fast.webp", "-print.webp")} alt={t("בואו נשחק", "Let's Play")} className="h-11 w-auto object-contain" />
         </div>
         <p className="shared-weekly-board-legal hidden print:block">
           {t("© בואו נשחק. כל הזכויות שמורות. התכנים נועדו להעשרה ולתרגול בלבד ואינם מהווים אבחון, המלצה טיפולית אישית או תחליף להערכה, לייעוץ או לטיפול של איש מקצוע מוסמך.", "© Let’s Play. All rights reserved. The content here is for enrichment and practice only. It is not a diagnosis, personal therapeutic advice, or a substitute for evaluation, consultation, or treatment by a qualified professional.")}

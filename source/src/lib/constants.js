@@ -134,9 +134,9 @@ export const FUNCTIONAL_DIFFICULTIES = [
   },
   {
     category: "התנסות במאכלים",
-    icon: "/icon-bank/food-exposure/foods.png",
+    icon: "/icon-bank/food-exposure/foods.webp",
     items: [
-      { label: "התנסות במאכלים", icon: "/icon-bank/food-exposure/foods.png" },
+      { label: "התנסות במאכלים", icon: "/icon-bank/food-exposure/foods.webp" },
     ],
   },
   {
