@@ -1,3 +1,4 @@
+import { isHiddenPath } from "@/lib/hidden-sections";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -245,7 +246,7 @@ export function AppShell({ mode = "parent", children, pageClassName, fullScreen 
                     <section key={group.className} className={group.className}>
                       <h2>{t(...group.title)}</h2>
                       <div className="unified-menu-links">
-                        {group.links.map(([href, he, en]) => (
+                        {group.links.filter(([href]) => !isHiddenPath(href)).map(([href, he, en]) => (
                           <NavLink key={href} to={href}>{t(he, en)}</NavLink>
                         ))}
                       </div>
