@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, CalendarDays, Clock, Lightbulb } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useTranslator } from "@/lib/language";
+import { isHiddenPath } from "@/lib/hidden-sections";
 import { BLOG_AUTHOR, BLOG_CATEGORIES, blogCategory, findPost, formatPostDate, publishedPosts, readingMinutes } from "@/lib/blog";
 
 // Names of the site pages an article can send readers to.
@@ -23,6 +24,7 @@ function RichText({ text }) {
   const parts = String(text).split(/(\[[^\]]+\]\([^)]+\))/g);
   return parts.map((part, index) => {
     const match = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (match && isHiddenPath(match[2])) return <Fragment key={index}>{match[1]}</Fragment>;
     return match
       ? <Link key={index} to={match[2]} className="font-bold text-primary underline decoration-primary/40 underline-offset-4 hover:decoration-primary">{match[1]}</Link>
       : <Fragment key={index}>{part}</Fragment>;
@@ -169,11 +171,11 @@ export function BlogPost() {
           <ArticleBody blocks={content.body} />
         </div>
 
-        {post.links?.length > 0 && (
+        {post.links?.some((href) => !isHiddenPath(href)) && (
           <section className="rounded-3xl border border-primary/20 bg-primary/5 p-5">
             <h2 className="mb-3 font-display text-lg font-black">{t("לנסות עכשיו באתר", "Try it now on the site")}</h2>
             <div className="flex flex-wrap gap-2">
-              {post.links.map((href) => (
+              {post.links.filter((href) => !isHiddenPath(href)).map((href) => (
                 <Link key={href} to={href} className="rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">
                   {PAGE_NAMES[href] ? t(...PAGE_NAMES[href]) : href}
                 </Link>
